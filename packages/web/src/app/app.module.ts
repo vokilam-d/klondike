@@ -4,6 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TransferHttpCacheModule } from '@nguniversal/common';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -12,7 +13,8 @@ import { TransferHttpCacheModule } from '@nguniversal/common';
   imports: [
     BrowserModule.withServerTransition({ appId: 'klondike' }),
     AppRoutingModule,
-    TransferHttpCacheModule
+    TransferHttpCacheModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -2,12 +2,8 @@
   "name": "web",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "build": "yarn clear && ng run web:build && ng run web:server",
+    "clear": "rm -rf ../../dist"
   },
   "private": true,
   "dependencies": {
