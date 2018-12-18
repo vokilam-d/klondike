@@ -3,6 +3,9 @@ import 'reflect-metadata';
 
 import { NestFactory } from '@nestjs/core';
 import { ngExpressEngine } from '@nguniversal/express-engine';
+import * as helmet from 'helmet';
+import * as rateLimit from 'rate-limit';
+import * as compression from 'compression';
 import * as bodyParser from 'body-parser';
 import * as serveStatic from 'serve-static';
 import { join } from 'path';
@@ -20,6 +23,11 @@ async function bootstrap() {
   app.engine('html', ngExpressEngine({ bootstrap: null }));
   app.set('views', dist);
   app.set('view engine', 'html');
+
+  app.enableCors();
+  app.use(helmet());
+  app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+  app.use(compression());
   app.use(bodyParser.json());
   app.use(serveStatic( join(dist, 'web'), { index: false } ));
 
