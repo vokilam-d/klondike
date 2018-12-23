@@ -3,15 +3,14 @@ import { REQUEST, RESPONSE } from '@nguniversal/express-engine/tokens';
 import { provideModuleMap } from '@nguniversal/module-map-ngfactory-loader';
 import { join } from 'path';
 import { Request, Response } from 'express';
-
-const dist = join(process.cwd(), '..', '..', 'dist');
+import { distFolder } from "./main";
 
 @Injectable()
 export class SsrService {
   renderPage(req: Request, res: Response) {
     console.log('server render page!');
 
-    const { AppServerModuleNgFactory, LAZY_MODULE_MAP } = require(join(dist, 'web-server', 'main'));
+    const { AppServerModuleNgFactory, LAZY_MODULE_MAP } = require(join(distFolder, 'web-server', 'main'));
 
     const timerLabel = `GET ${req.originalUrl} ${Date.now()}`;
 

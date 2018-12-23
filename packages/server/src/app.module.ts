@@ -3,7 +3,7 @@ import { CategoryModule } from './category/category.module';
 import { SsrService } from './ssr.service';
 import { NotFoundExceptionFilter } from './shared/filters/not-found-exception.filter';
 import { SharedModule } from './shared/shared.module';
-import { MongooseModule, MongooseModuleAsyncOptions } from '@nestjs/mongoose';
+import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from './shared/config/config.service';
 import { EConfig } from '../config/config.enum';
 
@@ -13,10 +13,13 @@ import { EConfig } from '../config/config.enum';
     SharedModule,
     MongooseModule.forRootAsync({
       useFactory: async (_config: ConfigService) => ({
-        uri: _config.get(EConfig.MONGO_URI)
+        uri: _config.get(EConfig.MONGO_URI),
+        retryDelay: 500,
+        retryAttempts: 3,
+        useCreateIndex: true
       }),
       inject: [ConfigService]
-    } as MongooseModuleAsyncOptions)
+    })
   ],
   controllers: [],
   components: [],
