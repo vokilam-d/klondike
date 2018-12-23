@@ -13,7 +13,7 @@ export class SsrService {
 
     const { AppServerModuleNgFactory, LAZY_MODULE_MAP } = require(join(dist, 'web-server', 'main'));
 
-    const timerLabel = `GET ${req.originalUrl}`;
+    const timerLabel = `GET ${req.originalUrl} ${Date.now()}`;
 
     console.time(timerLabel);
     res.render(

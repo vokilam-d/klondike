@@ -1,5 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, NotFoundException } from '@nestjs/common';
-import { SsrService } from '../ssr.service';
+import { SsrService } from '../../ssr.service';
 import { Request, Response } from 'express';
 
 @Catch(NotFoundException)

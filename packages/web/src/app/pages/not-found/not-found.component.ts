@@ -17,6 +17,7 @@ export class NotFoundComponent implements OnInit {
       console.log('resp status', this.response.statusCode);
       this.response.status(404);
     }
+    console.log(c);
   }
 
 }

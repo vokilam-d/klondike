@@ -11,7 +11,7 @@ import * as serveStatic from 'serve-static';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { enableProdMode } from '@angular/core';
-import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
+import { NotFoundExceptionFilter } from './shared/filters/not-found-exception.filter';
 
 enableProdMode();
 
@@ -26,6 +26,7 @@ async function bootstrap() {
   app.set('view engine', 'html');
 
   const notFoundExceptionFilter = app.get<NotFoundExceptionFilter>(NotFoundExceptionFilter);
+  app.setGlobalPrefix('/api');
   app.useGlobalFilters(notFoundExceptionFilter);
 
   app.enableCors();
