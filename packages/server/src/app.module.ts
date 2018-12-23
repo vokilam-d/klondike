@@ -6,7 +6,6 @@ import { SharedModule } from './shared/shared.module';
 import { MongooseModule, MongooseModuleAsyncOptions } from '@nestjs/mongoose';
 import { ConfigService } from './shared/config/config.service';
 import { EConfig } from '../config/config.enum';
-import { Error } from 'tslint/lib/error';
 
 @Module({
   imports: [
