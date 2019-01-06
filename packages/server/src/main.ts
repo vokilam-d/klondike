@@ -1,6 +1,3 @@
-import 'zone.js/dist/zone-node';
-import 'reflect-metadata';
-
 import { NestFactory } from '@nestjs/core';
 import { ngExpressEngine } from '@nguniversal/express-engine';
 import * as helmet from 'helmet';

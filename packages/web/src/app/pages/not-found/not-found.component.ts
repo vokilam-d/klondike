@@ -14,10 +14,8 @@ export class NotFoundComponent implements OnInit {
 
   ngOnInit() {
     if (this.response) {
-      console.log('resp status', this.response.statusCode);
       this.response.status(404);
     }
-    console.log(c);
   }
 
 }

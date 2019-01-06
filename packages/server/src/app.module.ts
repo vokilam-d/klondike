@@ -21,8 +21,6 @@ import { EConfig } from '../config/config.enum';
       inject: [ConfigService]
     })
   ],
-  controllers: [],
-  components: [],
   providers: [SsrService, NotFoundExceptionFilter]
 })
 export class AppModule {

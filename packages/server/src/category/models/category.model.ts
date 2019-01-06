@@ -1,15 +1,44 @@
-import { BaseModel, schemaOptions } from '../../shared/base.model';
+import { BaseModel, baseSchemaOptions } from '../../shared/base.model';
 import { InstanceType, ModelType, prop } from 'typegoose';
+import { MetaTags } from '../../shared/models/meta-tags.model';
+import { Types } from 'mongoose';
+import { ICategory } from '../../../../shared/models/category.interface';
 
-export class Category extends BaseModel<Category> {
+export class Category extends BaseModel<Category> implements ICategory {
+
   @prop({ required: true, unique: true })
   name: string;
 
+  @prop({ required: true, unique: true })
+  url: string;
+
+  @prop({ default: true })
+  isEnabled: boolean;
+
+  @prop({ default: 0 })
+  parentCategory: Types.ObjectId;
+
   @prop()
-  description: string;
+  fullDescription?: string;
+
+  @prop()
+  shortDescription?: string;
+
+  @prop()
+  meta?: MetaTags;
+
+  @prop()
+  image?: any;
+
+  static collectionName: string = 'category';
 
   static get model(): ModelType<Category> {
-    return new Category().getModelForClass(Category, { schemaOptions: schemaOptions});
+    const schemaOptions = {
+      ...baseSchemaOptions,
+      collection: Category.collectionName
+    };
+
+    return new Category().getModelForClass(Category, { schemaOptions });
   }
 
   static get modelName(): string {
@@ -19,5 +48,4 @@ export class Category extends BaseModel<Category> {
   static createModel(): InstanceType<Category> {
     return new this.model();
   }
-
 }

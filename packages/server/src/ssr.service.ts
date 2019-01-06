@@ -1,9 +1,12 @@
+// import 'zone.js/dist/zone-node';
+// import 'reflect-metadata';
+
 import { Injectable } from '@nestjs/common';
 import { REQUEST, RESPONSE } from '@nguniversal/express-engine/tokens';
 import { provideModuleMap } from '@nguniversal/module-map-ngfactory-loader';
 import { join } from 'path';
 import { Request, Response } from 'express';
-import { distFolder } from "./main";
+import { distFolder } from './main';
 
 @Injectable()
 export class SsrService {

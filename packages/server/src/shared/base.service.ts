@@ -32,7 +32,9 @@ export class BaseService<T extends Typegoose> {
   }
 
   async findById(id: string): Promise<InstanceType<T>> {
-    return this._model.findById(this.toObjectId(id)).exec();
+    console.log(id);
+    console.log(this.toObjectId(id));
+    return this._model.findById(id).exec();
   }
 
   async create(item: InstanceType<T>): Promise<InstanceType<T>> {
@@ -40,14 +42,14 @@ export class BaseService<T extends Typegoose> {
   }
 
   async update(id: string, item: InstanceType<T>): Promise<InstanceType<T>> {
-    return this._model.findByIdAndUpdate(this.toObjectId(id), item, { 'new': true }).exec();
+    return this._model.findOneAndUpdate({ _id: this.toObjectId(id) }, item, { 'new': true }).exec();
   }
 
   async delete(id: string): Promise<InstanceType<T>> {
-    return this._model.findByIdAndRemove(this.toObjectId(id)).exec();
+    return this._model.findOneAndDelete({ _id: this.toObjectId(id) }).exec();
   }
 
-  async deleteMany(filter = {}): Promise<void> {
+  async deleteMany(filter: any = {}): Promise<any> {
     return this._model.deleteMany(filter).exec();
   }
 

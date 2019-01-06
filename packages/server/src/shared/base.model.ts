@@ -12,7 +12,8 @@ export class BaseModelVm {
 })
 export abstract class BaseModel<T> extends Typegoose {
 
-  id: string;
+  @prop()
+  _id: string;
 
   @prop()
   createdAt: string;
@@ -21,7 +22,7 @@ export abstract class BaseModel<T> extends Typegoose {
   updatedAt: string;
 }
 
-export const schemaOptions: SchemaOptions = {
+export const baseSchemaOptions: SchemaOptions = {
   timestamps: true,
   toJSON: {
     virtuals: true,
