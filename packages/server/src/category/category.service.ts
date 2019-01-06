@@ -35,6 +35,5 @@ export class CategoryService extends BaseService<Category> {
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
   }
 }

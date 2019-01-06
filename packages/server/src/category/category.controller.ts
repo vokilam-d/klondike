@@ -18,7 +18,7 @@ export class CategoryController {
 
   @Get(':id')
   async getOne(@Param('id') id: string) {
-    const category = await this.categoryService.findOne({_id: id});
+    const category = await this.categoryService.findOne({ _id: id });
     return category.toJSON();
   }
 
@@ -49,18 +49,33 @@ export class CategoryController {
   }
 
   @Put(':id')
-  async updateOne(@Param('id') id, @Body() category) {
-    const updated = await this.categoryService.update(id, category);
-    return updated.toJSON();
+  async updateOne(@Param('id') id, @Body() category: ICategory) {
+    const exist = await this.categoryService.findById(id);
+
+    if (!exist) {
+      throw new HttpException(`Category '${id}' not found`, HttpStatus.NOT_FOUND);
+    }
+
+    Object.keys(category).forEach(key => {
+      exist[key] = category[key];
+    });
+
+    try {
+      const updated = await this.categoryService.update(id, exist);
+      return updated.toJSON();
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Delete(':id')
   async deleteOne(@Param('id') id: string) {
     console.log(id);
-    const deleted = await this.categoryService.delete(id);
-    return deleted.toJSON();
+    try {
+      const deleted = await this.categoryService.delete(id);
+      return deleted.toJSON();
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
-
-
-
 }

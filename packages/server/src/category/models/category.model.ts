@@ -6,7 +6,7 @@ import { ICategory } from '../../../../shared/models/category.interface';
 
 export class Category extends BaseModel<Category> implements ICategory {
 
-  @prop({ required: true, unique: true })
+  @prop({ required: true })
   name: string;
 
   @prop({ required: true, unique: true })
