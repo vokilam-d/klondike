@@ -1,8 +1,8 @@
 import { BaseModel, baseSchemaOptions } from '../../shared/base.model';
-import { InstanceType, ModelType, prop } from 'typegoose';
+import { arrayProp, InstanceType, ModelType, prop } from 'typegoose';
 import { MetaTags } from '../../shared/models/meta-tags.model';
-import { Types } from 'mongoose';
 import { ICategory } from '../../../../shared/models/category.interface';
+import { CategoryAncestor } from './category-ancestor.model';
 
 export class Category extends BaseModel<Category> implements ICategory {
 
@@ -10,13 +10,19 @@ export class Category extends BaseModel<Category> implements ICategory {
   name: string;
 
   @prop({ required: true, unique: true })
-  url: string;
+  slug: string;
 
   @prop({ default: true })
   isEnabled: boolean;
 
-  @prop({ default: 0 })
-  parentCategory: Types.ObjectId;
+  @prop({ default: null })
+  parentId: string;
+
+  @arrayProp({ items: CategoryAncestor })
+  ancestors?: CategoryAncestor[];
+
+  @prop()
+  meta?: MetaTags;
 
   @prop()
   fullDescription?: string;
@@ -25,10 +31,7 @@ export class Category extends BaseModel<Category> implements ICategory {
   shortDescription?: string;
 
   @prop()
-  meta?: MetaTags;
-
-  @prop()
-  image?: any;
+  imageUrl?: string;
 
   static collectionName: string = 'category';
 
