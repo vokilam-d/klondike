@@ -1,5 +1,5 @@
 import 'automapper-ts/dist/automapper';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InstanceType, ModelType, Typegoose } from 'typegoose';
 import { Types } from 'mongoose';
 
@@ -31,7 +31,7 @@ export class BaseService<T extends Typegoose> {
     return this._model.findOne(filter).exec();
   }
 
-  async findById(id: string): Promise<InstanceType<T>> {
+  async findById(id: Types.ObjectId): Promise<InstanceType<T>> {
     return this._model.findById(id).exec();
   }
 
@@ -39,19 +39,15 @@ export class BaseService<T extends Typegoose> {
     return this._model.create(item);
   }
 
-  async update(id: string, item: InstanceType<T>): Promise<InstanceType<T>> {
+  async update(id: Types.ObjectId, item: InstanceType<T>): Promise<InstanceType<T>> {
     return this._model.findOneAndUpdate({ _id: id }, item, { 'new': true }).exec();
   }
 
-  async delete(id: string): Promise<InstanceType<T>> {
+  async delete(id: Types.ObjectId): Promise<InstanceType<T>> {
     return this._model.findOneAndDelete({ _id: id }).exec();
   }
 
   async deleteMany(filter: any = {}): Promise<any> {
     return this._model.deleteMany(filter).exec();
-  }
-
-  private toObjectId(id: string): Types.ObjectId {
-    return Types.ObjectId(id);
   }
 }

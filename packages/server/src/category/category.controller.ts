@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, 
 import { CategoryService } from './category.service';
 import { ICategory } from '../../../shared/models/category.interface';
 import { transliterate } from '../shared/helpers/transliterate.function';
+import { toObjectId } from '../shared/object-id.function';
 
 @Controller('categories')
 export class CategoryController {
@@ -11,14 +12,13 @@ export class CategoryController {
 
   @Get()
   async getAll(@Query() queries) {
-    console.log(queries);
-    const cats = await this.categoryService.findAll();
-    return cats.map(cat => cat.toJSON());
+    const categories = await this.categoryService.findAll();
+    return categories.map(cat => cat.toJSON());
   }
 
-  @Get(':id')
-  async getOne(@Param('id') id: string) {
-    const category = await this.categoryService.findOne({ _id: id });
+  @Get(':slug')
+  async getOne(@Param('slug') slug: string) {
+    const category = await this.categoryService.findOne({ slug: slug });
     return category.toJSON();
   }
 
@@ -44,13 +44,25 @@ export class CategoryController {
       throw new HttpException(`Category with url ${category.name} already exists`, HttpStatus.BAD_REQUEST);
     }
 
-    const result = await this.categoryService.createCategory(category);
-    return result;
+    try {
+      const result = await this.categoryService.createCategory(category);
+      return result;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Put(':id')
-  async updateOne(@Param('id') id, @Body() category: ICategory) {
-    const exist = await this.categoryService.findById(id);
+  async updateOne(@Param('id') id: string, @Body() category: ICategory) {
+
+    const objectId = toObjectId(id, () => { throw new HttpException(`Invalid category ID`, HttpStatus.BAD_REQUEST); });
+
+    let exist;
+    try {
+      exist = await this.categoryService.findById(objectId);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     if (!exist) {
       throw new HttpException(`Category '${id}' not found`, HttpStatus.NOT_FOUND);
@@ -61,7 +73,7 @@ export class CategoryController {
     });
 
     try {
-      const updated = await this.categoryService.update(id, exist);
+      const updated = await this.categoryService.update(objectId, exist);
       return updated.toJSON();
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -70,9 +82,11 @@ export class CategoryController {
 
   @Delete(':id')
   async deleteOne(@Param('id') id: string) {
-    console.log(id);
+
+    const objectId = toObjectId(id, () => { throw new HttpException(`Invalid category ID`, HttpStatus.BAD_REQUEST); });
+
     try {
-      const deleted = await this.categoryService.delete(id);
+      const deleted = await this.categoryService.delete(objectId);
       return deleted.toJSON();
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);

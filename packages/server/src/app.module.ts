@@ -6,11 +6,10 @@ import { SharedModule } from './shared/shared.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from './shared/config/config.service';
 import { EConfig } from '../config/config.enum';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
-    CategoryModule,
-    SharedModule,
     MongooseModule.forRootAsync({
       useFactory: async (_config: ConfigService) => ({
         uri: _config.get(EConfig.MONGO_URI),
@@ -19,7 +18,12 @@ import { EConfig } from '../config/config.enum';
         useCreateIndex: true
       }),
       inject: [ConfigService]
-    })
+    }),
+
+    SharedModule,
+
+    CategoryModule,
+    ProductModule
   ],
   providers: [SsrService, NotFoundExceptionFilter]
 })

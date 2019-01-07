@@ -1,5 +1,5 @@
-// import 'zone.js/dist/zone-node';
-// import 'reflect-metadata';
+import 'zone.js/dist/zone-node';
+import 'reflect-metadata';
 
 import { Injectable } from '@nestjs/common';
 import { REQUEST, RESPONSE } from '@nguniversal/express-engine/tokens';
