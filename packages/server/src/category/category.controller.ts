@@ -29,13 +29,13 @@ export class CategoryController {
       throw new HttpException('Category name is required', HttpStatus.BAD_REQUEST);
     }
 
-    if (!category.url) {
-      category.url = transliterate(category.name);
+    if (!category.slug) {
+      category.slug = transliterate(category.name);
     }
 
     let exist;
     try {
-      exist = await this.categoryService.findOne({ url: category.url });
+      exist = await this.categoryService.findOne({ url: category.slug });
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
