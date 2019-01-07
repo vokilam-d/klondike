@@ -11,6 +11,9 @@ export class Product extends BaseModel<Product> implements IProduct {
   @prop({ required: true })
   slug: string;
 
+  @prop({ required: true })
+  sku: string;
+
   @prop({ default: false })
   isEnabled: boolean;
 

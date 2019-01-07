@@ -10,7 +10,7 @@ export class Category extends BaseModel<Category> implements ICategory {
   name: string;
 
   @prop({ required: true, unique: true })
-  slug: string;
+  slug: string; // TODO add validation to spaces, only latin chars, number of chars
 
   @prop({ default: true })
   isEnabled: boolean;
