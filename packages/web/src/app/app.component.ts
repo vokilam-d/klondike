@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService } from './app.service';
 
 @Component({
   selector: 'app-root',
@@ -7,26 +6,9 @@ import { AppService } from './app.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'web';
-
-  resp: any;
-
-  constructor(private appService: AppService) {
+  constructor() {
   }
 
   ngOnInit() {
-    console.log('init app!');
-    this.getTest();
   }
-
-  getTest() {
-    this.appService.getTest().subscribe(
-      resp => {
-        this.resp = resp;
-      },
-      err => console.log('err', err)
-    );
-  }
-
-
 }

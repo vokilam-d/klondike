@@ -2,6 +2,7 @@
   "name": "web",
   "version": "0.0.0",
   "scripts": {
+    "serve": "ng serve -lr=false --open",
     "build": "yarn clear && ng run web:build && ng run web:server",
     "clear": "rm -rf ../../dist"
   },
