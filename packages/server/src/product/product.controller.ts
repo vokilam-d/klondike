@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { IProduct } from '../../../shared/models/product.interface';
 import { toObjectId } from '../shared/object-id.function';
+import { ProductDto } from '../../../shared/dtos/product.dto';
+import { Types } from 'mongoose';
 
 @Controller('products')
 export class ProductController {
@@ -23,7 +24,7 @@ export class ProductController {
   }
 
   @Post()
-  async addOne(@Body() product: IProduct) {
+  async addOne(@Body() product: ProductDto) {
 
     let exist;
     try {
@@ -42,47 +43,36 @@ export class ProductController {
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
   }
 
-  @Put(':id')
-  async updateOne(@Param('id') id: string, @Body() product: IProduct) {
+  @Patch(':id')
+  async updateOne(@Param('id') productId: string, @Body() productDto: ProductDto) {
 
-    const objectId = toObjectId(id, () => { throw new HttpException(`Invalid product ID`, HttpStatus.BAD_REQUEST); });
+    const objectProductId = this.toObjectProductId(productId);
 
     let exist;
     try {
-      exist = await this.productService.findById(objectId);
+      exist = await this.productService.findById(objectProductId);
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (!exist) {
-      throw new HttpException(`Product with url '${product.slug}' not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(`Product with url '${productDto.slug}' not found`, HttpStatus.NOT_FOUND);
     }
 
-    Object.keys(product).forEach(key => {
-      exist[key] = product[key];
-    });
-
-    try {
-      const result = await this.productService.update(objectId, exist);
-      return result.toJSON();
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return await this.productService.updateProduct(exist, productDto);
   }
 
   @Delete(':id')
-  async deleteOne(@Param('id') id: string) {
+  deleteOne(@Param('id') productId: string) {
 
-    const objectId = toObjectId(id, () => { throw new HttpException(`Invalid product ID`, HttpStatus.BAD_REQUEST); });
+    const objectProductId = this.toObjectProductId(productId);
 
-    try {
-      const deleted = await this.productService.delete(objectId);
-      return deleted;
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return this.productService.deleteProduct(objectProductId);
+  }
+
+  private toObjectProductId(productId: string): Types.ObjectId {
+    return toObjectId(productId, () => { throw new HttpException(`Invalid product ID`, HttpStatus.BAD_REQUEST); });
   }
 }

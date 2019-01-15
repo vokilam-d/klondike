@@ -1,4 +1,4 @@
-import { pre, prop, Typegoose } from 'typegoose';
+import { InstanceType, ModelType, pre, prop, Typegoose } from 'typegoose';
 import { SchemaOptions } from 'mongoose';
 
 @pre<T>('findOneAndUpdate', function () {
@@ -13,6 +13,11 @@ export abstract class BaseModel<T> extends Typegoose {
 
   @prop()
   updatedAt: string;
+
+  collectionName: string;
+  model: ModelType<T>;
+  modelName: string;
+  createModel: () => InstanceType<T>;
 }
 
 export const baseSchemaOptions: SchemaOptions = {

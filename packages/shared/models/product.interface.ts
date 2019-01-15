@@ -5,9 +5,12 @@ export interface IProduct {
   slug: string;
   sku: string;
   isEnabled: boolean;
-  parentCategoryIds: string[];
+  categoryIds: string[];
+  price: number;
   fullDescription?: string;
   shortDescription?: string;
   meta?: IMetaTags;
   mediaUrls?: string[];
+
+  // TODO add manufacturer
 }

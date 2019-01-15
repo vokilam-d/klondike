@@ -27,11 +27,11 @@ export class BaseService<T extends Typegoose> {
     return this._model.find(filter).exec();
   }
 
-  async findOne(filter = {}): Promise<InstanceType<T>> {
-    return this._model.findOne(filter).exec();
+  async findOne(filter = {}, projection = {}): Promise<InstanceType<T>> {
+    return this._model.findOne(filter, projection).exec();
   }
 
-  async findById(id: Types.ObjectId): Promise<InstanceType<T>> {
+  async findById(id: any): Promise<InstanceType<T>> {
     return this._model.findById(id).exec();
   }
 
@@ -39,12 +39,12 @@ export class BaseService<T extends Typegoose> {
     return this._model.create(item);
   }
 
-  async update(id: Types.ObjectId, item: InstanceType<T>): Promise<InstanceType<T>> {
+  async update(id: any, item: InstanceType<T>): Promise<InstanceType<T>> {
     return this._model.findOneAndUpdate({ _id: id }, item, { 'new': true }).exec();
   }
 
-  async delete(id: Types.ObjectId): Promise<InstanceType<T>> {
-    return this._model.findOneAndDelete({ _id: id }).exec();
+  async delete(filter: any = {}): Promise<InstanceType<T>> {
+    return this._model.findOneAndDelete(filter).exec();
   }
 
   async deleteMany(filter: any = {}): Promise<any> {

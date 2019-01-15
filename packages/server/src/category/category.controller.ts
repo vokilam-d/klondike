@@ -86,7 +86,7 @@ export class CategoryController {
     const objectId = toObjectId(id, () => { throw new HttpException(`Invalid category ID`, HttpStatus.BAD_REQUEST); });
 
     try {
-      const deleted = await this.categoryService.delete(objectId);
+      const deleted = await this.categoryService.delete({ '_id': objectId });
       return deleted.toJSON();
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);

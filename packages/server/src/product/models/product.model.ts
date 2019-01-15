@@ -18,7 +18,10 @@ export class Product extends BaseModel<Product> implements IProduct {
   isEnabled: boolean;
 
   @arrayProp({ items: String })
-  parentCategoryIds: string[];
+  categoryIds: string[];
+
+  @prop({ default: 0 })
+  price: number;
 
   @prop()
   meta?: MetaTags;

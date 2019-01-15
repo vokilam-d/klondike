@@ -7,6 +7,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from './shared/config/config.service';
 import { EConfig } from '../config/config.enum';
 import { ProductModule } from './product/product.module';
+import { CartModule } from './cart/cart.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -23,7 +25,9 @@ import { ProductModule } from './product/product.module';
     SharedModule,
 
     CategoryModule,
-    ProductModule
+    ProductModule,
+    CartModule,
+    InventoryModule
   ],
   providers: [SsrService, NotFoundExceptionFilter]
 })

@@ -3,6 +3,7 @@ import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
 import { Product } from './models/product.model';
 import { MongooseModule } from '@nestjs/mongoose';
+import { InventoryModule } from '../inventory/inventory.module';
 
 const productModel = {
   name: Product.modelName,
@@ -11,8 +12,12 @@ const productModel = {
 };
 
 @Module({
-  imports: [MongooseModule.forFeature([productModel])],
+  imports: [
+    MongooseModule.forFeature([productModel]),
+    InventoryModule
+  ],
   controllers: [ProductController],
-  providers: [ProductService]
+  providers: [ProductService],
+  exports: [ProductService]
 })
 export class ProductModule {}
