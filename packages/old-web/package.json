@@ -1,0 +1,49 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "scripts": {
+    "serve": "ng serve --aot --live-reload=false --open",
+    "build": "yarn clear && ng run web:build && ng run web:server",
+    "clear": "rm -rf ../../dist"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "~8.0.3",
+    "@angular/common": "~8.0.3",
+    "@angular/compiler": "~8.0.3",
+    "@angular/core": "~8.0.3",
+    "@angular/forms": "~8.0.3",
+    "@angular/platform-browser": "~8.0.3",
+    "@angular/platform-browser-dynamic": "~8.0.3",
+    "@angular/platform-server": "~8.0.3",
+    "@angular/router": "~8.0.3",
+    "@nguniversal/common": "^7.0.2",
+    "core-js": "^2.5.4",
+    "ky": "^0.11.1",
+    "ky-universal": "^0.2.1",
+    "lerna": "^3.6.0",
+    "rxjs": "~6.5.2",
+    "tslib": "^1.9.0",
+    "zone.js": "~0.9.1"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~0.800.6",
+    "@angular/cli": "~8.0.6",
+    "@angular/compiler-cli": "~8.0.3",
+    "@angular/language-service": "~8.0.3",
+    "@nguniversal/module-map-ngfactory-loader": "^7.0.2",
+    "@types/node": "~8.9.4",
+    "codelyzer": "^5.0.1",
+    "jasmine-core": "~2.99.1",
+    "jasmine-spec-reporter": "~4.2.1",
+    "karma": "^4.1.0",
+    "karma-chrome-launcher": "~2.2.0",
+    "karma-coverage-istanbul-reporter": "~2.0.1",
+    "karma-jasmine": "~1.1.2",
+    "karma-jasmine-html-reporter": "^0.2.2",
+    "protractor": "~5.4.0",
+    "ts-node": "~7.0.0",
+    "tslint": "~5.11.0",
+    "typescript": "3.4.5"
+  }
+}

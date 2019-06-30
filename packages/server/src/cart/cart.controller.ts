@@ -14,7 +14,7 @@ export class CartController {
 
   @Post(':id/items')
   async addToCart(@Param('id') cartId: string, @Body() cartDto: CartDto) {
-    const cartObjectId = this.toObjectCartId(cartId);
+    const cartObjectId = this.toCartObjectId(cartId);
     cartDto.qty = cartDto.qty ? cartDto.qty : 1;
 
     let foundCart: InstanceType<Cart>;
@@ -36,7 +36,7 @@ export class CartController {
 
   @Put(':id/items/quantity')
   async updateQty(@Param('id') cartId: string, @Body() cartDto: CartDto) {
-    const cartObjectId = this.toObjectCartId(cartId);
+    const cartObjectId = this.toCartObjectId(cartId);
 
     let foundItemInCart: InstanceType<Cart>;
     try {
@@ -66,11 +66,11 @@ export class CartController {
       throw new HttpException(`Cart '${cartId}' doesn't exist or has no SKU '${sku}'`, HttpStatus.BAD_REQUEST);
     }
 
-    const cartObjectId = this.toObjectCartId(cartId);
+    const cartObjectId = this.toCartObjectId(cartId);
     return this.cartService.removeFromCart(cartObjectId, sku, foundItemInCart.items[0].qty);
   }
 
-  private toObjectCartId(cartId: string): Types.ObjectId {
+  private toCartObjectId(cartId: string): Types.ObjectId {
     return toObjectId(cartId, () => { throw new HttpException(`Invalid cart ID`, HttpStatus.BAD_REQUEST); });
   }
 }

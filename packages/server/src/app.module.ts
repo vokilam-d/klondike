@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CategoryModule } from './category/category.module';
-import { SsrService } from './ssr.service';
 import { NotFoundExceptionFilter } from './shared/filters/not-found-exception.filter';
 import { SharedModule } from './shared/shared.module';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -17,7 +16,9 @@ import { InventoryModule } from './inventory/inventory.module';
         uri: _config.get(EConfig.MONGO_URI),
         retryDelay: 500,
         retryAttempts: 3,
-        useCreateIndex: true
+        useCreateIndex: true,
+        useNewUrlParser: true,
+        useFindAndModify: false
       }),
       inject: [ConfigService]
     }),
@@ -29,7 +30,7 @@ import { InventoryModule } from './inventory/inventory.module';
     CartModule,
     InventoryModule
   ],
-  providers: [SsrService, NotFoundExceptionFilter]
+  providers: [NotFoundExceptionFilter]
 })
 export class AppModule {
   static port: number;

@@ -11,9 +11,7 @@ export class Cart extends BaseModel<Cart> implements ICart {
   @arrayProp({ items: CartItem })
   items: CartItem[];
 
-
-
-  static collectionName: string = 'carts';
+  static collectionName: string = 'cart';
 
   static get model(): ModelType<Cart> {
     const schemaOptions = {

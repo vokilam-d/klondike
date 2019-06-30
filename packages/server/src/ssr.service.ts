@@ -13,13 +13,13 @@ export class SsrService {
   renderPage(req: Request, res: Response) {
     console.log('server render page!');
 
-    const { AppServerModuleNgFactory, LAZY_MODULE_MAP } = require(join(distFolder, 'web-server', 'main'));
+    const { AppServerModuleNgFactory, LAZY_MODULE_MAP } = require(join(distFolder, 'old-web-server', 'main'));
 
     const timerLabel = `GET ${req.originalUrl} ${Date.now()}`;
 
     console.time(timerLabel);
     res.render(
-      join('web', 'index'),
+      join('old-web', 'index'),
       {
         req,
         res,

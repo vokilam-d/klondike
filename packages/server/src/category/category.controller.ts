@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { ICategory } from '../../../shared/models/category.interface';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { toObjectId } from '../shared/object-id.function';
+import { Types } from 'mongoose';
 
 @Controller('categories')
 export class CategoryController {
@@ -12,14 +13,28 @@ export class CategoryController {
 
   @Get()
   async getAll(@Query() queries) {
-    const categories = await this.categoryService.findAll();
-    return categories.map(cat => cat.toJSON());
+    try {
+      const categories = await this.categoryService.findAll();
+      return categories.map(cat => cat.toJSON());
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Get(':slug')
   async getOne(@Param('slug') slug: string) {
-    const category = await this.categoryService.findOne({ slug: slug });
-    return category.toJSON();
+    let exist;
+    try {
+      exist = await this.categoryService.findOne({ slug: slug });
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    if (!exist) {
+      throw new HttpException(`Category with url '${slug}' not found`, HttpStatus.NOT_FOUND);
+    }
+
+    return exist.toJSON();
   }
 
   @Post()
@@ -35,27 +50,26 @@ export class CategoryController {
 
     let exist;
     try {
-      exist = await this.categoryService.findOne({ url: category.slug });
+      exist = await this.categoryService.findOne({ slug: category.slug });
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (exist) {
-      throw new HttpException(`Category with url ${category.name} already exists`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`Category with url '${category.slug}' already exists`, HttpStatus.BAD_REQUEST);
     }
 
     try {
-      const result = await this.categoryService.createCategory(category);
-      return result;
+      return await this.categoryService.createCategory(category);
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  @Put(':id')
+  @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() category: ICategory) {
 
-    const objectId = toObjectId(id, () => { throw new HttpException(`Invalid category ID`, HttpStatus.BAD_REQUEST); });
+    const objectId = this.toCategoryObjectId(id);
 
     let exist;
     try {
@@ -65,16 +79,11 @@ export class CategoryController {
     }
 
     if (!exist) {
-      throw new HttpException(`Category '${id}' not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(`Category with id '${id}' not found`, HttpStatus.NOT_FOUND);
     }
 
-    Object.keys(category).forEach(key => {
-      exist[key] = category[key];
-    });
-
     try {
-      const updated = await this.categoryService.update(objectId, exist);
-      return updated.toJSON();
+      return await this.categoryService.updateCategory(objectId, exist, category);
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -83,13 +92,16 @@ export class CategoryController {
   @Delete(':id')
   async deleteOne(@Param('id') id: string) {
 
-    const objectId = toObjectId(id, () => { throw new HttpException(`Invalid category ID`, HttpStatus.BAD_REQUEST); });
+    const objectId = this.toCategoryObjectId(id);
 
     try {
-      const deleted = await this.categoryService.delete({ '_id': objectId });
-      return deleted.toJSON();
+      return await this.categoryService.deleteCategory(objectId);
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  private toCategoryObjectId(id: string): Types.ObjectId {
+    return toObjectId(id, () => { throw new HttpException(`Invalid category ID`, HttpStatus.BAD_REQUEST); });
   }
 }

@@ -9,7 +9,7 @@ export class Category extends BaseModel<Category> implements ICategory {
   @prop({ required: true })
   name: string;
 
-  @prop({ required: true, unique: true })
+  @prop({ required: true, unique: true, index: true })
   slug: string; // TODO add validation to spaces, only latin chars, number of chars
 
   @prop({ default: true })
@@ -18,10 +18,10 @@ export class Category extends BaseModel<Category> implements ICategory {
   @prop({ default: null })
   parentId: string;
 
-  @arrayProp({ items: CategoryAncestor })
+  @arrayProp({ _id: false, items: CategoryAncestor })
   ancestors?: CategoryAncestor[];
 
-  @prop()
+  @prop({ _id: false })
   meta?: MetaTags;
 
   @prop()

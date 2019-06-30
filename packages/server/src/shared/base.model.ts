@@ -24,6 +24,6 @@ export const baseSchemaOptions: SchemaOptions = {
   timestamps: true,
   toJSON: {
     virtuals: true,
-    getters: true,
+    getters: true
   },
 };

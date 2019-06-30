@@ -12,15 +12,29 @@ export class ProductController {
 
   @Get()
   async getAll() {
-    const products = await this.productService.findAll();
+    try {
+      const products = await this.productService.findAll();
+      return products.map(p => p.toJSON());
 
-    return products.map(p => p.toJSON());
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Get(':slug')
   async getOne(@Param('slug') slug: string) {
-    const product = await this.productService.findOne({ slug: slug });
-    return product;
+    let product;
+    try {
+      product = await this.productService.findOne({ slug: slug });
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    if (!product) {
+      throw new HttpException(`Product with url '${slug} not found'`, HttpStatus.NOT_FOUND);
+    }
+
+    return product.toJSON();
   }
 
   @Post()
@@ -38,8 +52,7 @@ export class ProductController {
     }
 
     try {
-      const result = await this.productService.createProduct(product);
-      return result;
+      return await this.productService.createProduct(product);
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -48,7 +61,7 @@ export class ProductController {
   @Patch(':id')
   async updateOne(@Param('id') productId: string, @Body() productDto: ProductDto) {
 
-    const objectProductId = this.toObjectProductId(productId);
+    const objectProductId = this.toProductObjectId(productId);
 
     let exist;
     try {
@@ -61,18 +74,26 @@ export class ProductController {
       throw new HttpException(`Product with url '${productDto.slug}' not found`, HttpStatus.NOT_FOUND);
     }
 
-    return await this.productService.updateProduct(exist, productDto);
+    try {
+      return await this.productService.updateProduct(exist, productDto);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Delete(':id')
-  deleteOne(@Param('id') productId: string) {
+  async deleteOne(@Param('id') productId: string) {
 
-    const objectProductId = this.toObjectProductId(productId);
+    const objectProductId = this.toProductObjectId(productId);
 
-    return this.productService.deleteProduct(objectProductId);
+    try {
+      return await this.productService.deleteProduct(objectProductId);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  private toObjectProductId(productId: string): Types.ObjectId {
+  private toProductObjectId(productId: string): Types.ObjectId {
     return toObjectId(productId, () => { throw new HttpException(`Invalid product ID`, HttpStatus.BAD_REQUEST); });
   }
 }

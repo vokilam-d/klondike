@@ -4,6 +4,7 @@ import { ProductService } from './product.service';
 import { Product } from './models/product.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { InventoryModule } from '../inventory/inventory.module';
+import { PageRegistryModule } from '../page-registry/page-registry.module';
 
 const productModel = {
   name: Product.modelName,
@@ -14,7 +15,8 @@ const productModel = {
 @Module({
   imports: [
     MongooseModule.forFeature([productModel]),
-    InventoryModule
+    InventoryModule,
+    PageRegistryModule
   ],
   controllers: [ProductController],
   providers: [ProductService],

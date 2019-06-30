@@ -8,7 +8,7 @@ export class Product extends BaseModel<Product> implements IProduct {
   @prop({ required: true })
   name: string;
 
-  @prop({ required: true })
+  @prop({ required: true, index: true })
   slug: string;
 
   @prop({ required: true })

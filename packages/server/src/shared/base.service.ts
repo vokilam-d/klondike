@@ -39,11 +39,7 @@ export class BaseService<T extends Typegoose> {
     return this._model.create(item);
   }
 
-  async update(id: any, item: InstanceType<T>): Promise<InstanceType<T>> {
-    return this._model.findOneAndUpdate({ _id: id }, item, { 'new': true }).exec();
-  }
-
-  async delete(filter: any = {}): Promise<InstanceType<T>> {
+  async deleteOne(filter: any = {}): Promise<InstanceType<T>> {
     return this._model.findOneAndDelete(filter).exec();
   }
 
