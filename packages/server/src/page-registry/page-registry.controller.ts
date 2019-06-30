@@ -1,7 +1,7 @@
 import { Controller, Get, HttpException, HttpStatus, Param } from '@nestjs/common';
 import { PageRegistryService } from './page-registry.service';
 
-@Controller('page-registry')
+@Controller('pages')
 export class PageRegistryController {
 
   constructor(private readonly pageRegistryService: PageRegistryService) {
