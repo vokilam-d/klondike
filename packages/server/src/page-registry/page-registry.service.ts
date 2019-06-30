@@ -13,6 +13,10 @@ export class PageRegistryService extends BaseService<PageRegistry> {
     this._model = _pageRegistryModel;
   }
 
+  async findPage(slug: string) {
+    return await this.findOne({ slug: slug });
+  }
+
   async createPageRegistry(pageRegistry: IPageRegistry): Promise<any> {
     const page = await PageRegistry.createModel();
     page.slug = pageRegistry.slug;

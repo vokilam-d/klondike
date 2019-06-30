@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PageRegistry } from './models/page-registry.model';
 import { PageRegistryService } from './page-registry.service';
+import { PageRegistryController } from './page-registry.controller';
 
 const pageRegistryModel = {
   name: PageRegistry.modelName,
@@ -18,6 +19,9 @@ const pageRegistryModel = {
   ],
   exports: [
     PageRegistryService
+  ],
+  controllers: [
+    PageRegistryController
   ]
 })
 export class PageRegistryModule {}
