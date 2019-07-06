@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus, Param } from '@nestjs/common';
+import { Controller, Get, Param, Req } from '@nestjs/common';
 import { PageRegistryService } from './page-registry.service';
 
 @Controller('pages')
@@ -8,18 +8,7 @@ export class PageRegistryController {
   }
 
   @Get(':slug')
-  async findPage(@Param(':slug') slug: string) {
-    let found;
-    try {
-      found = await this.pageRegistryService.findPage(slug);
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    if (!found) {
-      throw new HttpException(`Page with url ${slug} not found`, HttpStatus.NOT_FOUND);
-    }
-
-    return found;
+  findPage(@Param('slug') slug: string, @Req() req) {
+    return this.pageRegistryService.getPageType(slug);
   }
 }

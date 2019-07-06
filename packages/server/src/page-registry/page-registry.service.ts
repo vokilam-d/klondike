@@ -13,8 +13,19 @@ export class PageRegistryService extends BaseService<PageRegistry> {
     this._model = _pageRegistryModel;
   }
 
-  async findPage(slug: string) {
-    return await this.findOne({ slug: slug });
+  async getPageType(slug: string): Promise<boolean> {
+    let found;
+    try {
+      found = await this.findOne({ slug: slug });
+    } catch (ex) {
+      throw new HttpException(ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    if (!found) {
+      throw new HttpException(`Page with url '${slug}' not found`, HttpStatus.NOT_FOUND);
+    }
+
+    return found.type;
   }
 
   async createPageRegistry(pageRegistry: IPageRegistry): Promise<any> {
