@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-top-menu',
+  selector: 'top-menu',
   templateUrl: './top-menu.component.html',
   styleUrls: ['./top-menu.component.scss']
 })
 export class TopMenuComponent implements OnInit {
+
+  @Input() isInSidebar: boolean = false;
 
   constructor() { }
 
