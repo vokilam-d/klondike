@@ -1,7 +1,7 @@
 import { InstanceType, ModelType, pre, prop, Typegoose } from 'typegoose';
 import { SchemaOptions } from 'mongoose';
 
-@pre<T>('findOneAndUpdate', function () {
+@pre<any>('findOneAndUpdate', function () {
   this._update.updatedAt = new Date();
 })
 export abstract class BaseModel<T> extends Typegoose {
