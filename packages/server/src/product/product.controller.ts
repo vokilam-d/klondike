@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post
+} from '@nestjs/common';
 import { ProductService } from './product.service';
 import { toObjectId } from '../shared/object-id.function';
 import { ProductDto } from '../../../shared/dtos/product.dto';
@@ -12,26 +22,16 @@ export class ProductController {
 
   @Get()
   async getAll() {
-    try {
-      const products = await this.productService.findAll();
-      return products.map(p => p.toJSON());
-
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const products = await this.productService.findAll();
+    return products.map(p => p.toJSON());
   }
 
   @Get(':slug')
   async getOne(@Param('slug') slug: string) {
-    let product;
-    try {
-      product = await this.productService.findOne({ slug: slug });
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const product = await this.productService.findOne({ slug: slug });
 
     if (!product) {
-      throw new HttpException(`Product with url '${slug} not found'`, HttpStatus.NOT_FOUND);
+      throw new NotFoundException(`Product with url '${slug} not found'`);
     }
 
     return product.toJSON();
@@ -40,22 +40,13 @@ export class ProductController {
   @Post()
   async addOne(@Body() product: ProductDto) {
 
-    let exist;
-    try {
-      exist = await this.productService.findOne({ slug: product.slug });
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const exist = await this.productService.findOne({ slug: product.slug });
 
     if (exist) {
-      throw new HttpException(`Product with url '${product.slug}' already exists`, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(`Product with url '${product.slug}' already exists`);
     }
 
-    try {
-      return await this.productService.createProduct(product);
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return await this.productService.createProduct(product);
   }
 
   @Patch(':id')
@@ -63,22 +54,13 @@ export class ProductController {
 
     const objectProductId = this.toProductObjectId(productId);
 
-    let exist;
-    try {
-      exist = await this.productService.findById(objectProductId);
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const exist = await this.productService.findById(objectProductId);
 
     if (!exist) {
-      throw new HttpException(`Product with url '${productDto.slug}' not found`, HttpStatus.NOT_FOUND);
+      throw new NotFoundException(`Product with url '${productDto.slug}' not found`);
     }
 
-    try {
-      return await this.productService.updateProduct(exist, productDto);
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return await this.productService.updateProduct(exist, productDto);
   }
 
   @Delete(':id')
@@ -86,14 +68,10 @@ export class ProductController {
 
     const objectProductId = this.toProductObjectId(productId);
 
-    try {
-      return await this.productService.deleteProduct(objectProductId);
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return await this.productService.deleteProduct(objectProductId);
   }
 
   private toProductObjectId(productId: string): Types.ObjectId {
-    return toObjectId(productId, () => { throw new HttpException(`Invalid product ID`, HttpStatus.BAD_REQUEST); });
+    return toObjectId(productId, () => { throw new BadRequestException(`Invalid product ID`); });
   }
 }

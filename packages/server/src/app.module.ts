@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CategoryModule } from './category/category.module';
-import { NotFoundExceptionFilter } from './shared/filters/not-found-exception.filter';
+import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { SharedModule } from './shared/shared.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from './shared/config/config.service';
@@ -30,7 +30,7 @@ import { InventoryModule } from './inventory/inventory.module';
     CartModule,
     InventoryModule
   ],
-  providers: [NotFoundExceptionFilter]
+  providers: [GlobalExceptionFilter]
 })
 export class AppModule {
   static port: number;

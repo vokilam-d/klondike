@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BaseService } from '../base.service';
 import { Counter } from './counter.model';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,19 +13,14 @@ export class CounterService extends BaseService<Counter> {
   }
 
   async getCounter(collectionName: string): Promise<number> {
-    try {
-      const counter = await this._model
-        .findOneAndUpdate(
-          { _id: collectionName },
-          { $inc: { seq: 1 } },
-          { 'new': true, 'upsert': true }
-        )
-        .exec();
+    const counter = await this._model
+      .findOneAndUpdate(
+        { _id: collectionName },
+        { $inc: { seq: 1 } },
+        { 'new': true, 'upsert': true }
+      )
+      .exec();
 
-      return counter.seq;
-
-    } catch (ex) {
-      throw new HttpException(ex, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return counter.seq;
   }
 }

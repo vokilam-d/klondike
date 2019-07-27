@@ -2,19 +2,16 @@ import { NestFactory } from '@nestjs/core';
 import * as helmet from 'helmet';
 import * as compression from 'compression';
 import * as bodyParser from 'body-parser';
-import { join } from 'path';
 import { AppModule } from './app.module';
-import { NotFoundExceptionFilter } from './shared/filters/not-found-exception.filter';
-
-export const distFolder = join(process.cwd(), '..', '..', 'dist');
+import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
 
-  const notFoundExceptionFilter = app.get<NotFoundExceptionFilter>(NotFoundExceptionFilter);
-  app.setGlobalPrefix('/api');
-  app.useGlobalFilters(notFoundExceptionFilter);
+  const globalExceptionFilter = app.get<GlobalExceptionFilter>(GlobalExceptionFilter);
+  app.setGlobalPrefix('/api/v1');
+  app.useGlobalFilters(globalExceptionFilter);
 
   app.enableCors();
   app.use(helmet());

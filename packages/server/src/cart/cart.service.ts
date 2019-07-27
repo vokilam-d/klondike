@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cart } from './models/cart.model';
 import { InstanceType, ModelType } from 'typegoose';
@@ -22,15 +22,10 @@ export class CartService extends BaseService<Cart> {
 
   async addToCart(cartId: Types.ObjectId, sku: string, qty: number): Promise<InstanceType<Cart>> {
 
-    let existProduct: InstanceType<Product>;
-    try {
-      existProduct = await this.productService.findOne({ 'sku': sku });
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const existProduct: InstanceType<Product> = await this.productService.findOne({ 'sku': sku });
 
     if (!existProduct) {
-      throw new HttpException(`Product with sku '${sku}' doesn't exist`, HttpStatus.NOT_FOUND);
+      throw new NotFoundException(`Product with sku '${sku}' doesn't exist`);
     }
 
     const cartItem: CartItem = {
@@ -43,58 +38,43 @@ export class CartService extends BaseService<Cart> {
 
     const updatedInventory = await this.inventory.addCarted(sku, qty, cartId);
     if (!updatedInventory) {
-      throw new HttpException(`Not enough products '${sku}' in stock`, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(`Not enough products '${sku}' in stock`);
     }
 
-    let updatedCart;
-    try {
-      updatedCart = await this._model.findOneAndUpdate(
-        { '_id': cartId, 'status': ECartStatus.ACTIVE },
-        { '$push': { 'items': cartItem } },
-        { 'upsert': true, 'new': true }
-      );
-      return updatedCart;
-
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const updatedCart = await this._model.findOneAndUpdate(
+      { '_id': cartId, 'status': ECartStatus.ACTIVE },
+      { '$push': { 'items': cartItem } },
+      { 'upsert': true, 'new': true }
+    );
+    return updatedCart;
   }
 
   async setQtyInCart(cartId: Types.ObjectId, sku: string, newQty: number, oldQty: number): Promise<InstanceType<Cart>> {
 
     const updatedInventory = await this.inventory.updateCartedQty(sku, newQty, oldQty, cartId);
     if (!updatedInventory) {
-      throw new HttpException(`Not enough products '${sku}' in stock`, HttpStatus.CONFLICT);
+      throw new ConflictException(`Not enough products '${sku}' in stock`);
     }
 
-    try {
-      const updated = await this._model.findOneAndUpdate(
-        { '_id': cartId, 'items.sku': sku },
-        { '$set': { 'items.$.qty': newQty } },
-        { 'new': true }
-      );
+    const updated = await this._model.findOneAndUpdate(
+      { '_id': cartId, 'items.sku': sku },
+      { '$set': { 'items.$.qty': newQty } },
+      { 'new': true }
+    );
 
-      return updated;
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return updated;
   }
 
   async removeFromCart(cartId: Types.ObjectId, sku: string, qty: number): Promise<InstanceType<Cart>> {
 
     await this.inventory.returnCartedToStock(sku, qty, cartId);
 
-    try {
-      const updated = await this._model.findOneAndUpdate(
-        { '_id': cartId },
-        { '$pull': { 'items': { 'sku': sku } } },
-        { 'new': true }
-      );
-
-      return updated;
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const updated = await this._model.findOneAndUpdate(
+      { '_id': cartId },
+      { '$pull': { 'items': { 'sku': sku } } },
+      { 'new': true }
+    );
+    return updated;
   }
 
 }

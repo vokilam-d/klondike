@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Inventory } from './models/inventory.model';
 import { InstanceType, ModelType } from 'typegoose';
@@ -20,40 +20,26 @@ export class InventoryService extends BaseService<Inventory> {
     inventory.productId = productId;
     inventory.qty = qty;
 
-    try {
-      const created = await this.create(inventory);
-      return created;
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const created = await this.create(inventory);
+    return created;
   }
 
   async setInventoryQty(sku: string, qty: number) {
 
-    let found: InstanceType<Inventory>;
-    try {
-      found = await this._model.findOne({ '_id': sku });
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const found: InstanceType<Inventory> = await this._model.findOne({ '_id': sku });
 
     const qtyInCarts = found.carted.reduce((sum, cart) => sum + cart.qty, 0);
 
     if (qtyInCarts > qty) {
-      throw new HttpException(`Cannot set quantity: more than ${qty} items are saved in carts`, HttpStatus.CONFLICT);
+      throw new ConflictException(`Cannot set quantity: more than ${qty} items are saved in carts`);
     }
 
-    try {
-      const updated = this._model.findOneAndUpdate(
-        { '_id': sku },
-        { 'qty': qty - qtyInCarts },
-        { 'new': true }
-      );
-      return updated;
-
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const updated = this._model.findOneAndUpdate(
+      { '_id': sku },
+      { 'qty': qty - qtyInCarts },
+      { 'new': true }
+    );
+    return updated;
   }
 
   async addCarted(sku: string, qty: number, cartId: Types.ObjectId) {
@@ -67,12 +53,8 @@ export class InventoryService extends BaseService<Inventory> {
     };
     const options = { 'new': true };
 
-    try {
-      const updated = this._model.findOneAndUpdate(query, update, options);
-      return updated;
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const updated = this._model.findOneAndUpdate(query, update, options);
+    return updated;
   }
 
   async updateCartedQty(sku: string, newQty: number, oldQty: number, cartId: Types.ObjectId) {
@@ -89,12 +71,8 @@ export class InventoryService extends BaseService<Inventory> {
     };
     const options = { 'new': true };
 
-    try {
-      const updated = await this._model.findOneAndUpdate(query, update, options);
-      return updated;
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const updated = await this._model.findOneAndUpdate(query, update, options);
+    return updated;
   }
 
   async returnCartedToStock(sku: string, qty: number, cartId: Types.ObjectId) {
@@ -108,11 +86,7 @@ export class InventoryService extends BaseService<Inventory> {
       '$pull': { 'carted': { 'cartId': cartId } }
     };
 
-    try {
-      const updated = await this._model.findOneAndUpdate(query, update);
-      return updated;
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const updated = await this._model.findOneAndUpdate(query, update);
+    return updated;
   }
 }

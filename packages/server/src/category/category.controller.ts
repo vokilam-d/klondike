@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query
+} from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { ICategory } from '../../../shared/models/category.interface';
 import { transliterate } from '../shared/helpers/transliterate.function';
@@ -13,25 +24,16 @@ export class CategoryController {
 
   @Get()
   async getAll(@Query() queries) {
-    try {
-      const categories = await this.categoryService.findAll();
-      return categories.map(cat => cat.toJSON());
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const categories = await this.categoryService.findAll();
+    return categories.map(cat => cat.toJSON());
   }
 
   @Get(':slug')
   async getOne(@Param('slug') slug: string) {
-    let exist;
-    try {
-      exist = await this.categoryService.findOne({ slug: slug });
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const exist = await this.categoryService.findOne({ slug: slug });
 
     if (!exist) {
-      throw new HttpException(`Category with url '${slug}' not found`, HttpStatus.NOT_FOUND);
+      throw new NotFoundException(`Category with url '${slug}' not found`);
     }
 
     return exist.toJSON();
@@ -41,29 +43,20 @@ export class CategoryController {
   async addOne(@Body() category: ICategory) {
 
     if (!category.name) {
-      throw new HttpException('Category name is required', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Category name is required');
     }
 
     if (!category.slug) {
       category.slug = transliterate(category.name);
     }
 
-    let exist;
-    try {
-      exist = await this.categoryService.findOne({ slug: category.slug });
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const exist = await this.categoryService.findOne({ slug: category.slug });
 
     if (exist) {
-      throw new HttpException(`Category with url '${category.slug}' already exists`, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(`Category with url '${category.slug}' already exists`);
     }
 
-    try {
-      return await this.categoryService.createCategory(category);
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return await this.categoryService.createCategory(category);
   }
 
   @Patch(':id')
@@ -71,22 +64,13 @@ export class CategoryController {
 
     const objectId = this.toCategoryObjectId(id);
 
-    let exist;
-    try {
-      exist = await this.categoryService.findById(objectId);
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const exist = await this.categoryService.findById(objectId);
 
     if (!exist) {
-      throw new HttpException(`Category with id '${id}' not found`, HttpStatus.NOT_FOUND);
+      throw new NotFoundException(`Category with id '${id}' not found`);
     }
 
-    try {
-      return await this.categoryService.updateCategory(objectId, exist, category);
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return this.categoryService.updateCategory(objectId, exist, category);
   }
 
   @Delete(':id')
@@ -94,14 +78,10 @@ export class CategoryController {
 
     const objectId = this.toCategoryObjectId(id);
 
-    try {
-      return await this.categoryService.deleteCategory(objectId);
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return this.categoryService.deleteCategory(objectId);
   }
 
   private toCategoryObjectId(id: string): Types.ObjectId {
-    return toObjectId(id, () => { throw new HttpException(`Invalid category ID`, HttpStatus.BAD_REQUEST); });
+    return toObjectId(id, () => { throw new BadRequestException(`Invalid category ID`); });
   }
 }

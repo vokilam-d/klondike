@@ -184,7 +184,7 @@
   }
 
   &__input {
-    flex-grow: 2;
+    width: 100%;
     padding: 12px 20px 13px;
     border: 1px solid $borderColor;
     border-right: none;
@@ -196,8 +196,7 @@
     flex-shrink: 0;
     width: 110px;
     padding: 12px 0;
-    background: orange;
-    border-radius: 0 3px 3px 0;
+    border-radius: 0 3x 3px 0;
     font-size: 16px;
   }
 

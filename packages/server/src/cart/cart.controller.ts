@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Param, Post, Put } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { InstanceType } from 'typegoose';
 import { toObjectId } from '../shared/object-id.function';
@@ -17,12 +17,7 @@ export class CartController {
     const cartObjectId = this.toCartObjectId(cartId);
     cartDto.qty = cartDto.qty ? cartDto.qty : 1;
 
-    let foundCart: InstanceType<Cart>;
-    try {
-      foundCart = await this.cartService.findOne({ '_id': cartObjectId, 'items.sku': cartDto.sku }, { 'items.$.sku': 1 });
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const foundCart: InstanceType<Cart> = await this.cartService.findOne({ '_id': cartObjectId, 'items.sku': cartDto.sku }, { 'items.$.sku': 1 });
 
     if (foundCart) {
       const oldQty = foundCart.items[0].qty;
@@ -38,15 +33,10 @@ export class CartController {
   async updateQty(@Param('id') cartId: string, @Body() cartDto: CartDto) {
     const cartObjectId = this.toCartObjectId(cartId);
 
-    let foundItemInCart: InstanceType<Cart>;
-    try {
-      foundItemInCart = await this.cartService.findOne({ '_id': cartObjectId, 'items.sku': cartDto.sku }, { 'items.$.sku': 1 });
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const foundItemInCart: InstanceType<Cart> = await this.cartService.findOne({ '_id': cartObjectId, 'items.sku': cartDto.sku }, { 'items.$.sku': 1 });
 
     if (!foundItemInCart) {
-      throw new HttpException(`No '${cartId}' cart or no sku '${cartDto.sku}' in cart`, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(`No '${cartId}' cart or no sku '${cartDto.sku}' in cart`);
     }
 
     return this.cartService.setQtyInCart(cartObjectId, cartDto.sku, cartDto.qty, foundItemInCart.items[0].qty);
@@ -55,15 +45,10 @@ export class CartController {
   @Delete(':id/items/:sku')
   async removeFromCart(@Param('id') cartId: string, @Param('sku') sku: string) {
 
-    let foundItemInCart: InstanceType<Cart>;
-    try {
-      foundItemInCart = await this.cartService.findOne({ '_id': cartId, 'items.sku': sku }, { 'items.$.sku': 1 });
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const foundItemInCart: InstanceType<Cart> = await this.cartService.findOne({ '_id': cartId, 'items.sku': sku }, { 'items.$.sku': 1 });
 
     if (!foundItemInCart) {
-      throw new HttpException(`Cart '${cartId}' doesn't exist or has no SKU '${sku}'`, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(`Cart '${cartId}' doesn't exist or has no SKU '${sku}'`);
     }
 
     const cartObjectId = this.toCartObjectId(cartId);
@@ -71,6 +56,6 @@ export class CartController {
   }
 
   private toCartObjectId(cartId: string): Types.ObjectId {
-    return toObjectId(cartId, () => { throw new HttpException(`Invalid cart ID`, HttpStatus.BAD_REQUEST); });
+    return toObjectId(cartId, () => { throw new BadRequestException(`Invalid cart ID`); });
   }
 }
