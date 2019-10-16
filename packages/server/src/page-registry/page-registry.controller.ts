@@ -7,6 +7,11 @@ export class PageRegistryController {
   constructor(private readonly pageRegistryService: PageRegistryService) {
   }
 
+  @Get()
+  findAll(@Req() req) {
+    return this.pageRegistryService.getAllPages();
+  }
+
   @Get(':slug')
   findPage(@Param('slug') slug: string, @Req() req) {
     return this.pageRegistryService.getPageType(slug);

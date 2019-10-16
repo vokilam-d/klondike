@@ -15,6 +15,10 @@ export class PageRegistryService extends BaseService<PageRegistry> {
     this._model = _pageRegistryModel;
   }
 
+  getAllPages() {
+    return this._model.find();
+  }
+
   async getPageType(slug: string): Promise<string> {
     const found = await this.findOne({ slug: slug });
 
