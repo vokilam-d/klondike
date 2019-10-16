@@ -1,7 +1,7 @@
 @import "variables";
 @import "mixins";
 
-.top-menu {
+.service-menu {
   display: none;
 
   @include respond-to($media_medium) {
@@ -144,7 +144,7 @@
     border-bottom: 1px solid $borderColor;
   }
 
-  &__top-menu {
+  &__service-menu {
     margin: 40px 0 0;
 
     @include respond-to($media_medium) {

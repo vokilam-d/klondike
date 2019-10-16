@@ -1,7 +1,7 @@
 @import "variables";
 @import "mixins";
 
-.top-menu {
+.service-menu {
   &__content {
     display: flex;
     align-items: center;
@@ -12,7 +12,7 @@
     padding: 13px 15px;
     font-size: 13px;
     white-space: nowrap;
-    transition
+    transition: all 0.2s ease;
 
     &:hover {
       color: $primary;
