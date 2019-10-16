@@ -1,0 +1,30 @@
+@import "variables";
+@import "mixins";
+
+.top-menu {
+  &__content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__link {
+    padding: 13px 15px;
+    font-size: 13px;
+    white-space: nowrap;
+    transition
+
+    &:hover {
+      color: $primary;
+    }
+
+    @include respond-to($media_large) {
+      padding-left: 25px;
+      padding-right: 25px;
+    }
+  }
+
+  &__count {
+    font-weight: 600;
+  }
+}

@@ -15,8 +15,8 @@ export class HeaderComponent implements OnInit {
   ngOnInit() {
   }
 
-  search() {
-    console.log('search!');
+  onSearch(event: any) {
+    console.log(event);
   }
 
   openMenu() {

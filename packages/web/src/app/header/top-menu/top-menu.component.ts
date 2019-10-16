@@ -7,7 +7,7 @@ import { Component, Input, OnInit } from '@angular/core';
 })
 export class TopMenuComponent implements OnInit {
 
-  @Input() isInSidebar: boolean = false;
+  @Input() vertical: boolean = false;
 
   constructor() { }
 

@@ -1,20 +1,24 @@
-@import "../../assets/styles/abstracts/variables";
-@import "../../assets/styles/abstracts/mixins";
+@import "variables";
+@import "mixins";
 
 .top-menu {
   display: none;
+
+  @include respond-to($media_medium) {
+    display: block;
+  }
 }
 
 .header {
   padding: 10px 0;
   border-bottom: 1px solid $borderColor;
 
-  @include respond-to('medium') {
+  @include respond-to($media_medium) {
     padding: 20px 0;
   }
 
   &__content {
-    @include respond-to('medium') {
+    @include respond-to($media_medium) {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -39,7 +43,7 @@
   &__search-bar {
     display: none;
 
-    @include respond-to('medium') {
+    @include respond-to($media_medium) {
       display: block;
       flex-grow: 2;
       margin: 0 40px;
@@ -49,7 +53,7 @@
   &__toolbar {
     margin: 20px 0 0;
 
-    @include respond-to('medium') {
+    @include respond-to($media_medium) {
       margin-top: 0;
     }
   }
@@ -64,13 +68,13 @@
     padding: 5px 0;
     text-align: center;
 
-    @include respond-to('medium') {
+    @include respond-to($media_medium) {
       padding: 10px;
     }
 
     &--menu,
     &--search {
-      @include respond-to('medium') {
+      @include respond-to($media_medium) {
         display: none;
       }
     }
@@ -139,12 +143,20 @@
     padding: 12px 40px 12px 15px;
     border-bottom: 1px solid $borderColor;
   }
+
+  &__top-menu {
+    margin: 40px 0 0;
+
+    @include respond-to($media_medium) {
+
+    }
+  }
 }
 
 .search-bar {
   display: none;
 
-  @include respond-to('medium') {
+  @include respond-to($media_medium) {
     display: block;
   }
 
@@ -162,7 +174,7 @@
     cursor: pointer;
     z-index: 5;
 
-    @include respond-to('medium') {
+    @include respond-to($media_medium) {
       display: none;
     }
   }
@@ -172,32 +184,14 @@
     top: 70px;
     left: 20px;
     right: 20px;
-    display: flex;
     z-index: 6;
 
-    @include respond-to('medium') {
+    @include respond-to($media_medium) {
       position: static;
       top: auto;
       left: auto;
       right: auto;
     }
-  }
-
-  &__input {
-    width: 100%;
-    padding: 12px 20px 13px;
-    border: 1px solid $borderColor;
-    border-right: none;
-    border-radius: 3px 0 0 3px;
-    font-size: 16px;
-  }
-
-  &__btn {
-    flex-shrink: 0;
-    width: 110px;
-    padding: 12px 0;
-    border-radius: 0 3x 3px 0;
-    font-size: 16px;
   }
 
   &__close-icon {

@@ -30,6 +30,11 @@
             "styles": [
               "src/assets/styles/main.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/assets/styles/abstracts"
+              ]
+            },
             "scripts": []
           },
           "configurations": {
@@ -65,8 +70,8 @@
             "browserTarget": "web:build",
             "open": true,
             "port": 4001,
-            "aot": true,
-            "liveReload": false
+            "aot": false,
+            "liveReload": true
           },
           "configurations": {
             "production": {
