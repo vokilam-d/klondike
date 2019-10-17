@@ -1,0 +1,65 @@
+@import "variables";
+
+.footer {
+  padding: 40px 0 70px;
+  border-top: 1px solid $borderColor;
+
+  &__content {
+  }
+
+  &__block {
+    margin: 50px 0 0;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+}
+
+.contacts {
+  padding: 0 0 0 40px;
+  font-size: 16px;
+
+  &__title {
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  &__phones {
+    margin: 10px 0 0;
+  }
+
+  &__phone {
+    display: block;
+    padding: 5px 0;
+  }
+
+  &__email {
+    margin: 10px 0 0;
+  }
+}
+
+.menu {
+  padding: 0 0 0 40px;
+  font-size: 16px;
+
+  &__links {
+  }
+
+  &__link {
+    display: block;
+    padding: 7px 0;
+  }
+}
+
+.methods {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &__item {
+    display: block;
+    width: 60px;
+    margin: 0 20px;
+  }
+}

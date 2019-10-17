@@ -6,10 +6,6 @@
     "serve": "ng run web:serve",
     "build": "ng run web:build",
     "build:prod": "ng run web:build:production",
-    "compile:server_bak": "webpack --config webpack.server.config.js --progress --colors",
-    "build:ssr_bak": "npm run build:client-and-server-bundles && npm run compile:server",
-    "serve:ssr_bak": "node dist/server",
-    "build:client-and-server-bundles_bak": "ng build --prod && ng run web:server:production --bundleDependencies all",
     "serve:ssr": "node dist/server/main.js",
     "build:ssr": "ng build --prod && ng run web:server:production"
   },

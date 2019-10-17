@@ -2,25 +2,32 @@
 @import "mixins";
 
 .service-menu {
+  $menu: &;
+
   &__content {
     display: flex;
     align-items: center;
     justify-content: center;
+
+    #{$menu}--vertical & {
+      display: block;
+    }
   }
 
   &__link {
+    display: block;
     padding: 13px 15px;
     font-size: 13px;
     white-space: nowrap;
     transition: all 0.2s ease;
 
-    &:hover {
-      color: $primary;
-    }
-
     @include respond-to($media_large) {
       padding-left: 25px;
       padding-right: 25px;
+    }
+
+    &:hover {
+      color: $primary;
     }
   }
 
