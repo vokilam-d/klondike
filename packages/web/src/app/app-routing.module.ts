@@ -11,10 +11,14 @@ const routes: Routes = [
   },
   {
     matcher: (segments: UrlSegment[], group: UrlSegmentGroup, route: Route): UrlMatchResult => {
-      const path = segments.reduce((acc, segment) => (acc + (acc ? '/' : '') + segment.path), '');
+      const path = segments.map(s => s.path).join('/');
       route.loadChildren = dynamicModuleResolver(path);
+
       return {
-        consumed: segments
+        consumed: segments,
+        posParams: {
+          slug: segments[0]
+        }
       }
     },
     loadChildren: dynamicModuleResolver(),

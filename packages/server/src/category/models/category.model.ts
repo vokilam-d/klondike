@@ -25,10 +25,7 @@ export class Category extends BaseModel<Category> implements ICategory {
   meta?: MetaTags;
 
   @prop()
-  fullDescription?: string;
-
-  @prop()
-  shortDescription?: string;
+  description?: string;
 
   @prop()
   imageUrl?: string;
