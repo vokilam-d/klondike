@@ -1,4 +1,14 @@
 //custom reset (using normalize-css)
+html {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
 h1, h2, h3, h4, h5, h6, ul, ol, p {
   margin: 0;
   padding: 0;
