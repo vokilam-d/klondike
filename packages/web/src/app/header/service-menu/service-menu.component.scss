@@ -4,6 +4,12 @@
 .service-menu {
   $menu: &;
 
+  &--vertical {
+    .container {
+      max-width: 100%;
+    }
+  }
+
   &__content {
     display: flex;
     align-items: center;
