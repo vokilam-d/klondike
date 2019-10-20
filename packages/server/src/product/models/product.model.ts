@@ -32,7 +32,7 @@ export class Product extends BaseModel<Product> {
   @prop()
   shortDescription?: string;
 
-  @arrayProp({ items: String })
+  @arrayProp({ items: String, default: [] })
   mediaUrls?: string[];
 
   static collectionName: string = 'product';
