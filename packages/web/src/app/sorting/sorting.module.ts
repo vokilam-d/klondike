@@ -8,6 +8,9 @@ import { SortingComponent } from './sorting.component';
   declarations: [SortingComponent],
   imports: [
     CommonModule
+  ],
+  exports: [
+    SortingComponent
   ]
 })
 export class SortingModule { }

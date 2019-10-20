@@ -1,1 +1,8 @@
-<p>breadcrumbs works!</p>
+<ul class="breadcrumbs">
+  <li class="breadcrumbs__item">
+    <a class="breadcrumbs__link" routerLink="/">Главная</a>
+  </li>
+  <li class="breadcrumbs__item" *ngIf="item">
+    <a class="breadcrumbs__link" [routerLink]="item.slug">{{ item.name }}</a>
+  </li>
+</ul>

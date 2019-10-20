@@ -37,7 +37,6 @@ export class CategoryComponent implements OnInit {
     this.categoryService.fetchCategoryItems(this.category.id).subscribe(
       items => {
         this.items = items;
-        console.log(items);
       },
       error => console.warn(error)
     )

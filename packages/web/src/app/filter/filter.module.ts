@@ -8,6 +8,9 @@ import { FilterComponent } from './filter.component';
   declarations: [FilterComponent],
   imports: [
     CommonModule
+  ],
+  exports: [
+    FilterComponent
   ]
 })
 export class FilterModule { }
