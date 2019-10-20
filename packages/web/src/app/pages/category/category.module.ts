@@ -6,6 +6,8 @@ import { CategoryComponent } from './category.component';
 import { HeaderModule } from '../../header/header.module';
 import { FooterModule } from '../../footer/footer.module';
 import { HttpClientModule } from '@angular/common/http';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BrowserTransferStateModule } from '@angular/platform-browser';
 
 @NgModule({
   declarations: [CategoryComponent],
@@ -14,7 +16,7 @@ import { HttpClientModule } from '@angular/common/http';
     CategoryRoutingModule,
     HeaderModule,
     FooterModule,
-    HttpClientModule
+    BrowserTransferStateModule
   ]
 })
 export class CategoryModule { }
