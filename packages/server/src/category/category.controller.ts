@@ -23,18 +23,14 @@ export class CategoryController {
   }
 
   @Get()
-  async getAll(@Query() queries) {
+  async getAll(@Query() query) {
     const categories = await this.categoryService.findAll();
     return categories.map(cat => cat.toJSON());
   }
 
   @Get(':slug')
   async getOne(@Param('slug') slug: string) {
-    const exist = await this.categoryService.findOne({ slug: slug });
-
-    if (!exist) {
-      throw new NotFoundException(`Category with url '${slug}' not found`);
-    }
+    const exist = await this.categoryService.getCategory(slug);
 
     return exist.toJSON();
   }
@@ -79,6 +75,13 @@ export class CategoryController {
     const objectId = this.toCategoryObjectId(id);
 
     return this.categoryService.deleteCategory(objectId);
+  }
+
+  @Get(':id/items')
+  async getCategoryItems(@Param('id') id: string, @Query() query) {
+    const categoryId = this.toCategoryObjectId(id);
+
+    return this.categoryService.getCategoryItems(categoryId, query);
   }
 
   private toCategoryObjectId(id: string): Types.ObjectId {

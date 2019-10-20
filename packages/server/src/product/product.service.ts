@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../shared/base.service';
 import { Product } from './models/product.model';
 import { InjectModel } from '@nestjs/mongoose';
@@ -7,6 +7,7 @@ import { InventoryService } from '../inventory/inventory.service';
 import { ProductDto } from '../../../shared/dtos/product.dto';
 import { Types } from 'mongoose';
 import { PageRegistryService } from '../page-registry/page-registry.service';
+import { toObjectId } from '../shared/object-id.function';
 
 @Injectable()
 export class ProductService extends BaseService<Product> {
@@ -23,15 +24,16 @@ export class ProductService extends BaseService<Product> {
     const newProduct = Product.createModel();
 
     Object.keys(product).forEach(key => {
-      newProduct[key] = product[key];
+      if (key === 'categoryIds') {
+        newProduct.categoryIds = product.categoryIds.map(id => this.toProductObjectId(id));
+      } else {
+        newProduct[key] = product[key];
+      }
     });
 
     await this.inventoryService.createInventory(newProduct.sku, newProduct._id, product.qty);
 
     const result = await this.create(newProduct);
-    if (!result) {
-      return;
-    }
 
     this.createProductPageRegistry(product.slug);
     return result.toJSON();
@@ -54,10 +56,6 @@ export class ProductService extends BaseService<Product> {
       { new: true }
     ).exec();
 
-    if (!updated) {
-      return;
-    }
-
     this.updateProductPageRegistry(oldSlug, product.slug);
     return updated;
   }
@@ -68,11 +66,19 @@ export class ProductService extends BaseService<Product> {
     const deleted = await this.deleteOne({ '_id': productId });
 
     if (!deleted) {
-      return;
+      throw new NotFoundException(`Product with id '${productId}' not found`);
     }
 
     this.deleteProductPageRegistry(deleted.slug);
     return deleted;
+  }
+
+  findProductsByCategoryId(categoryId: Types.ObjectId, filter: any = {}) {
+    return this._model.find(
+      {
+        categoryIds: categoryId
+      },
+    ).exec();
   }
 
   private createProductPageRegistry(slug: string) {
@@ -91,5 +97,9 @@ export class ProductService extends BaseService<Product> {
 
   private deleteProductPageRegistry(slug: string) {
     return this.pageRegistryService.deletePageRegistry(slug);
+  }
+
+  toProductObjectId(productId: string): Types.ObjectId {
+    return toObjectId(productId, () => { throw new BadRequestException(`Invalid product ID`); });
   }
 }

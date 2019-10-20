@@ -1,9 +1,9 @@
 import { BaseModel, baseSchemaOptions } from '../../shared/base.model';
-import { IProduct } from '../../../../shared/models/product.interface';
 import { arrayProp, InstanceType, ModelType, prop } from 'typegoose';
 import { MetaTags } from '../../shared/models/meta-tags.model';
+import { Types } from 'mongoose';
 
-export class Product extends BaseModel<Product> implements IProduct {
+export class Product extends BaseModel<Product> {
 
   @prop({ required: true })
   name: string;
@@ -14,11 +14,11 @@ export class Product extends BaseModel<Product> implements IProduct {
   @prop({ required: true })
   sku: string;
 
-  @prop({ default: false })
+  @prop({ default: true })
   isEnabled: boolean;
 
-  @arrayProp({ items: String })
-  categoryIds: string[];
+  @arrayProp({ items: Types.ObjectId })
+  categoryIds: Types.ObjectId[];
 
   @prop({ default: 0 })
   price: number;

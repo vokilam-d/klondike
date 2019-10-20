@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../shared/base.service';
 import { Category } from './models/category.model';
 import { InjectModel } from '@nestjs/mongoose';
@@ -6,14 +6,26 @@ import { ModelType } from 'typegoose';
 import { ICategory } from '../../../shared/models/category.interface';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { Types } from 'mongoose';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class CategoryService extends BaseService<Category> {
 
   constructor(@InjectModel(Category.modelName) _categoryModel: ModelType<Category>,
-              private pageRegistryService: PageRegistryService) {
+              private pageRegistryService: PageRegistryService,
+              private productService: ProductService) {
     super();
     this._model = _categoryModel;
+  }
+
+  async getCategory(slug: string) {
+    const category = await this._model.findOne({ slug });
+
+    if (!category) {
+      throw new NotFoundException(`Category with url '${slug}' not found`);
+    }
+
+    return category;
   }
 
   async createCategory(category: ICategory): Promise<Category> {
@@ -63,6 +75,11 @@ export class CategoryService extends BaseService<Category> {
 
    this.deleteCategoryPageRegistry(deleted.slug);
    return deleted.toJSON();
+  }
+
+  async getCategoryItems(categoryId: Types.ObjectId, query: any) {
+    const products = await this.productService.findProductsByCategoryId(categoryId, query);
+    return products;
   }
 
   private createCategoryPageRegistry(slug: string) {

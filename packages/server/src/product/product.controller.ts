@@ -7,7 +7,7 @@ import {
   NotFoundException,
   Param,
   Patch,
-  Post
+  Post, Query
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { toObjectId } from '../shared/object-id.function';
@@ -21,8 +21,8 @@ export class ProductController {
   }
 
   @Get()
-  async getAll() {
-    const products = await this.productService.findAll();
+  async getAll(@Query() query) {
+    const products = await this.productService.findAll(query);
     return products.map(p => p.toJSON());
   }
 
@@ -52,7 +52,7 @@ export class ProductController {
   @Patch(':id')
   async updateOne(@Param('id') productId: string, @Body() productDto: ProductDto) {
 
-    const objectProductId = this.toProductObjectId(productId);
+    const objectProductId = this.productService.toProductObjectId(productId);
 
     const exist = await this.productService.findById(objectProductId);
 
@@ -66,12 +66,8 @@ export class ProductController {
   @Delete(':id')
   async deleteOne(@Param('id') productId: string) {
 
-    const objectProductId = this.toProductObjectId(productId);
+    const objectProductId = this.productService.toProductObjectId(productId);
 
     return await this.productService.deleteProduct(objectProductId);
-  }
-
-  private toProductObjectId(productId: string): Types.ObjectId {
-    return toObjectId(productId, () => { throw new BadRequestException(`Invalid product ID`); });
   }
 }
