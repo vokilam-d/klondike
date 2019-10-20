@@ -10,6 +10,10 @@ export class CategoryService {
   }
 
   fetchCategory(slug: string) {
-    return this.http.get(`http://localhost:3500/api/v1/categories/${slug}`);
+    return this.http.get<any>(`http://localhost:3500/api/v1/categories/${slug}`);
+  }
+
+  fetchCategoryItems(id: string) {
+    return this.http.get<any[]>(`http://localhost:3500/api/v1/categories/${id}/items`);
   }
 }
