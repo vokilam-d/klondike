@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'category-item',
@@ -8,11 +8,18 @@ import { Component, Input, OnInit } from '@angular/core';
 export class CategoryItemComponent implements OnInit {
 
   @Input() item: any;
+  @Output('buy') buyEmitter = new EventEmitter();
 
   constructor() { }
 
   ngOnInit() {
-    console.log(this.item);
   }
 
+  buy() {
+    this.buyEmitter.emit();
+  }
+
+  addToWishlist() {
+    console.log('add to wishlist!', this.item);
+  }
 }

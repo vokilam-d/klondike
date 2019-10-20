@@ -128,6 +128,7 @@
   z-index: 11;
   transform: translate3d(-100%, 0, 0);
   transition: all 0.25s $cubicBezier;
+  overflow: auto;
 
   &--visible {
     transform: translate3d(0, 0, 0);

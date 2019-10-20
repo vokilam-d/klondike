@@ -18,7 +18,7 @@
 
       <ol class="category__items">
         <li class="category__item" *ngFor="let item of items">
-          <category-item [item]="item"></category-item>
+          <category-item [item]="item" (buy)="onItemBuy(item)"></category-item>
         </li>
       </ol>
     </main>

@@ -41,4 +41,8 @@ export class CategoryComponent implements OnInit {
       error => console.warn(error)
     )
   }
+
+  onItemBuy(item: any) {
+    console.log('buy!', item);
+  }
 }

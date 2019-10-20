@@ -12,4 +12,7 @@ export class FilterComponent implements OnInit {
   ngOnInit() {
   }
 
+  open() {
+    console.log('open filters!');
+  }
 }
