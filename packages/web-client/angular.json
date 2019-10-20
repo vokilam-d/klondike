@@ -70,7 +70,7 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "web:build",
+            "browserTarget": "web-client:build",
             "open": true,
             "port": 4001,
             "aot": false,
@@ -78,14 +78,14 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "web:build:production"
+              "browserTarget": "web-client:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "web:build"
+            "browserTarget": "web-client:build"
           }
         },
         "server": {
@@ -111,7 +111,7 @@
       }
     }
   },
-  "defaultProject": "web",
+  "defaultProject": "web-client",
   "cli": {
     "analytics": "288c9d79-dae7-472d-87ee-593a715eaf06"
   }
