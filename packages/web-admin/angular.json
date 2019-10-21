@@ -12,7 +12,7 @@
       },
       "root": "",
       "sourceRoot": "src",
-      "prefix": "app",
+      "prefix": "",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
@@ -45,7 +45,6 @@
               "sourceMap": false,
               "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
@@ -128,6 +127,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "web-admin"
+    }
+  },
+  "defaultProject": "web-admin",
+  "cli": {
+    "analytics": "5241387a-ec97-402f-bd0b-4a01d0ae45e7"
+  }
 }
