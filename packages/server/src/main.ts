@@ -4,9 +4,10 @@ import * as compression from 'compression';
 import * as bodyParser from 'body-parser';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, new FastifyAdapter());
   const globalExceptionFilter = app.get<GlobalExceptionFilter>(GlobalExceptionFilter);
 
   app.setGlobalPrefix('/api/v1');
