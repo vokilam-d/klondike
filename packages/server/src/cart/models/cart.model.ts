@@ -1,9 +1,12 @@
-import { BaseModel, baseSchemaOptions } from '../../shared/base.model';
-import { ECartStatus, ICart } from '../../../../shared/models/cart.interface';
-import { arrayProp, ModelType, prop, InstanceType } from 'typegoose';
+import { arrayProp, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 import { CartItem } from './cart-item.model';
+import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
+import { ECartStatus } from '../../../../shared/enums/cart.enum';
 
-export class Cart extends BaseModel<Cart> implements ICart {
+export interface Cart extends Base { }
+export interface Cart extends TimeStamps { }
+
+export class Cart {
 
   @prop()
   status: ECartStatus;
@@ -12,22 +15,5 @@ export class Cart extends BaseModel<Cart> implements ICart {
   items: CartItem[];
 
   static collectionName: string = 'cart';
-
-  static get model(): ModelType<Cart> {
-    const schemaOptions = {
-      ...baseSchemaOptions,
-      collection: Cart.collectionName
-    };
-
-    return new Cart().getModelForClass(Cart, { schemaOptions });
-  }
-
-  static get modelName(): string {
-    return this.model.modelName;
-  }
-
-  static createModel(): InstanceType<Cart> {
-    return new this.model();
-  }
-
+  static model = getModelForClass(Cart);
 }

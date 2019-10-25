@@ -1,7 +1,6 @@
-import { prop } from 'typegoose';
-import { IMetaTags } from '../../../../shared/models/meta-tags.interface';
+import { prop } from '@typegoose/typegoose';
 
-export class MetaTags implements IMetaTags {
+export class MetaTags {
 
   @prop()
   title?: string;

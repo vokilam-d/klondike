@@ -7,7 +7,7 @@ import { CartController } from './cart.controller';
 import { ProductModule } from '../product/product.module';
 
 const cartModel = {
-  name: Cart.modelName,
+  name: Cart.model.modelName,
   schema: Cart.model.schema,
   collection: Cart.collectionName
 };

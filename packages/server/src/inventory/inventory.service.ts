@@ -1,32 +1,32 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Inventory } from './models/inventory.model';
-import { InstanceType, ModelType } from 'typegoose';
-import { BaseService } from '../shared/base.service';
+import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class InventoryService extends BaseService<Inventory> {
+export class InventoryService {
 
-  constructor(@InjectModel(Inventory.modelName) _inventoryModel: ModelType<Inventory>) {
-    super();
-    this._model = _inventoryModel;
+  constructor(@InjectModel(Inventory.name) private readonly inventoryModel: ReturnModelType<typeof Inventory>) {
   }
 
-  async createInventory(sku: string, productId: Types.ObjectId, qty: number = 0): Promise<InstanceType<Inventory>> {
-    const inventory = Inventory.createModel();
+  async createInventory(sku: string, productId: Types.ObjectId, qty: number = 0): Promise<DocumentType<Inventory>> {
+    const created = await this.inventoryModel.create({
+      _id: sku,
+      productId,
+      qty
+    });
 
-    inventory._id = sku;
-    inventory.productId = productId;
-    inventory.qty = qty;
-
-    const created = await this.create(inventory);
     return created;
   }
 
   async setInventoryQty(sku: string, qty: number) {
 
-    const found: InstanceType<Inventory> = await this._model.findOne({ '_id': sku });
+    const found = await this.inventoryModel.findOne({ '_id': sku });
+
+    if (!found) {
+      throw new NotFoundException(`Cannot find inventory with sku '${sku}'`);
+    }
 
     const qtyInCarts = found.carted.reduce((sum, cart) => sum + cart.qty, 0);
 
@@ -34,7 +34,7 @@ export class InventoryService extends BaseService<Inventory> {
       throw new ConflictException(`Cannot set quantity: more than ${qty} items are saved in carts`);
     }
 
-    const updated = this._model.findOneAndUpdate(
+    const updated = this.inventoryModel.findOneAndUpdate(
       { '_id': sku },
       { 'qty': qty - qtyInCarts },
       { 'new': true }
@@ -53,7 +53,7 @@ export class InventoryService extends BaseService<Inventory> {
     };
     const options = { 'new': true };
 
-    const updated = this._model.findOneAndUpdate(query, update, options);
+    const updated = this.inventoryModel.findOneAndUpdate(query, update, options);
     return updated;
   }
 
@@ -71,7 +71,7 @@ export class InventoryService extends BaseService<Inventory> {
     };
     const options = { 'new': true };
 
-    const updated = await this._model.findOneAndUpdate(query, update, options);
+    const updated = await this.inventoryModel.findOneAndUpdate(query, update, options);
     return updated;
   }
 
@@ -86,7 +86,11 @@ export class InventoryService extends BaseService<Inventory> {
       '$pull': { 'carted': { 'cartId': cartId } }
     };
 
-    const updated = await this._model.findOneAndUpdate(query, update);
+    const updated = await this.inventoryModel.findOneAndUpdate(query, update);
     return updated;
+  }
+
+  deleteOne(productId: Types.ObjectId) {
+    return this.inventoryModel.findOneAndDelete({ productId }).exec();
   }
 }

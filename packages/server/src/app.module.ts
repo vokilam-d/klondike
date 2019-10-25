@@ -18,7 +18,8 @@ import { InventoryModule } from './inventory/inventory.module';
         retryAttempts: 3,
         useCreateIndex: true,
         useNewUrlParser: true,
-        useFindAndModify: false
+        useFindAndModify: false,
+        useUnifiedTopology: true
       }),
       inject: [ConfigService]
     }),

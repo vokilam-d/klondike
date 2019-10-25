@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Counter } from './counter/counter.model';
 
 const counterModel = {
-  name: Counter.modelName,
+  name: Counter.model.modelName,
   schema: Counter.model.schema,
   collection: Counter.collectionName
 };

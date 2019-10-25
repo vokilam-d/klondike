@@ -1,25 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from '../shared/base.service';
 import { Category } from './models/category.model';
-import { InjectModel } from '@nestjs/mongoose';
-import { ModelType } from 'typegoose';
-import { ICategory } from '../../../shared/models/category.interface';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { Types } from 'mongoose';
 import { ProductService } from '../product/product.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
-export class CategoryService extends BaseService<Category> {
+export class CategoryService {
 
-  constructor(@InjectModel(Category.modelName) _categoryModel: ModelType<Category>,
+  constructor(@InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
               private pageRegistryService: PageRegistryService,
               private productService: ProductService) {
-    super();
-    this._model = _categoryModel;
   }
 
   async getCategory(slug: string) {
-    const category = await this._model.findOne({ slug });
+    const category = await this.categoryModel.findOne({slug}).exec()
 
     if (!category) {
       throw new NotFoundException(`Category with url '${slug}' not found`);
@@ -28,53 +24,60 @@ export class CategoryService extends BaseService<Category> {
     return category;
   }
 
-  async createCategory(category: ICategory): Promise<Category> {
-
-    const newCategory = Category.createModel();
+  async createCategory(category: Category): Promise<Category> {
+    const newCategory = new Category();
 
     Object.keys(category).forEach(key => {
       newCategory[key] = category[key];
     });
 
-    const result = await this.create(newCategory);
-    if (!result) {
-      return;
-    }
+    const result = await this.categoryModel.create(newCategory);
 
     this.createCategoryPageRegistry(result.slug);
     return result.toJSON();
   }
 
-  async updateCategory(objectId: Types.ObjectId, oldCategory: ICategory, newCategory: ICategory): Promise<Category> {
+  async updateCategory(objectId: Types.ObjectId, oldCategory: Category, newCategory: Category): Promise<Category> {
     const oldSlug = oldCategory.slug;
 
     Object.keys(newCategory).forEach(key => {
       oldCategory[key] = newCategory[key];
     });
 
-    const updated = await this._model.findOneAndUpdate(
+    const updated = await this.categoryModel.findOneAndUpdate(
       { _id: objectId },
       oldCategory,
       { new: true }
     ).exec();
 
-    if (!updated) {
-      return;
+    if (oldSlug !== updated.slug) {
+      this.updateCategoryPageRegistry(oldSlug, updated.slug);
     }
 
-    this.updateCategoryPageRegistry(oldSlug, updated.slug);
     return updated.toJSON();
   }
 
   async deleteCategory(objectId: Types.ObjectId) {
-   const deleted = await this._model.findOneAndDelete({ _id: objectId }).exec();
+   const deleted = await this.categoryModel.findOneAndDelete({ _id: objectId }).exec();
 
    if (!deleted) {
-     return `No such category with id '${objectId}'`;
+     throw new NotFoundException(`No such category with id '${objectId}'`);
    }
 
    this.deleteCategoryPageRegistry(deleted.slug);
    return deleted.toJSON();
+  }
+
+  findOne(filter = {}) {
+    return this.categoryModel.findOne(filter).exec();
+  }
+
+  findById(id) {
+    return this.categoryModel.findById(id).exec();
+  }
+
+  findAll(filter = {}) {
+    return this.categoryModel.find(filter).exec();
   }
 
   async getCategoryItems(categoryId: Types.ObjectId, query: any) {

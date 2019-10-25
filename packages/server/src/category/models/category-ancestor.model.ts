@@ -1,7 +1,6 @@
-import { ICategoryAncestor } from '../../../../shared/models/category.interface';
-import { prop } from 'typegoose';
+import { prop } from '@typegoose/typegoose';
 
-export class CategoryAncestor implements ICategoryAncestor {
+export class CategoryAncestor {
 
   id: string;
 

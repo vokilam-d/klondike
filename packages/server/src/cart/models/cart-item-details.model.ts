@@ -1,7 +1,6 @@
-import { ICartItemDetails } from '../../../../shared/models/cart.interface';
-import { prop } from 'typegoose';
+import { prop } from '@typegoose/typegoose';
 
-export class CartItemDetails implements ICartItemDetails {
+export class CartItemDetails {
   @prop()
   name: string;
 }

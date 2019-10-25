@@ -5,7 +5,7 @@ import { Inventory } from './models/inventory.model';
 import { InventoryController } from './inventory.controller';
 
 const inventoryModel = {
-  name: Inventory.modelName,
+  name: Inventory.model.modelName,
   schema: Inventory.model.schema,
   collection: Inventory.collectionName
 };

@@ -1,13 +1,15 @@
-import { BaseModel, baseSchemaOptions } from '../../shared/base.model';
-import { IInventory } from '../../../../shared/models/inventory.interface';
 import { CartedInventory } from './carted-inventory.model';
-import { arrayProp, InstanceType, ModelType, prop } from 'typegoose';
-import { Types } from 'mongoose';
+import { arrayProp, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { Schema, Types } from 'mongoose';
+import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-export class Inventory extends BaseModel<Inventory> {
+export interface Inventory extends Base<Schema.Types.String> { }
+export interface Inventory extends TimeStamps { }
+
+export class Inventory {
 
   @prop()
-  _id: string; // product SKU
+  _id: Schema.Types.String; // product SKU
 
   @prop()
   productId: Types.ObjectId;
@@ -19,21 +21,5 @@ export class Inventory extends BaseModel<Inventory> {
   carted: CartedInventory[];
 
   static collectionName: string = 'inventory';
-
-  static get model(): ModelType<Inventory> {
-    const schemaOptions = {
-      ...baseSchemaOptions,
-      collection: Inventory.collectionName
-    };
-
-    return new Inventory().getModelForClass(Inventory, { schemaOptions });
-  }
-
-  static get modelName(): string {
-    return this.model.modelName;
-  }
-
-  static createModel(): InstanceType<Inventory> {
-    return new this.model();
-  }
+  static model = getModelForClass(Inventory);
 }

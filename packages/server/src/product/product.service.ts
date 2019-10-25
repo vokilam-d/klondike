@@ -1,27 +1,24 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from '../shared/base.service';
 import { Product } from './models/product.model';
-import { InjectModel } from '@nestjs/mongoose';
-import { InstanceType, ModelType } from 'typegoose';
+import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { InventoryService } from '../inventory/inventory.service';
 import { ProductDto } from '../../../shared/dtos/product.dto';
 import { Types } from 'mongoose';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { toObjectId } from '../shared/object-id.function';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class ProductService extends BaseService<Product> {
+export class ProductService {
 
-  constructor(@InjectModel(Product.modelName) _productModel: ModelType<Product>,
+  constructor(@InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
               private readonly inventoryService: InventoryService,
               private readonly pageRegistryService: PageRegistryService) {
-    super();
-    this._model = _productModel;
   }
 
   async createProduct(product: ProductDto): Promise<Product> {
 
-    const newProduct = Product.createModel();
+    const newProduct = new Product();
 
     Object.keys(product).forEach(key => {
       if (key === 'categoryIds') {
@@ -31,15 +28,15 @@ export class ProductService extends BaseService<Product> {
       }
     });
 
-    await this.inventoryService.createInventory(newProduct.sku, newProduct._id, product.qty);
+    const created = await this.productModel.create(newProduct);
 
-    const result = await this.create(newProduct);
+    await this.inventoryService.createInventory(created.sku, created._id, product.qty);
+    this.createProductPageRegistry(created.slug);
 
-    this.createProductPageRegistry(product.slug);
-    return result.toJSON();
+    return created.toJSON();
   }
 
-  async updateProduct(product: InstanceType<Product>, productDto: ProductDto) {
+  async updateProduct(product: DocumentType<Product>, productDto: ProductDto) {
     const oldSlug = product.slug;
 
     if (productDto.qty !== undefined) {
@@ -50,7 +47,7 @@ export class ProductService extends BaseService<Product> {
       product[key] = productDto[key];
     });
 
-    const updated = await this._model.findOneAndUpdate(
+    const updated = await this.productModel.findOneAndUpdate(
       { _id: product.id },
       product,
       { new: true }
@@ -61,9 +58,9 @@ export class ProductService extends BaseService<Product> {
   }
 
   async deleteProduct(productId: Types.ObjectId) {
-    await this.inventoryService.deleteOne({ 'productId': productId });
+    await this.inventoryService.deleteOne(productId);
 
-    const deleted = await this.deleteOne({ '_id': productId });
+    const deleted = await this.productModel.findOneAndDelete({ '_id': productId }).exec();
 
     if (!deleted) {
       throw new NotFoundException(`Product with id '${productId}' not found`);
@@ -73,8 +70,20 @@ export class ProductService extends BaseService<Product> {
     return deleted;
   }
 
+  findAll(query) {
+    return this.productModel.find().exec();
+  }
+
+  findOne(filter = {}) {
+    return this.productModel.findOne(filter).exec();
+  }
+
+  async findById(id: any) {
+    return this.productModel.findById(id).exec();
+  }
+
   findProductsByCategoryId(categoryId: Types.ObjectId, filter: any = {}) {
-    return this._model.find(
+    return this.productModel.find(
       {
         categoryIds: categoryId
       },

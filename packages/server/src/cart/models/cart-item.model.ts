@@ -1,8 +1,7 @@
-import { ICartItem } from '../../../../shared/models/cart.interface';
 import { CartItemDetails } from './cart-item-details.model';
-import { prop } from 'typegoose';
+import { prop } from '@typegoose/typegoose';
 
-export class CartItem implements ICartItem {
+export class CartItem {
 
   @prop()
   sku: string;

@@ -1,28 +1,14 @@
-import { BaseModel, baseSchemaOptions } from '../base.model';
-import { InstanceType, ModelType, prop } from 'typegoose';
+import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-export class Counter extends BaseModel<Counter> {
+export interface Counter extends Base { }
+export interface Counter extends TimeStamps { }
+
+export class Counter {
 
   @prop({ default: 0 })
   seq: number;
 
   static collectionName: string = 'counter';
-
-  static get model(): ModelType<Counter> {
-    const schemaOptions = {
-      ...baseSchemaOptions,
-      collection: Counter.collectionName
-    };
-
-    return new Counter().getModelForClass(Counter, { schemaOptions });
-  }
-
-  static get modelName(): string {
-    return this.model.modelName;
-  }
-
-  static createModel(): InstanceType<Counter> {
-    return new this.model();
-  }
-
+  static model = getModelForClass(Counter);
 }

@@ -11,9 +11,9 @@ import {
   Query
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { ICategory } from '../../../shared/models/category.interface';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { toObjectId } from '../shared/object-id.function';
+import { Category } from './models/category.model';
 import { Types } from 'mongoose';
 
 @Controller('categories')
@@ -32,11 +32,12 @@ export class CategoryController {
   async getOne(@Param('slug') slug: string) {
     const exist = await this.categoryService.getCategory(slug);
 
-    return exist.toJSON();
+    // return exist.toJSON();
+    return exist;
   }
 
   @Post()
-  async addOne(@Body() category: ICategory) {
+  async addOne(@Body() category: Category) {
 
     if (!category.name) {
       throw new BadRequestException('Category name is required');
@@ -56,7 +57,7 @@ export class CategoryController {
   }
 
   @Patch(':id')
-  async updateOne(@Param('id') id: string, @Body() category: ICategory) {
+  async updateOne(@Param('id') id: string, @Body() category: Category) {
 
     const objectId = this.toCategoryObjectId(id);
 

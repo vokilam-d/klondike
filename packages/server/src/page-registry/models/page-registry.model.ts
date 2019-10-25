@@ -1,8 +1,10 @@
-import { BaseModel, baseSchemaOptions } from '../../shared/base.model';
-import { IPageRegistry } from '../../../../shared/models/page-registry.interface';
-import { InstanceType, ModelType, prop } from 'typegoose';
+import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-export class PageRegistry extends BaseModel<PageRegistry> implements IPageRegistry {
+export interface PageRegistry extends Partial<Base> { }
+export interface PageRegistry extends Partial<TimeStamps> { }
+
+export class PageRegistry {
 
   @prop({ required: true, index: true})
   slug: string;
@@ -11,21 +13,5 @@ export class PageRegistry extends BaseModel<PageRegistry> implements IPageRegist
   type: 'category' | 'product' | 'content';
 
   static collectionName: string = 'page-registry';
-
-  static get model(): ModelType<PageRegistry> {
-    const schemaOptions = {
-      ...baseSchemaOptions,
-      collection: PageRegistry.collectionName
-    };
-
-    return new PageRegistry().getModelForClass(PageRegistry, { schemaOptions });
-  }
-
-  static get modelName(): string {
-    return this.model.modelName;
-  }
-
-  static createModel(): InstanceType<PageRegistry> {
-    return new this.model();
-  }
+  static model = getModelForClass(PageRegistry);
 }

@@ -1,9 +1,13 @@
-import { BaseModel, baseSchemaOptions } from '../../shared/base.model';
-import { arrayProp, InstanceType, ModelType, prop } from 'typegoose';
+import { arrayProp, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 import { MetaTags } from '../../shared/models/meta-tags.model';
 import { Types } from 'mongoose';
+import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-export class Product extends BaseModel<Product> {
+
+export interface Product extends Base { }
+export interface Product extends TimeStamps { }
+
+export class Product {
 
   @prop({ required: true })
   name: string;
@@ -36,21 +40,5 @@ export class Product extends BaseModel<Product> {
   mediaUrls?: string[];
 
   static collectionName: string = 'product';
-
-  static get model(): ModelType<Product> {
-    const schemaOptions = {
-      ...baseSchemaOptions,
-      collection: Product.collectionName
-    };
-
-    return new Product().getModelForClass(Product, { schemaOptions });
-  }
-
-  static get modelName(): string {
-    return this.model.modelName;
-  }
-
-  static createModel(): InstanceType<Product> {
-    return new this.model();
-  }
+  static model = getModelForClass(Product);
 }

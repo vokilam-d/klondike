@@ -7,7 +7,7 @@ import { PageRegistryModule } from '../page-registry/page-registry.module';
 import { ProductModule } from '../product/product.module';
 
 const categoryModel = {
-  name: Category.modelName,
+  name: Category.model.modelName,
   schema: Category.model.schema,
   collection: Category.collectionName
 };

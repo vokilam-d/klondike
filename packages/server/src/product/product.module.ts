@@ -7,7 +7,7 @@ import { InventoryModule } from '../inventory/inventory.module';
 import { PageRegistryModule } from '../page-registry/page-registry.module';
 
 const productModel = {
-  name: Product.modelName,
+  name: Product.name,
   schema: Product.model.schema,
   collection: Product.collectionName
 };

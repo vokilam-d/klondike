@@ -1,10 +1,13 @@
-import { BaseModel, baseSchemaOptions } from '../../shared/base.model';
-import { arrayProp, InstanceType, ModelType, prop } from 'typegoose';
+import { arrayProp, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 import { MetaTags } from '../../shared/models/meta-tags.model';
-import { ICategory } from '../../../../shared/models/category.interface';
 import { CategoryAncestor } from './category-ancestor.model';
+import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-export class Category extends BaseModel<Category> implements ICategory {
+
+export interface Category extends Base { }
+export interface Category extends TimeStamps { }
+
+export class Category {
 
   @prop({ required: true })
   name: string;
@@ -31,21 +34,5 @@ export class Category extends BaseModel<Category> implements ICategory {
   imageUrl?: string;
 
   static collectionName: string = 'category';
-
-  static get model(): ModelType<Category> {
-    const schemaOptions = {
-      ...baseSchemaOptions,
-      collection: Category.collectionName
-    };
-
-    return new Category().getModelForClass(Category, { schemaOptions });
-  }
-
-  static get modelName(): string {
-    return this.model.modelName;
-  }
-
-  static createModel(): InstanceType<Category> {
-    return new this.model();
-  }
+  static model = getModelForClass(Category);
 }

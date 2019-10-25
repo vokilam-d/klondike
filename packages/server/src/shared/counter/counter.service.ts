@@ -1,19 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { BaseService } from '../base.service';
 import { Counter } from './counter.model';
 import { InjectModel } from '@nestjs/mongoose';
-import { ModelType } from 'typegoose';
+import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
-export class CounterService extends BaseService<Counter> {
+export class CounterService {
 
-  constructor(@InjectModel(Counter.modelName) private readonly _counterModel: ModelType<Counter>) {
-    super();
-    this._model = this._counterModel;
+  constructor(@InjectModel(Counter.name) private readonly counterModel: ReturnModelType<typeof Counter>) {
   }
 
   async getCounter(collectionName: string): Promise<number> {
-    const counter = await this._model
+    const counter = await this.counterModel
       .findOneAndUpdate(
         { _id: collectionName },
         { $inc: { seq: 1 } },

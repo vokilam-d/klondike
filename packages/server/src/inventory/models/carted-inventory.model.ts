@@ -1,5 +1,4 @@
-import { prop } from 'typegoose';
-import { ICartedInventory } from '../../../../shared/models/inventory.interface';
+import { prop } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
 
 export class CartedInventory {

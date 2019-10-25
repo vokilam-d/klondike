@@ -7,12 +7,11 @@ import {
   NotFoundException,
   Param,
   Patch,
-  Post, Query
+  Post,
+  Query
 } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { toObjectId } from '../shared/object-id.function';
 import { ProductDto } from '../../../shared/dtos/product.dto';
-import { Types } from 'mongoose';
 
 @Controller('products')
 export class ProductController {

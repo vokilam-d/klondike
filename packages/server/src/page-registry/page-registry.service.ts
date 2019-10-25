@@ -1,26 +1,22 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { PageRegistry } from './models/page-registry.model';
-import { ModelType } from 'typegoose';
-import { BaseService } from '../shared/base.service';
-import { IPageRegistry } from '../../../shared/models/page-registry.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
-export class PageRegistryService extends BaseService<PageRegistry> {
+export class PageRegistryService {
 
   private logger = new Logger(PageRegistryService.name);
 
-  constructor(@InjectModel(PageRegistry.modelName) _pageRegistryModel: ModelType<PageRegistry>) {
-    super();
-    this._model = _pageRegistryModel;
+  constructor(@InjectModel(PageRegistry.name) private readonly registryModel: ReturnModelType<typeof PageRegistry>) {
   }
 
   getAllPages() {
-    return this._model.find();
+    return this.registryModel.find();
   }
 
   async getPageType(slug: string): Promise<string> {
-    const found = await this.findOne({ slug: slug });
+    const found = await this.registryModel.findOne({ slug: slug });
 
     if (!found) {
       throw new NotFoundException(`Page with url '${slug}' not found`);
@@ -29,19 +25,18 @@ export class PageRegistryService extends BaseService<PageRegistry> {
     return found.type;
   }
 
-  async createPageRegistry(pageRegistry: IPageRegistry): Promise<any> {
-    const page = await PageRegistry.createModel();
-    page.slug = pageRegistry.slug;
-    page.type = pageRegistry.type;
-
-    const created = await this.create(page);
+  async createPageRegistry(pageRegistry: PageRegistry): Promise<any> {
+    const created = await this.registryModel.create({
+      slug: pageRegistry.slug,
+      type: pageRegistry.type
+    });
 
     this.logger.log(`Created '${created.slug}' page-registry!`);
     return created;
   }
 
-  async updatePageRegistry(oldSlug: IPageRegistry['slug'], pageRegistry: IPageRegistry): Promise<any> {
-    const result = await this._model.findOneAndUpdate(
+  async updatePageRegistry(oldSlug: PageRegistry['slug'], pageRegistry: PageRegistry): Promise<any> {
+    const result = await this.registryModel.findOneAndUpdate(
       { slug: oldSlug },
       { slug: pageRegistry.slug, type: pageRegistry.type },
       { new: true }
@@ -51,8 +46,8 @@ export class PageRegistryService extends BaseService<PageRegistry> {
     return result;
   }
 
-  async deletePageRegistry(slug: IPageRegistry['slug']) {
-    const deleted = await this._model.findOneAndDelete({ slug: slug }).exec();
+  async deletePageRegistry(slug: PageRegistry['slug']) {
+    const deleted = await this.registryModel.findOneAndDelete({ slug: slug }).exec();
 
     this.logger.log(`Deleted '${deleted.slug}' from page-registry`);
     return deleted;
