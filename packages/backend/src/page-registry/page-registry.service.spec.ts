@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PageRegistryService } from './page-registry.service';
+import { BackendPageRegistryService } from './page-registry.service';
 
-describe('PageRegistryService', () => {
-  let service: PageRegistryService;
+describe('BackendPageRegistryService', () => {
+  let service: BackendPageRegistryService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PageRegistryService],
+      providers: [BackendPageRegistryService],
     }).compile();
 
-    service = module.get<PageRegistryService>(PageRegistryService);
+    service = module.get<BackendPageRegistryService>(BackendPageRegistryService);
   });
 
   it('should be defined', () => {

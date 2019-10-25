@@ -1,19 +1,19 @@
-import { arrayProp, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
-import { CartItem } from './cart-item.model';
+import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
+import { BackendCartItem } from './cart-item.model';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 import { ECartStatus } from '../../../../shared/enums/cart.enum';
 
-export interface Cart extends Base { }
-export interface Cart extends TimeStamps { }
+export interface BackendCart extends Base { }
+export interface BackendCart extends TimeStamps { }
 
-export class Cart {
+export class BackendCart {
 
   @prop()
   status: ECartStatus;
 
-  @arrayProp({ items: CartItem })
-  items: CartItem[];
+  @arrayProp({ items: BackendCartItem })
+  items: BackendCartItem[];
 
   static collectionName: string = 'cart';
-  static model = getModelForClass(Cart);
+  static model = getModelForClass(BackendCart);
 }

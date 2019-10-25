@@ -1,13 +1,13 @@
-import { arrayProp, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
-import { MetaTags } from '../../shared/models/meta-tags.model';
+import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
+import { BackendMetaTags } from '../../shared/models/meta-tags.model';
 import { Types } from 'mongoose';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
 
-export interface Product extends Base { }
-export interface Product extends TimeStamps { }
+export interface BackendProduct extends Base { }
+export interface BackendProduct extends TimeStamps { }
 
-export class Product {
+export class BackendProduct {
 
   @prop({ required: true })
   name: string;
@@ -28,7 +28,7 @@ export class Product {
   price: number;
 
   @prop()
-  meta?: MetaTags;
+  meta?: BackendMetaTags;
 
   @prop()
   fullDescription?: string;
@@ -40,5 +40,5 @@ export class Product {
   mediaUrls?: string[];
 
   static collectionName: string = 'product';
-  static model = getModelForClass(Product);
+  static model = getModelForClass(BackendProduct);
 }

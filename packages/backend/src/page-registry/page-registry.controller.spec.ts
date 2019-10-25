@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PageRegistryController } from './page-registry.controller';
+import { BackendPageRegistryController } from './page-registry.controller';
 
-describe('PageRegistry Controller', () => {
-  let controller: PageRegistryController;
+describe('BackendPageRegistry Controller', () => {
+  let controller: BackendPageRegistryController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [PageRegistryController],
+      controllers: [BackendPageRegistryController],
     }).compile();
 
-    controller = module.get<PageRegistryController>(PageRegistryController);
+    controller = module.get<BackendPageRegistryController>(BackendPageRegistryController);
   });
 
   it('should be defined', () => {

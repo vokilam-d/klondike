@@ -1,13 +1,13 @@
-import { arrayProp, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
-import { MetaTags } from '../../shared/models/meta-tags.model';
-import { CategoryAncestor } from './category-ancestor.model';
+import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
+import { BackendMetaTags } from '../../shared/models/meta-tags.model';
+import { BackendCategoryAncestor } from './category-ancestor.model';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
 
-export interface Category extends Base { }
-export interface Category extends TimeStamps { }
+export interface BackendCategory extends Base { }
+export interface BackendCategory extends TimeStamps { }
 
-export class Category {
+export class BackendCategory {
 
   @prop({ required: true })
   name: string;
@@ -21,11 +21,11 @@ export class Category {
   @prop({ default: null })
   parentId: string;
 
-  @arrayProp({ _id: false, items: CategoryAncestor })
-  ancestors?: CategoryAncestor[];
+  @arrayProp({ _id: false, items: BackendCategoryAncestor })
+  ancestors?: BackendCategoryAncestor[];
 
   @prop({ _id: false })
-  meta?: MetaTags;
+  meta?: BackendMetaTags;
 
   @prop()
   description?: string;
@@ -34,5 +34,5 @@ export class Category {
   imageUrl?: string;
 
   static collectionName: string = 'category';
-  static model = getModelForClass(Category);
+  static model = getModelForClass(BackendCategory);
 }

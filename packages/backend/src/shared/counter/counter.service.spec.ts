@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CounterService } from './counter.service';
+import { BackendCounterService } from './counter.service';
 
-describe('CounterService', () => {
-  let service: CounterService;
+describe('BackendCounterService', () => {
+  let service: BackendCounterService;
   
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CounterService],
+      providers: [BackendCounterService],
     }).compile();
-    service = module.get<CounterService>(CounterService);
+    service = module.get<BackendCounterService>(BackendCounterService);
   });
   it('should be defined', () => {
     expect(service).toBeDefined();

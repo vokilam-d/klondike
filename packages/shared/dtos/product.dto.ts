@@ -1,4 +1,4 @@
-import { MetaTags } from '../../backend/src/shared/models/meta-tags.model';
+import { BackendMetaTags } from '../../backend/src/shared/models/meta-tags.model';
 
 export class ProductDto {
   name: string;
@@ -8,7 +8,7 @@ export class ProductDto {
   isEnabled?: boolean;
   categoryIds: string[];
   price?: number;
-  meta?: MetaTags;
+  meta?: BackendMetaTags;
   fullDescription?: string;
   shortDescription?: string;
   mediaUrls?: string[];

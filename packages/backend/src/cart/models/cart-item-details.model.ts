@@ -1,6 +1,6 @@
 import { prop } from '@typegoose/typegoose';
 
-export class CartItemDetails {
+export class BackendCartItemDetails {
   @prop()
   name: string;
 }

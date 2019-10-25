@@ -10,16 +10,16 @@ import {
   Post,
   Query
 } from '@nestjs/common';
-import { CategoryService } from './category.service';
+import { BackendCategoryService } from './category.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { toObjectId } from '../shared/object-id.function';
-import { Category } from './models/category.model';
+import { BackendCategory } from './models/category.model';
 import { Types } from 'mongoose';
 
 @Controller('categories')
-export class CategoryController {
+export class BackendCategoryController {
 
-  constructor(private readonly categoryService: CategoryService) {
+  constructor(private readonly categoryService: BackendCategoryService) {
   }
 
   @Get()
@@ -37,10 +37,10 @@ export class CategoryController {
   }
 
   @Post()
-  async addOne(@Body() category: Category) {
+  async addOne(@Body() category: BackendCategory) {
 
     if (!category.name) {
-      throw new BadRequestException('Category name is required');
+      throw new BadRequestException('BackendCategory name is required');
     }
 
     if (!category.slug) {
@@ -57,7 +57,7 @@ export class CategoryController {
   }
 
   @Patch(':id')
-  async updateOne(@Param('id') id: string, @Body() category: Category) {
+  async updateOne(@Param('id') id: string, @Body() category: BackendCategory) {
 
     const objectId = this.toCategoryObjectId(id);
 

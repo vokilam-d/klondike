@@ -1,12 +1,12 @@
-import { CartedInventory } from './carted-inventory.model';
-import { arrayProp, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { BackendCartedInventory } from './carted-inventory.model';
+import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { Schema, Types } from 'mongoose';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-export interface Inventory extends Base<Schema.Types.String> { }
-export interface Inventory extends TimeStamps { }
+export interface BackendInventory extends Base<Schema.Types.String> { }
+export interface BackendInventory extends TimeStamps { }
 
-export class Inventory {
+export class BackendInventory {
 
   @prop()
   _id: Schema.Types.String; // product SKU
@@ -17,9 +17,9 @@ export class Inventory {
   @prop()
   qty: number;
 
-  @arrayProp({ items: CartedInventory, default: [] })
-  carted: CartedInventory[];
+  @arrayProp({ items: BackendCartedInventory, default: [] })
+  carted: BackendCartedInventory[];
 
   static collectionName: string = 'inventory';
-  static model = getModelForClass(Inventory);
+  static model = getModelForClass(BackendInventory);
 }

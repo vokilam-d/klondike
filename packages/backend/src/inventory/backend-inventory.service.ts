@@ -1,16 +1,16 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Inventory } from './models/inventory.model';
+import { BackendInventory } from './models/inventory.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class InventoryService {
+export class BackendInventoryService {
 
-  constructor(@InjectModel(Inventory.name) private readonly inventoryModel: ReturnModelType<typeof Inventory>) {
+  constructor(@InjectModel(BackendInventory.name) private readonly inventoryModel: ReturnModelType<typeof BackendInventory>) {
   }
 
-  async createInventory(sku: string, productId: Types.ObjectId, qty: number = 0): Promise<DocumentType<Inventory>> {
+  async createInventory(sku: string, productId: Types.ObjectId, qty: number = 0): Promise<DocumentType<BackendInventory>> {
     const created = await this.inventoryModel.create({
       _id: sku,
       productId,

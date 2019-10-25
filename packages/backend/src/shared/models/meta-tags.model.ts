@@ -1,6 +1,6 @@
 import { prop } from '@typegoose/typegoose';
 
-export class MetaTags {
+export class BackendMetaTags {
 
   @prop()
   title?: string;

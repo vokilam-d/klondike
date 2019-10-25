@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { get } from 'config';
 
 @Injectable()
-export class ConfigService {
+export class BackendConfigService {
   private environmentHosting: string = process.env.NODE_ENV || 'development';
 
   get(name: string): string | number {

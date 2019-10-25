@@ -1,24 +1,24 @@
 import { Module } from '@nestjs/common';
-import { CategoryController } from './category.controller';
-import { CategoryService } from './category.service';
+import { BackendCategoryController } from './category.controller';
+import { BackendCategoryService } from './category.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Category } from './models/category.model';
-import { PageRegistryModule } from '../page-registry/page-registry.module';
-import { ProductModule } from '../product/product.module';
+import { BackendCategory } from './models/category.model';
+import { BackendPageRegistryModule } from '../page-registry/page-registry.module';
+import { BackendProductModule } from '../product/product.module';
 
 const categoryModel = {
-  name: Category.model.modelName,
-  schema: Category.model.schema,
-  collection: Category.collectionName
+  name: BackendCategory.model.modelName,
+  schema: BackendCategory.model.schema,
+  collection: BackendCategory.collectionName
 };
 
 @Module({
   imports: [
     MongooseModule.forFeature([categoryModel]),
-    PageRegistryModule,
-    ProductModule
+    BackendPageRegistryModule,
+    BackendProductModule
   ],
-  controllers: [CategoryController],
-  providers: [CategoryService]
+  controllers: [BackendCategoryController],
+  providers: [BackendCategoryService]
 })
-export class CategoryModule {}
+export class BackendCategoryModule {}

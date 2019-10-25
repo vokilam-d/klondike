@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Counter } from './counter.model';
+import { BackendCounter } from './counter.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
-export class CounterService {
+export class BackendCounterService {
 
-  constructor(@InjectModel(Counter.name) private readonly counterModel: ReturnModelType<typeof Counter>) {
+  constructor(@InjectModel(BackendCounter.name) private readonly counterModel: ReturnModelType<typeof BackendCounter>) {
   }
 
   async getCounter(collectionName: string): Promise<number> {

@@ -1,10 +1,10 @@
-import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { getModelForClass, prop } from '@typegoose/typegoose';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-export interface PageRegistry extends Partial<Base> { }
-export interface PageRegistry extends Partial<TimeStamps> { }
+export interface BackendPageRegistry extends Partial<Base> { }
+export interface BackendPageRegistry extends Partial<TimeStamps> { }
 
-export class PageRegistry {
+export class BackendPageRegistry {
 
   @prop({ required: true, index: true})
   slug: string;
@@ -13,5 +13,5 @@ export class PageRegistry {
   type: 'category' | 'product' | 'content';
 
   static collectionName: string = 'page-registry';
-  static model = getModelForClass(PageRegistry);
+  static model = getModelForClass(BackendPageRegistry);
 }

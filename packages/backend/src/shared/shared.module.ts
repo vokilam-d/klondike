@@ -1,20 +1,19 @@
 import { Global, Module } from '@nestjs/common';
-import { ConfigService } from './config/config.service';
-import { MapperService } from './mapper/mapper.service';
-import { CounterService } from './counter/counter.service';
+import { BackendConfigService } from './config/config.service';
+import { BackendCounterService } from './counter/counter.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Counter } from './counter/counter.model';
+import { BackendCounter } from './counter/counter.model';
 
 const counterModel = {
-  name: Counter.model.modelName,
-  schema: Counter.model.schema,
-  collection: Counter.collectionName
+  name: BackendCounter.model.modelName,
+  schema: BackendCounter.model.schema,
+  collection: BackendCounter.collectionName
 };
 
 @Global()
 @Module({
   imports: [MongooseModule.forFeature([counterModel])],
-  providers: [ConfigService, MapperService, CounterService],
-  exports: [ConfigService, MapperService, CounterService]
+  providers: [BackendConfigService, BackendCounterService],
+  exports: [BackendConfigService, BackendCounterService]
 })
 export class SharedModule {}

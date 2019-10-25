@@ -1,24 +1,24 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Product } from './models/product.model';
+import { BackendProduct } from './models/product.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { InventoryService } from '../inventory/inventory.service';
+import { BackendInventoryService } from '../inventory/backend-inventory.service';
 import { ProductDto } from '../../../shared/dtos/product.dto';
 import { Types } from 'mongoose';
-import { PageRegistryService } from '../page-registry/page-registry.service';
+import { BackendPageRegistryService } from '../page-registry/page-registry.service';
 import { toObjectId } from '../shared/object-id.function';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class ProductService {
+export class BackendProductService {
 
-  constructor(@InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
-              private readonly inventoryService: InventoryService,
-              private readonly pageRegistryService: PageRegistryService) {
+  constructor(@InjectModel(BackendProduct.name) private readonly productModel: ReturnModelType<typeof BackendProduct>,
+              private readonly inventoryService: BackendInventoryService,
+              private readonly pageRegistryService: BackendPageRegistryService) {
   }
 
-  async createProduct(product: ProductDto): Promise<Product> {
+  async createProduct(product: ProductDto): Promise<BackendProduct> {
 
-    const newProduct = new Product();
+    const newProduct = new BackendProduct();
 
     Object.keys(product).forEach(key => {
       if (key === 'categoryIds') {
@@ -36,7 +36,7 @@ export class ProductService {
     return created.toJSON();
   }
 
-  async updateProduct(product: DocumentType<Product>, productDto: ProductDto) {
+  async updateProduct(product: DocumentType<BackendProduct>, productDto: ProductDto) {
     const oldSlug = product.slug;
 
     if (productDto.qty !== undefined) {

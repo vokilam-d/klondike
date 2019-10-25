@@ -1,14 +1,14 @@
-import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { getModelForClass, prop } from '@typegoose/typegoose';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-export interface Counter extends Base { }
-export interface Counter extends TimeStamps { }
+export interface BackendCounter extends Base { }
+export interface BackendCounter extends TimeStamps { }
 
-export class Counter {
+export class BackendCounter {
 
   @prop({ default: 0 })
   seq: number;
 
   static collectionName: string = 'counter';
-  static model = getModelForClass(Counter);
+  static model = getModelForClass(BackendCounter);
 }

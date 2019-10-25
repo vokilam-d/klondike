@@ -1,18 +1,18 @@
 import { Module } from '@nestjs/common';
-import { CategoryModule } from './category/category.module';
+import { BackendCategoryModule } from './category/category.module';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { SharedModule } from './shared/shared.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigService } from './shared/config/config.service';
+import { BackendConfigService } from './shared/config/config.service';
 import { EConfig } from '../config/config.enum';
-import { ProductModule } from './product/product.module';
-import { CartModule } from './cart/cart.module';
-import { InventoryModule } from './inventory/inventory.module';
+import { BackendProductModule } from './product/product.module';
+import { BackendCartModule } from './cart/cart.module';
+import { BackendInventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
     MongooseModule.forRootAsync({
-      useFactory: async (_config: ConfigService) => ({
+      useFactory: async (_config: BackendConfigService) => ({
         uri: _config.get(EConfig.MONGO_URI),
         retryDelay: 500,
         retryAttempts: 3,
@@ -21,22 +21,22 @@ import { InventoryModule } from './inventory/inventory.module';
         useFindAndModify: false,
         useUnifiedTopology: true
       }),
-      inject: [ConfigService]
+      inject: [BackendConfigService]
     }),
     SharedModule,
 
-    CategoryModule,
-    ProductModule,
-    CartModule,
-    InventoryModule
+    BackendCategoryModule,
+    BackendProductModule,
+    BackendCartModule,
+    BackendInventoryModule
   ],
   providers: [GlobalExceptionFilter]
 })
-export class AppModule {
+export class BackendAppModule {
   static port: number;
 
-  constructor(private readonly _config: ConfigService) {
-    AppModule.port = AppModule.normalizePort(_config.get(EConfig.PORT));
+  constructor(private readonly _config: BackendConfigService) {
+    BackendAppModule.port = BackendAppModule.normalizePort(_config.get(EConfig.PORT));
   }
 
   private static normalizePort(portArg: number | string): number {

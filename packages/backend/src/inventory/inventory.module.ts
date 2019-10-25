@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
-import { InventoryService } from './inventory.service';
+import { BackendInventoryService } from './backend-inventory.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Inventory } from './models/inventory.model';
-import { InventoryController } from './inventory.controller';
+import { BackendInventory } from './models/inventory.model';
+import { BackendInventoryController } from './backendInventoryController';
 
 const inventoryModel = {
-  name: Inventory.model.modelName,
-  schema: Inventory.model.schema,
-  collection: Inventory.collectionName
+  name: BackendInventory.model.modelName,
+  schema: BackendInventory.model.schema,
+  collection: BackendInventory.collectionName
 };
 
 @Module({
   imports: [MongooseModule.forFeature([inventoryModel])],
-  providers: [InventoryService],
-  controllers: [InventoryController],
-  exports: [InventoryService]
+  providers: [BackendInventoryService],
+  controllers: [BackendInventoryController],
+  exports: [BackendInventoryService]
 })
-export class InventoryModule {}
+export class BackendInventoryModule {}

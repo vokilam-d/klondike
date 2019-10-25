@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PageRegistry } from './models/page-registry.model';
-import { PageRegistryService } from './page-registry.service';
-import { PageRegistryController } from './page-registry.controller';
+import { BackendPageRegistry } from './models/page-registry.model';
+import { BackendPageRegistryService } from './page-registry.service';
+import { BackendPageRegistryController } from './page-registry.controller';
 
 const pageRegistryModel = {
-  name: PageRegistry.model.modelName,
-  schema: PageRegistry.model.schema,
-  collection: PageRegistry.collectionName
+  name: BackendPageRegistry.model.modelName,
+  schema: BackendPageRegistry.model.schema,
+  collection: BackendPageRegistry.collectionName
 };
 
 @Module({
@@ -15,13 +15,13 @@ const pageRegistryModel = {
     MongooseModule.forFeature([pageRegistryModel])
   ],
   providers: [
-    PageRegistryService
+    BackendPageRegistryService
   ],
   exports: [
-    PageRegistryService
+    BackendPageRegistryService
   ],
   controllers: [
-    PageRegistryController
+    BackendPageRegistryController
   ]
 })
-export class PageRegistryModule {}
+export class BackendPageRegistryModule {}

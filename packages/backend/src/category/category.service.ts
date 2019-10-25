@@ -1,17 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Category } from './models/category.model';
-import { PageRegistryService } from '../page-registry/page-registry.service';
+import { BackendCategory } from './models/category.model';
+import { BackendPageRegistryService } from '../page-registry/page-registry.service';
 import { Types } from 'mongoose';
-import { ProductService } from '../product/product.service';
+import { BackendProductService } from '../product/product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
-export class CategoryService {
+export class BackendCategoryService {
 
-  constructor(@InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
-              private pageRegistryService: PageRegistryService,
-              private productService: ProductService) {
+  constructor(@InjectModel(BackendCategory.name) private readonly categoryModel: ReturnModelType<typeof BackendCategory>,
+              private pageRegistryService: BackendPageRegistryService,
+              private productService: BackendProductService) {
   }
 
   async getCategory(slug: string) {
@@ -24,8 +24,8 @@ export class CategoryService {
     return category;
   }
 
-  async createCategory(category: Category): Promise<Category> {
-    const newCategory = new Category();
+  async createCategory(category: BackendCategory): Promise<BackendCategory> {
+    const newCategory = new BackendCategory();
 
     Object.keys(category).forEach(key => {
       newCategory[key] = category[key];
@@ -37,7 +37,7 @@ export class CategoryService {
     return result.toJSON();
   }
 
-  async updateCategory(objectId: Types.ObjectId, oldCategory: Category, newCategory: Category): Promise<Category> {
+  async updateCategory(objectId: Types.ObjectId, oldCategory: BackendCategory, newCategory: BackendCategory): Promise<BackendCategory> {
     const oldSlug = oldCategory.slug;
 
     Object.keys(newCategory).forEach(key => {

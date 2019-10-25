@@ -10,13 +10,13 @@ import {
   Post,
   Query
 } from '@nestjs/common';
-import { ProductService } from './product.service';
+import { BackendProductService } from './product.service';
 import { ProductDto } from '../../../shared/dtos/product.dto';
 
 @Controller('products')
-export class ProductController {
+export class BackendProductController {
 
-  constructor(private readonly productService: ProductService) {
+  constructor(private readonly productService: BackendProductService) {
   }
 
   @Get()
