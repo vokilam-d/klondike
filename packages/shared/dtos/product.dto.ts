@@ -1,4 +1,4 @@
-import { MetaTags } from '../../server/src/shared/models/meta-tags.model';
+import { MetaTags } from '../../backend/src/shared/models/meta-tags.model';
 
 export class ProductDto {
   name: string;

@@ -6,7 +6,7 @@
     "serve": "ng run web-client:serve",
     "build": "ng run web-client:build",
     "build:prod": "ng run web-client:build:production",
-    "serve:ssr": "node dist/server/main.js",
+    "serve:ssr": "node dist/backend/main.js",
     "build:ssr": "ng build --prod && ng run web-client:server:production"
   },
   "private": true,
