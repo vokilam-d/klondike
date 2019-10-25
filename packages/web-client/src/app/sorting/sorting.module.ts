@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SortingComponent } from './sorting.component';
+import { WebClientSortingComponent } from './sorting.component';
 
 
 
 @NgModule({
-  declarations: [SortingComponent],
+  declarations: [WebClientSortingComponent],
   imports: [
     CommonModule
   ],
   exports: [
-    SortingComponent
+    WebClientSortingComponent
   ]
 })
-export class SortingModule { }
+export class WebClientSortingModule { }

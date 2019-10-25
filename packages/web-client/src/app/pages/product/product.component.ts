@@ -7,7 +7,7 @@ import { ProductService } from './product.service';
   templateUrl: './product.component.html',
   styleUrls: ['./product.component.scss']
 })
-export class ProductComponent implements OnInit {
+export class WebClientProductComponent implements OnInit {
 
   product: any;
 

@@ -1,18 +1,18 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CategoryItemComponent } from './category-item.component';
+import { WebClientCategoryItemComponent } from './category-item.component';
 import { RouterModule } from '@angular/router';
 
 
 
 @NgModule({
-  declarations: [CategoryItemComponent],
+  declarations: [WebClientCategoryItemComponent],
   imports: [
     CommonModule,
     RouterModule
   ],
   exports: [
-    CategoryItemComponent
+    WebClientCategoryItemComponent
   ]
 })
-export class CategoryItemModule { }
+export class WebClientCategoryItemModule { }

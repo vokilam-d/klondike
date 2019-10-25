@@ -5,7 +5,7 @@ import { Component, Input, OnInit } from '@angular/core';
   templateUrl: './service-menu.component.html',
   styleUrls: ['./service-menu.component.scss']
 })
-export class ServiceMenuComponent implements OnInit {
+export class WebClientServiceMenuComponent implements OnInit {
 
   @Input() vertical: boolean = false;
 

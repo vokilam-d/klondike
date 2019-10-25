@@ -5,7 +5,7 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent implements OnInit {
+export class WebClientHeaderComponent implements OnInit {
 
   isMenuOpened: boolean = false;
   isSearchbarVisible: boolean = false;

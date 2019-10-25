@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FilterComponent } from './filter.component';
+import { WebClientFilterComponent } from './filter.component';
 
 
 
 @NgModule({
-  declarations: [FilterComponent],
+  declarations: [WebClientFilterComponent],
   imports: [
     CommonModule
   ],
   exports: [
-    FilterComponent
+    WebClientFilterComponent
   ]
 })
-export class FilterModule { }
+export class WebClientFilterModule { }

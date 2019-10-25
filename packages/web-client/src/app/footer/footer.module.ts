@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FooterComponent } from './footer.component';
+import { WebClientFooterComponent } from './footer.component';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-  declarations: [FooterComponent],
+  declarations: [WebClientFooterComponent],
   imports: [
     CommonModule,
     RouterModule
   ],
   exports: [
-    FooterComponent
+    WebClientFooterComponent
   ]
 })
-export class FooterModule { }
+export class WebClientFooterModule { }

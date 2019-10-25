@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { CategoryService } from './category.service';
+import { WebClientCategoryService } from './category.service';
 
 @Component({
   selector: 'category',
   templateUrl: './category.component.html',
   styleUrls: ['./category.component.scss']
 })
-export class CategoryComponent implements OnInit {
+export class WebClientCategoryComponent implements OnInit {
 
   category: any;
   items: any[];
 
   constructor(private route: ActivatedRoute,
-              private categoryService: CategoryService) {
+              private categoryService: WebClientCategoryService) {
   }
 
   ngOnInit() {
