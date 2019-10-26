@@ -1,15 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { CategoriesRoutingModule } from './categories-routing.module';
-import { CategoriesComponent } from './categories.component';
+import { WebAdminCategoriesRoutingModule } from './categories-routing.module';
+import { WebAdminCategoriesComponent } from './categories.component';
 
 
 @NgModule({
-  declarations: [CategoriesComponent],
+  declarations: [WebAdminCategoriesComponent],
   imports: [
     CommonModule,
-    CategoriesRoutingModule
+    WebAdminCategoriesRoutingModule
   ]
 })
-export class CategoriesModule { }
+export class WebAdminCategoriesModule { }

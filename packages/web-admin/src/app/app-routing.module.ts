@@ -10,7 +10,7 @@ const routes: Routes = [
   },
   {
     path: 'dashboard',
-    loadChildren: () => import('./pages/dashboard/dashboard.module').then(m => m.DashboardModule)
+    loadChildren: () => import('./pages/dashboard/dashboard.module').then(m => m.WebAdminDashboardModule)
   }, {
     path: 'order',
     loadChildren: () => import('./pages/orders/orders.module').then(m => m.OrdersModule)
@@ -26,5 +26,5 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule]
 })
-export class AppRoutingModule {
+export class WebAdminAppRoutingModule {
 }

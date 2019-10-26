@@ -1,22 +1,22 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { NavbarModule } from './navbar/navbar.module';
+import { WebAdminAppRoutingModule } from './app-routing.module';
+import { WebAdminAppComponent } from './app.component';
+import { WebAdminNavbarModule } from './navbar/navbar.module';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
-    AppComponent
+    WebAdminAppComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule,
-    NavbarModule,
+    WebAdminAppRoutingModule,
+    WebAdminNavbarModule,
     HttpClientModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [WebAdminAppComponent]
 })
-export class AppModule { }
+export class WebAdminAppModule { }

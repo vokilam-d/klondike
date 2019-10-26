@@ -1,15 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { ProductsRoutingModule } from './products-routing.module';
-import { ProductsComponent } from './products.component';
+import { WebAdminProductsRoutingModule } from './products-routing.module';
+import { WebAdminProductsComponent } from './products.component';
 
 
 @NgModule({
-  declarations: [ProductsComponent],
+  declarations: [WebAdminProductsComponent],
   imports: [
     CommonModule,
-    ProductsRoutingModule
+    WebAdminProductsRoutingModule
   ]
 })
-export class ProductsModule { }
+export class WebAdminProductsModule { }

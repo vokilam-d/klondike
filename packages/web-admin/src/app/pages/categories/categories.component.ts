@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { CategoriesService } from './categories.service';
+import { WebAdminCategoriesService } from './categories.service';
 
 @Component({
   selector: 'categories',
   templateUrl: './categories.component.html',
   styleUrls: ['./categories.component.scss']
 })
-export class CategoriesComponent implements OnInit {
+export class WebAdminCategoriesComponent implements OnInit {
 
   categories: any[];
 
-  constructor(private categoriesService: CategoriesService) {
+  constructor(private categoriesService: WebAdminCategoriesService) {
   }
 
   ngOnInit() {
