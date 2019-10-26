@@ -1,0 +1,27 @@
+@import "../abstracts/variables";
+@import "../abstracts/mixins";
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  font: 400 14px/1 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: $dark;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: $primary;
+    cursor: pointer;
+  }
+}
+
+img {
+  max-width: 100%;
+}

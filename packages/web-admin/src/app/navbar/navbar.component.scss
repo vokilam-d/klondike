@@ -1,0 +1,52 @@
+@import "variables";
+
+.navbar {
+  height: 100%;
+  background: #373330;
+
+  &__link {
+    display: block;
+    padding: 16px 5px 11px;
+    text-align: center;
+    color: #aaa6a0;
+    font-size: 10px;
+    text-transform: uppercase;
+
+    &:not(&--logo):hover {
+      background: #4a4542;
+      color: #f7f3eb;
+    }
+
+    &--active:not(&--logo) {
+      background: #524d49;
+      color: #f7f3eb;
+    }
+
+    &--logo {
+      position: relative;
+      padding: 12px 0 22px;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 15px;
+        right: 15px;
+        border-top: 1px solid grey;
+      }
+
+    }
+  }
+
+  &__logo {
+    display: block;
+    margin: 0 auto;
+
+  }
+
+  &__icon {
+    display: block;
+    margin: 0 auto 3px;
+    font-size: 22px;
+  }
+}

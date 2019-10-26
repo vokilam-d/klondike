@@ -1,0 +1,46 @@
+@font-face {
+  font-family: 'Admin Icons';
+  src: url('../fonts/admin-icons.woff2') format('woff2'), url('../fonts/admin-icons.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.ai {
+  font-family: 'Admin Icons';
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  speak: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.ai-dashboard:before {
+  content: "\e604";
+}
+.ai-magebig:before {
+  content: '\e63a';
+}
+.ai-sales:before {
+  content: '\e60b';
+}
+.ai-catalog:before {
+  content: '\e608';
+}
+.ai-customers:before {
+  content: '\e603';
+}
+.ai-marketing:before {
+  content: '\e609';
+}
+.ai-content:before {
+  content: '\e602';
+}
+.ai-reports:before {
+  content: '\e60a';
+}
+.ai-stores:before {
+  content: '\e60d';
+}
+.ai-system:before {
+  content: '\e610';
+}

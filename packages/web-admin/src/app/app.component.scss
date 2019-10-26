@@ -1,0 +1,14 @@
+.app {
+  height: 100%;
+  display: flex;
+
+  &__navbar {
+    width: 88px;
+    flex-shrink: 0;
+  }
+
+  &__page {
+    background: #fff;
+    flex-grow: 2;
+  }
+}
