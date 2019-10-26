@@ -28,13 +28,23 @@ export class BackendCategoryController {
     return categories.map(cat => cat.toJSON());
   }
 
-  @Get(':slug')
-  async getOne(@Param('slug') slug: string) {
-    const exist = await this.categoryService.getCategory(slug);
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    const objectId = this.toCategoryObjectId(id);
+
+    const exist = await this.categoryService.getCategoryById(objectId);
 
     // return exist.toJSON();
     return exist;
   }
+
+  // @Get(':slug')
+  // async getOne(@Param('slug') slug: string) {
+  //   const exist = await this.categoryService.getCategory(slug);
+  //
+  //   // return exist.toJSON();
+  //   return exist;
+  // }
 
   @Post()
   async addOne(@Body() category: BackendCategory) {

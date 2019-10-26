@@ -24,6 +24,16 @@ export class BackendCategoryService {
     return category;
   }
 
+  async getCategoryById(id: Types.ObjectId) {
+    const category = await this.categoryModel.findOne({_id: id}).exec();
+
+    if (!category) {
+      throw new NotFoundException(`Category with url '${id}' not found`);
+    }
+
+    return category;
+  }
+
   async createCategory(category: BackendCategory): Promise<BackendCategory> {
     const newCategory = new BackendCategory();
 
