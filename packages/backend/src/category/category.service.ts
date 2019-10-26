@@ -15,7 +15,7 @@ export class BackendCategoryService {
   }
 
   async getCategory(slug: string) {
-    const category = await this.categoryModel.findOne({slug}).exec()
+    const category = await this.categoryModel.findOne({slug}).exec();
 
     if (!category) {
       throw new NotFoundException(`Category with url '${slug}' not found`);
