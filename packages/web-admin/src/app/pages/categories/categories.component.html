@@ -1,1 +1,31 @@
-<p>categories works!</p>
+<div class="page categories">
+  <div class="categories__sidebar">
+
+    <div class="categories__toolbar">
+      <button class="categories__add"
+              (click)="addRootCategory()"
+      >
+        Добавить корневую категорию
+      </button>
+      <button class="categories__add"
+              (click)="addSubCategory()"
+      >
+        Добавить подкатегорию
+      </button>
+    </div>
+
+    <div class="categories__list-title">Категории:</div>
+
+    <ul class="categories__list">
+      <li *ngFor="let category of categories">
+        <button class="categories__list-item" (click)="selectCategory(category)">
+          {{ category.name }}
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="categories__category">
+    <router-outlet></router-outlet>
+  </div>
+</div>

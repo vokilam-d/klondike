@@ -1,0 +1,59 @@
+@import "variables";
+
+.field {
+  display: flex;
+
+  &__label {
+    margin: 0 40px 0 0;
+    padding: 6px 0 0;
+    width: 25%;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: right;
+    cursor: pointer;
+  }
+
+  &--required &__label {
+    position: relative;
+
+    &::after {
+      content: '*';
+      color: $red;
+      position: absolute;
+      top: 6px;
+      right: -15px;
+      font-size: 16px;
+    }
+  }
+
+  &__control {
+    width: 45%;
+  }
+
+  &__input,
+  &__textarea {
+    width: 100%;
+    padding: 6px 10px 8px;
+    border: 1px solid #adadad;
+    font-size: 16px;
+    color: $dark;
+
+    &:hover {
+      border-color: #878787;
+    }
+
+    &:focus {
+      border-color: #007bdb;
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    height: 5em;
+  }
+
+  &--invalid &__input,
+  &--invalid &__textarea {
+    border-color: $red;
+  }
+}

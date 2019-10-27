@@ -1,30 +1,55 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { WebAdminCategoriesService } from './categories.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AdminCategoryDto } from '@shared/dtos/admin/category.dto';
 
 @Component({
   selector: 'categories',
   templateUrl: './categories.component.html',
   styleUrls: ['./categories.component.scss']
 })
-export class WebAdminCategoriesComponent implements OnInit {
+export class WebAdminCategoriesComponent implements OnInit, OnDestroy {
 
-  categories: any[];
+  categories: AdminCategoryDto[];
 
-  constructor(private categoriesService: WebAdminCategoriesService) {
+  constructor(private categoriesService: WebAdminCategoriesService,
+              private router: Router,
+              private route: ActivatedRoute) {
   }
 
   ngOnInit() {
     this.fetchCategories();
   }
 
-  fetchCategories(): any {
+  ngOnDestroy(): void {
+    this.categoriesService.removeActiveCategory();
+  }
+
+  fetchCategories() {
     this.categoriesService.fetchCategories().subscribe(
       categories => {
-        console.log(categories);
         this.categories = categories;
       },
       error => console.warn(error)
     );
   }
 
+  selectCategory(category: AdminCategoryDto) {
+    this.categoriesService.setActiveCategory(category);
+    this.router.navigate(['edit', category.id], { relativeTo: this.route });
+  }
+
+  addRootCategory() {
+    this.addCategory(0);
+  }
+
+  addSubCategory() {
+    const id = this.categoriesService.activeCategory.id;
+    this.addCategory(id);
+  }
+
+  private addCategory(id: string | number) {
+    this.categoriesService.removeActiveCategory();
+    this.router.navigate(['add', 'parent', id], { relativeTo: this.route });
+  }
 }

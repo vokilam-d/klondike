@@ -1,10 +1,15 @@
 @import "variables";
 
-.main-btn {
-  padding: 9px 15px 10px;
-  background: $primary;
+.main-btn,
+.btn {
+  padding: 12px 15px 13px;
   font-size: 16px;
-  transition: all 0.2s ease;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.main-btn {
+  background: $primary;
   color: #fff;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
 
@@ -14,12 +19,10 @@
 }
 
 .btn {
-  padding: 9px 15px 10px;
   color: $dark;
-  font-size: 16px;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    color: darken($dark, 10%);
+    color: darken($dark, 30%);
   }
 }

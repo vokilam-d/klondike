@@ -1,0 +1,77 @@
+<header class="header">
+  <h1 class="header__title" [ngSwitch]="isNewCategory">
+    <ng-container *ngSwitchCase="true">
+      Новая категория
+    </ng-container>
+
+    <ng-container *ngSwitchCase="false">
+      {{ categoriesService.activeCategory?.name }} (ID: {{categoriesService.activeCategory?.id }})
+    </ng-container>
+  </h1>
+
+  <div class="header__toolbar">
+    <button class="header__btn btn" *ngIf="!isNewCategory" (click)="delete()">Удалить</button>
+    <button class="header__btn main-btn" (click)="save()">Сохранить</button>
+  </div>
+</header>
+
+<form class="category" *ngIf="form">
+  <label class="category__field field" [class.field--invalid]="isControlInvalid(isEnabled)">
+    <span class="field__label">Включить категорию</span>
+    <span class="field__control">
+      <span class="switcher">
+        <input class="switcher__input"
+               [formControl]="isEnabled"
+               type="checkbox"
+        >
+        <span class="switcher__control" [class.switcher__control--active]="isEnabled.value"></span>
+        <span class="switcher__description">
+          <ng-container *ngIf="isEnabled.value; else isEnabledFalseText">Да</ng-container>
+          <ng-template #isEnabledFalseText>Нет</ng-template>
+        </span>
+      </span>
+    </span>
+  </label>
+
+  <label class="category__field field field--required" [class.field--invalid]="isControlInvalid(name)">
+    <span class="field__label">Имя</span>
+    <span class="field__control">
+      <input class="field__input" [formControl]="name" type="text">
+    </span>
+  </label>
+
+  <label class="category__field field" [class.field--invalid]="isControlInvalid(description)">
+    <span class="field__label">Описание</span>
+    <span class="field__control">
+      <textarea class="field__textarea" [formControl]="description"></textarea>
+    </span>
+  </label>
+
+  <label class="category__field field" [class.field--invalid]="isControlInvalid(slug)">
+    <span class="field__label">URL ключ</span>
+    <span class="field__control">
+      <input class="field__input" [formControl]="slug" type="text">
+    </span>
+  </label>
+
+  <label class="category__field field" [class.field--invalid]="isControlInvalid(metaTitle)">
+    <span class="field__label">Meta заголовок</span>
+    <span class="field__control">
+      <input class="field__input" [formControl]="metaTitle" type="text">
+    </span>
+  </label>
+
+  <label class="category__field field" [class.field--invalid]="isControlInvalid(metaDescription)">
+    <span class="field__label">Meta описание</span>
+    <span class="field__control">
+      <textarea class="field__textarea" [formControl]="metaDescription"></textarea>
+    </span>
+  </label>
+
+  <label class="category__field field" [class.field--invalid]="isControlInvalid(metaKeywords)">
+    <span class="field__label">Meta ключевые слова</span>
+    <span class="field__control">
+      <textarea class="field__textarea" [formControl]="metaKeywords"></textarea>
+    </span>
+  </label>
+</form>
