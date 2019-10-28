@@ -5,9 +5,8 @@
   "author": "vokilam",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "start": "ts-node -r tsconfig-paths/register src/main.ts",
+    "build": "nest build --watch --webpack",
+    "start": "node dist/main",
     "start:dev:debug": "node --inspect -r ts-node/register -r tsconfig-paths/register src/main.ts",
     "prestart:prod": "rimraf dist && tsc",
     "start:prod": "node dist/main.js"
@@ -45,6 +44,8 @@
     "ts-loader": "^6.2.0",
     "ts-node": "^8.4.1",
     "tsconfig-paths": "^3.9.0",
-    "tslint": "5.20.0"
+    "tslint": "5.20.0",
+    "webpack": "^4.41.2",
+    "webpack-node-externals": "^1.7.2"
   }
 }

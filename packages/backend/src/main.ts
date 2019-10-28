@@ -6,6 +6,8 @@ import { BackendAppModule } from './app.module';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 
+declare const module: any;
+
 async function bootstrap() {
   const app = await NestFactory.create(BackendAppModule, new FastifyAdapter());
   const globalExceptionFilter = app.get<GlobalExceptionFilter>(GlobalExceptionFilter);
@@ -19,5 +21,10 @@ async function bootstrap() {
   app.use(bodyParser.json());
 
   await app.listen(BackendAppModule.port, () => console.log(`It's rolling on ${BackendAppModule.port}!`));
+
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
 }
 bootstrap();
