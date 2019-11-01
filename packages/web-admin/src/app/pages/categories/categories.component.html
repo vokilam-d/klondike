@@ -17,11 +17,9 @@
     <div class="categories__list-title">Категории:</div>
 
     <ul class="categories__list">
-      <li *ngFor="let category of categories">
-        <button class="categories__list-item" (click)="selectCategory(category)">
-          {{ category.name }}
-        </button>
-      </li>
+      <ng-container *ngFor="let category of categories">
+        <ng-container *ngTemplateOutlet="treeItem; context: { category: category }"></ng-container>
+      </ng-container>
     </ul>
   </div>
 
@@ -29,3 +27,19 @@
     <router-outlet></router-outlet>
   </div>
 </div>
+
+
+
+<ng-template #treeItem let-category="category">
+  <li>
+    <button class="categories__list-item" (click)="selectCategory(category)">
+      {{ category.name }}
+    </button>
+
+    <ul class="categories__list categories__sublist" *ngIf="category.children.length">
+      <ng-container *ngFor="let subCategory of category.children">
+        <ng-container *ngTemplateOutlet="treeItem; context: { category: subCategory}"></ng-container>
+      </ng-container>
+    </ul>
+  </li>
+</ng-template>

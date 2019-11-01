@@ -1,7 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { WebAdminCategoriesService } from './categories.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminResponseCategoryDto } from '../../../../../backend/src/shared/dtos/admin/category.dto';
+import {
+  AdminCategoryTreeItem,
+  AdminResponseCategoryDto
+} from '../../../../../backend/src/shared/dtos/admin/category.dto';
 
 @Component({
   selector: 'categories',
@@ -10,7 +13,7 @@ import { AdminResponseCategoryDto } from '../../../../../backend/src/shared/dtos
 })
 export class WebAdminCategoriesComponent implements OnInit, OnDestroy {
 
-  categories: AdminResponseCategoryDto[];
+  categories: AdminCategoryTreeItem[];
 
   constructor(private categoriesService: WebAdminCategoriesService,
               private router: Router,
@@ -27,8 +30,8 @@ export class WebAdminCategoriesComponent implements OnInit, OnDestroy {
 
   fetchCategories() {
     this.categoriesService.fetchCategories().subscribe(
-      categories => {
-        this.categories = categories;
+      tree => {
+        this.categories = tree.categories;
       },
       error => console.warn(error)
     );

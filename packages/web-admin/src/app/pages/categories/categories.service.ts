@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
+  AdminCategoriesTreeDto,
   AdminRequestCategoryDto,
   AdminResponseCategoryDto
 } from '../../../../../backend/src/shared/dtos/admin/category.dto';
@@ -14,8 +15,8 @@ export class WebAdminCategoriesService {
   constructor(private http: HttpClient) {
   }
 
-  fetchCategories(): Observable<AdminResponseCategoryDto[]> {
-    return this.http.get<AdminResponseCategoryDto[]>(`http://localhost:3500/api/v1/admin/categories`);
+  fetchCategories(): Observable<AdminCategoriesTreeDto> {
+    return this.http.get<AdminCategoriesTreeDto>(`http://localhost:3500/api/v1/admin/categories`);
   }
 
   fetchCategory(id: string) {
