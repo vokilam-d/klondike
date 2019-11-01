@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
-import { BackendCategoryController } from './category.controller';
 import { BackendCategoryService } from './category.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BackendCategory } from './models/category.model';
+import { BackendCategory, BackendCategoryModel } from './models/category.model';
 import { BackendPageRegistryModule } from '../page-registry/page-registry.module';
 import { BackendProductModule } from '../product/product.module';
+import { BackendClientCategoryController } from './backend-client-category.controller';
+import { BackendAdminCategoryController } from './backend-admin-category.controller';
 
 const categoryModel = {
-  name: BackendCategory.model.modelName,
-  schema: BackendCategory.model.schema,
+  name: BackendCategoryModel.modelName,
+  schema: BackendCategoryModel.schema,
   collection: BackendCategory.collectionName
 };
 
@@ -18,7 +19,7 @@ const categoryModel = {
     BackendPageRegistryModule,
     BackendProductModule
   ],
-  controllers: [BackendCategoryController],
+  controllers: [BackendClientCategoryController, BackendAdminCategoryController],
   providers: [BackendCategoryService]
 })
 export class BackendCategoryModule {}

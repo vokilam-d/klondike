@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { BackendProductController } from './product.controller';
 import { BackendProductService } from './product.service';
-import { BackendProduct } from './models/product.model';
+import { BackendProduct, BackendProductModel } from './models/product.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BackendInventoryModule } from '../inventory/inventory.module';
 import { BackendPageRegistryModule } from '../page-registry/page-registry.module';
 
 const productModel = {
-  name: BackendProduct.name,
-  schema: BackendProduct.model.schema,
+  name: BackendProductModel.modelName,
+  schema: BackendProductModel.schema,
   collection: BackendProduct.collectionName
 };
 

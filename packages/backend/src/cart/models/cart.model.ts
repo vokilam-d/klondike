@@ -3,9 +3,6 @@ import { BackendCartItem } from './cart-item.model';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 import { ECartStatus } from '../../../../shared/enums/cart.enum';
 
-export interface BackendCart extends Base { }
-export interface BackendCart extends TimeStamps { }
-
 export class BackendCart {
 
   @prop()
@@ -15,5 +12,6 @@ export class BackendCart {
   items: BackendCartItem[];
 
   static collectionName: string = 'cart';
-  static model = getModelForClass(BackendCart);
 }
+
+export const BackendCartModel = getModelForClass(BackendCart);

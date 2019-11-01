@@ -1,4 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { FastifyRequest, FastifyReply } from 'fastify';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -10,9 +11,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   catch(exception: Error, host: ArgumentsHost): any {
     const ctx = host.switchToHttp();
-    const req = ctx.getRequest();
-    const res = ctx.getResponse();
-    const path = req.url;
+    const req = ctx.getRequest<FastifyRequest<any>>();
+    const res = ctx.getResponse<FastifyReply<any>>();
+    const path = req.raw.url;
     let status;
     let httpError;
 
@@ -32,8 +33,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     res.status(status).send({
-      statusCode: status,
       ...(httpError ? httpError : {}),
+      statusCode: status,
       timestamp: new Date().toISOString(),
       path
     });

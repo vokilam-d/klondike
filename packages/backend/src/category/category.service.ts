@@ -5,14 +5,68 @@ import { Types } from 'mongoose';
 import { BackendProductService } from '../product/product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
+import { AdminRequestCategoryDto } from '../shared/dtos/admin/category.dto';
+import { BackendCounterService } from '../shared/counter/counter.service';
+import { transliterate } from '../shared/helpers/transliterate.function';
 
 @Injectable()
 export class BackendCategoryService {
 
   constructor(@InjectModel(BackendCategory.name) private readonly categoryModel: ReturnModelType<typeof BackendCategory>,
               private pageRegistryService: BackendPageRegistryService,
+              private counterService: BackendCounterService,
               private productService: BackendProductService) {
   }
+
+  async getCategoriesTree() {
+    return this.categoryModel.find().exec();
+  }
+
+  async createCategory(category: AdminRequestCategoryDto): Promise<BackendCategory> {
+    const newCategory = new this.categoryModel(category);
+
+    Object.keys(category).forEach(key => {
+      newCategory[key] = category[key];
+    });
+
+    newCategory.id = await this.counterService.getCounter(BackendCategory.collectionName);
+    if (newCategory.slug === '') {
+      newCategory.slug = transliterate(newCategory.name);
+    }
+
+    const result = await newCategory.save();
+
+    this.createCategoryPageRegistry(result.slug);
+    return result;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   async getCategory(slug: string) {
     const category = await this.categoryModel.findOne({slug}).exec();
@@ -32,19 +86,6 @@ export class BackendCategoryService {
     }
 
     return category;
-  }
-
-  async createCategory(category: BackendCategory): Promise<BackendCategory> {
-    const newCategory = new BackendCategory();
-
-    Object.keys(category).forEach(key => {
-      newCategory[key] = category[key];
-    });
-
-    const result = await this.categoryModel.create(newCategory);
-
-    this.createCategoryPageRegistry(result.slug);
-    return result.toJSON();
   }
 
   async updateCategory(objectId: Types.ObjectId, oldCategory: BackendCategory, newCategory: BackendCategory): Promise<BackendCategory> {

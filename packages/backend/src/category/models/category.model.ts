@@ -1,13 +1,13 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { BackendMetaTags } from '../../shared/models/meta-tags.model';
 import { BackendCategoryAncestor } from './category-ancestor.model';
-import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
-
-
-export interface BackendCategory extends Base { }
-export interface BackendCategory extends TimeStamps { }
 
 export class BackendCategory {
+  @prop()
+  _id: number;
+
+  get id() { return this._id; }
+  set id(id: number) { this._id = id; }
 
   @prop({ required: true })
   name: string;
@@ -18,21 +18,23 @@ export class BackendCategory {
   @prop({ default: true })
   isEnabled: boolean;
 
-  @prop({ default: null })
-  parentId: string;
+  @prop({ default: 0 })
+  parentId: number;
 
   @arrayProp({ _id: false, items: BackendCategoryAncestor })
-  ancestors?: BackendCategoryAncestor[];
+  ancestors: BackendCategoryAncestor[];
 
   @prop({ _id: false })
-  meta?: BackendMetaTags;
+  metaTags: BackendMetaTags;
 
-  @prop()
-  description?: string;
+  @prop({ default: '' })
+  description: string;
 
-  @prop()
-  imageUrl?: string;
+  @prop({ default: '' })
+  imageUrl: string;
 
   static collectionName: string = 'category';
-  static model = getModelForClass(BackendCategory);
 }
+
+export const BackendCategoryModel = getModelForClass(BackendCategory);
+// export const BackendCategoryCollectionName = 'category';

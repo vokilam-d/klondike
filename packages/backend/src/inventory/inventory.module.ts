@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { BackendInventoryService } from './backend-inventory.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BackendInventory } from './models/inventory.model';
+import { BackendInventory, BackendInventoryModel } from './models/inventory.model';
 import { BackendInventoryController } from './backendInventoryController';
 
 const inventoryModel = {
-  name: BackendInventory.model.modelName,
-  schema: BackendInventory.model.schema,
+  name: BackendInventoryModel.modelName,
+  schema: BackendInventoryModel.schema,
   collection: BackendInventory.collectionName
 };
 

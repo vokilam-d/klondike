@@ -3,13 +3,13 @@ import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { Schema, Types } from 'mongoose';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-export interface BackendInventory extends Base<Schema.Types.String> { }
-export interface BackendInventory extends TimeStamps { }
-
 export class BackendInventory {
 
   @prop()
-  _id: Schema.Types.String; // product SKU
+  _id: string; // product SKU
+
+  get id() { return this._id; }
+  set id(id: string) { this._id = id; }
 
   @prop()
   productId: Types.ObjectId;
@@ -21,5 +21,6 @@ export class BackendInventory {
   carted: BackendCartedInventory[];
 
   static collectionName: string = 'inventory';
-  static model = getModelForClass(BackendInventory);
 }
+
+export const BackendInventoryModel = getModelForClass(BackendInventory);

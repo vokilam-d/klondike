@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { WebAdminCategoriesService } from './categories.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminCategoryDto } from '@shared/dtos/admin/category.dto';
+import { AdminResponseCategoryDto } from '../../../../../backend/src/shared/dtos/admin/category.dto';
 
 @Component({
   selector: 'categories',
@@ -10,7 +10,7 @@ import { AdminCategoryDto } from '@shared/dtos/admin/category.dto';
 })
 export class WebAdminCategoriesComponent implements OnInit, OnDestroy {
 
-  categories: AdminCategoryDto[];
+  categories: AdminResponseCategoryDto[];
 
   constructor(private categoriesService: WebAdminCategoriesService,
               private router: Router,
@@ -34,7 +34,7 @@ export class WebAdminCategoriesComponent implements OnInit, OnDestroy {
     );
   }
 
-  selectCategory(category: AdminCategoryDto) {
+  selectCategory(category: AdminResponseCategoryDto) {
     this.categoriesService.setActiveCategory(category);
     this.router.navigate(['edit', category.id], { relativeTo: this.route });
   }

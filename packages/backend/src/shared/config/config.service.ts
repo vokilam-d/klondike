@@ -5,7 +5,7 @@ import { get } from 'config';
 export class BackendConfigService {
   private environmentHosting: string = process.env.NODE_ENV || 'development';
 
-  get(name: string): string | number {
+  get(name: string): string {
     return process.env[name] || get(name);
   }
 

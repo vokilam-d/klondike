@@ -3,11 +3,11 @@ import { prop } from '@typegoose/typegoose';
 export class BackendMetaTags {
 
   @prop()
-  title?: string;
+  title: string;
 
   @prop()
-  description?: string;
+  description: string;
 
   @prop()
-  keywords?: string;
+  keywords: string;
 }

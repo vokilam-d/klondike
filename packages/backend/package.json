@@ -19,6 +19,8 @@
     "@typegoose/typegoose": "^6.0.4",
     "automapper-ts": "^1.9.0",
     "body-parser": "^1.19.0",
+    "class-transformer": "^0.2.3",
+    "class-validator": "^0.10.2",
     "compression": "^1.7.4",
     "config": "^3.2.3",
     "helmet": "^3.21.2",

@@ -3,10 +3,6 @@ import { BackendMetaTags } from '../../shared/models/meta-tags.model';
 import { Types } from 'mongoose';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
-
-export interface BackendProduct extends Base { }
-export interface BackendProduct extends TimeStamps { }
-
 export class BackendProduct {
 
   @prop({ required: true })
@@ -40,5 +36,6 @@ export class BackendProduct {
   mediaUrls?: string[];
 
   static collectionName: string = 'product';
-  static model = getModelForClass(BackendProduct);
 }
+
+export const BackendProductModel = getModelForClass(BackendProduct);

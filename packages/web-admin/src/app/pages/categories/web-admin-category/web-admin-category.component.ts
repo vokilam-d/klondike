@@ -3,14 +3,14 @@ import { WebAdminCategoriesService } from '../categories.service';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { EWebAdminCategoryPageAction } from '../../../shared/enums/category-page-action.enum';
-import { AdminCategoryDto } from '@shared/dtos/admin/category.dto';
+import { AdminRequestCategoryDto } from '../../../../../../backend/src/shared/dtos/admin/category.dto';
 
-const EMPTY_CATEGORY: AdminCategoryDto = {
-  id: '',
+const EMPTY_CATEGORY: AdminRequestCategoryDto = {
   isEnabled: true,
   slug: '',
   name: '',
   description: '',
+  parentId: 0,
   metaTags: {
     title: '',
     description: '',
@@ -56,7 +56,7 @@ export class WebAdminCategoryComponent implements OnInit {
     }
   }
 
-  buildForm(category: AdminCategoryDto) {
+  buildForm(category: AdminRequestCategoryDto) {
     this.form = this.formBuilder.group({
       isEnabled: category.isEnabled,
       name: [category.name, Validators.required],
@@ -101,7 +101,12 @@ export class WebAdminCategoryComponent implements OnInit {
     }
 
     const parentId = this.route.snapshot.paramMap.get('parentId');
-    this.categoriesService.saveCategory(this.form.value, parentId);
+    this.categoriesService.saveCategory(this.form.value, parentId).subscribe(
+      response => {
+        console.log(response);
+      },
+      error => console.warn(error)
+    );
   }
 
   private validateAllControls() {
