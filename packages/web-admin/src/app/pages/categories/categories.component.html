@@ -38,7 +38,7 @@
 
     <ul class="categories__list categories__sublist" *ngIf="category.children.length">
       <ng-container *ngFor="let subCategory of category.children">
-        <ng-container *ngTemplateOutlet="treeItem; context: { category: subCategory}"></ng-container>
+        <ng-container *ngTemplateOutlet="treeItem; context: { category: subCategory }"></ng-container>
       </ng-container>
     </ul>
   </li>
