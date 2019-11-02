@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import {
-  AdminCategoriesTreeDto,
   AdminAddOrUpdateCategoryDto,
+  AdminCategoriesTreeDto,
   AdminResponseCategoryDto
 } from '../../../../../backend/src/shared/dtos/admin/category.dto';
 

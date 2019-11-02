@@ -1,14 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { BackendCategory } from './models/category.model';
 import { BackendPageRegistryService } from '../page-registry/page-registry.service';
-import { Types } from 'mongoose';
 import { BackendProductService } from '../product/product.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { ReturnModelType, DocumentType } from '@typegoose/typegoose';
+import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import {
+  AdminAddOrUpdateCategoryDto,
   AdminCategoriesTreeDto,
-  AdminCategoryTreeItem,
-  AdminAddOrUpdateCategoryDto
+  AdminCategoryTreeItem
 } from '../shared/dtos/admin/category.dto';
 import { BackendCounterService } from '../shared/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';

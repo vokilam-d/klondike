@@ -1,5 +1,5 @@
 import { MetaTagsDto } from './meta-tags.dto';
-import { IsBoolean, IsString, IsDefined, ValidateNested, IsNumber } from 'class-validator';
+import { IsBoolean, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { Expose } from 'class-transformer';
 
 export class AdminAddOrUpdateCategoryDto {

@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 
 import { WebAdminCategoriesComponent } from './categories.component';
 import { WebAdminCategoryComponent } from './web-admin-category/web-admin-category.component';

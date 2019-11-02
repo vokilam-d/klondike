@@ -1,7 +1,6 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { BackendMetaTags } from '../../shared/models/meta-tags.model';
 import { Types } from 'mongoose';
-import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 
 export class BackendProduct {
 

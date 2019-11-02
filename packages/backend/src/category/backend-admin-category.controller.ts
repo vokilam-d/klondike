@@ -2,19 +2,19 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
+  Put,
   UseInterceptors,
   UsePipes,
-  ValidationPipe,
-  Put,
-  Delete
+  ValidationPipe
 } from '@nestjs/common';
 import { BackendCategoryService } from './category.service';
 import {
-  AdminCategoriesTreeDto,
   AdminAddOrUpdateCategoryDto,
+  AdminCategoriesTreeDto,
   AdminResponseCategoryDto
 } from '../shared/dtos/admin/category.dto';
 import { plainToClass } from 'class-transformer';

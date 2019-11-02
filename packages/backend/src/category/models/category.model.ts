@@ -1,7 +1,7 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { BackendMetaTags } from '../../shared/models/meta-tags.model';
 import { BackendCategoryAncestor } from './category-ancestor.model';
-import { Expose, Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 export class BackendCategory {
   @Exclude()

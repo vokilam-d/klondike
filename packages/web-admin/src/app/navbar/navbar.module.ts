@@ -4,7 +4,6 @@ import { WebAdminNavbarComponent } from './navbar.component';
 import { RouterModule } from '@angular/router';
 
 
-
 @NgModule({
   declarations: [WebAdminNavbarComponent],
   imports: [

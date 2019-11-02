@@ -1,7 +1,6 @@
 import { BackendCartedInventory } from './carted-inventory.model';
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { Schema, Types } from 'mongoose';
-import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
+import { Types } from 'mongoose';
 
 export class BackendInventory {
 
