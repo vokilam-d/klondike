@@ -82,7 +82,7 @@ export class BackendProductService {
     return this.productModel.findById(id).exec();
   }
 
-  findProductsByCategoryId(categoryId: Types.ObjectId, filter: any = {}) {
+  findProductsByCategoryId(categoryId: number, filter: any = {}) {
     return this.productModel.find(
       {
         categoryIds: categoryId

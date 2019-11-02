@@ -1,31 +1,63 @@
-import { Controller, Get, Param, Post, Body, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe,
+  Put,
+  Delete
+} from '@nestjs/common';
 import { BackendCategoryService } from './category.service';
 import {
   AdminCategoriesTreeDto,
-  AdminRequestCategoryDto,
+  AdminAddOrUpdateCategoryDto,
   AdminResponseCategoryDto
 } from '../shared/dtos/admin/category.dto';
+import { plainToClass } from 'class-transformer';
 
 @Controller('admin/categories')
 export class BackendAdminCategoryController {
   constructor(private readonly categoryService: BackendCategoryService) {
   }
 
-  @Get()
-  getCategoriesTree(): AdminCategoriesTreeDto {
-    return this.categoryService.getCategoriesTree() as any;
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Get('tree')
+  async getCategoriesTree(): Promise<AdminCategoriesTreeDto> {
+    const tree = await this.categoryService.getCategoriesTree() as any;
+    return plainToClass(AdminCategoriesTreeDto, tree, { excludeExtraneousValues: true });
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async getCategory(@Param('id') id: string): Promise<AdminResponseCategoryDto> {
-    const category = await this.categoryService.getCategory(id);
-    return category;
+    const category = await this.categoryService.getCategoryById(id);
+    return plainToClass(AdminResponseCategoryDto, category.toJSON(), { excludeExtraneousValues: true });
   }
 
   @UsePipes(new ValidationPipe({ transform: true }))
+  @UseInterceptors(ClassSerializerInterceptor)
   @Post()
-  async addCategory(@Body() category: AdminRequestCategoryDto) {
+  async addCategory(@Body() category: AdminAddOrUpdateCategoryDto): Promise<AdminResponseCategoryDto> {
     const created = await this.categoryService.createCategory(category);
-    return created;
+    return plainToClass(AdminResponseCategoryDto, created, { excludeExtraneousValues: true });
+  }
+
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Put(':id')
+  async updateCategory(@Param('id') id: number, @Body() category: AdminAddOrUpdateCategoryDto): Promise<AdminResponseCategoryDto> {
+    const updated = await this.categoryService.updateCategory(id, category);
+    return plainToClass(AdminResponseCategoryDto, updated, { excludeExtraneousValues: true });
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Delete(':id')
+  async deleteCategory(@Param('id') id: number): Promise<AdminResponseCategoryDto> {
+    const deleted = await this.categoryService.deleteCategory(id);
+    return plainToClass(AdminResponseCategoryDto, deleted, { excludeExtraneousValues: true });
   }
 }

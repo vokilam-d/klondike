@@ -5,6 +5,7 @@ import {
   AdminCategoryTreeItem,
   AdminResponseCategoryDto
 } from '../../../../../backend/src/shared/dtos/admin/category.dto';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'categories',
@@ -14,6 +15,7 @@ import {
 export class WebAdminCategoriesComponent implements OnInit, OnDestroy {
 
   categories: AdminCategoryTreeItem[];
+  ngUnsubscribe = new Subject();
 
   constructor(private categoriesService: WebAdminCategoriesService,
               private router: Router,
@@ -21,15 +23,18 @@ export class WebAdminCategoriesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.fetchCategories();
+    this.fetchCategoriesTree();
+    this.categoriesService.categoryUpdated$.subscribe(_ => this.fetchCategoriesTree());
   }
 
   ngOnDestroy(): void {
-    this.categoriesService.removeActiveCategory();
+    this.categoriesService.removeSelectedCategoryId();
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
-  fetchCategories() {
-    this.categoriesService.fetchCategories().subscribe(
+  fetchCategoriesTree() {
+    this.categoriesService.fetchCategoriesTree().subscribe(
       tree => {
         this.categories = tree.categories;
       },
@@ -38,7 +43,7 @@ export class WebAdminCategoriesComponent implements OnInit, OnDestroy {
   }
 
   selectCategory(category: AdminResponseCategoryDto) {
-    this.categoriesService.setActiveCategory(category);
+    this.categoriesService.setSelectedCategoryId(category.id);
     this.router.navigate(['edit', category.id], { relativeTo: this.route });
   }
 
@@ -47,12 +52,11 @@ export class WebAdminCategoriesComponent implements OnInit, OnDestroy {
   }
 
   addSubCategory() {
-    const id = this.categoriesService.activeCategory.id;
-    this.addCategory(id);
+    this.addCategory(this.categoriesService.selectedCategoryId);
   }
 
   private addCategory(id: string | number) {
-    this.categoriesService.removeActiveCategory();
+    this.categoriesService.removeSelectedCategoryId();
     this.router.navigate(['add', 'parent', id], { relativeTo: this.route });
   }
 }

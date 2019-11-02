@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { WebAdminCategoriesService } from '../categories.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { EWebAdminCategoryPageAction } from '../../../shared/enums/category-page-action.enum';
-import { AdminRequestCategoryDto } from '../../../../../../backend/src/shared/dtos/admin/category.dto';
+import {
+  AdminAddOrUpdateCategoryDto,
+  AdminResponseCategoryDto
+} from '../../../../../../backend/src/shared/dtos/admin/category.dto';
 
-const EMPTY_CATEGORY: AdminRequestCategoryDto = {
+const EMPTY_CATEGORY: AdminAddOrUpdateCategoryDto = {
   isEnabled: true,
   slug: '',
   name: '',
@@ -25,9 +28,9 @@ const EMPTY_CATEGORY: AdminRequestCategoryDto = {
 })
 export class WebAdminCategoryComponent implements OnInit {
 
-  form: FormGroup;
+  category: AdminResponseCategoryDto;
 
-  isNewCategory: boolean = false;
+  form: FormGroup;
 
   get isEnabled() { return this.form && this.form.get('isEnabled') as FormControl; }
   get name() { return this.form && this.form.get('name') as FormControl; }
@@ -37,17 +40,22 @@ export class WebAdminCategoryComponent implements OnInit {
   get metaDescription() { return this.form && this.form.get('metaTags.description') as FormControl; }
   get metaKeywords() { return this.form && this.form.get('metaTags.keywords') as FormControl; }
 
+  get isNewCategory(): boolean { return this.route.snapshot.data.action === EWebAdminCategoryPageAction.Add; }
+
   constructor(private categoriesService: WebAdminCategoriesService,
               private formBuilder: FormBuilder,
+              private router: Router,
               private route: ActivatedRoute) {
   }
 
   ngOnInit() {
-    this.init();
+    this.route.params.subscribe(_ => {
+      this.init();
+    });
   }
 
   init() {
-    this.isNewCategory = this.route.snapshot.data.action === EWebAdminCategoryPageAction.Add;
+    this.category = null;
 
     if (this.isNewCategory) {
       this.buildForm(EMPTY_CATEGORY);
@@ -56,7 +64,74 @@ export class WebAdminCategoryComponent implements OnInit {
     }
   }
 
-  buildForm(category: AdminRequestCategoryDto) {
+  getCategory() {
+    const id = this.route.snapshot.paramMap.get('id');
+
+    this.categoriesService.fetchCategory(id).subscribe(
+      category => {
+        this.category = category;
+        this.categoriesService.setSelectedCategoryId(category.id);
+        this.buildForm(this.category);
+      },
+      error => console.warn(error)
+    );
+  }
+
+  save() {
+    if (this.form.invalid) {
+      this.validateAllControls();
+      return;
+    }
+
+    if (this.isNewCategory) {
+      this.addNewCategory();
+    } else {
+      this.updateCategory();
+    }
+  }
+
+  delete() {
+    if (!confirm('Вы уверены, что хотите удалить эту категорию?')) {
+      return;
+    }
+
+    this.categoriesService.deleteCategory(this.category.id).subscribe(
+      _ => {
+        this.router.navigate(['admin', 'category']);
+        this.categoriesService.categoryUpdated$.next();
+      },
+      error => console.warn(error)
+    );
+  }
+
+  private addNewCategory() {
+    const parentId = this.route.snapshot.paramMap.get('parentId');
+
+    this.categoriesService.saveCategory(this.form.value, parentId).subscribe(
+      category => {
+        this.categoriesService.categoryUpdated$.next();
+        this.router.navigate(['admin', 'category', 'edit', category.id]);
+      },
+      error => console.warn(error)
+    );
+  }
+
+  private updateCategory() {
+    const dto = {
+      ...this.category,
+      ...this.form.value
+    };
+
+    this.categoriesService.updateCategory(this.category.id, dto).subscribe(
+      category => {
+        this.categoriesService.categoryUpdated$.next();
+        this.category = category;
+      },
+      error => console.warn(error)
+    );
+  }
+
+  private buildForm(category: AdminAddOrUpdateCategoryDto) {
     this.form = this.formBuilder.group({
       isEnabled: category.isEnabled,
       name: [category.name, Validators.required],
@@ -68,45 +143,6 @@ export class WebAdminCategoryComponent implements OnInit {
         keywords: category.metaTags.keywords,
       })
     });
-  }
-
-  getCategory() {
-    const id = this.route.snapshot.paramMap.get('id');
-
-    if (this.categoriesService.activeCategory) {
-      return;
-    }
-
-    this.categoriesService.fetchCategory(id).subscribe(
-      category => {
-        this.categoriesService.setActiveCategory(category);
-      },
-      error => console.warn(error)
-    );
-  }
-
-  delete() {
-    if (!confirm('Вы уверены, что хотите удалить эту категорию?')) {
-      return;
-    }
-
-    const id = this.route.snapshot.paramMap.get('id');
-    this.categoriesService.deleteCategory(id);
-  }
-
-  save() {
-    if (this.form.invalid) {
-      this.validateAllControls();
-      return;
-    }
-
-    const parentId = this.route.snapshot.paramMap.get('parentId');
-    this.categoriesService.saveCategory(this.form.value, parentId).subscribe(
-      response => {
-        console.log(response);
-      },
-      error => console.warn(error)
-    );
   }
 
   private validateAllControls() {
