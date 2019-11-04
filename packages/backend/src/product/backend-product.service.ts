@@ -3,38 +3,106 @@ import { BackendProduct } from './models/product.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { BackendInventoryService } from '../inventory/backend-inventory.service';
 import { ProductDto } from '../../../shared/dtos/product.dto';
-import { Types } from 'mongoose';
 import { BackendPageRegistryService } from '../page-registry/page-registry.service';
-import { toObjectId } from '../shared/object-id.function';
 import { InjectModel } from '@nestjs/mongoose';
+import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
+import { transliterate } from '../shared/helpers/transliterate.function';
+import { BackendCounterService } from '../shared/counter/counter.service';
 
 @Injectable()
 export class BackendProductService {
 
   constructor(@InjectModel(BackendProduct.name) private readonly productModel: ReturnModelType<typeof BackendProduct>,
               private readonly inventoryService: BackendInventoryService,
+              private readonly counterService: BackendCounterService,
               private readonly pageRegistryService: BackendPageRegistryService) {
   }
 
-  async createProduct(product: ProductDto): Promise<BackendProduct> {
+  async getProducts(): Promise<BackendProduct[]> {
+    const products = await this.productModel.find().exec();
 
-    const newProduct = new BackendProduct();
-
-    Object.keys(product).forEach(key => {
-      if (key === 'categoryIds') {
-        newProduct.categoryIds = product.categoryIds.map(id => this.toProductObjectId(id));
-      } else {
-        newProduct[key] = product[key];
-      }
-    });
-
-    const created = await this.productModel.create(newProduct);
-
-    await this.inventoryService.createInventory(created.sku, created._id, product.qty);
-    this.createProductPageRegistry(created.slug);
-
-    return created.toJSON();
+    return products.map(p => p.toJSON());
   }
+
+  async getProductById(id: string): Promise<DocumentType<BackendProduct>> {
+    const found = await this.productModel.findById(parseInt(id)).exec();
+    if (!found) {
+      throw new NotFoundException(`Product with id '${id}' not found`);
+    }
+
+    return found;
+  }
+
+  async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<BackendProduct> {
+    productDto.slug = productDto.slug === '' ? transliterate(productDto.name) : productDto.slug;
+
+    const duplicate = await this.productModel.findOne({ slug: productDto.slug }).exec();
+    if (duplicate) {
+      throw new BadRequestException(`Product with slug '${productDto.slug}' already exists`);
+    }
+
+    const newProductModel = new this.productModel(productDto);
+    newProductModel.id = await this.counterService.getCounter(BackendProduct.collectionName);
+    await newProductModel.save();
+
+    await this.inventoryService.createInventory(newProductModel.sku, newProductModel.id, productDto.qty);
+    this.createProductPageRegistry(newProductModel.slug);
+
+    return newProductModel.toJSON();
+  }
+
+  async getProductQty(product: BackendProduct): Promise<number> {
+    const inventory = await this.inventoryService.getInventory(product.sku);
+    return inventory.qty;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // async createProduct(product: ProductDto): Promise<BackendProduct> {
+  //
+  //   const newProduct = new BackendProduct();
+  //
+  //   Object.keys(product).forEach(key => {
+  //     if (key === 'categoryIds') {
+  //       newProduct.categoryIds = product.categoryIds.map(id => this.toProductObjectId(id));
+  //     } else {
+  //       newProduct[key] = product[key];
+  //     }
+  //   });
+  //
+  //   const created = await this.productModel.create(newProduct);
+  //
+  //   await this.inventoryService.createInventory(created.sku, created._id, product.qty);
+  //   this.createProductPageRegistry(created.slug);
+  //
+  //   return created.toJSON();
+  // }
 
   async updateProduct(product: DocumentType<BackendProduct>, productDto: ProductDto) {
     const oldSlug = product.slug;
@@ -57,8 +125,8 @@ export class BackendProductService {
     return updated;
   }
 
-  async deleteProduct(productId: Types.ObjectId) {
-    await this.inventoryService.deleteOne(productId);
+  async deleteProduct(productId) {
+    // await this.inventoryService.deleteOne(productId);
 
     const deleted = await this.productModel.findOneAndDelete({ '_id': productId }).exec();
 
@@ -108,7 +176,7 @@ export class BackendProductService {
     return this.pageRegistryService.deletePageRegistry(slug);
   }
 
-  toProductObjectId(productId: string): Types.ObjectId {
-    return toObjectId(productId, () => { throw new BadRequestException(`Invalid product ID`); });
+  toProductObjectId(productId: any): any {
+    return;
   }
 }

@@ -11,7 +11,7 @@ export class BackendInventory {
   set id(id: string) { this._id = id; }
 
   @prop()
-  productId: Types.ObjectId;
+  productId: number;
 
   @prop()
   qty: number;

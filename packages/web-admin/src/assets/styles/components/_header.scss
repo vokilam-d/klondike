@@ -1,0 +1,16 @@
+.header {
+  display: flex;
+  align-items: center;
+
+  &__toolbar {
+    margin: 0 0 0 auto;
+  }
+
+  &__btn {
+    margin: 0 0 0 15px;
+
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+}

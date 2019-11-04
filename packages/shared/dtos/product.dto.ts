@@ -6,7 +6,7 @@ export class ProductDto {
   sku: string;
   qty?: number;
   isEnabled?: boolean;
-  categoryIds: string[];
+  categoryIds: number[];
   price?: number;
   meta?: BackendMetaTags;
   fullDescription?: string;

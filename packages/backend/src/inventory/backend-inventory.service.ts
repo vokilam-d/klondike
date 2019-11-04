@@ -10,7 +10,7 @@ export class BackendInventoryService {
   constructor(@InjectModel(BackendInventory.name) private readonly inventoryModel: ReturnModelType<typeof BackendInventory>) {
   }
 
-  async createInventory(sku: string, productId: Types.ObjectId, qty: number = 0): Promise<DocumentType<BackendInventory>> {
+  async createInventory(sku: string, productId: number, qty: number = 0): Promise<DocumentType<BackendInventory>> {
     const created = await this.inventoryModel.create({
       _id: sku,
       productId,
@@ -18,6 +18,15 @@ export class BackendInventoryService {
     });
 
     return created;
+  }
+
+  async getInventory(sku: string): Promise<DocumentType<BackendInventory>> {
+    const found = await this.inventoryModel.findById(sku).exec();
+    if (!found) {
+      throw new NotFoundException(`Cannot find inventory for sku '${sku}'`);
+    }
+
+    return found;
   }
 
   async setInventoryQty(sku: string, qty: number) {
@@ -90,7 +99,7 @@ export class BackendInventoryService {
     return updated;
   }
 
-  deleteOne(productId: Types.ObjectId) {
+  deleteOne(productId: number) {
     return this.inventoryModel.findOneAndDelete({ productId }).exec();
   }
 }

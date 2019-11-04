@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { WebAdminCategoriesService } from '../categories.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { EWebAdminCategoryPageAction } from '../../../shared/enums/category-page-action.enum';
+import { EWebAdminPageAction } from '../../../shared/enums/category-page-action.enum';
 import {
   AdminAddOrUpdateCategoryDto,
   AdminResponseCategoryDto
@@ -40,7 +40,7 @@ export class WebAdminCategoryComponent implements OnInit {
   get metaDescription() { return this.form && this.form.get('metaTags.description') as FormControl; }
   get metaKeywords() { return this.form && this.form.get('metaTags.keywords') as FormControl; }
 
-  get isNewCategory(): boolean { return this.route.snapshot.data.action === EWebAdminCategoryPageAction.Add; }
+  get isNewCategory(): boolean { return this.route.snapshot.data.action === EWebAdminPageAction.Add; }
 
   constructor(private categoriesService: WebAdminCategoriesService,
               private formBuilder: FormBuilder,

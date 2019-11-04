@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { BackendCategory } from './models/category.model';
 import { BackendPageRegistryService } from '../page-registry/page-registry.service';
-import { BackendProductService } from '../product/product.service';
+import { BackendProductService } from '../product/backend-product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import {
@@ -74,7 +74,7 @@ export class BackendCategoryService {
       throw new NotFoundException(`Category with slug '${slug}' not found`);
     }
 
-    return found;
+    return found.toJSON();
   }
 
   async createCategory(category: AdminAddOrUpdateCategoryDto): Promise<BackendCategory> {
@@ -101,7 +101,7 @@ export class BackendCategoryService {
     const oldSlug = found.slug;
 
     Object.keys(category).forEach(key => {
-      if (category[key] !== undefined) {
+      if (category[key] !== undefined && key !== 'id') {
         found[key] = category[key];
       }
     });

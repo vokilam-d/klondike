@@ -5,7 +5,7 @@ import { SharedModule } from './shared/shared.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BackendConfigService } from './shared/config/config.service';
 import { EConfig } from '../config/config.enum';
-import { BackendProductModule } from './product/product.module';
+import { BackendProductModule } from './product/backend-product.module';
 import { BackendCartModule } from './cart/cart.module';
 import { BackendInventoryModule } from './inventory/inventory.module';
 

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { BackendCategoryService } from './category.service';
+import { BackendCategoryService } from './backend-category.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BackendCategory, BackendCategoryModel } from './models/category.model';
 import { BackendPageRegistryModule } from '../page-registry/page-registry.module';
-import { BackendProductModule } from '../product/product.module';
+import { BackendProductModule } from '../product/backend-product.module';
 import { BackendClientCategoryController } from './backend-client-category.controller';
 import { BackendAdminCategoryController } from './backend-admin-category.controller';
 

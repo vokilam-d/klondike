@@ -1,0 +1,110 @@
+<div class="page">
+  <div class="header">
+    <h1 class="header__title" [ngSwitch]="isNewProduct">
+      <ng-container *ngSwitchCase="true">
+        Новый товар
+      </ng-container>
+
+      <ng-container *ngSwitchCase="false">
+        {{ product?.name }}
+      </ng-container>
+    </h1>
+
+    <div class="header__toolbar">
+      <button class="header__btn btn" (click)="goBack()">
+        <i class="ai ai-arrow-left"></i> назад
+      </button>
+      <button class="header__btn main-btn" (click)="save()">Сохранить</button>
+    </div>
+  </div>
+
+  <form class="product" *ngIf="form">
+    <label class="product__field field" [class.field--invalid]="isControlInvalid(isEnabled)">
+      <span class="field__label">Включить категорию</span>
+      <span class="field__control">
+        <span class="switcher">
+          <input class="switcher__input"
+                 [formControl]="isEnabled"
+                 type="checkbox"
+          >
+          <span class="switcher__control" [class.switcher__control--active]="isEnabled.value"></span>
+          <span class="switcher__description">
+            <ng-container *ngIf="isEnabled.value; else isEnabledFalseText">Да</ng-container>
+            <ng-template #isEnabledFalseText>Нет</ng-template>
+          </span>
+        </span>
+      </span>
+    </label>
+
+    <label class="product__field field field--required" [class.field--invalid]="isControlInvalid(name)">
+      <span class="field__label">Название товара</span>
+      <span class="field__control">
+        <input class="field__input" [formControl]="name" type="text">
+      </span>
+    </label>
+
+    <label class="product__field field field--required" [class.field--invalid]="isControlInvalid(sku)">
+      <span class="field__label">Артикул</span>
+      <span class="field__control">
+        <input class="field__input" [formControl]="sku" type="text">
+      </span>
+    </label>
+
+    <label class="product__field field field--required" [class.field--invalid]="isControlInvalid(price)">
+      <span class="field__label">Цена</span>
+      <span class="field__control">
+        <input class="field__input" [formControl]="price" type="text">
+      </span>
+    </label>
+
+    <label class="product__field field" [class.field--invalid]="isControlInvalid(qty)">
+      <span class="field__label">Количество</span>
+      <span class="field__control">
+        <input class="field__input" [formControl]="qty" type="text">
+      </span>
+    </label>
+
+    <label class="product__field field" [class.field--invalid]="isControlInvalid(fullDescription)">
+      <span class="field__label">Описание</span>
+      <span class="field__control">
+        <textarea class="field__textarea" [formControl]="fullDescription"></textarea>
+      </span>
+    </label>
+
+    <label class="product__field field" [class.field--invalid]="isControlInvalid(shortDescription)">
+      <span class="field__label">Короткое описание</span>
+      <span class="field__control">
+        <textarea class="field__textarea" [formControl]="shortDescription"></textarea>
+      </span>
+    </label>
+
+    <label class="product__field field" [class.field--invalid]="isControlInvalid(slug)">
+      <span class="field__label">URL адрес</span>
+      <span class="field__control">
+        <input class="field__input" [formControl]="slug" type="text">
+      </span>
+    </label>
+
+    <label class="product__field field" [class.field--invalid]="isControlInvalid(metaTitle)">
+      <span class="field__label">Meta заголовок</span>
+      <span class="field__control">
+        <input class="field__input" [formControl]="metaTitle" type="text">
+      </span>
+    </label>
+
+    <label class="product__field field" [class.field--invalid]="isControlInvalid(metaDescription)">
+      <span class="field__label">Meta описание</span>
+      <span class="field__control">
+        <textarea class="field__textarea" [formControl]="metaDescription"></textarea>
+      </span>
+    </label>
+
+    <label class="product__field field" [class.field--invalid]="isControlInvalid(metaKeywords)">
+      <span class="field__label">Meta ключевые слова</span>
+      <span class="field__control">
+        <textarea class="field__textarea" [formControl]="metaKeywords"></textarea>
+      </span>
+    </label>
+  </form>
+
+</div>

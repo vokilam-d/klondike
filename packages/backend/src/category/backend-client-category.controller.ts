@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { BackendCategoryService } from './category.service';
+import { BackendCategoryService } from './backend-category.service';
 
 @Controller('category')
 export class BackendClientCategoryController {

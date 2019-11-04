@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BackendCart, BackendCartModel } from './models/cart.model';
 import { BackendInventoryModule } from '../inventory/inventory.module';
 import { BackendCartController } from './cart.controller';
-import { BackendProductModule } from '../product/product.module';
+import { BackendProductModule } from '../product/backend-product.module';
 
 const cartModel = {
   name: BackendCartModel.modelName,

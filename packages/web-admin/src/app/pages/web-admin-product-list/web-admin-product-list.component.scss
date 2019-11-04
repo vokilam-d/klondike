@@ -1,0 +1,67 @@
+@import "variables";
+
+.grid {
+  margin: 40px 0 0;
+  overflow-x: auto;
+
+  &__container {
+    min-width: max-content;
+  }
+
+  &__head {
+    background: #514943;
+    color: #fff;
+  }
+
+  &__row {
+    display: flex;
+    cursor: pointer;
+
+    &--even {
+      background: #f5f5f5;
+    }
+  }
+
+  &__block {
+    padding: 20px 15px;
+    flex-shrink: 0;
+  }
+
+  &__head &__block {
+    border: 1px solid #8a837f;
+    border-left: none;
+  }
+
+  &__body &__block {
+    border-right: 1px dashed $borderColor;
+  }
+
+  &__id {
+    width: 65px;
+  }
+
+  &__thumbnail {
+    width: 95px;
+  }
+
+  &__name {
+    width: 500px;
+    word-break: break-word;
+  }
+
+  &__sku {
+    width: 100px;
+  }
+
+  &__price {
+    width: 80px;
+  }
+
+  &__qty {
+    width: 80px;
+  }
+
+  &__is-enabled {
+    width: 100px;
+  }
+}

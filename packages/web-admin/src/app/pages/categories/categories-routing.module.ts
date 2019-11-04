@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { WebAdminCategoriesComponent } from './categories.component';
 import { WebAdminCategoryComponent } from './web-admin-category/web-admin-category.component';
-import { EWebAdminCategoryPageAction } from '../../shared/enums/category-page-action.enum';
+import { EWebAdminPageAction } from '../../shared/enums/category-page-action.enum';
 
 const routes: Routes = [
   {
@@ -14,14 +14,14 @@ const routes: Routes = [
         path: 'edit/:id',
         component: WebAdminCategoryComponent,
         data: {
-          action: EWebAdminCategoryPageAction.Edit
+          action: EWebAdminPageAction.Edit
         }
       },
       {
         path: 'add/parent/:parentId',
         component: WebAdminCategoryComponent,
         data: {
-          action: EWebAdminCategoryPageAction.Add
+          action: EWebAdminPageAction.Add
         }
       }
     ]

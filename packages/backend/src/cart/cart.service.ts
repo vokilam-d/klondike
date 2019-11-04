@@ -5,7 +5,7 @@ import { BackendInventoryService } from '../inventory/backend-inventory.service'
 import { BackendProduct } from '../product/models/product.model';
 import { BackendCartItem } from './models/cart-item.model';
 import { Types } from 'mongoose';
-import { BackendProductService } from '../product/product.service';
+import { BackendProductService } from '../product/backend-product.service';
 import { BackendCartItemDetails } from './models/cart-item-details.model';
 import { ECartStatus } from '../../../shared/enums/cart.enum';
 import { InjectModel } from '@nestjs/mongoose';

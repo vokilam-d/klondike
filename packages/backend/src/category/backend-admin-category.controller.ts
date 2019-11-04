@@ -11,7 +11,7 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
-import { BackendCategoryService } from './category.service';
+import { BackendCategoryService } from './backend-category.service';
 import {
   AdminAddOrUpdateCategoryDto,
   AdminCategoriesTreeDto,

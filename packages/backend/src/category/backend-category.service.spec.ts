@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BackendCategoryService } from './category.service';
+import { BackendCategoryService } from './backend-category.service';
 
 describe('BackendCategoryService', () => {
   let service: BackendCategoryService;

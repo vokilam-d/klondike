@@ -10,10 +10,10 @@ import {
   Post,
   Query
 } from '@nestjs/common';
-import { BackendProductService } from './product.service';
+import { BackendProductService } from './backend-product.service';
 import { ProductDto } from '../../../shared/dtos/product.dto';
 
-@Controller('products')
+@Controller('products-old')
 export class BackendProductController {
 
   constructor(private readonly productService: BackendProductService) {
@@ -45,7 +45,7 @@ export class BackendProductController {
       throw new BadRequestException(`Product with url '${product.slug}' already exists`);
     }
 
-    return await this.productService.createProduct(product);
+    return await this.productService.createProduct(product as any);
   }
 
   @Patch(':id')
