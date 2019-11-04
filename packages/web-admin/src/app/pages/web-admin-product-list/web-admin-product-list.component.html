@@ -16,8 +16,6 @@
         <div class="grid__block grid__id">ID</div>
         <div class="grid__block grid__thumbnail">Thumbnail</div>
         <div class="grid__block grid__name">Название товара</div>
-        <div class="grid__block grid__name">Название товара</div>
-        <div class="grid__block grid__name">Название товара</div>
         <div class="grid__block grid__sku">Артикул</div>
         <div class="grid__block grid__price">Цена</div>
         <div class="grid__block grid__qty">Кол-во</div>
@@ -25,22 +23,16 @@
       </div>
 
       <div class="grid__body">
-        <a class="grid__row"
+        <a class="grid__row grid__product"
            *ngFor="let product of products, even as even"
            [routerLink]="['edit', product.id]"
-           [class.grid__row--even]="even"
+           [class.grid__product--even]="even"
         >
           <div class="grid__block grid__id">
             {{ product.id }}
           </div>
           <div class="grid__block grid__thumbnail">
             <img class="grid__thumbnail-img" [src]="product.mediaUrls && product.mediaUrls[0]" alt="">
-          </div>
-          <div class="grid__block grid__name">
-            {{ product.name }}
-          </div>
-          <div class="grid__block grid__name">
-            {{ product.name }}
           </div>
           <div class="grid__block grid__name">
             {{ product.name }}
