@@ -14,12 +14,12 @@
 
       <div class="grid__head grid__row">
         <div class="grid__block grid__id">ID</div>
-        <div class="grid__block grid__thumbnail">Thumbnail</div>
+        <div class="grid__block grid__thumbnail">Картинка</div>
         <div class="grid__block grid__name">Название товара</div>
         <div class="grid__block grid__sku">Артикул</div>
         <div class="grid__block grid__price">Цена</div>
         <div class="grid__block grid__qty">Кол-во</div>
-        <div class="grid__block grid__is-enabled">Статус</div>
+        <div class="grid__block grid__status">Статус</div>
       </div>
 
       <div class="grid__body">
@@ -46,7 +46,7 @@
           <div class="grid__block grid__qty">
             {{ product.qty }}
           </div>
-          <div class="grid__block grid__is-enabled" [ngSwitch]="product.isEnabled">
+          <div class="grid__block grid__status" [ngSwitch]="product.isEnabled">
             <ng-container *ngSwitchCase="true">Включен</ng-container>
             <ng-container *ngSwitchCase="false">Выключен</ng-container>
           </div>

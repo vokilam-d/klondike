@@ -33,8 +33,9 @@
   }
 
   &__block {
-    padding: 20px 15px;
+    padding: 17px 10px;
     flex-shrink: 0;
+    box-sizing: content-box;
   }
 
   &__head &__block {
@@ -47,7 +48,7 @@
   }
 
   &__id {
-    width: 65px;
+    width: 30px;
   }
 
   &__thumbnail {
@@ -60,18 +61,18 @@
   }
 
   &__sku {
-    width: 100px;
+    width: 70px;
   }
 
   &__price {
-    width: 80px;
+    width: 70px;
   }
 
   &__qty {
-    width: 80px;
+    width: 55px;
   }
 
-  &__is-enabled {
-    width: 100px;
+  &__status {
+    width: 70px;
   }
 }
