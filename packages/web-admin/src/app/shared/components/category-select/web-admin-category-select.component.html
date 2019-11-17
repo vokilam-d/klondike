@@ -1,0 +1,42 @@
+<div class="select" (clickOutside)="toggleVisibility(false)">
+  <button class="field__select select__active-row" (click)="toggleVisibility()">
+    <span *ngIf="!selectedOptions.length; else optionsTmpl" class="select__placeholder">
+      Выбрать...
+    </span>
+
+    <ng-template #optionsTmpl>
+      <span class="select__active" *ngFor="let selected of selectedOptions">
+        {{ selected.name }}
+
+        <i class="ai ai-multiply select__remove" (click)="unselectOption($event, selected)"></i>
+      </span>
+    </ng-template>
+  </button>
+
+  <ul class="select__options" *ngIf="isVisible">
+    <ng-container *ngFor="let option of options">
+      <ng-container *ngTemplateOutlet="treeItem; context: { option: option }"></ng-container>
+    </ng-container>
+  </ul>
+
+</div>
+
+
+
+<ng-template #treeItem let-option="option">
+  <li class="select__option-container">
+    <button class="select__option" (click)="toggleOption(option)">
+      <span class="select__checkbox">
+        <i class="ai ai-checkmark select__checkmark" *ngIf="option.isSelected"></i>
+      </span>
+
+      {{ option.name }}
+    </button>
+
+    <ul class="select__suboptions" *ngIf="option.children.length">
+      <ng-container *ngFor="let subOption of option.children">
+        <ng-container *ngTemplateOutlet="treeItem; context: { option: subOption }"></ng-container>
+      </ng-container>
+    </ul>
+  </li>
+</ng-template>

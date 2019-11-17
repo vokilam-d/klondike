@@ -19,13 +19,18 @@
   </div>
 
   <form class="product" *ngIf="form">
-    <label class="product__field field" [class.field--invalid]="isControlInvalid(isEnabled)">
-      <span class="field__label">Включить категорию</span>
+
+    <div class="product__field field"
+           *ngIf="form.get('isEnabled') as isEnabled"
+           [class.field--invalid]="isControlInvalid(isEnabled)"
+    >
+      <label class="field__label" for="isEnabled">Включить категорию</label>
       <span class="field__control">
         <span class="switcher">
           <input class="switcher__input"
                  [formControl]="isEnabled"
                  type="checkbox"
+                 id="isEnabled"
           >
           <span class="switcher__control" [class.switcher__control--active]="isEnabled.value"></span>
           <span class="switcher__description">
@@ -34,77 +39,114 @@
           </span>
         </span>
       </span>
-    </label>
+    </div>
 
-    <label class="product__field field field--required" [class.field--invalid]="isControlInvalid(name)">
-      <span class="field__label">Название товара</span>
+    <label class="product__field field field--required"
+           *ngIf="form.get('name') as name"
+           [class.field--invalid]="isControlInvalid(name)"
+    >
+      <label for="name" class="field__label">Название товара</label>
       <span class="field__control">
-        <input class="field__input" [formControl]="name" type="text">
+        <input class="field__input" [formControl]="name" type="text" id="name">
       </span>
     </label>
 
-    <label class="product__field field field--required" [class.field--invalid]="isControlInvalid(sku)">
-      <span class="field__label">Артикул</span>
+    <label class="product__field field field--required"
+           *ngIf="form.get('sku') as sku"
+           [class.field--invalid]="isControlInvalid(sku)"
+    >
+      <label for="sku" class="field__label">Артикул</label>
       <span class="field__control">
-        <input class="field__input" [formControl]="sku" type="text">
+        <input class="field__input" [formControl]="sku" type="text" id="sku">
       </span>
     </label>
 
-    <label class="product__field field field--required" [class.field--invalid]="isControlInvalid(price)">
-      <span class="field__label">Цена</span>
+    <label class="product__field field field--required"
+           *ngIf="form.get('price') as price"
+           [class.field--invalid]="isControlInvalid(price)"
+    >
+      <label for="price" class="field__label">Цена</label>
       <span class="field__control">
-        <input class="field__input" [formControl]="price" type="text">
+        <input class="field__input" [formControl]="price" type="text" id="price">
       </span>
     </label>
 
-    <label class="product__field field" [class.field--invalid]="isControlInvalid(qty)">
-      <span class="field__label">Количество</span>
+    <div class="product__field field"
+           *ngIf="form.get('qty') as qty"
+           [class.field--invalid]="isControlInvalid(qty)"
+    >
+      <label for="qty" class="field__label">Количество</label>
       <span class="field__control">
-        <input class="field__input" [formControl]="qty" type="text">
+        <input class="field__input" [formControl]="qty" type="text" id="qty">
       </span>
-    </label>
+    </div>
 
-    <label class="product__field field" [class.field--invalid]="isControlInvalid(fullDescription)">
-      <span class="field__label">Описание</span>
+    <div class="product__field field" *ngIf="form.get('categoryIds') as categoryIds">
+      <label class="field__label">Категории</label>
+      <span class="field__control">
+        <web-admin-category-select [formControl]="categoryIds"></web-admin-category-select>
+      </span>
+    </div>
+
+    <div class="product__field field"
+           *ngIf="form.get('fullDescription') as fullDescription"
+           [class.field--invalid]="isControlInvalid(fullDescription)"
+    >
+      <label class="field__label">Описание</label>
       <span class="field__control">
         <textarea class="field__textarea" [formControl]="fullDescription"></textarea>
       </span>
-    </label>
+    </div>
 
-    <label class="product__field field" [class.field--invalid]="isControlInvalid(shortDescription)">
-      <span class="field__label">Короткое описание</span>
+    <div class="product__field field"
+           *ngIf="form.get('shortDescription') as shortDescription"
+           [class.field--invalid]="isControlInvalid(shortDescription)"
+    >
+      <label class="field__label">Короткое описание</label>
       <span class="field__control">
         <textarea class="field__textarea" [formControl]="shortDescription"></textarea>
       </span>
-    </label>
+    </div>
 
-    <label class="product__field field" [class.field--invalid]="isControlInvalid(slug)">
-      <span class="field__label">URL адрес</span>
+    <div class="product__field field"
+           *ngIf="form.get('slug') as slug"
+           [class.field--invalid]="isControlInvalid(slug)"
+    >
+      <label for="slug" class="field__label">URL адрес</label>
       <span class="field__control">
-        <input class="field__input" [formControl]="slug" type="text">
+        <input class="field__input" [formControl]="slug" type="text" id="slug">
       </span>
-    </label>
+    </div>
 
-    <label class="product__field field" [class.field--invalid]="isControlInvalid(metaTitle)">
-      <span class="field__label">Meta заголовок</span>
+    <div class="product__field field"
+           *ngIf="form.get('metaTags.title') as metaTitle"
+           [class.field--invalid]="isControlInvalid(metaTitle)"
+    >
+      <label for="metaTitle" class="field__label">Meta заголовок</label>
       <span class="field__control">
-        <input class="field__input" [formControl]="metaTitle" type="text">
+        <input class="field__input" [formControl]="metaTitle" type="text" id="metaTitle">
       </span>
-    </label>
+    </div>
 
-    <label class="product__field field" [class.field--invalid]="isControlInvalid(metaDescription)">
-      <span class="field__label">Meta описание</span>
+    <div class="product__field field"
+           *ngIf="form.get('metaTags.description') as metaDescription"
+           [class.field--invalid]="isControlInvalid(metaDescription)"
+    >
+      <label class="field__label">Meta описание</label>
       <span class="field__control">
         <textarea class="field__textarea" [formControl]="metaDescription"></textarea>
       </span>
-    </label>
+    </div>
 
-    <label class="product__field field" [class.field--invalid]="isControlInvalid(metaKeywords)">
-      <span class="field__label">Meta ключевые слова</span>
+    <div class="product__field field"
+           *ngIf="form.get('metaTags.keywords') as metaKeywords"
+           [class.field--invalid]="isControlInvalid(metaKeywords)"
+    >
+      <label class="field__label">Meta ключевые слова</label>
       <span class="field__control">
         <textarea class="field__textarea" [formControl]="metaKeywords"></textarea>
       </span>
-    </label>
+    </div>
   </form>
 
 </div>

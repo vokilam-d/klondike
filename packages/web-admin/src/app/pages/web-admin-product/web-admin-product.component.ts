@@ -6,7 +6,7 @@ import {
   AdminAddOrUpdateProductDto,
   AdminResponseProductDto
 } from '../../../../../backend/src/shared/dtos/admin/product.dto';
-import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormControl, AbstractControl } from '@angular/forms';
 
 const EMPTY_PRODUCT: AdminAddOrUpdateProductDto = {
   name: '',
@@ -36,18 +36,6 @@ export class WebAdminProductComponent implements OnInit {
   isNewProduct: boolean;
   product: AdminResponseProductDto;
   form: FormGroup;
-
-  get isEnabled() { return this.form && this.form.get('isEnabled') as FormControl; }
-  get name() { return this.form && this.form.get('name') as FormControl; }
-  get sku() { return this.form && this.form.get('sku') as FormControl; }
-  get price() { return this.form && this.form.get('price') as FormControl; }
-  get qty() { return this.form && this.form.get('qty') as FormControl; }
-  get fullDescription() { return this.form && this.form.get('fullDescription') as FormControl; }
-  get shortDescription() { return this.form && this.form.get('shortDescription') as FormControl; }
-  get slug() { return this.form && this.form.get('slug') as FormControl; }
-  get metaTitle() { return this.form && this.form.get('metaTags.title') as FormControl; }
-  get metaDescription() { return this.form && this.form.get('metaTags.description') as FormControl; }
-  get metaKeywords() { return this.form && this.form.get('metaTags.keywords') as FormControl; }
 
   constructor(private productsService: WebAdminProductService,
               private formBuilder: FormBuilder,
@@ -93,7 +81,7 @@ export class WebAdminProductComponent implements OnInit {
       sku: [product.sku, Validators.required],
       price: [product.price, Validators.required],
       qty: product.qty,
-      categoryIds: product.categoryIds,
+      categoryIds: [product.categoryIds],
       metaTags: this.formBuilder.group({
         title: product.metaTags.title,
         description: product.metaTags.description,
@@ -126,13 +114,12 @@ export class WebAdminProductComponent implements OnInit {
     });
   }
 
-  isControlInvalid(control: FormControl) {
+  isControlInvalid(control: AbstractControl) {
     return !control.valid && control.touched;
   }
 
   private addNewProduct() {
     const dto = this.form.value;
-
     this.productsService.addNewProduct(dto).subscribe(
       product => {
         this.router.navigate(['admin', 'product', 'edit', product.id]);

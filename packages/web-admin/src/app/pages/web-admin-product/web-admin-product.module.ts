@@ -5,6 +5,7 @@ import { WebAdminProductRoutingModule } from './web-admin-product-routing.module
 import { WebAdminProductComponent } from './web-admin-product.component';
 import { WebAdminProductService } from '../../shared/services/web-admin-product.service';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { SharedModule } from '../../shared/shared.module';
 
 
 @NgModule({
@@ -13,7 +14,8 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     CommonModule,
     WebAdminProductRoutingModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    SharedModule
   ],
   providers: [
     WebAdminProductService

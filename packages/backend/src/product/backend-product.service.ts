@@ -24,8 +24,8 @@ export class BackendProductService {
     return products.map(p => p.toJSON());
   }
 
-  async getProductById(id: string): Promise<DocumentType<BackendProduct>> {
-    const found = await this.productModel.findById(parseInt(id)).exec();
+  async getProductById(id: number): Promise<DocumentType<BackendProduct>> {
+    const found = await this.productModel.findById(id).exec();
     if (!found) {
       throw new NotFoundException(`Product with id '${id}' not found`);
     }
@@ -49,6 +49,29 @@ export class BackendProductService {
     this.createProductPageRegistry(newProductModel.slug);
 
     return newProductModel.toJSON();
+  }
+
+  async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto): Promise<BackendProduct> {
+    productDto.slug = productDto.slug === '' ? transliterate(productDto.name) : productDto.slug;
+
+    const found = await this.getProductById(productId);
+    const oldSlug = found.slug;
+
+    Object.keys(productDto).forEach(key => {
+      if (key !== 'id') {
+        found[key] = productDto[key];
+      }
+    });
+
+    const saved = await found.save();
+
+    if (oldSlug !== productDto.slug) {
+      this.updateProductPageRegistry(found.slug, productDto.slug);
+    }
+
+    await this.inventoryService.setInventoryQty(saved.sku, productDto.qty);
+
+    return saved.toJSON();
   }
 
   async getProductQty(product: BackendProduct): Promise<number> {
@@ -104,26 +127,26 @@ export class BackendProductService {
   //   return created.toJSON();
   // }
 
-  async updateProduct(product: DocumentType<BackendProduct>, productDto: ProductDto) {
-    const oldSlug = product.slug;
-
-    if (productDto.qty !== undefined) {
-      await this.inventoryService.setInventoryQty(product.sku, productDto.qty);
-    }
-
-    Object.keys(productDto).forEach(key => {
-      product[key] = productDto[key];
-    });
-
-    const updated = await this.productModel.findOneAndUpdate(
-      { _id: product.id },
-      product,
-      { new: true }
-    ).exec();
-
-    this.updateProductPageRegistry(oldSlug, product.slug);
-    return updated;
-  }
+  // async updateProduct(product: DocumentType<BackendProduct>, productDto: ProductDto) {
+  //   const oldSlug = product.slug;
+  //
+  //   if (productDto.qty !== undefined) {
+  //     await this.inventoryService.setInventoryQty(product.sku, productDto.qty);
+  //   }
+  //
+  //   Object.keys(productDto).forEach(key => {
+  //     product[key] = productDto[key];
+  //   });
+  //
+  //   const updated = await this.productModel.findOneAndUpdate(
+  //     { _id: product.id },
+  //     product,
+  //     { new: true }
+  //   ).exec();
+  //
+  //   this.updateProductPageRegistry(oldSlug, product.slug);
+  //   return updated;
+  // }
 
   async deleteProduct(productId) {
     // await this.inventoryService.deleteOne(productId);

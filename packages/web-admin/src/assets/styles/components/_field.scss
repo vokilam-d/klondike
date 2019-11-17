@@ -1,5 +1,8 @@
 @import "variables";
 
+$fieldBorderColorHover: #878787;
+$fieldBorderColorFocus: #007bdb;
+
 .field {
   display: flex;
 
@@ -31,19 +34,21 @@
   }
 
   &__input,
-  &__textarea {
+  &__textarea,
+  &__select {
     width: 100%;
     padding: 6px 10px 8px;
-    border: 1px solid #adadad;
+    min-height: 34px;
+    border: 1px solid $borderColor;
     font-size: 16px;
     color: $dark;
 
     &:hover {
-      border-color: #878787;
+      border-color: $fieldBorderColorHover;
     }
 
     &:focus {
-      border-color: #007bdb;
+      border-color: $fieldBorderColorFocus;
     }
   }
 
@@ -52,8 +57,46 @@
     height: 5em;
   }
 
+  &__select {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 32px;
+      height: 33px;
+      background: #e3e3e3;
+      border-top: 1px solid $borderColor;
+      border-left: 1px solid $borderColor;
+    }
+
+    &:hover::before {
+      border-color: $fieldBorderColorHover;
+    }
+    &:focus::before {
+      border-color: $fieldBorderColorFocus;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 14px;
+      right: 12px;
+      border-color: #000 transparent transparent transparent;
+      border-width: 5px 4px 0 4px;
+      border-style: solid;
+      transition: all 0.2s ease;
+    }
+    &:focus::after {
+      transform: rotate(180deg);
+    }
+  }
+
   &--invalid &__input,
-  &--invalid &__textarea {
+  &--invalid &__textarea,
+  &--invalid &__select {
     border-color: $red;
   }
 }
