@@ -99,7 +99,7 @@ export class BackendInventoryService {
     return updated;
   }
 
-  deleteOne(productId: number) {
+  deleteInventory(productId: number) {
     return this.inventoryModel.findOneAndDelete({ productId }).exec();
   }
 }
