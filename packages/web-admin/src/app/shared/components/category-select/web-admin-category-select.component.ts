@@ -89,6 +89,10 @@ export class WebAdminCategorySelectComponent implements OnInit, ControlValueAcce
   }
 
   writeValue(value: number[]): void {
+    if (value === null) {
+      value = [];
+    }
+
     if (!Array.isArray(value)) {
       throw new Error(`Value for ${WebAdminCategorySelectComponent.name} must be array of numbers`);
     }
