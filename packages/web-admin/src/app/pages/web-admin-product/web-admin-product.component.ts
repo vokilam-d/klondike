@@ -64,6 +64,19 @@ export class WebAdminProductComponent implements OnInit {
     }
   }
 
+  delete() {
+    if (!confirm(`Вы действительно хотите удалить этот товар?`)) {
+      return;
+    }
+
+    this.productsService.deleteProduct(this.product.id).subscribe(
+      _ => {
+        this.goBack();
+      },
+      error => console.warn(error)
+    );
+  }
+
   private init() {
     this.isNewProduct = this.route.snapshot.data.action === EWebAdminPageAction.Add;
     if (this.isNewProduct) {

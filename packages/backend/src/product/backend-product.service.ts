@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { BackendProduct } from './models/product.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { BackendInventoryService } from '../inventory/backend-inventory.service';
-import { ProductDto } from '../../../shared/dtos/product.dto';
 import { BackendPageRegistryService } from '../page-registry/page-registry.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
@@ -57,11 +56,11 @@ export class BackendProductService {
     const found = await this.getProductById(productId);
     const oldSlug = found.slug;
 
-    Object.keys(productDto).forEach(key => {
-      if (key !== 'id') {
+    Object.keys(productDto)
+      .filter(key => key !== 'id')
+      .forEach(key => {
         found[key] = productDto[key];
-      }
-    });
+      });
 
     const saved = await found.save();
 
@@ -79,87 +78,59 @@ export class BackendProductService {
     return inventory.qty;
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // async createProduct(product: ProductDto): Promise<BackendProduct> {
-  //
-  //   const newProduct = new BackendProduct();
-  //
-  //   Object.keys(product).forEach(key => {
-  //     if (key === 'categoryIds') {
-  //       newProduct.categoryIds = product.categoryIds.map(id => this.toProductObjectId(id));
-  //     } else {
-  //       newProduct[key] = product[key];
-  //     }
-  //   });
-  //
-  //   const created = await this.productModel.create(newProduct);
-  //
-  //   await this.inventoryService.createInventory(created.sku, created._id, product.qty);
-  //   this.createProductPageRegistry(created.slug);
-  //
-  //   return created.toJSON();
-  // }
-
-  // async updateProduct(product: DocumentType<BackendProduct>, productDto: ProductDto) {
-  //   const oldSlug = product.slug;
-  //
-  //   if (productDto.qty !== undefined) {
-  //     await this.inventoryService.setInventoryQty(product.sku, productDto.qty);
-  //   }
-  //
-  //   Object.keys(productDto).forEach(key => {
-  //     product[key] = productDto[key];
-  //   });
-  //
-  //   const updated = await this.productModel.findOneAndUpdate(
-  //     { _id: product.id },
-  //     product,
-  //     { new: true }
-  //   ).exec();
-  //
-  //   this.updateProductPageRegistry(oldSlug, product.slug);
-  //   return updated;
-  // }
-
-  async deleteProduct(productId) {
-    // await this.inventoryService.deleteOne(productId);
-
-    const deleted = await this.productModel.findOneAndDelete({ '_id': productId }).exec();
-
+  async deleteProduct(productId: number): Promise<BackendProduct> {
+    const deleted = await this.productModel.findByIdAndDelete(productId).exec();
     if (!deleted) {
-      throw new NotFoundException(`Product with id '${productId}' not found`);
+      throw new NotFoundException(`No product with id '${productId}'`);
     }
 
+    await this.inventoryService.deleteInventory(productId);
     this.deleteProductPageRegistry(deleted.slug);
+
     return deleted;
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // async deleteProduct(productId) {
+  //   // await this.inventoryService.deleteInventory(productId);
+  //
+  //   const deleted = await this.productModel.findOneAndDelete({ '_id': productId }).exec();
+  //
+  //   if (!deleted) {
+  //     throw new NotFoundException(`Product with id '${productId}' not found`);
+  //   }
+  //
+  //   this.deleteProductPageRegistry(deleted.slug);
+  //   return deleted;
+  // }
 
   findAll(query) {
     return this.productModel.find().exec();

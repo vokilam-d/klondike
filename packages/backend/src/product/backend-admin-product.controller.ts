@@ -1,4 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, Param, Post, Put, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Get, Param, Post, Put, UseInterceptors, Delete } from '@nestjs/common';
 import { AdminAddOrUpdateProductDto, AdminResponseProductDto } from '../shared/dtos/admin/product.dto';
 import { BackendProductService } from './backend-product.service';
 import { plainToClass } from 'class-transformer';
@@ -44,6 +44,14 @@ export class BackendAdminProductController {
     const created = await this.productsService.updateProduct(productId, productDto);
 
     return plainToClass(AdminResponseProductDto, created, { excludeExtraneousValues: true });
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Delete(':id')
+  async deleteProduct(@Param('id') productId: number): Promise<AdminResponseProductDto> {
+    const deleted = await this.productsService.deleteProduct(productId);
+
+    return plainToClass(AdminResponseProductDto, deleted, { excludeExtraneousValues: true });
   }
 
   private async populateProductsWithQty(products: BackendProduct[]): Promise<BackendProductWithQty[]> {

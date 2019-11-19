@@ -27,4 +27,8 @@ export class WebAdminProductService {
   updateProduct(productId: number, dto: AdminAddOrUpdateProductDto): Observable<AdminResponseProductDto> {
     return this.http.put<AdminResponseProductDto>(`http://localhost:3500/api/v1/admin/products/${productId}`, dto);
   }
+
+  deleteProduct(productId: number) {
+    return this.http.delete<any>(`http://localhost:3500/api/v1/admin/products/${productId}`);
+  }
 }
