@@ -6,25 +6,8 @@ import {
   AdminAddOrUpdateProductDto,
   AdminResponseProductDto
 } from '../../../../../backend/src/shared/dtos/admin/product.dto';
-import { FormBuilder, FormGroup, Validators, FormControl, AbstractControl } from '@angular/forms';
-
-const EMPTY_PRODUCT: AdminAddOrUpdateProductDto = {
-  name: '',
-  qty: 0,
-  price: 0,
-  categoryIds: [],
-  fullDescription: '',
-  isEnabled: true,
-  mediaUrls: [],
-  metaTags: {
-    title: '',
-    description: '',
-    keywords: '',
-  },
-  shortDescription: '',
-  sku: '',
-  slug: ''
-};
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { MediaDto } from '../../../../../backend/src/shared/dtos/admin/media.dto';
 
 @Component({
   selector: 'web-admin-product',
@@ -80,7 +63,7 @@ export class WebAdminProductComponent implements OnInit {
   private init() {
     this.isNewProduct = this.route.snapshot.data.action === EWebAdminPageAction.Add;
     if (this.isNewProduct) {
-      this.buildForm(EMPTY_PRODUCT);
+      this.buildForm(this.getEmptyProduct());
     } else {
       this.getProduct();
     }
@@ -100,7 +83,7 @@ export class WebAdminProductComponent implements OnInit {
         description: product.metaTags.description,
         keywords: product.metaTags.keywords
       }),
-      mediaUrls: product.mediaUrls,
+      medias: [product.medias],
       fullDescription: product.fullDescription,
       shortDescription: product.shortDescription
     });
@@ -153,5 +136,41 @@ export class WebAdminProductComponent implements OnInit {
       },
       error => console.warn(error)
     )
+  }
+
+  getMediaUploadUrl() {
+    return `http://localhost:3500/api/v1/admin/products/media`;
+  }
+
+  mediaUploaded(media: MediaDto) {
+    this.form.get('medias').value.push(media);
+  }
+
+  onMediaRemove(media: MediaDto) {
+    const controlValue = this.form.get('medias').value as MediaDto[];
+    const index = controlValue.findIndex(value => value.variantsUrls.original === media.variantsUrls.original);
+    if (index !== -1) {
+      controlValue.splice(index, 1);
+    }
+  }
+
+  private getEmptyProduct(): AdminAddOrUpdateProductDto {
+    return {
+      name: '',
+      qty: 0,
+      price: 0,
+      categoryIds: [],
+      fullDescription: '',
+      isEnabled: true,
+      medias: [],
+      metaTags: {
+        title: '',
+        description: '',
+        keywords: '',
+      },
+      shortDescription: '',
+      sku: '',
+      slug: ''
+    };
   }
 }

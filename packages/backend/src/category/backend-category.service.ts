@@ -126,8 +126,8 @@ export class BackendCategoryService {
     return deleted.toJSON();
   }
 
-  async getCategoryItems(categoryId: number, query: any) {
-    const products = await this.productService.findProductsByCategoryId(categoryId, query);
+  async getCategoryItems(categoryId: number) {
+    const products = await this.productService.findProductsByCategoryId(categoryId);
     return products;
   }
 

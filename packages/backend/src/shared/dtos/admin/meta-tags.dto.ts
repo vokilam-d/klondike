@@ -2,11 +2,11 @@ import { IsString } from 'class-validator';
 
 export class MetaTagsDto {
   @IsString()
-  title: string = '';
+  title: string;
 
   @IsString()
-  keywords: string = '';
+  keywords: string;
 
   @IsString()
-  description: string = '';
+  description: string;
 }

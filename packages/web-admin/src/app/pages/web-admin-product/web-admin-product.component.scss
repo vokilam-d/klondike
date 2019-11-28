@@ -1,10 +1,20 @@
 .product {
   margin: 40px 0 0;
+
   &__field {
     margin: 30px 0 0;
 
     &:first-child {
       margin-top: 0;
     }
+  }
+}
+
+.media {
+  display: flex;
+  flex-wrap: wrap;
+
+  &__asset {
+    margin: 0 25px 0 0;
   }
 }

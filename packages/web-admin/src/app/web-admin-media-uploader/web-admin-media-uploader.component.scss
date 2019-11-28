@@ -1,0 +1,43 @@
+@import "variables";
+
+.uploader {
+  display: block;
+  width: 150px;
+  height: 150px;
+  padding: 25px 10px 0;
+  cursor: pointer;
+  border: 1px solid $borderColor;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: darken($borderColor, 10%);
+  }
+
+  &__icon {
+    display: block;
+    text-align: center;
+    font-size: 52px;
+    color: rgba($dark, 0.4);
+    transition: all 0.2s ease;
+  }
+
+  &:hover &__icon {
+    color: rgba($dark, 0.6);
+  }
+
+  &__text {
+    display: block;
+    margin: 15px 0 0;
+    text-align: center;
+    font-size: 14px;
+    color: rgba($dark, 0.8);
+  }
+
+  &:hover &__text {
+    color: $dark;
+  }
+
+  &__input {
+    display: none;
+  }
+}

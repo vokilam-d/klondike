@@ -3,6 +3,7 @@ import { BackendConfigService } from './config/config.service';
 import { BackendCounterService } from './counter/counter.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BackendCounter, BackendCounterModel } from './counter/counter.model';
+import { BackendMediaService } from './media-uploader/media-uploader/backend-media.service';
 
 const counterModel = {
   name: BackendCounterModel.modelName,
@@ -13,7 +14,7 @@ const counterModel = {
 @Global()
 @Module({
   imports: [MongooseModule.forFeature([counterModel])],
-  providers: [BackendConfigService, BackendCounterService],
-  exports: [BackendConfigService, BackendCounterService]
+  providers: [BackendConfigService, BackendCounterService, BackendMediaService],
+  exports: [BackendConfigService, BackendCounterService, BackendMediaService]
 })
 export class SharedModule {}

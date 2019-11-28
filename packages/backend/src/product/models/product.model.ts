@@ -1,7 +1,7 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { BackendMetaTags } from '../../shared/models/meta-tags.model';
-import { Types } from 'mongoose';
-import { Expose, Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
+import { BackendMedia } from '../../shared/models/media.model';
 
 export class BackendProduct {
   @Exclude()
@@ -42,8 +42,8 @@ export class BackendProduct {
   @prop()
   shortDescription: string;
 
-  @arrayProp({ items: String, default: [] })
-  mediaUrls: string[];
+  @arrayProp({ items: BackendMedia, default: [] })
+  medias: BackendMedia[];
 
   static collectionName: string = 'product';
 }

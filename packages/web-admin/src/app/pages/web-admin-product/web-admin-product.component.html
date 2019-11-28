@@ -21,7 +21,7 @@
     </div>
   </div>
 
-  <form class="product" *ngIf="form">
+  <form class="product" *ngIf="form" [formGroup]="form">
 
     <div class="product__field field"
            *ngIf="form.get('isEnabled') as isEnabled"
@@ -150,6 +150,22 @@
         <textarea class="field__textarea" [formControl]="metaKeywords"></textarea>
       </span>
     </div>
+
+    <div class="product__field media">
+      <web-admin-media-asset class="media__asset"
+                             *ngFor="let media of form.get('medias').value"
+                             [media]="media"
+                             (remove)="onMediaRemove(media)"
+      ></web-admin-media-asset>
+
+      <web-admin-media-uploader class="media_asset"
+                                [uploadUrl]="getMediaUploadUrl()"
+                                (uploaded)="mediaUploaded($event)"
+      ></web-admin-media-uploader>
+
+    </div>
+
   </form>
 
 </div>
+

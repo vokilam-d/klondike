@@ -1,0 +1,51 @@
+@import "variables";
+
+.media {
+  $media: &;
+
+  position: relative;
+  display: flex;
+  width: 150px;
+  height: 150px;
+  padding: 5px;
+  border: 1px solid $borderColor;
+  cursor: pointer;
+
+  &__img {
+    margin: auto;
+    max-width: 100%;
+    max-height: 100%;
+    transition: all 0.2s ease;
+  }
+
+  &:hover &__img {
+    opacity: 0.6;
+  }
+
+  &__remove {
+    position: absolute;
+    left: 10px;
+    bottom: 5px;
+    padding: 6px 4px;
+    background: rgba(#fff, 0.8);
+    cursor: pointer;
+  }
+
+  &__remove-icon {
+    color: rgba($dark, 0.6);
+    font-size: 19px;
+    transition: color 0.2s ease;
+
+    #{$media}__remove:hover & {
+      color: rgba($dark, 0.8);
+    }
+  }
+
+  &__info {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    font-size: 12px;
+    color: rgba($dark, 0.8);
+  }
+}

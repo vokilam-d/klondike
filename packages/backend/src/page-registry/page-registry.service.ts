@@ -31,7 +31,7 @@ export class BackendPageRegistryService {
       type: pageRegistry.type
     });
 
-    this.logger.log(`Created '${created.slug}' page-registry!`);
+    this.logger.log(`Created '${created.slug}' page-registry.`);
     return created;
   }
 
@@ -42,14 +42,14 @@ export class BackendPageRegistryService {
       { new: true }
     ).exec();
 
-    this.logger.log(`Updated '${result.slug}' page-registry`);
+    this.logger.log(`Updated '${result.slug}' page-registry.`);
     return result;
   }
 
   async deletePageRegistry(slug: BackendPageRegistry['slug']) {
     const deleted = await this.registryModel.findOneAndDelete({ slug: slug }).exec();
 
-    this.logger.log(`Deleted '${deleted.slug}' from page-registry`);
+    this.logger.log(`Deleted '${deleted.slug}' from page-registry.`);
     return deleted;
   }
 }

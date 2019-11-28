@@ -4,11 +4,18 @@ import * as compression from 'compression';
 import { BackendAppModule } from './app.module';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
+import * as fastifyMultipart from 'fastify-multipart';
+import * as fastifyStatic from 'fastify-static';
+import { join } from 'path';
 
 declare const module: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(BackendAppModule, new FastifyAdapter());
+  const fastifyAdapter = new FastifyAdapter();
+  fastifyAdapter.register(fastifyMultipart);
+  fastifyAdapter.register(fastifyStatic, { root: join(__dirname, '..') }); // todo remove this
+
+  const app = await NestFactory.create(BackendAppModule, fastifyAdapter);
   const globalExceptionFilter = app.get<GlobalExceptionFilter>(GlobalExceptionFilter);
 
   app.setGlobalPrefix('/api/v1');

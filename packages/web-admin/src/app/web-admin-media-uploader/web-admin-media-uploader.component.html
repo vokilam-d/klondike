@@ -1,0 +1,11 @@
+<label class="uploader">
+  <i class="ai ai-photocamera uploader__icon"></i>
+
+  <span class="uploader__text">Загрузить изображение</span>
+
+  <input class="uploader__input"
+         (change)="onInputChange($event.target.files)"
+         type="file"
+         #input
+  >
+</label>

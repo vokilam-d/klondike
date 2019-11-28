@@ -1,0 +1,11 @@
+<div class="media">
+  <img class="media__img" [src]="'http://localhost:3500' + media.variantsUrls.original" [alt]="media.altText">
+
+  <div class="media__remove" (click)="remove()">
+    <i class="ai ai-trash media__remove-icon"></i>
+  </div>
+
+  <div class="media__info">
+    {{ media.dimensions }}, {{ media.size }}
+  </div>
+</div>

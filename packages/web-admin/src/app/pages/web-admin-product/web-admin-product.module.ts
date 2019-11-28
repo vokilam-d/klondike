@@ -4,8 +4,10 @@ import { CommonModule } from '@angular/common';
 import { WebAdminProductRoutingModule } from './web-admin-product-routing.module';
 import { WebAdminProductComponent } from './web-admin-product.component';
 import { WebAdminProductService } from '../../shared/services/web-admin-product.service';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '../../shared/shared.module';
+import { WebAdminMediaAssetModule } from '../../web-admin-media-asset/web-admin-media-asset.module';
+import { WebAdminMediaUploaderModule } from '../../web-admin-media-uploader/web-admin-media-uploader.module';
 
 
 @NgModule({
@@ -15,7 +17,9 @@ import { SharedModule } from '../../shared/shared.module';
     WebAdminProductRoutingModule,
     ReactiveFormsModule,
     FormsModule,
-    SharedModule
+    SharedModule,
+    WebAdminMediaAssetModule,
+    WebAdminMediaUploaderModule
   ],
   providers: [
     WebAdminProductService

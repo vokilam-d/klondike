@@ -20,17 +20,12 @@ export class BackendCartService {
 
   async addToCart(cartId: Types.ObjectId, sku: string, qty: number): Promise<DocumentType<BackendCart>> {
 
-    const existProduct: DocumentType<BackendProduct> = await this.productService.findOne({ 'sku': sku });
-
-    if (!existProduct) {
-      throw new NotFoundException(`Product with sku '${sku}' doesn't exist`);
-    }
-
+    const product: DocumentType<BackendProduct> = await this.productService.getProductBySku(sku);
     const cartItem = new BackendCartItem();
     cartItem.sku = sku;
     cartItem.qty = qty;
     cartItem.details = new BackendCartItemDetails();
-    cartItem.details.name = existProduct.name;
+    cartItem.details.name = product.name;
 
     const updatedInventory = await this.inventory.addCarted(sku, qty, cartId);
     if (!updatedInventory) {

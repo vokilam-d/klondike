@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WebAdminCategorySelectComponent } from './components/category-select/web-admin-category-select.component';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { WebAdminClickOutsideDirective } from './directives/click-outside/web-admin-click-outside.directive';
 
 

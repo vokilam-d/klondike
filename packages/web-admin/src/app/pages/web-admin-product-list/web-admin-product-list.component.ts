@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { WebAdminProductService } from '../../shared/services/web-admin-product.service';
 import { AdminResponseProductDto } from '../../../../../backend/src/shared/dtos/admin/product.dto';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'web-admin-product-list',

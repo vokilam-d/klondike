@@ -1,8 +1,23 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, Param, Post, Put, UseInterceptors, Delete } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Request,
+  Response,
+  UseInterceptors
+} from '@nestjs/common';
 import { AdminAddOrUpdateProductDto, AdminResponseProductDto } from '../shared/dtos/admin/product.dto';
 import { BackendProductService } from './backend-product.service';
 import { plainToClass } from 'class-transformer';
 import { BackendProduct } from './models/product.model';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { ServerResponse } from 'http';
+import { MediaDto } from '../shared/dtos/admin/media.dto';
 
 type BackendProductWithQty = BackendProduct & { qty?: number };
 
@@ -41,9 +56,9 @@ export class BackendAdminProductController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Put(':id')
   async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminResponseProductDto> {
-    const created = await this.productsService.updateProduct(productId, productDto);
+    const updated = await this.productsService.updateProduct(productId, productDto);
 
-    return plainToClass(AdminResponseProductDto, created, { excludeExtraneousValues: true });
+    return plainToClass(AdminResponseProductDto, updated, { excludeExtraneousValues: true });
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
@@ -52,6 +67,16 @@ export class BackendAdminProductController {
     const deleted = await this.productsService.deleteProduct(productId);
 
     return plainToClass(AdminResponseProductDto, deleted, { excludeExtraneousValues: true });
+  }
+
+  /**
+   * @returns MediaDto
+   */
+  @Post('media')
+  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
+    const media = await this.productsService.uploadMedia(request);
+
+    reply.status(201).send(media);
   }
 
   private async populateProductsWithQty(products: BackendProduct[]): Promise<BackendProductWithQty[]> {

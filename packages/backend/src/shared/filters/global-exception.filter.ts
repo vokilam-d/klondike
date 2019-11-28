@@ -14,6 +14,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const req = ctx.getRequest<FastifyRequest<any>>();
     const res = ctx.getResponse<FastifyReply<any>>();
     const path = req.raw.url;
+    const method = req.raw.method;
     let status;
     let httpError;
 
@@ -26,8 +27,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       this.logger.error({
         statusCode: status,
         message: exception.message,
-        stack: exception.stack.split('\n    '),
+        stack: exception.stack.split('\n').map(str => str.trim()),
         timestamp: new Date().toISOString(),
+        method,
         path
       });
     }
@@ -36,6 +38,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       ...(httpError ? httpError : {}),
       statusCode: status,
       timestamp: new Date().toISOString(),
+      method,
       path
     });
   }
