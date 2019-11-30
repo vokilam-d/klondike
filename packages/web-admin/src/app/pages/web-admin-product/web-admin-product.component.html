@@ -97,7 +97,7 @@
     >
       <label class="field__label">Описание</label>
       <span class="field__control">
-        <angular-editor id="fullDescription" [config]="editorConfig"></angular-editor>
+        <angular-editor id="fullDescription" [formControl]="fullDescription" [config]="editorConfig"></angular-editor>
       </span>
     </div>
 
@@ -107,7 +107,7 @@
     >
       <label class="field__label">Короткое описание</label>
       <span class="field__control">
-        <angular-editor id="shortDescription" [config]="editorConfig"></angular-editor>
+        <angular-editor id="shortDescription" [formControl]="shortDescription" [config]="editorConfig"></angular-editor>
       </span>
     </div>
 
