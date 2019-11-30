@@ -51,9 +51,14 @@ export class BackendProductService {
   async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<BackendProduct> {
     productDto.slug = productDto.slug === '' ? transliterate(productDto.name) : productDto.slug;
 
-    const duplicate = await this.productModel.findOne({ slug: productDto.slug }).exec();
-    if (duplicate) {
+    const duplicateSlug = await this.productModel.findOne({ slug: productDto.slug }).exec();
+    if (duplicateSlug) {
       throw new BadRequestException(`Product with slug '${productDto.slug}' already exists`);
+    }
+
+    const duplicateSku = await this.productModel.findOne({ sku: productDto.sku }).exec();
+    if (duplicateSku) {
+      throw new BadRequestException(`Product with sku '${productDto.sku}' already exists`);
     }
 
     const newProductModel = new this.productModel(productDto);
