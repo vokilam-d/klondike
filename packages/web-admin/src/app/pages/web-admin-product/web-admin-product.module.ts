@@ -8,6 +8,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '../../shared/shared.module';
 import { WebAdminMediaAssetModule } from '../../web-admin-media-asset/web-admin-media-asset.module';
 import { WebAdminMediaUploaderModule } from '../../web-admin-media-uploader/web-admin-media-uploader.module';
+import { AngularEditorModule } from '@kolkov/angular-editor';
 
 
 @NgModule({
@@ -19,7 +20,8 @@ import { WebAdminMediaUploaderModule } from '../../web-admin-media-uploader/web-
     FormsModule,
     SharedModule,
     WebAdminMediaAssetModule,
-    WebAdminMediaUploaderModule
+    WebAdminMediaUploaderModule,
+    AngularEditorModule
   ],
   providers: [
     WebAdminProductService

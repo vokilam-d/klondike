@@ -1,6 +1,6 @@
 import { IsBoolean, IsString } from 'class-validator';
 import { Expose } from 'class-transformer';
-import { EMediaVariant } from 'shared/enums/media-variant.enum';
+import { EMediaVariant } from '../../enums/media-variant.enum';
 
 type VariantsUrls = {
   [k in EMediaVariant]: string;

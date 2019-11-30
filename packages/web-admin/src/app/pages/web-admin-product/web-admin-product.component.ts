@@ -8,6 +8,7 @@ import {
 } from '../../../../../backend/src/shared/dtos/admin/product.dto';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MediaDto } from '../../../../../backend/src/shared/dtos/admin/media.dto';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
   selector: 'web-admin-product',
@@ -19,6 +20,11 @@ export class WebAdminProductComponent implements OnInit {
   isNewProduct: boolean;
   product: AdminResponseProductDto;
   form: FormGroup;
+  editorConfig: AngularEditorConfig = {
+    editable: true,
+    minHeight: '5rem',
+    outline: false
+  };
 
   constructor(private productsService: WebAdminProductService,
               private formBuilder: FormBuilder,
