@@ -6,6 +6,7 @@ import { WebAdminCategoriesComponent } from './categories.component';
 import { WebAdminCategoryComponent } from './web-admin-category/web-admin-category.component';
 import { WebAdminCategoriesService } from './categories.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AngularEditorModule } from '@kolkov/angular-editor';
 
 
 @NgModule({
@@ -17,7 +18,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     CommonModule,
     WebAdminCategoriesRoutingModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    AngularEditorModule
   ],
   providers: [
     WebAdminCategoriesService
