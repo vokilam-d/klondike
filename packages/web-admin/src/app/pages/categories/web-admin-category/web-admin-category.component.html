@@ -43,7 +43,7 @@
   <label class="category__field field" [class.field--invalid]="isControlInvalid(description)">
     <span class="field__label">Описание</span>
     <span class="field__control">
-      <angular-editor [formControl]="description"></angular-editor>
+      <angular-editor [formControl]="description" [config]="editorConfig"></angular-editor>
     </span>
   </label>
 

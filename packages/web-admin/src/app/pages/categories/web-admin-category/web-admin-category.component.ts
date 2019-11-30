@@ -7,6 +7,7 @@ import {
   AdminAddOrUpdateCategoryDto,
   AdminResponseCategoryDto
 } from '../../../../../../backend/src/shared/dtos/admin/category.dto';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 const EMPTY_CATEGORY: AdminAddOrUpdateCategoryDto = {
   isEnabled: true,
@@ -41,6 +42,12 @@ export class WebAdminCategoryComponent implements OnInit {
   get metaKeywords() { return this.form && this.form.get('metaTags.keywords') as FormControl; }
 
   get isNewCategory(): boolean { return this.route.snapshot.data.action === EWebAdminPageAction.Add; }
+
+  editorConfig: AngularEditorConfig = {
+    editable: true,
+    minHeight: '5rem',
+    outline: false
+  };
 
   constructor(private categoriesService: WebAdminCategoriesService,
               private formBuilder: FormBuilder,
