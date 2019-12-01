@@ -1,9 +1,20 @@
 import { Module } from '@nestjs/common';
-import { AttributeController } from './attribute.controller';
+import { AdminAttributeController } from './admin-attribute.controller';
 import { AttributeService } from './attribute.service';
+import { Attribute, AttributeModel } from './models/product.model';
+import { MongooseModule } from '@nestjs/mongoose';
+
+const attributeModel = {
+  name: AttributeModel.modelName,
+  schema: AttributeModel.schema,
+  collection: Attribute.collectionName
+};
 
 @Module({
-  controllers: [AttributeController],
+  imports: [
+    MongooseModule.forFeature([attributeModel])
+  ],
+  controllers: [AdminAttributeController],
   providers: [AttributeService]
 })
 export class AttributeModule {}
