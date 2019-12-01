@@ -9,7 +9,7 @@ import {
   Put,
   Request,
   Response,
-  UseInterceptors
+  UseInterceptors, UsePipes, ValidationPipe
 } from '@nestjs/common';
 import { AdminAddOrUpdateProductDto, AdminResponseProductDto } from '../shared/dtos/admin/product.dto';
 import { ProductService } from './product.service';
@@ -45,6 +45,7 @@ export class AdminProductController {
     return plainToClass(AdminResponseProductDto, productsWithQty[0], { excludeExtraneousValues: true });
   }
 
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(ClassSerializerInterceptor)
   @Post()
   async addProduct(@Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminResponseProductDto> {
@@ -53,6 +54,7 @@ export class AdminProductController {
     return plainToClass(AdminResponseProductDto, created, { excludeExtraneousValues: true });
   }
 
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(ClassSerializerInterceptor)
   @Put(':id')
   async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminResponseProductDto> {

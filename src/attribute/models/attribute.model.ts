@@ -1,6 +1,14 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { Exclude, Expose } from 'class-transformer';
 
+export class AdminAttributeValue {
+  @prop()
+  name: string;
+
+  @prop()
+  isDefault: boolean;
+}
+
 export class Attribute {
   @Exclude()
   @prop()
@@ -16,8 +24,8 @@ export class Attribute {
   @prop()
   label: string; // UI name
 
-  @arrayProp({ items: String })
-  values: string[];
+  @arrayProp({ items: AdminAttributeValue, default: [], _id: false })
+  values: AdminAttributeValue[];
 
   @prop()
   groupName: string;

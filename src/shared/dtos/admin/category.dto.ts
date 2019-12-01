@@ -1,6 +1,6 @@
 import { MetaTagsDto } from './meta-tags.dto';
 import { IsBoolean, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 
 export class AdminAddOrUpdateCategoryDto {
   @Expose()
@@ -39,7 +39,9 @@ export class AdminCategoryTreeItem {
   id: AdminResponseCategoryDto['id'];
   @Expose()
   name: AdminResponseCategoryDto['name'];
+
   @Expose()
+  @Type(() => AdminCategoryTreeItem)
   children: AdminCategoryTreeItem[];
 
   constructor(value: Partial<AdminCategoryTreeItem>) {
@@ -49,6 +51,7 @@ export class AdminCategoryTreeItem {
 
 export class AdminCategoriesTreeDto {
   @Expose()
+  @Type(() => AdminCategoryTreeItem)
   categories: AdminCategoryTreeItem[];
 
   constructor(value: Partial<AdminCategoriesTreeDto>) {

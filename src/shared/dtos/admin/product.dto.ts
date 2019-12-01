@@ -1,6 +1,6 @@
 import { MetaTagsDto } from './meta-tags.dto';
 import { IsBoolean, IsDefined, IsString, IsNumber, ValidateNested } from 'class-validator';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { MediaDto } from './media.dto';
 
 export class AdminAddOrUpdateProductDto {
@@ -42,7 +42,8 @@ export class AdminAddOrUpdateProductDto {
   categoryIds: number[];
 
   @Expose()
-  @ValidateNested()
+  @ValidateNested({ each: true })
+  @Type(() => MediaDto)
   medias: MediaDto[];
 
   @Expose()

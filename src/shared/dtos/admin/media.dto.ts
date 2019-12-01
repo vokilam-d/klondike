@@ -7,10 +7,6 @@ type VariantsUrls = {
 };
 
 export class MediaDto {
-  // @Expose()
-  // @IsString()
-  // url: string;
-
   @Expose()
   variantsUrls: VariantsUrls = {
     [EMediaVariant.Original]: '',
