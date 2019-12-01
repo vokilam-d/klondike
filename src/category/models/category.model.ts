@@ -1,9 +1,9 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { BackendMetaTags } from '../../shared/models/meta-tags.model';
-import { BackendCategoryAncestor } from './category-ancestor.model';
+import { MetaTags } from '../../shared/models/meta-tags.model';
+import { CategoryAncestor } from './category-ancestor.model';
 import { Exclude, Expose } from 'class-transformer';
 
-export class BackendCategory {
+export class Category {
   @Exclude()
   @prop()
   _id: number;
@@ -27,11 +27,11 @@ export class BackendCategory {
   @prop({ default: 0 })
   parentId: number;
 
-  @arrayProp({ _id: false, items: BackendCategoryAncestor })
-  ancestors: BackendCategoryAncestor[];
+  @arrayProp({ _id: false, items: CategoryAncestor })
+  ancestors: CategoryAncestor[];
 
   @prop({ _id: false })
-  metaTags: BackendMetaTags;
+  metaTags: MetaTags;
 
   @prop({ default: '' })
   description: string;
@@ -42,7 +42,7 @@ export class BackendCategory {
   static collectionName: string = 'category';
 }
 
-export const BackendCategoryModel = getModelForClass(BackendCategory, {
+export const CategoryModel = getModelForClass(Category, {
   schemaOptions: {
     toJSON: {
       virtuals: true

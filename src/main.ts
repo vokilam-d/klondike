@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import * as helmet from 'helmet';
 import * as compression from 'compression';
-import { BackendAppModule } from './app.module';
+import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import * as fastifyMultipart from 'fastify-multipart';
@@ -15,7 +15,7 @@ async function bootstrap() {
   fastifyAdapter.register(fastifyMultipart);
   fastifyAdapter.register(fastifyStatic, { root: join(__dirname, '..') }); // todo remove this
 
-  const app = await NestFactory.create(BackendAppModule, fastifyAdapter);
+  const app = await NestFactory.create(AppModule, fastifyAdapter);
   const globalExceptionFilter = app.get<GlobalExceptionFilter>(GlobalExceptionFilter);
 
   app.setGlobalPrefix('/api/v1');
@@ -25,7 +25,7 @@ async function bootstrap() {
   app.use(helmet());
   app.use(compression());
 
-  await app.listen(BackendAppModule.port, () => console.log(`It's rolling on ${BackendAppModule.port}!`));
+  await app.listen(AppModule.port, () => console.log(`It's rolling on ${AppModule.port}!`));
 
   if (module.hot) {
     module.hot.accept();

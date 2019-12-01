@@ -11,7 +11,7 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
-import { BackendCategoryService } from './backend-category.service';
+import { CategoryService } from './category.service';
 import {
   AdminAddOrUpdateCategoryDto,
   AdminCategoriesTreeDto,
@@ -20,8 +20,8 @@ import {
 import { plainToClass } from 'class-transformer';
 
 @Controller('admin/categories')
-export class BackendAdminCategoryController {
-  constructor(private readonly categoryService: BackendCategoryService) {
+export class AdminCategoryController {
+  constructor(private readonly categoryService: CategoryService) {
   }
 
   @UseInterceptors(ClassSerializerInterceptor)

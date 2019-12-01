@@ -1,36 +1,36 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { BackendProduct } from './models/product.model';
+import { Product } from './models/product.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { BackendInventoryService } from '../inventory/backend-inventory.service';
-import { BackendPageRegistryService } from '../page-registry/page-registry.service';
+import { InventoryService } from '../inventory/inventory.service';
+import { PageRegistryService } from '../page-registry/page-registry.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
 import { transliterate } from '../shared/helpers/transliterate.function';
-import { BackendCounterService } from '../shared/counter/counter.service';
+import { CounterService } from '../shared/counter/counter.service';
 import { FastifyRequest } from 'fastify';
-import { BackendMediaService } from '../shared/media-uploader/media-uploader/backend-media.service';
-import { BackendMedia } from '../shared/models/media.model';
+import { MediaService } from '../shared/media-uploader/media-uploader/media.service';
+import { Media } from '../shared/models/media.model';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
 
 const MEDIA_DIR_NAME = 'product';
 
 @Injectable()
-export class BackendProductService {
+export class ProductService {
 
-  constructor(@InjectModel(BackendProduct.name) private readonly productModel: ReturnModelType<typeof BackendProduct>,
-              private readonly inventoryService: BackendInventoryService,
-              private readonly counterService: BackendCounterService,
-              private readonly mediaService: BackendMediaService,
-              private readonly pageRegistryService: BackendPageRegistryService) {
+  constructor(@InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
+              private readonly inventoryService: InventoryService,
+              private readonly counterService: CounterService,
+              private readonly mediaService: MediaService,
+              private readonly pageRegistryService: PageRegistryService) {
   }
 
-  async getProducts(): Promise<BackendProduct[]> {
+  async getProducts(): Promise<Product[]> {
     const products = await this.productModel.find().exec();
 
     return products.map(p => p.toJSON());
   }
 
-  async getProductById(id: number): Promise<DocumentType<BackendProduct>> {
+  async getProductById(id: number): Promise<DocumentType<Product>> {
     const found = await this.productModel.findById(id).exec();
     if (!found) {
       throw new NotFoundException(`Product with id '${id}' not found`);
@@ -39,7 +39,7 @@ export class BackendProductService {
     return found;
   }
 
-  async getProductBySku(sku: string): Promise<DocumentType<BackendProduct>> {
+  async getProductBySku(sku: string): Promise<DocumentType<Product>> {
     const found = await this.productModel.findOne({ sku }).exec();
     if (!found) {
       throw new NotFoundException(`Product with sku '${sku}' not found`);
@@ -48,7 +48,7 @@ export class BackendProductService {
     return found;
   }
 
-  async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<BackendProduct> {
+  async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
     productDto.slug = productDto.slug === '' ? transliterate(productDto.name) : productDto.slug;
 
     const duplicateSlug = await this.productModel.findOne({ slug: productDto.slug }).exec();
@@ -62,7 +62,7 @@ export class BackendProductService {
     }
 
     const newProductModel = new this.productModel(productDto);
-    newProductModel.id = await this.counterService.getCounter(BackendProduct.collectionName);
+    newProductModel.id = await this.counterService.getCounter(Product.collectionName);
     newProductModel.medias = await this.saveTmpMedias(productDto.medias);
     await newProductModel.save();
 
@@ -72,22 +72,22 @@ export class BackendProductService {
     return newProductModel.toJSON();
   }
 
-  async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto): Promise<BackendProduct> {
+  async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto): Promise<Product> {
     productDto.slug = productDto.slug === '' ? transliterate(productDto.name) : productDto.slug;
 
     const found = await this.getProductById(productId);
     const hasSlugChanged = found.slug !== productDto.slug;
 
-    const savedMedias: BackendMedia[] = [];
+    const savedMedias: Media[] = [];
     const tmpMedias: MediaDto[] = [];
-    const mediasToDelete: BackendMedia[] = [];
+    const mediasToDelete: Media[] = [];
 
     productDto.medias.forEach(media => {
       const isTmpMedia = media.variantsUrls.original.includes('/tmp/');
       if (isTmpMedia) {
         tmpMedias.push(media);
       } else {
-        savedMedias.push(media as BackendMedia);
+        savedMedias.push(media as Media);
       }
     });
 
@@ -116,12 +116,12 @@ export class BackendProductService {
     return saved.toJSON();
   }
 
-  async getProductQty(product: BackendProduct): Promise<number> {
+  async getProductQty(product: Product): Promise<number> {
     const inventory = await this.inventoryService.getInventory(product.sku);
     return inventory.qty;
   }
 
-  async deleteProduct(productId: number): Promise<BackendProduct> {
+  async deleteProduct(productId: number): Promise<Product> {
     const deleted = await this.productModel.findByIdAndDelete(productId).exec();
     if (!deleted) {
       throw new NotFoundException(`No product with id '${productId}'`);
@@ -134,11 +134,11 @@ export class BackendProductService {
     return deleted;
   }
 
-  uploadMedia(request: FastifyRequest): Promise<BackendMedia> {
+  uploadMedia(request: FastifyRequest): Promise<Media> {
     return this.mediaService.upload(request, MEDIA_DIR_NAME);
   }
 
-  private async saveTmpMedias(mediaDtos: MediaDto[]): Promise<BackendMedia[]> {
+  private async saveTmpMedias(mediaDtos: MediaDto[]): Promise<Media[]> {
     const medias = [];
     for (let mediaDto of mediaDtos) {
       medias.push(await this.mediaService.saveTmpMedia(MEDIA_DIR_NAME, mediaDto));
@@ -147,7 +147,7 @@ export class BackendProductService {
     return medias;
   }
 
-  private async deleteMedias(medias: BackendMedia[]): Promise<void> {
+  private async deleteMedias(medias: Media[]): Promise<void> {
     for (const media of medias) {
       await this.mediaService.delete(media, MEDIA_DIR_NAME);
     }

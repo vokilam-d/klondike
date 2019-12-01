@@ -1,30 +1,30 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { BackendCart } from './models/cart.model';
+import { Cart } from './models/cart.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { BackendInventoryService } from '../inventory/backend-inventory.service';
-import { BackendProduct } from '../product/models/product.model';
-import { BackendCartItem } from './models/cart-item.model';
+import { InventoryService } from '../inventory/inventory.service';
+import { Product } from '../product/models/product.model';
+import { CartItem } from './models/cart-item.model';
 import { Types } from 'mongoose';
-import { BackendProductService } from '../product/backend-product.service';
-import { BackendCartItemDetails } from './models/cart-item-details.model';
+import { ProductService } from '../product/product.service';
+import { CartItemDetails } from './models/cart-item-details.model';
 import { ECartStatus } from '../../shared/enums/cart.enum';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class BackendCartService {
+export class CartService {
 
-  constructor(@InjectModel(BackendCart.name) private readonly cartModel: ReturnModelType<typeof BackendCart>,
-              private readonly inventory: BackendInventoryService,
-              private readonly productService: BackendProductService) {
+  constructor(@InjectModel(Cart.name) private readonly cartModel: ReturnModelType<typeof Cart>,
+              private readonly inventory: InventoryService,
+              private readonly productService: ProductService) {
   }
 
-  async addToCart(cartId: Types.ObjectId, sku: string, qty: number): Promise<DocumentType<BackendCart>> {
+  async addToCart(cartId: Types.ObjectId, sku: string, qty: number): Promise<DocumentType<Cart>> {
 
-    const product: DocumentType<BackendProduct> = await this.productService.getProductBySku(sku);
-    const cartItem = new BackendCartItem();
+    const product: DocumentType<Product> = await this.productService.getProductBySku(sku);
+    const cartItem = new CartItem();
     cartItem.sku = sku;
     cartItem.qty = qty;
-    cartItem.details = new BackendCartItemDetails();
+    cartItem.details = new CartItemDetails();
     cartItem.details.name = product.name;
 
     const updatedInventory = await this.inventory.addCarted(sku, qty, cartId);
@@ -40,7 +40,7 @@ export class BackendCartService {
     return updatedCart;
   }
 
-  async setQtyInCart(cartId: Types.ObjectId, sku: string, newQty: number, oldQty: number): Promise<DocumentType<BackendCart>> {
+  async setQtyInCart(cartId: Types.ObjectId, sku: string, newQty: number, oldQty: number): Promise<DocumentType<Cart>> {
 
     const updatedInventory = await this.inventory.updateCartedQty(sku, newQty, oldQty, cartId);
     if (!updatedInventory) {
@@ -56,7 +56,7 @@ export class BackendCartService {
     return updated;
   }
 
-  async removeFromCart(cartId: Types.ObjectId, sku: string, qty: number): Promise<DocumentType<BackendCart>> {
+  async removeFromCart(cartId: Types.ObjectId, sku: string, qty: number): Promise<DocumentType<Cart>> {
 
     await this.inventory.returnCartedToStock(sku, qty, cartId);
 

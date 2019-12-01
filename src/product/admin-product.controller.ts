@@ -12,19 +12,19 @@ import {
   UseInterceptors
 } from '@nestjs/common';
 import { AdminAddOrUpdateProductDto, AdminResponseProductDto } from '../shared/dtos/admin/product.dto';
-import { BackendProductService } from './backend-product.service';
+import { ProductService } from './product.service';
 import { plainToClass } from 'class-transformer';
-import { BackendProduct } from './models/product.model';
+import { Product } from './models/product.model';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
 
-type BackendProductWithQty = BackendProduct & { qty?: number };
+type ProductWithQty = Product & { qty?: number };
 
 @Controller('admin/products')
-export class BackendAdminProductController {
+export class AdminProductController {
 
-  constructor(private readonly productsService: BackendProductService) {
+  constructor(private readonly productsService: ProductService) {
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
@@ -79,14 +79,14 @@ export class BackendAdminProductController {
     reply.status(201).send(media);
   }
 
-  private async populateProductsWithQty(products: BackendProduct[]): Promise<BackendProductWithQty[]> {
+  private async populateProductsWithQty(products: Product[]): Promise<ProductWithQty[]> {
     return Promise.all(
       products.map(async product => {
         const qty = await this.productsService.getProductQty(product);
         return {
           ...product,
           qty
-        } as BackendProductWithQty;
+        } as ProductWithQty;
       })
     );
   }

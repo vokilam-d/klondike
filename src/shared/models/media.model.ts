@@ -6,7 +6,7 @@ type VariantsUrls = {
   [k in EMediaVariant]: string;
 };
 
-export class BackendMedia {
+export class Media {
   @Exclude()
   @prop()
   _id: number;

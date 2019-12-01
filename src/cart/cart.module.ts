@@ -1,24 +1,24 @@
 import { Module } from '@nestjs/common';
-import { BackendCartService } from './cart.service';
+import { CartService } from './cart.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BackendCart, BackendCartModel } from './models/cart.model';
-import { BackendInventoryModule } from '../inventory/inventory.module';
-import { BackendCartController } from './cart.controller';
-import { BackendProductModule } from '../product/backend-product.module';
+import { Cart, CartModel } from './models/cart.model';
+import { InventoryModule } from '../inventory/inventory.module';
+import { CartController } from './cart.controller';
+import { ProductModule } from '../product/product.module';
 
 const cartModel = {
-  name: BackendCartModel.modelName,
-  schema: BackendCartModel.schema,
-  collection: BackendCart.collectionName
+  name: CartModel.modelName,
+  schema: CartModel.schema,
+  collection: Cart.collectionName
 };
 
 @Module({
   imports: [
     MongooseModule.forFeature([cartModel]),
-    BackendInventoryModule,
-    BackendProductModule
+    InventoryModule,
+    ProductModule
   ],
-  providers: [BackendCartService],
-  controllers: [BackendCartController]
+  providers: [CartService],
+  controllers: [CartController]
 })
-export class BackendCartModule {}
+export class CartModule {}

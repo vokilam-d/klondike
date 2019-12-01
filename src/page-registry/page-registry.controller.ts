@@ -1,10 +1,10 @@
 import { Controller, Get, Param, Req } from '@nestjs/common';
-import { BackendPageRegistryService } from './page-registry.service';
+import { PageRegistryService } from './page-registry.service';
 
 @Controller('pages')
-export class BackendPageRegistryController {
+export class PageRegistryController {
 
-  constructor(private readonly pageRegistryService: BackendPageRegistryService) {
+  constructor(private readonly pageRegistryService: PageRegistryService) {
   }
 
   @Get()

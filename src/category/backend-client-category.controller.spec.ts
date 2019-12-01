@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BackendClientCategoryController } from './backend-client-category.controller';
+import { ClientCategoryController } from './client-category.controller';
 
-describe('BackendClientCategory Controller', () => {
-  let controller: BackendClientCategoryController;
+describe('ClientCategory Controller', () => {
+  let controller: ClientCategoryController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [BackendClientCategoryController],
+      controllers: [ClientCategoryController],
     }).compile();
 
-    controller = module.get<BackendClientCategoryController>(BackendClientCategoryController);
+    controller = module.get<ClientCategoryController>(ClientCategoryController);
   });
 
   it('should be defined', () => {

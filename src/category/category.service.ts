@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { BackendCategory } from './models/category.model';
-import { BackendPageRegistryService } from '../page-registry/page-registry.service';
-import { BackendProductService } from '../product/backend-product.service';
+import { Category } from './models/category.model';
+import { PageRegistryService } from '../page-registry/page-registry.service';
+import { ProductService } from '../product/product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import {
@@ -9,17 +9,17 @@ import {
   AdminCategoriesTreeDto,
   AdminCategoryTreeItem
 } from '../shared/dtos/admin/category.dto';
-import { BackendCounterService } from '../shared/counter/counter.service';
+import { CounterService } from '../shared/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
 
 @Injectable()
-export class BackendCategoryService {
+export class CategoryService {
 
-  constructor(@InjectModel(BackendCategory.name) private readonly categoryModel: ReturnModelType<typeof BackendCategory>,
-              private pageRegistryService: BackendPageRegistryService,
-              private counterService: BackendCounterService,
-              private productService: BackendProductService) {
+  constructor(@InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
+              private pageRegistryService: PageRegistryService,
+              private counterService: CounterService,
+              private productService: ProductService) {
   }
 
   async getCategoriesTree(): Promise<AdminCategoriesTreeDto> {
@@ -57,7 +57,7 @@ export class BackendCategoryService {
     return new AdminCategoriesTreeDto({ categories: treeItems });
   }
 
-  async getCategoryById(id: string | number): Promise<DocumentType<BackendCategory>> {
+  async getCategoryById(id: string | number): Promise<DocumentType<Category>> {
     id = parseInt(id as string);
 
     const found = await this.categoryModel.findById(id).exec();
@@ -68,7 +68,7 @@ export class BackendCategoryService {
     return found;
   }
 
-  async getCategoryBySlug(slug: string): Promise<BackendCategory> {
+  async getCategoryBySlug(slug: string): Promise<Category> {
     const found = await this.categoryModel.findOne({ slug }).exec();
     if (!found) {
       throw new NotFoundException(`Category with slug '${slug}' not found`);
@@ -77,7 +77,7 @@ export class BackendCategoryService {
     return found.toJSON();
   }
 
-  async createCategory(category: AdminAddOrUpdateCategoryDto): Promise<BackendCategory> {
+  async createCategory(category: AdminAddOrUpdateCategoryDto): Promise<Category> {
     category.slug = category.slug === '' ? transliterate(category.name) : category.slug;
 
     const duplicate = await this.categoryModel.findOne({ slug: category.slug, parentId: category.parentId }).exec();
@@ -86,15 +86,15 @@ export class BackendCategoryService {
     }
 
     const newCategoryModel = new this.categoryModel(category);
-    newCategoryModel.id = await this.counterService.getCounter(BackendCategory.collectionName);
+    newCategoryModel.id = await this.counterService.getCounter(Category.collectionName);
 
     await newCategoryModel.save();
 
     this.createCategoryPageRegistry(newCategoryModel.slug);
-    return plainToClass(BackendCategory, newCategoryModel.toJSON());
+    return plainToClass(Category, newCategoryModel.toJSON());
   }
 
-  async updateCategory(categoryId: string | number, category: AdminAddOrUpdateCategoryDto): Promise<BackendCategory> {
+  async updateCategory(categoryId: string | number, category: AdminAddOrUpdateCategoryDto): Promise<Category> {
     category.slug = category.slug === '' ? transliterate(category.name) : category.slug;
 
     const found = await this.getCategoryById(categoryId);
@@ -115,7 +115,7 @@ export class BackendCategoryService {
     return saved.toJSON();
   }
 
-  async deleteCategory(categoryId: number): Promise<DocumentType<BackendCategory>> {
+  async deleteCategory(categoryId: number): Promise<DocumentType<Category>> {
     const deleted = await this.categoryModel.findByIdAndDelete(categoryId).exec();
     if (deleted === null) {
       throw new NotFoundException(`Category with id '${categoryId}' not found`);

@@ -1,15 +1,15 @@
 import { BadRequestException, Body, Controller, Delete, Param, Post, Put } from '@nestjs/common';
-import { BackendCartService } from './cart.service';
+import { CartService } from './cart.service';
 import { DocumentType } from '@typegoose/typegoose';
 import { toObjectId } from '../shared/object-id.function';
-import { BackendCart } from './models/cart.model';
+import { Cart } from './models/cart.model';
 import { Types } from 'mongoose';
 import { CartDto } from '../../shared/dtos/cart.dto';
 
 @Controller('cart')
-export class BackendCartController {
+export class CartController {
 
-  constructor(private readonly cartService: BackendCartService) {
+  constructor(private readonly cartService: CartService) {
   }
 
   @Post(':id/items')
@@ -17,7 +17,7 @@ export class BackendCartController {
     const cartObjectId = this.toCartObjectId(cartId);
     cartDto.qty = cartDto.qty ? cartDto.qty : 1;
 
-    const foundCart: DocumentType<BackendCart> = await this.cartService.findOne({ '_id': cartObjectId, 'items.sku': cartDto.sku }, { 'items.$.sku': 1 });
+    const foundCart: DocumentType<Cart> = await this.cartService.findOne({ '_id': cartObjectId, 'items.sku': cartDto.sku }, { 'items.$.sku': 1 });
 
     if (foundCart) {
       const oldQty = foundCart.items[0].qty;
@@ -33,7 +33,7 @@ export class BackendCartController {
   async updateQty(@Param('id') cartId: string, @Body() cartDto: CartDto) {
     const cartObjectId = this.toCartObjectId(cartId);
 
-    const foundItemInCart: DocumentType<BackendCart> = await this.cartService.findOne({ '_id': cartObjectId, 'items.sku': cartDto.sku }, { 'items.$.sku': 1 });
+    const foundItemInCart: DocumentType<Cart> = await this.cartService.findOne({ '_id': cartObjectId, 'items.sku': cartDto.sku }, { 'items.$.sku': 1 });
 
     if (!foundItemInCart) {
       throw new BadRequestException(`No '${cartId}' cart or no sku '${cartDto.sku}' in cart`);
@@ -45,7 +45,7 @@ export class BackendCartController {
   @Delete(':id/items/:sku')
   async removeFromCart(@Param('id') cartId: string, @Param('sku') sku: string) {
 
-    const foundItemInCart: DocumentType<BackendCart> = await this.cartService.findOne({ '_id': cartId, 'items.sku': sku }, { 'items.$.sku': 1 });
+    const foundItemInCart: DocumentType<Cart> = await this.cartService.findOne({ '_id': cartId, 'items.sku': sku }, { 'items.$.sku': 1 });
 
     if (!foundItemInCart) {
       throw new BadRequestException(`Cart '${cartId}' doesn't exist or has no SKU '${sku}'`);

@@ -1,14 +1,14 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { BackendPageRegistry } from './models/page-registry.model';
+import { PageRegistry } from './models/page-registry.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
-export class BackendPageRegistryService {
+export class PageRegistryService {
 
-  private logger = new Logger(BackendPageRegistryService.name);
+  private logger = new Logger(PageRegistryService.name);
 
-  constructor(@InjectModel(BackendPageRegistry.name) private readonly registryModel: ReturnModelType<typeof BackendPageRegistry>) {
+  constructor(@InjectModel(PageRegistry.name) private readonly registryModel: ReturnModelType<typeof PageRegistry>) {
   }
 
   getAllPages() {
@@ -25,7 +25,7 @@ export class BackendPageRegistryService {
     return found.type;
   }
 
-  async createPageRegistry(pageRegistry: BackendPageRegistry): Promise<any> {
+  async createPageRegistry(pageRegistry: PageRegistry): Promise<any> {
     const created = await this.registryModel.create({
       slug: pageRegistry.slug,
       type: pageRegistry.type
@@ -35,7 +35,7 @@ export class BackendPageRegistryService {
     return created;
   }
 
-  async updatePageRegistry(oldSlug: BackendPageRegistry['slug'], pageRegistry: BackendPageRegistry): Promise<any> {
+  async updatePageRegistry(oldSlug: PageRegistry['slug'], pageRegistry: PageRegistry): Promise<any> {
     const result = await this.registryModel.findOneAndUpdate(
       { slug: oldSlug },
       { slug: pageRegistry.slug, type: pageRegistry.type },
@@ -46,7 +46,7 @@ export class BackendPageRegistryService {
     return result;
   }
 
-  async deletePageRegistry(slug: BackendPageRegistry['slug']) {
+  async deletePageRegistry(slug: PageRegistry['slug']) {
     const deleted = await this.registryModel.findOneAndDelete({ slug: slug }).exec();
 
     this.logger.log(`Deleted '${deleted.slug}' from page-registry.`);

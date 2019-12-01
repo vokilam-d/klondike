@@ -1,7 +1,7 @@
 import { prop } from '@typegoose/typegoose';
 import { Exclude } from 'class-transformer';
 
-export class BackendMetaTags {
+export class MetaTags {
   @Exclude()
   @prop()
   _id: number;

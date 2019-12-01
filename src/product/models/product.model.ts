@@ -1,9 +1,9 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { BackendMetaTags } from '../../shared/models/meta-tags.model';
+import { MetaTags } from '../../shared/models/meta-tags.model';
 import { Exclude, Expose } from 'class-transformer';
-import { BackendMedia } from '../../shared/models/media.model';
+import { Media } from '../../shared/models/media.model';
 
-export class BackendProduct {
+export class Product {
   @Exclude()
   @prop()
   _id: number;
@@ -34,7 +34,7 @@ export class BackendProduct {
   price: number;
 
   @prop()
-  metaTags: BackendMetaTags;
+  metaTags: MetaTags;
 
   @prop()
   fullDescription: string;
@@ -42,13 +42,13 @@ export class BackendProduct {
   @prop()
   shortDescription: string;
 
-  @arrayProp({ items: BackendMedia, default: [] })
-  medias: BackendMedia[];
+  @arrayProp({ items: Media, default: [] })
+  medias: Media[];
 
   static collectionName: string = 'product';
 }
 
-export const BackendProductModel = getModelForClass(BackendProduct, {
+export const ProductModel = getModelForClass(Product, {
   schemaOptions: {
     toJSON: {
       virtuals: true

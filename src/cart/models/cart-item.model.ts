@@ -1,7 +1,7 @@
-import { BackendCartItemDetails } from './cart-item-details.model';
+import { CartItemDetails } from './cart-item-details.model';
 import { prop } from '@typegoose/typegoose';
 
-export class BackendCartItem {
+export class CartItem {
 
   @prop()
   sku: string;
@@ -10,5 +10,5 @@ export class BackendCartItem {
   qty: number;
 
   @prop()
-  details: BackendCartItemDetails;
+  details: CartItemDetails;
 }

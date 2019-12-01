@@ -6,7 +6,7 @@ import { FastifyRequest } from 'fastify';
 import { join, parse } from 'path';
 import { promisify } from 'util';
 import { transliterate } from '../../helpers/transliterate.function';
-import { BackendMedia } from '../../models/media.model';
+import { Media } from '../../models/media.model';
 import { readableBytes } from '../../helpers/readable-bytes.function';
 import { EMediaVariant } from '../../enums/media-variant.enum';
 import { MediaDto } from 'shared/dtos/admin/media.dto';
@@ -22,7 +22,7 @@ const UPLOAD_DIR_NAME = 'upload';
 const TMP_DIR_NAME = 'tmp';
 
 @Injectable()
-export class BackendMediaService {
+export class MediaService {
 
   private resizeOptions: ResizeOptions[] = [
     {
@@ -40,11 +40,11 @@ export class BackendMediaService {
     }
   ];
   private allowedExt = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.tiff', '.gif'];
-  private logger = new Logger(BackendMediaService.name);
+  private logger = new Logger(MediaService.name);
 
-  async upload(request: FastifyRequest, dirName: string): Promise<BackendMedia> {
+  async upload(request: FastifyRequest, dirName: string): Promise<Media> {
 
-    return new Promise<BackendMedia>((resolve, reject) => {
+    return new Promise<Media>((resolve, reject) => {
 
       request.multipart(
         async (field, file, fileName, _encoding, _mimetype) => {
@@ -60,7 +60,7 @@ export class BackendMediaService {
 
           name = transliterate(name).substring(0, 100);
 
-          const media = new BackendMedia();
+          const media = new Media();
           const metadataCallback  = (err, metadata: sharp.Metadata) => {
             if (err) {
               reject(err);
@@ -88,8 +88,8 @@ export class BackendMediaService {
     });
   }
 
-  async saveTmpMedia(mediaTypeDirName: string, mediaDto: MediaDto): Promise<BackendMedia> {
-    const media = new BackendMedia();
+  async saveTmpMedia(mediaTypeDirName: string, mediaDto: MediaDto): Promise<Media> {
+    const media = new Media();
     media.altText = mediaDto.altText;
     media.isHidden = mediaDto.isHidden;
     media.size = mediaDto.size;
@@ -125,7 +125,7 @@ export class BackendMediaService {
     return media;
   }
 
-  async delete(media: BackendMedia, mediaTypeDirName: string) {
+  async delete(media: Media, mediaTypeDirName: string) {
     for (const url of Object.values(media.variantsUrls)) {
       const { base: fileName } = parse(url);
       const pathToFile = join(UPLOAD_DIR_NAME, mediaTypeDirName, fileName);

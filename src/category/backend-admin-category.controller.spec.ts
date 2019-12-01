@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BackendAdminCategoryController } from './backend-admin-category.controller';
+import { AdminCategoryController } from './admin-category.controller';
 
-describe('BackendAdminCategory Controller', () => {
-  let controller: BackendAdminCategoryController;
+describe('AdminCategory Controller', () => {
+  let controller: AdminCategoryController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [BackendAdminCategoryController],
+      controllers: [AdminCategoryController],
     }).compile();
 
-    controller = module.get<BackendAdminCategoryController>(BackendAdminCategoryController);
+    controller = module.get<AdminCategoryController>(AdminCategoryController);
   });
 
   it('should be defined', () => {

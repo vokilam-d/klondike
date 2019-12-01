@@ -1,6 +1,6 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 
-export class BackendCounter {
+export class Counter {
 
   @prop()
   _id: string;
@@ -11,4 +11,4 @@ export class BackendCounter {
   static collectionName: string = 'counter';
 }
 
-export const BackendCounterModel = getModelForClass(BackendCounter);
+export const CounterModel = getModelForClass(Counter);

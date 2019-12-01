@@ -1,6 +1,6 @@
 import { prop } from '@typegoose/typegoose';
 
-export class BackendCategoryAncestor {
+export class CategoryAncestor {
 
   id: string;
 

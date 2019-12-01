@@ -1,6 +1,6 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 
-export class BackendPageRegistry {
+export class PageRegistry {
 
   @prop({ required: true, index: true})
   slug: string;
@@ -11,4 +11,4 @@ export class BackendPageRegistry {
   static collectionName: string = 'page-registry';
 }
 
-export const BackendPageModel = getModelForClass(BackendPageRegistry);
+export const PageModel = getModelForClass(PageRegistry);

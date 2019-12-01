@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BackendCategoryService } from './backend-category.service';
+import { CategoryService } from './category.service';
 
-describe('BackendCategoryService', () => {
-  let service: BackendCategoryService;
+describe('CategoryService', () => {
+  let service: CategoryService;
   
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [BackendCategoryService],
+      providers: [CategoryService],
     }).compile();
-    service = module.get<BackendCategoryService>(BackendCategoryService);
+    service = module.get<CategoryService>(CategoryService);
   });
   it('should be defined', () => {
     expect(service).toBeDefined();
