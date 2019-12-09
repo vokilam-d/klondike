@@ -3,6 +3,9 @@ import { Exclude, Expose } from 'class-transformer';
 
 export class AdminAttributeValue {
   @prop()
+  id: string;
+
+  @prop()
   name: string;
 
   @prop()

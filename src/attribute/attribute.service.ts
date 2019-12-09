@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Attribute } from './models/attribute.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { AdminAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
+import { AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
 
 @Injectable()
 export class AttributeService {
@@ -25,11 +25,13 @@ export class AttributeService {
     return found;
   }
 
-  async createAttribute(attributeDto: AdminAttributeDto): Promise<DocumentType<Attribute>> {
+  async createAttribute(attributeDto: AdminCreateAttributeDto): Promise<DocumentType<Attribute>> {
     const found = await this.attributeModel.findById(attributeDto.id).exec();
     if (found) {
       throw new BadRequestException(`Attribute with id '${attributeDto.id}' already exists`);
     }
+
+    this.checkDtoForErrors(attributeDto);
 
     const attribute = new this.attributeModel(attributeDto);
     await attribute.save();
@@ -39,6 +41,8 @@ export class AttributeService {
 
   async updateAttribute(attributeId: string, attributeDto: AdminUpdateAttributeDto): Promise<DocumentType<Attribute>> {
     const attribute = await this.getAttribute(attributeId);
+
+    this.checkDtoForErrors(attributeDto);
 
     Object.keys(attributeDto)
       .forEach(key => {
@@ -53,9 +57,35 @@ export class AttributeService {
   async deleteAttribute(attributeId: string): Promise<DocumentType<Attribute>> {
     const deleted = await this.attributeModel.findByIdAndDelete(attributeId).exec();
     if (!deleted) {
-      throw new NotFoundException(`No product with id '${attributeId}'`);
+      throw new NotFoundException(`No attribute with id '${attributeId}'`);
     }
 
     return deleted;
+  }
+
+  private checkDtoForErrors(attributeDto: AdminCreateAttributeDto | AdminUpdateAttributeDto) {
+    const defaults = [];
+    const duplicateIds: string[] = [];
+    attributeDto.values.forEach((value, index, array) => {
+      if (value.isDefault) {
+        defaults.push(value);
+      }
+
+      if (array.findIndex(arrayItem => arrayItem.id === value.id) !== index) {
+        duplicateIds.push(value.id);
+      }
+    });
+
+    const errors = [];
+    if (defaults.length > 1) {
+      errors.push(`Only one attribute value can be set as default, got ${defaults.length}.`);
+    }
+    if (duplicateIds.length > 0) {
+      errors.push(`Attribute value codes must be unique, got duplicates: ${duplicateIds.join(', ')}`);
+    }
+
+    if (errors.length > 0) {
+      throw new BadRequestException(errors.join('\n'));
+    }
   }
 }

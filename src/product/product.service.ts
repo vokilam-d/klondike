@@ -62,11 +62,11 @@ export class ProductService {
     }
 
     const newProductModel = new this.productModel(productDto);
-    newProductModel.id = await this.counterService.getCounter(Product.collectionName);
-    newProductModel.medias = await this.saveTmpMedias(productDto.medias);
+    (newProductModel.id as number) = await this.counterService.getCounter(Product.collectionName);
+    // newProductModel.medias = await this.saveTmpMedias(productDto.medias);
     await newProductModel.save();
 
-    await this.inventoryService.createInventory(newProductModel.sku, newProductModel.id, productDto.qty);
+    // await this.inventoryService.createInventory(newProductModel.sku, newProductModel.id, productDto.qty);
     this.createProductPageRegistry(newProductModel.slug);
 
     return newProductModel.toJSON();
@@ -91,12 +91,12 @@ export class ProductService {
       }
     });
 
-    found.medias.forEach(media => {
-      const isMediaInDto = savedMedias.find(mediaDto => mediaDto.variantsUrls.original === media.variantsUrls.original);
-      if (!isMediaInDto) {
-        mediasToDelete.push(media);
-      }
-    });
+    // found.medias.forEach(media => {
+    //   const isMediaInDto = savedMedias.find(mediaDto => mediaDto.variantsUrls.original === media.variantsUrls.original);
+    //   if (!isMediaInDto) {
+    //     mediasToDelete.push(media);
+    //   }
+    // });
 
     Object.keys(productDto)
       .filter(key => key !== 'id')
@@ -104,21 +104,22 @@ export class ProductService {
         found[key] = productDto[key];
       });
 
-    found.medias = [...savedMedias, ...await this.saveTmpMedias(tmpMedias)];
+    // found.medias = [...savedMedias, ...await this.saveTmpMedias(tmpMedias)];
     const saved = await found.save();
 
     if (hasSlugChanged) {
       this.updateProductPageRegistry(found.slug, productDto.slug);
     }
     await this.deleteMedias(mediasToDelete);
-    await this.inventoryService.setInventoryQty(saved.sku, productDto.qty);
+    // await this.inventoryService.setInventoryQty(saved.sku, productDto.qty);
 
     return saved.toJSON();
   }
 
   async getProductQty(product: Product): Promise<number> {
-    const inventory = await this.inventoryService.getInventory(product.sku);
-    return inventory.qty;
+    // const inventory = await this.inventoryService.getInventory(product.sku);
+    // return inventory.qty;
+    return 0;
   }
 
   async deleteProduct(productId: number): Promise<Product> {
@@ -128,7 +129,7 @@ export class ProductService {
     }
 
     await this.inventoryService.deleteInventory(productId);
-    await this.deleteMedias(deleted.medias);
+    // await this.deleteMedias(deleted.medias);
     this.deleteProductPageRegistry(deleted.slug);
 
     return deleted;

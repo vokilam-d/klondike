@@ -1,15 +1,20 @@
 import { Expose, Type } from 'class-transformer';
 import { IsBoolean, IsDefined, IsNotEmpty, IsString, Matches, ValidateNested } from 'class-validator';
+import { urlFriendlyCodeRegex } from '../../contants';
 
-export class AdminAttributeValue {
+export class AdminAttributeValueDto {
   @Expose()
-  @IsBoolean()
-  isDefault: boolean;
+  @Matches(urlFriendlyCodeRegex, { message: `Attribute id must contain only alphanumeric, dashes or underscore` })
+  id: string;
 
   @Expose()
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @Expose()
+  @IsBoolean()
+  isDefault: boolean;
 }
 
 export class AdminUpdateAttributeDto {
@@ -21,8 +26,8 @@ export class AdminUpdateAttributeDto {
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => AdminAttributeValue)
-  values: AdminAttributeValue[];
+  @Type(() => AdminAttributeValueDto)
+  values: AdminAttributeValueDto[];
 
   @Expose()
   @IsString()
@@ -31,9 +36,7 @@ export class AdminUpdateAttributeDto {
 
 export class AdminCreateAttributeDto extends AdminUpdateAttributeDto {
   @Expose()
-  @IsDefined()
-  @IsNotEmpty()
-  @Matches(/[a-zA-Z0-9\-_]/g, { message: `Id must contain only alphanumeric, dashes or underscore` })
+  @Matches(urlFriendlyCodeRegex, { message: `Attribute id must contain only alphanumeric, dashes or underscore` })
   id: string;
 }
 
