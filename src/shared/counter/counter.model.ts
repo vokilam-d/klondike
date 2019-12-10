@@ -11,4 +11,11 @@ export class Counter {
   static collectionName: string = 'counter';
 }
 
-export const CounterModel = getModelForClass(Counter);
+export const CounterModel = getModelForClass(Counter, {
+  schemaOptions: {
+    toJSON: {
+      virtuals: true
+    },
+    timestamps: true
+  }
+});

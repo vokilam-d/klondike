@@ -13,4 +13,11 @@ export class Cart {
   static collectionName: string = 'cart';
 }
 
-export const CartModel = getModelForClass(Cart);
+export const CartModel = getModelForClass(Cart, {
+  schemaOptions: {
+    toJSON: {
+      virtuals: true
+    },
+    timestamps: true
+  }
+});

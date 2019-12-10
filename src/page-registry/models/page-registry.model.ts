@@ -11,4 +11,11 @@ export class PageRegistry {
   static collectionName: string = 'page-registry';
 }
 
-export const PageModel = getModelForClass(PageRegistry);
+export const PageModel = getModelForClass(PageRegistry, {
+  schemaOptions: {
+    toJSON: {
+      virtuals: true
+    },
+    timestamps: true
+  }
+});

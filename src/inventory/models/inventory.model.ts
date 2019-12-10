@@ -22,4 +22,11 @@ export class Inventory {
   static collectionName: string = 'inventory';
 }
 
-export const InventoryModel = getModelForClass(Inventory);
+export const InventoryModel = getModelForClass(Inventory, {
+  schemaOptions: {
+    toJSON: {
+      virtuals: true
+    },
+    timestamps: true
+  }
+});

@@ -63,6 +63,7 @@ export const ProductModel = getModelForClass(Product, {
   schemaOptions: {
     toJSON: {
       virtuals: true
-    }
+    },
+    timestamps: true
   }
 });

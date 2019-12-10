@@ -11,6 +11,7 @@ import { FastifyRequest } from 'fastify';
 import { MediaService } from '../shared/media-uploader/media-uploader/media.service';
 import { Media } from '../shared/models/media.model';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
+import { AdminFilterDto } from '../shared/dtos/admin/filter.dto';
 
 const MEDIA_DIR_NAME = 'product';
 
@@ -24,8 +25,12 @@ export class ProductService {
               private readonly pageRegistryService: PageRegistryService) {
   }
 
-  async getProducts(): Promise<Product[]> {
-    const products = await this.productModel.find().exec();
+  async getProducts(filter: AdminFilterDto): Promise<Product[]> {
+    const products = await this.productModel.find()
+      .sort(filter.sort)
+      .skip(filter.skip)
+      .limit(filter.limit)
+      .exec();
 
     return products.map(p => p.toJSON());
   }

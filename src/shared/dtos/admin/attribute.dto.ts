@@ -1,10 +1,10 @@
 import { Expose, Type } from 'class-transformer';
 import { IsBoolean, IsDefined, IsNotEmpty, IsString, Matches, ValidateNested } from 'class-validator';
-import { urlFriendlyCodeRegex } from '../../contants';
+import { alphaNumDashUnderscoreRegex } from '../../contants';
 
 export class AdminAttributeValueDto {
   @Expose()
-  @Matches(urlFriendlyCodeRegex, { message: `Attribute id must contain only alphanumeric, dashes or underscore` })
+  @Matches(alphaNumDashUnderscoreRegex, { message: `Attribute id must contain only alphanumeric, dashes or underscore` })
   id: string;
 
   @Expose()
@@ -36,7 +36,7 @@ export class AdminUpdateAttributeDto {
 
 export class AdminCreateAttributeDto extends AdminUpdateAttributeDto {
   @Expose()
-  @Matches(urlFriendlyCodeRegex, { message: `Attribute id must contain only alphanumeric, dashes or underscore` })
+  @Matches(alphaNumDashUnderscoreRegex, { message: `Attribute id must contain only alphanumeric, dashes or underscore` })
   id: string;
 }
 

@@ -40,6 +40,7 @@ export const AttributeModel = getModelForClass(Attribute, {
   schemaOptions: {
     toJSON: {
       virtuals: true
-    }
+    },
+    timestamps: true
   }
 });

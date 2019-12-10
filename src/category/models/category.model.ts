@@ -46,6 +46,7 @@ export const CategoryModel = getModelForClass(Category, {
   schemaOptions: {
     toJSON: {
       virtuals: true
-    }
+    },
+    timestamps: true
   }
 });

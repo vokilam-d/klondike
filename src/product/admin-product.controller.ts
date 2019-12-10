@@ -6,7 +6,7 @@ import {
   Get,
   Param,
   Post,
-  Put,
+  Put, Query,
   Request,
   Response,
   UseInterceptors, UsePipes, ValidationPipe
@@ -18,6 +18,7 @@ import { Product } from './models/product.model';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
+import { AdminFilterDto } from '../shared/dtos/admin/filter.dto';
 
 type ProductWithQty = Product & { qty?: number };
 
@@ -27,10 +28,11 @@ export class AdminProductController {
   constructor(private readonly productsService: ProductService) {
   }
 
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  async getProducts() {
-    const backendProducts = await this.productsService.getProducts();
+  async getProducts(@Query() filter: AdminFilterDto) {
+    const backendProducts = await this.productsService.getProducts(filter);
     const backendProductsWithQty = await this.populateProductsWithQty(backendProducts);
 
     return plainToClass(AdminResponseProductDto, backendProductsWithQty, { excludeExtraneousValues: true });
