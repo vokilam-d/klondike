@@ -18,7 +18,8 @@ import { Product } from './models/product.model';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
-import { AdminFilterDto } from '../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
+import { ListResponseDto } from '../shared/dtos/admin/common-response.dto';
 
 type ProductWithQty = Product & { qty?: number };
 
@@ -31,11 +32,18 @@ export class AdminProductController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  async getProducts(@Query() filter: AdminFilterDto) {
-    const backendProducts = await this.productsService.getProducts(filter);
-    const backendProductsWithQty = await this.populateProductsWithQty(backendProducts);
+  async getProducts(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ListResponseDto<AdminResponseProductDto[]>> {
+    const [ results, itemsTotal ] = await Promise.all([this.productsService.getProducts(sortingPaging), this.productsService.countProducts()]);
+    const pagesTotal = Math.floor(itemsTotal / sortingPaging.limit);
 
-    return plainToClass(AdminResponseProductDto, backendProductsWithQty, { excludeExtraneousValues: true });
+    // const backendProductsWithQty = await this.populateProductsWithQty(backendProducts);
+
+    return {
+      data: plainToClass(AdminResponseProductDto, results, { excludeExtraneousValues: true }),
+      page: sortingPaging.page,
+      pagesTotal,
+      itemsTotal
+    };
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
@@ -84,7 +92,7 @@ export class AdminProductController {
   }
 
   private async populateProductsWithQty(products: Product[]): Promise<ProductWithQty[]> {
-    return Promise.all(
+    return Promise.all( //aggregate vs multiple reqs
       products.map(async product => {
         const qty = await this.productsService.getProductQty(product);
         return {

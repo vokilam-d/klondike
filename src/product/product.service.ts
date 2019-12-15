@@ -11,7 +11,7 @@ import { FastifyRequest } from 'fastify';
 import { MediaService } from '../shared/media-uploader/media-uploader/media.service';
 import { Media } from '../shared/models/media.model';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
-import { AdminFilterDto } from '../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 
 const MEDIA_DIR_NAME = 'product';
 
@@ -25,7 +25,7 @@ export class ProductService {
               private readonly pageRegistryService: PageRegistryService) {
   }
 
-  async getProducts(filter: AdminFilterDto): Promise<Product[]> {
+  async getProducts(filter: AdminSortingPaginatingDto): Promise<Product[]> {
     const products = await this.productModel.find()
       .sort(filter.sort)
       .skip(filter.skip)
@@ -183,5 +183,9 @@ export class ProductService {
 
   private deleteProductPageRegistry(slug: string) {
     return this.pageRegistryService.deletePageRegistry(slug);
+  }
+
+  async countProducts(): Promise<number> {
+    return this.productModel.countDocuments({}).exec();
   }
 }
