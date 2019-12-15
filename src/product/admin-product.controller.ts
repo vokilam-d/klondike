@@ -48,7 +48,7 @@ export class AdminProductController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
-  async getProduct(@Param('id') id: string) {
+  async getProduct(@Param('id') id: string): Promise<AdminResponseProductDto> {
     const product = await this.productsService.getProductById(parseInt(id));
     const productsWithQty = await this.populateProductsWithQty([product.toJSON()]);
 

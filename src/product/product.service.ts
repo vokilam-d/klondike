@@ -25,11 +25,11 @@ export class ProductService {
               private readonly pageRegistryService: PageRegistryService) {
   }
 
-  async getProducts(filter: AdminSortingPaginatingDto): Promise<Product[]> {
+  async getProducts(sortingPaginating: AdminSortingPaginatingDto): Promise<Product[]> {
     const products = await this.productModel.find()
-      .sort(filter.sort)
-      .skip(filter.skip)
-      .limit(filter.limit)
+      .sort(sortingPaginating.sort)
+      .skip(sortingPaginating.skip)
+      .limit(sortingPaginating.limit)
       .exec();
 
     return products.map(p => p.toJSON());
