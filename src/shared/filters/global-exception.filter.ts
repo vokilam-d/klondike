@@ -21,7 +21,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
       httpError = exception.getResponse();
-    } else if (!this.isMongoDuplicationException(exception)) {
+    } else if (this.isMongoDuplicationException(exception)) {
       statusCode = HttpStatus.BAD_REQUEST;
       httpError = { error: 'Bad Request', message: this.getMongoDuplicationMessage(exception) };
 
