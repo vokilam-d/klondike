@@ -15,17 +15,21 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const res = ctx.getResponse<FastifyReply<any>>();
     const path = req.raw.url;
     const method = req.raw.method;
-    let status;
+    let statusCode;
     let httpError;
 
     if (exception instanceof HttpException) {
-      status = exception.getStatus();
+      statusCode = exception.getStatus();
       httpError = exception.getResponse();
+    } else if (!this.isMongoDuplicationException(exception)) {
+      statusCode = HttpStatus.BAD_REQUEST;
+      httpError = { error: 'Bad Request', message: this.getMongoDuplicationMessage(exception) };
+
     } else {
-      status = HttpStatus.INTERNAL_SERVER_ERROR;
+      statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
       this.logger.error({
-        statusCode: status,
+        statusCode,
         message: exception.message,
         stack: exception.stack.split('\n').map(str => str.trim()),
         timestamp: new Date().toISOString(),
@@ -34,13 +38,24 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       });
     }
 
-    res.status(status).send({
+    res.status(statusCode).send({
       ...(httpError ? httpError : {}),
-      statusCode: status,
+      statusCode,
       timestamp: new Date().toISOString(),
       method,
       path
     });
   }
 
+  private isMongoDuplicationException(exception: any) {
+    return exception.code === 11000 || exception.code === 11001
+  }
+
+  private getMongoDuplicationMessage(exception: Error) {
+    const keyValueRegex = exception.message.match(/key:\s+{\s+(\w*):\s+(?:"(.*)"|(.*))\s+}/) || [];
+    const key = keyValueRegex[1] || '';
+    const value = keyValueRegex[2] || keyValueRegex[3] || '';
+
+    return `${key} '${value}' already exist`;
+  }
 }
