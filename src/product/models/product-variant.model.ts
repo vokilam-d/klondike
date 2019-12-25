@@ -1,24 +1,32 @@
-import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { Exclude, Expose } from 'class-transformer';
+import { arrayProp, prop } from '@typegoose/typegoose';
 import { Media } from '../../shared/models/media.model';
+import { MetaTags } from '../../shared/models/meta-tags.model';
+import { ProductSelectedAttribute } from './product-selected-attribute.model';
+import { Types } from 'mongoose';
+import { Exclude } from 'class-transformer';
 
 export class ProductVariant {
   @Exclude()
   @prop()
-  _id: number; // SKU
+  _id: Types.ObjectId;
+
+  get id() { return this._id; }
+  set id(id) { this._id = id; }
 
   @Exclude()
   __v: any;
 
-  @Expose()
-  get id(): number { return this._id; }
-  set id(id: number) { this._id = id; }
-
   @prop({ required: true })
   name: string;
 
-  @prop({ required: true })
-  productId: number;
+  @prop({ required: true, index: true, unique: true })
+  sku: string;
+
+  @prop({ required: true, index: true, unique: true })
+  slug: string;
+
+  @arrayProp({ items: ProductSelectedAttribute, _id: false })
+  attributes: ProductSelectedAttribute[];
 
   @prop({ default: true })
   isEnabled: boolean;
@@ -30,16 +38,11 @@ export class ProductVariant {
   medias: Media[];
 
   @prop()
-  fullDescription?: string;
+  fullDescription: string;
 
-  static collectionName: string = 'product-variant';
+  @prop()
+  shortDescription: string;
+
+  @prop()
+  metaTags: MetaTags;
 }
-
-export const ProductVariantModel = getModelForClass(ProductVariant, {
-  schemaOptions: {
-    toJSON: {
-      virtuals: true
-    },
-    timestamps: true
-  }
-});

@@ -1,39 +1,25 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { MetaTags } from '../../shared/models/meta-tags.model';
-import { Exclude, Expose } from 'class-transformer';
-import { Attribute } from '../../attribute/models/attribute.model';
 import { Category } from '../../category/models/category.model';
-import { Media } from '../../shared/models/media.model';
+import { ProductVariant } from './product-variant.model';
+import { ProductSelectedAttribute } from './product-selected-attribute.model';
+import { Exclude } from 'class-transformer';
 
 export class Product {
   @Exclude()
   @prop()
   _id: number;
 
-  @Exclude()
-  __v: any;
-
-  @Expose()
   get id(): number { return this._id; }
   set id(id: number) { this._id = id; }
 
-  @prop({ required: true })
-  name: string;
-
-  @prop({ required: true, index: true })
-  slug: string;
-
-  @prop({ required: true })
-  sku: string;
-
-  /**
-   * @type Attribute.id
-   */
-  @arrayProp({ items: String })
-  attributeIds: string[];
+  @Exclude()
+  __v: any;
 
   @prop({ default: true })
   isEnabled: boolean;
+
+  @prop({ required: true })
+  name: string;
 
   /**
    * @type Category.id
@@ -41,20 +27,14 @@ export class Product {
   @arrayProp({ items: Number })
   categoryIds: number[];
 
-  @prop({ default: 0 })
-  price: number;
+  @arrayProp({ items: ProductSelectedAttribute, _id: false })
+  attributes: ProductSelectedAttribute[];
 
-  @prop()
-  metaTags: MetaTags;
+  @arrayProp({ items: ProductVariant })
+  variants: ProductVariant[];
 
-  @prop()
-  fullDescription: string;
-
-  @prop()
-  shortDescription: string;
-
-  @arrayProp({ items: Media, default: [] })
-  medias: Media[];
+  @prop({ default: 0, index: true })
+  sortOrder: number;
 
   static collectionName: string = 'product';
 }

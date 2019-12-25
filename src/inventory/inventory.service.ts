@@ -12,7 +12,7 @@ export class InventoryService {
 
   async createInventory(sku: string, productId: number, qty: number = 0): Promise<DocumentType<Inventory>> {
     const created = await this.inventoryModel.create({
-      _id: sku,
+      sku,
       productId,
       qty
     });
@@ -99,7 +99,7 @@ export class InventoryService {
     return updated;
   }
 
-  deleteInventory(productId: number) {
-    return this.inventoryModel.findOneAndDelete({ productId }).exec();
+  deleteInventory(sku: string) {
+    return this.inventoryModel.findOneAndDelete({ sku }).exec();
   }
 }

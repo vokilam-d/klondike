@@ -1,22 +1,17 @@
 import { CartedInventory } from './carted-inventory.model';
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { Types } from 'mongoose';
 
 export class Inventory {
+  @prop({ index: true, unique: true })
+  sku: string;
 
-  @prop()
-  _id: string; // product SKU
-
-  get id() { return this._id; }
-  set id(id: string) { this._id = id; }
-
-  @prop()
+  @prop({ index: true })
   productId: number;
 
   @prop()
   qty: number;
 
-  @arrayProp({ items: CartedInventory, default: [] })
+  @arrayProp({ items: CartedInventory, default: [], _id: false })
   carted: CartedInventory[];
 
   static collectionName: string = 'inventory';

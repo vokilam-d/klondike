@@ -1,19 +1,18 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from './models/product.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { InventoryService } from '../inventory/inventory.service';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
-import { transliterate } from '../shared/helpers/transliterate.function';
+import { AdminAddOrUpdateProductDto, AdminResponseProductDto } from '../shared/dtos/admin/product.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { FastifyRequest } from 'fastify';
 import { MediaService } from '../shared/media-uploader/media-uploader/media.service';
 import { Media } from '../shared/models/media.model';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
-
-const MEDIA_DIR_NAME = 'product';
+import { Inventory } from '../inventory/models/inventory.model';
+import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 
 @Injectable()
 export class ProductService {
@@ -25,18 +24,53 @@ export class ProductService {
               private readonly pageRegistryService: PageRegistryService) {
   }
 
-  async getProducts(sortingPaginating: AdminSortingPaginatingDto): Promise<Product[]> {
-    const products = await this.productModel.find()
+  async getAllProductsWithQty(sortingPaginating: AdminSortingPaginatingDto = new AdminSortingPaginatingDto()): Promise<AdminResponseProductDto[]> {
+    const variantsProp = getPropertyOf<Product>('variants');
+    const skuProp = getPropertyOf<Inventory>('sku');
+    const qtyProp = getPropertyOf<Inventory>('qty');
+
+    const products = await this.productModel.aggregate()
+      .unwind(variantsProp)
+      .lookup({
+        'from': Inventory.collectionName,
+        'let': { [variantsProp]: `$${variantsProp}` },
+        'pipeline': [
+          { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+        ],
+        'as': variantsProp
+      })
+      .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
+      .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
       .sort(sortingPaginating.sort)
       .skip(sortingPaginating.skip)
       .limit(sortingPaginating.limit)
       .exec();
 
-    return products.map(p => p.toJSON());
+    return products;
   }
 
-  async getProductById(id: number): Promise<DocumentType<Product>> {
-    const found = await this.productModel.findById(id).exec();
+  async getProductWithQtyById(id: number): Promise<DocumentType<AdminResponseProductDto>> {
+    const variantsProp = getPropertyOf<Product>('variants');
+    const skuProp = getPropertyOf<Inventory>('sku');
+    const qtyProp = getPropertyOf<Inventory>('qty');
+
+    const aggregation = await this.productModel.aggregate()
+      .unwind(variantsProp)
+      .lookup({
+        'from': Inventory.collectionName,
+        'let': { [variantsProp]: `$${variantsProp}` },
+        'pipeline': [
+          { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+        ],
+        'as': variantsProp
+      })
+      .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
+      .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
+      .exec();
+
+    const found = aggregation[0];
     if (!found) {
       throw new NotFoundException(`Product with id '${id}' not found`);
     }
@@ -44,87 +78,69 @@ export class ProductService {
     return found;
   }
 
-  async getProductBySku(sku: string): Promise<DocumentType<Product>> {
-    const found = await this.productModel.findOne({ sku }).exec();
-    if (!found) {
-      throw new NotFoundException(`Product with sku '${sku}' not found`);
-    }
-
-    return found;
-  }
-
   async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
-    productDto.slug = productDto.slug === '' ? transliterate(productDto.name) : productDto.slug;
-
-    const duplicateSlug = await this.productModel.findOne({ slug: productDto.slug }).exec();
-    if (duplicateSlug) {
-      throw new BadRequestException(`Product with slug '${productDto.slug}' already exists`);
-    }
-
-    const duplicateSku = await this.productModel.findOne({ sku: productDto.sku }).exec();
-    if (duplicateSku) {
-      throw new BadRequestException(`Product with sku '${productDto.sku}' already exists`);
-    }
-
     const newProductModel = new this.productModel(productDto);
-    (newProductModel.id as number) = await this.counterService.getCounter(Product.collectionName);
-    // newProductModel.medias = await this.saveTmpMedias(productDto.medias);
+    (newProductModel.id) = await this.counterService.getCounter(Product.collectionName);
     await newProductModel.save();
 
-    // await this.inventoryService.createInventory(newProductModel.sku, newProductModel.id, productDto.qty);
-    this.createProductPageRegistry(newProductModel.slug);
+    for (const dtoVariant of productDto.variants) {
+      const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
+      savedVariant.medias = await this.checkTmpAndSaveMedias(dtoVariant.medias);
+
+      await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qty);
+      this.createProductPageRegistry(dtoVariant.slug);
+    }
+
+    await newProductModel.save();
 
     return newProductModel.toJSON();
   }
 
   async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto): Promise<Product> {
-    productDto.slug = productDto.slug === '' ? transliterate(productDto.name) : productDto.slug;
+    const found = await this.productModel.findById(productId).exec();
+    if (!found) {
+      throw new NotFoundException(`Product with id '${productId}' not found`);
+    }
 
-    const found = await this.getProductById(productId);
-    const hasSlugChanged = found.slug !== productDto.slug;
-
-    const savedMedias: Media[] = [];
-    const tmpMedias: MediaDto[] = [];
     const mediasToDelete: Media[] = [];
+    const slugUpdates = new Map<string, string>();
 
-    productDto.medias.forEach(media => {
-      const isTmpMedia = media.variantsUrls.original.includes('/tmp/');
-      if (isTmpMedia) {
-        tmpMedias.push(media);
-      } else {
-        savedMedias.push(media as Media);
+    found.variants.forEach(variant => {
+      const variantInDto = productDto.variants.find(dtoVariant => variant.id.equals(dtoVariant.id));
+      if (!variantInDto) {
+        mediasToDelete.push(...variant.medias);
+        return;
+      }
+
+      variant.medias.forEach(media => {
+        const isMediaInDto = variantInDto.medias.find(dtoMedia => dtoMedia.variantsUrls.original === media.variantsUrls.original);
+        if (!isMediaInDto) {
+          mediasToDelete.push(media);
+        }
+      });
+
+      if (variant.slug !== variantInDto.slug) {
+        slugUpdates.set(variant.slug, variantInDto.slug);
       }
     });
 
-    // found.medias.forEach(media => {
-    //   const isMediaInDto = savedMedias.find(mediaDto => mediaDto.variantsUrls.original === media.variantsUrls.original);
-    //   if (!isMediaInDto) {
-    //     mediasToDelete.push(media);
-    //   }
-    // });
+    Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
+    await found.save();
 
-    Object.keys(productDto)
-      .filter(key => key !== 'id')
-      .forEach(key => {
-        found[key] = productDto[key];
-      });
+    for (const variant of found.variants) {
+      variant.medias = await this.checkTmpAndSaveMedias(variant.medias);
+    }
+    await found.save();
 
-    // found.medias = [...savedMedias, ...await this.saveTmpMedias(tmpMedias)];
-    const saved = await found.save();
-
-    if (hasSlugChanged) {
-      this.updateProductPageRegistry(found.slug, productDto.slug);
+    for (const variant of productDto.variants) {
+      await this.inventoryService.setInventoryQty(variant.sku, variant.qty);
+    }
+    for (const [oldSlug, newSlug] of slugUpdates) {
+      this.updateProductPageRegistry(oldSlug, newSlug);
     }
     await this.deleteMedias(mediasToDelete);
-    // await this.inventoryService.setInventoryQty(saved.sku, productDto.qty);
 
-    return saved.toJSON();
-  }
-
-  async getProductQty(product: Product): Promise<number> {
-    // const inventory = await this.inventoryService.getInventory(product.sku);
-    // return inventory.qty;
-    return 0;
+    return found.toJSON();
   }
 
   async deleteProduct(productId: number): Promise<Product> {
@@ -133,21 +149,26 @@ export class ProductService {
       throw new NotFoundException(`No product with id '${productId}'`);
     }
 
-    await this.inventoryService.deleteInventory(productId);
-    // await this.deleteMedias(deleted.medias);
-    this.deleteProductPageRegistry(deleted.slug);
+    for (const variant of deleted.variants) {
+      await this.inventoryService.deleteInventory(variant.sku);
+      await this.deleteMedias(variant.medias);
+      this.deleteProductPageRegistry(variant.slug);
+    }
 
     return deleted;
   }
 
   uploadMedia(request: FastifyRequest): Promise<Media> {
-    return this.mediaService.upload(request, MEDIA_DIR_NAME);
+    return this.mediaService.upload(request, Product.collectionName);
   }
 
-  private async saveTmpMedias(mediaDtos: MediaDto[]): Promise<Media[]> {
+  private async checkTmpAndSaveMedias(mediaDtos: MediaDto[]): Promise<Media[]> {
     const medias = [];
+
     for (let mediaDto of mediaDtos) {
-      medias.push(await this.mediaService.saveTmpMedia(MEDIA_DIR_NAME, mediaDto));
+      if (mediaDto.variantsUrls.original.includes('/tmp/')) {
+        medias.push(await this.mediaService.saveTmpMedia(Product.collectionName, mediaDto));
+      }
     }
 
     return medias;
@@ -155,7 +176,7 @@ export class ProductService {
 
   private async deleteMedias(medias: Media[]): Promise<void> {
     for (const media of medias) {
-      await this.mediaService.delete(media, MEDIA_DIR_NAME);
+      await this.mediaService.delete(media, Product.collectionName);
     }
   }
 
@@ -186,6 +207,6 @@ export class ProductService {
   }
 
   async countProducts(): Promise<number> {
-    return this.productModel.countDocuments({}).exec();
+    return this.productModel.estimatedDocumentCount().exec();
   }
 }

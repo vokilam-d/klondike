@@ -1,7 +1,8 @@
-import { MetaTagsDto } from './meta-tags.dto';
-import { IsBoolean, IsDefined, IsString, IsNumber, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsBoolean, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { Expose, Type } from 'class-transformer';
-import { MediaDto } from './media.dto';
+import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
+import { AdminProductVariantDto } from './product-variant.dto';
+import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
 
 export class AdminAddOrUpdateProductDto {
   @Expose()
@@ -14,41 +15,24 @@ export class AdminAddOrUpdateProductDto {
   name: string;
 
   @Expose()
-  @IsString()
-  slug: string;
-
-  @Expose()
-  @IsString()
-  sku: string;
-
-  @Expose()
-  @IsNumber()
-  qty: number;
-
-  @Expose()
-  @IsNumber()
-  price: number;
-
-  @Expose()
-  @IsString()
-  shortDescription: string;
-
-  @Expose()
-  @IsString()
-  fullDescription: string;
-
-  @Expose()
   @IsNumber(undefined, { each: true })
   categoryIds: number[];
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => MediaDto)
-  medias: MediaDto[];
+  @Type(() => AdminProductSelectedAttributeDto)
+  attributes: AdminProductSelectedAttributeDto[];
 
   @Expose()
-  @ValidateNested()
-  metaTags: MetaTagsDto;
+  @ArrayNotEmpty()
+  @NoDuplicatesInProductVariants()
+  @ValidateNested({ each: true })
+  @Type(() => AdminProductVariantDto)
+  variants: AdminProductVariantDto[];
+
+  @Expose()
+  @IsNumber()
+  sortOrder: number;
 }
 
 export class AdminResponseProductDto extends AdminAddOrUpdateProductDto {

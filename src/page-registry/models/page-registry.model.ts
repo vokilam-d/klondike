@@ -2,7 +2,7 @@ import { getModelForClass, prop } from '@typegoose/typegoose';
 
 export class PageRegistry {
 
-  @prop({ required: true, index: true})
+  @prop({ required: true, index: true, unique: true })
   slug: string;
 
   @prop({ required: true })

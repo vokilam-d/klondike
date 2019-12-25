@@ -20,7 +20,8 @@ export class CartService {
 
   async addToCart(cartId: Types.ObjectId, sku: string, qty: number): Promise<DocumentType<Cart>> {
 
-    const product: DocumentType<Product> = await this.productService.getProductBySku(sku);
+    // const product: DocumentType<Product> = await this.productService.getProductBySku(sku);
+    let product: DocumentType<Product>;
     const cartItem = new CartItem();
     cartItem.sku = sku;
     cartItem.qty = qty;

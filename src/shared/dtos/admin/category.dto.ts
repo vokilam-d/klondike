@@ -1,6 +1,7 @@
 import { MetaTagsDto } from './meta-tags.dto';
 import { IsBoolean, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
+import { transliterate } from '../../helpers/transliterate.function';
 
 export class AdminAddOrUpdateCategoryDto {
   @Expose()
@@ -18,6 +19,7 @@ export class AdminAddOrUpdateCategoryDto {
 
   @Expose()
   @IsString()
+  @Transform((slug, category) => slug === '' ? transliterate(category.name) : slug)
   slug: string;
 
   @Expose()

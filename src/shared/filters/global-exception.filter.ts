@@ -15,6 +15,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const res = ctx.getResponse<FastifyReply<any>>();
     const path = req.raw.url;
     const method = req.raw.method;
+    const timestamp = new Date().toISOString();
     let statusCode;
     let httpError;
 
@@ -25,6 +26,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode = HttpStatus.BAD_REQUEST;
       httpError = { error: 'Bad Request', message: this.getMongoDuplicationMessage(exception) };
 
+      this.logger.error({
+        statusCode,
+        message: exception.message,
+        timestamp,
+        method,
+        path
+      });
+
     } else {
       statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -32,7 +41,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         statusCode,
         message: exception.message,
         stack: exception.stack.split('\n').map(str => str.trim()),
-        timestamp: new Date().toISOString(),
+        timestamp,
         method,
         path
       });
@@ -41,7 +50,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     res.status(statusCode).send({
       ...(httpError ? httpError : {}),
       statusCode,
-      timestamp: new Date().toISOString(),
+      timestamp,
       method,
       path
     });
@@ -52,10 +61,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   }
 
   private getMongoDuplicationMessage(exception: Error) {
-    const keyValueRegex = exception.message.match(/key:\s+{\s+(\w*):\s+(?:"(.*)"|(.*))\s+}/) || [];
-    const key = keyValueRegex[1] || '';
-    const value = keyValueRegex[2] || keyValueRegex[3] || '';
+    const collectionKeyValueRegex = exception.message.match(/collection: .*\.(\S*) .*key:\s+{\s+(\w*):\s+(?:"(.*)"|(.*))\s+}/) || [];
+    const collection = collectionKeyValueRegex[1] || '';
+    const key = collectionKeyValueRegex[2] || '';
+    const value = collectionKeyValueRegex[3] || collectionKeyValueRegex[4] || '';
 
-    return `${key} '${value}' already exist`;
+    return `${key} with value '${value}' already exists in ${collection}`;
   }
 }
