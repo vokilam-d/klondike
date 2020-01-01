@@ -7,6 +7,7 @@ import { transliterate } from '../../helpers/transliterate.function';
 
 export class AdminProductVariantDto {
   @Expose()
+  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
   id: string;
 
   @Expose()

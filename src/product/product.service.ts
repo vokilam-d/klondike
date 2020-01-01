@@ -13,6 +13,7 @@ import { MediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { Inventory } from '../inventory/models/inventory.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
+import { ClientSession } from 'mongoose';
 
 @Injectable()
 export class ProductService {
@@ -56,6 +57,7 @@ export class ProductService {
     const qtyProp = getPropertyOf<Inventory>('qty');
 
     const aggregation = await this.productModel.aggregate()
+      .match({ _id: id })
       .unwind(variantsProp)
       .lookup({
         'from': Inventory.collectionName,
@@ -79,21 +81,37 @@ export class ProductService {
   }
 
   async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
-    const newProductModel = new this.productModel(productDto);
-    (newProductModel.id) = await this.counterService.getCounter(Product.collectionName);
-    await newProductModel.save();
+    const session = await this.productModel.db.startSession();
+    session.startTransaction();
 
-    for (const dtoVariant of productDto.variants) {
-      const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
-      savedVariant.medias = await this.checkTmpAndSaveMedias(dtoVariant.medias);
+    try {
+      const tmpMedias: MediaDto[] = [];
 
-      await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qty);
-      this.createProductPageRegistry(dtoVariant.slug);
+      const newProductModel = new this.productModel(productDto);
+      newProductModel.id = await this.counterService.getCounter(Product.collectionName);
+
+      for (const dtoVariant of productDto.variants) {
+        const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
+        savedVariant.medias = await this.checkTmpAndSaveMedias(dtoVariant.medias);
+
+        tmpMedias.push(...dtoVariant.medias);
+
+        await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qty, session);
+        await this.createProductPageRegistry(dtoVariant.slug, session);
+      }
+
+      await newProductModel.save();
+      await session.commitTransaction();
+
+      await this.deleteTmpMedias(tmpMedias);
+      return newProductModel.toJSON();
+
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
     }
-
-    await newProductModel.save();
-
-    return newProductModel.toJSON();
   }
 
   async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto): Promise<Product> {
@@ -102,45 +120,50 @@ export class ProductService {
       throw new NotFoundException(`Product with id '${productId}' not found`);
     }
 
-    const mediasToDelete: Media[] = [];
-    const slugUpdates = new Map<string, string>();
+    const session = await this.productModel.db.startSession();
+    session.startTransaction();
 
-    found.variants.forEach(variant => {
-      const variantInDto = productDto.variants.find(dtoVariant => variant.id.equals(dtoVariant.id));
-      if (!variantInDto) {
-        mediasToDelete.push(...variant.medias);
-        return;
-      }
+    try {
+      const mediasToDelete: Media[] = [];
 
-      variant.medias.forEach(media => {
-        const isMediaInDto = variantInDto.medias.find(dtoMedia => dtoMedia.variantsUrls.original === media.variantsUrls.original);
-        if (!isMediaInDto) {
-          mediasToDelete.push(media);
+      for (const variant of found.variants) {
+
+        const variantInDto = productDto.variants.find(dtoVariant => variant._id.equals(dtoVariant.id));
+        if (!variantInDto) {
+          mediasToDelete.push(...variant.medias);
+          await this.deleteProductPageRegistry(variant.slug, session);
+          await this.inventoryService.deleteInventory(variant.sku, session);
+          continue;
         }
-      });
 
-      if (variant.slug !== variantInDto.slug) {
-        slugUpdates.set(variant.slug, variantInDto.slug);
+        for (const media of variant.medias) {
+          const isMediaInDto = variantInDto.medias.find(dtoMedia => dtoMedia.variantsUrls.original === media.variantsUrls.original);
+          if (!isMediaInDto) {
+            mediasToDelete.push(media);
+          }
+        }
+
+        variant.medias = await this.checkTmpAndSaveMedias(variantInDto.medias);
+
+        if (variant.slug !== variantInDto.slug) {
+          await this.updateProductPageRegistry(variant.slug, variantInDto.slug, session);
+        }
+        await this.inventoryService.updateInventory(variant.sku, variantInDto.sku, variantInDto.qty, session);
       }
-    });
 
-    Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
-    await found.save();
+      Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
+      await found.save({ session });
+      await session.commitTransaction();
+      await this.deleteMedias(mediasToDelete);
 
-    for (const variant of found.variants) {
-      variant.medias = await this.checkTmpAndSaveMedias(variant.medias);
+      return found.toJSON();
+
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
     }
-    await found.save();
-
-    for (const variant of productDto.variants) {
-      await this.inventoryService.setInventoryQty(variant.sku, variant.qty);
-    }
-    for (const [oldSlug, newSlug] of slugUpdates) {
-      this.updateProductPageRegistry(oldSlug, newSlug);
-    }
-    await this.deleteMedias(mediasToDelete);
-
-    return found.toJSON();
   }
 
   async deleteProduct(productId: number): Promise<Product> {
@@ -149,13 +172,28 @@ export class ProductService {
       throw new NotFoundException(`No product with id '${productId}'`);
     }
 
-    for (const variant of deleted.variants) {
-      await this.inventoryService.deleteInventory(variant.sku);
-      await this.deleteMedias(variant.medias);
-      this.deleteProductPageRegistry(variant.slug);
-    }
+    const session = await this.productModel.db.startSession();
+    session.startTransaction();
 
-    return deleted;
+    try {
+      const mediasToDelete: Media[] = [];
+
+      for (const variant of deleted.variants) {
+        await this.inventoryService.deleteInventory(variant.sku, session);
+        await this.deleteProductPageRegistry(variant.slug, session);
+        mediasToDelete.push(...variant.medias);
+      }
+
+      await session.commitTransaction();
+      await this.deleteMedias(mediasToDelete);
+
+      return deleted;
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
+    }
   }
 
   uploadMedia(request: FastifyRequest): Promise<Media> {
@@ -165,10 +203,12 @@ export class ProductService {
   private async checkTmpAndSaveMedias(mediaDtos: MediaDto[]): Promise<Media[]> {
     const medias = [];
 
-    for (let mediaDto of mediaDtos) {
-      if (mediaDto.variantsUrls.original.includes('/tmp/')) {
-        medias.push(await this.mediaService.saveTmpMedia(Product.collectionName, mediaDto));
+    for (let media of mediaDtos) {
+      const isTmp = media.variantsUrls.original.includes('/tmp/');
+      if (isTmp) {
+        media = await this.mediaService.processAndSaveTmp(Product.collectionName, media);
       }
+      medias.push(media);
     }
 
     return medias;
@@ -180,6 +220,12 @@ export class ProductService {
     }
   }
 
+  private async deleteTmpMedias(medias: MediaDto[]): Promise<void> {
+    for (const media of medias) {
+      await this.mediaService.deleteTmp(media, Product.collectionName);
+    }
+  }
+
   findProductsByCategoryId(categoryId: number) {
     return this.productModel.find(
       {
@@ -188,22 +234,22 @@ export class ProductService {
     ).exec();
   }
 
-  private createProductPageRegistry(slug: string) {
+  private createProductPageRegistry(slug: string, session: ClientSession) {
     return this.pageRegistryService.createPageRegistry({
       slug,
       type: 'product'
-    });
+    }, session);
   }
 
-  private updateProductPageRegistry(oldSlug: string, newSlug: string) {
+  private updateProductPageRegistry(oldSlug: string, newSlug: string, session: ClientSession) {
     return this.pageRegistryService.updatePageRegistry(oldSlug, {
       slug: newSlug,
       type: 'product'
-    });
+    }, session);
   }
 
-  private deleteProductPageRegistry(slug: string) {
-    return this.pageRegistryService.deletePageRegistry(slug);
+  private deleteProductPageRegistry(slug: string, session: ClientSession) {
+    return this.pageRegistryService.deletePageRegistry(slug, session);
   }
 
   async countProducts(): Promise<number> {

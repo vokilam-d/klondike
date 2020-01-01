@@ -135,17 +135,17 @@ export class CategoryService {
     return this.pageRegistryService.createPageRegistry({
       slug,
       type: 'category'
-    });
+    }, null);
   }
 
   private updateCategoryPageRegistry(oldSlug: string, newSlug: string) {
     return this.pageRegistryService.updatePageRegistry(oldSlug, {
       slug: newSlug,
       type: 'category'
-    });
+    }, null);
   }
 
   private deleteCategoryPageRegistry(slug: string) {
-    return this.pageRegistryService.deletePageRegistry(slug);
+    return this.pageRegistryService.deletePageRegistry(slug, null);
   }
 }

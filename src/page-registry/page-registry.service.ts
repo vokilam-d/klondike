@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PageRegistry } from './models/page-registry.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
+import { ClientSession } from 'mongoose';
 
 @Injectable()
 export class PageRegistryService {
@@ -25,31 +26,34 @@ export class PageRegistryService {
     return found.type;
   }
 
-  async createPageRegistry(pageRegistry: PageRegistry): Promise<any> {
-    const created = await this.registryModel.create({
-      slug: pageRegistry.slug,
-      type: pageRegistry.type
-    });
+  async createPageRegistry(pageRegistry: PageRegistry, session: ClientSession): Promise<any> {
+    const newPage = new this.registryModel({ slug: pageRegistry.slug, type: pageRegistry.type});
+    await newPage.save({ session });
 
-    this.logger.log(`Created '${created.slug}' page-registry.`);
-    return created;
+    this.logger.log(`Created '${newPage.slug}' page-registry.`);
+    return newPage;
   }
 
-  async updatePageRegistry(oldSlug: PageRegistry['slug'], pageRegistry: PageRegistry): Promise<any> {
+  async updatePageRegistry(oldSlug: PageRegistry['slug'], pageRegistry: PageRegistry, session: ClientSession): Promise<any> {
     const result = await this.registryModel.findOneAndUpdate(
       { slug: oldSlug },
       { slug: pageRegistry.slug, type: pageRegistry.type },
       { new: true }
-    ).exec();
+    ).session(session).exec();
 
     this.logger.log(`Updated '${result.slug}' page-registry.`);
     return result;
   }
 
-  async deletePageRegistry(slug: PageRegistry['slug']) {
-    const deleted = await this.registryModel.findOneAndDelete({ slug: slug }).exec();
+  async deletePageRegistry(slug: PageRegistry['slug'], session: ClientSession) {
+    const deleted = await this.registryModel.findOneAndDelete({ slug: slug }).session(session).exec();
 
-    this.logger.log(`Deleted '${deleted.slug}' from page-registry.`);
+    if (deleted) {
+      this.logger.log(`Deleted '${deleted.slug}' from page-registry.`);
+    } else {
+      this.logger.error(`Could not delete '${slug}' from page-registry.`)
+    }
+
     return deleted;
   }
 }

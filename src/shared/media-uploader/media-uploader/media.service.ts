@@ -88,7 +88,7 @@ export class MediaService {
     });
   }
 
-  async saveTmpMedia(mediaTypeDirName: string, mediaDto: MediaDto): Promise<Media> {
+  async processAndSaveTmp(mediaTypeDirName: string, mediaDto: MediaDto): Promise<Media> {
     const media = new Media();
     media.altText = mediaDto.altText;
     media.isHidden = mediaDto.isHidden;
@@ -118,11 +118,18 @@ export class MediaService {
       media.variantsUrls[option.variant] = `/${pathToFile}`;
     }
 
-    await fs.promises.unlink(pathToTmpFile);
+
 
     this.logger.log(`Saved image '${fileNameToSave}' in directory '${dir}'.`);
 
     return media;
+  }
+
+  async deleteTmp(mediaDto: MediaDto, mediaTypeDirName: string) {
+    const { base: tmpFileName } = parse(mediaDto.variantsUrls.original);
+    const pathToTmpFile = join(UPLOAD_DIR_NAME, TMP_DIR_NAME, mediaTypeDirName, tmpFileName);
+
+    await fs.promises.unlink(pathToTmpFile);
   }
 
   async delete(media: Media, mediaTypeDirName: string) {

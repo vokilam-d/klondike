@@ -9,8 +9,8 @@ export class Product {
   @prop()
   _id: number;
 
-  get id(): number { return this._id; }
   set id(id: number) { this._id = id; }
+  get id(): number { return this._id; }
 
   @Exclude()
   __v: any;
@@ -30,7 +30,7 @@ export class Product {
   @arrayProp({ items: ProductSelectedAttribute, _id: false })
   attributes: ProductSelectedAttribute[];
 
-  @arrayProp({ items: ProductVariant })
+  @arrayProp({ items: ProductVariant, _id: true })
   variants: ProductVariant[];
 
   @prop({ default: 0, index: true })

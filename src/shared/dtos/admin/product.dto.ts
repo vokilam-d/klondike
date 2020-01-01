@@ -1,5 +1,5 @@
 import { ArrayNotEmpty, IsBoolean, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductVariantDto } from './product-variant.dto';
 import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
@@ -37,5 +37,6 @@ export class AdminAddOrUpdateProductDto {
 
 export class AdminResponseProductDto extends AdminAddOrUpdateProductDto {
   @Expose()
+  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
   id: number;
 }

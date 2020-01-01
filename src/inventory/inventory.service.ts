@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Inventory } from './models/inventory.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { Types } from 'mongoose';
+import { ClientSession, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
@@ -10,18 +10,15 @@ export class InventoryService {
   constructor(@InjectModel(Inventory.name) private readonly inventoryModel: ReturnModelType<typeof Inventory>) {
   }
 
-  async createInventory(sku: string, productId: number, qty: number = 0): Promise<DocumentType<Inventory>> {
-    const created = await this.inventoryModel.create({
-      sku,
-      productId,
-      qty
-    });
+  async createInventory(sku: string, productId: number, qty: number = 0, session: ClientSession): Promise<DocumentType<Inventory>> {
+    const newInventory = new this.inventoryModel({ sku, productId, qty});
+    await newInventory.save({ session });
 
-    return created;
+    return newInventory;
   }
 
   async getInventory(sku: string): Promise<DocumentType<Inventory>> {
-    const found = await this.inventoryModel.findById(sku).exec();
+    const found = await this.inventoryModel.findOne({ sku }).exec();
     if (!found) {
       throw new NotFoundException(`Cannot find inventory for sku '${sku}'`);
     }
@@ -29,31 +26,30 @@ export class InventoryService {
     return found;
   }
 
-  async setInventoryQty(sku: string, qty: number) {
+  async updateInventory(oldSku: string, newSku: string = oldSku, qty: number, session: ClientSession) {
 
-    const found = await this.inventoryModel.findOne({ '_id': sku });
+    const found = await this.inventoryModel.findOne({ sku: oldSku }).session(session).exec();
 
     if (!found) {
-      throw new NotFoundException(`Cannot find inventory with sku '${sku}'`);
+      throw new NotFoundException(`Cannot find inventory with sku '${oldSku}'`);
     }
 
     const qtyInCarts = found.carted.reduce((sum, cart) => sum + cart.qty, 0);
-
     if (qtyInCarts > qty) {
       throw new ConflictException(`Cannot set quantity: more than ${qty} items are saved in carts`);
     }
 
-    const updated = this.inventoryModel.findOneAndUpdate(
-      { '_id': sku },
-      { 'qty': qty - qtyInCarts },
-      { 'new': true }
-    );
-    return updated;
+    found.qty = qty - qtyInCarts;
+    found.sku = newSku;
+
+    await found.save({ session });
+
+    return found;
   }
 
   async addCarted(sku: string, qty: number, cartId: Types.ObjectId) {
     const query = {
-      '_id': sku,
+      'sku': sku,
       'qty': { '$gte': qty }
     };
     const update = {
@@ -70,7 +66,7 @@ export class InventoryService {
     const deltaQty = newQty - oldQty;
 
     const query = {
-      '_id': sku,
+      'sku': sku,
       'qty': { '$gte': deltaQty },
       'carted.cartId': cartId
     };
@@ -86,7 +82,7 @@ export class InventoryService {
 
   async returnCartedToStock(sku: string, qty: number, cartId: Types.ObjectId) {
     const query = {
-      '_id': sku,
+      'sku': sku,
       'carted.cartId': cartId,
       'carted.qty': qty
     };
@@ -99,7 +95,7 @@ export class InventoryService {
     return updated;
   }
 
-  deleteInventory(sku: string) {
-    return this.inventoryModel.findOneAndDelete({ sku }).exec();
+  deleteInventory(sku: string, session: ClientSession) {
+    return this.inventoryModel.findOneAndDelete({ sku }).session(session).exec();
   }
 }

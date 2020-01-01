@@ -11,7 +11,7 @@ export class ProductVariant {
   _id: Types.ObjectId;
 
   get id() { return this._id; }
-  set id(id) { this._id = id; }
+  set id(id) { this._id = id || new Types.ObjectId(); }
 
   @Exclude()
   __v: any;

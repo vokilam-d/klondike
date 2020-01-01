@@ -4,11 +4,12 @@ import { CategoryAncestor } from './category-ancestor.model';
 import { Exclude, Expose } from 'class-transformer';
 
 export class Category {
+  @prop()
   _id: number;
 
   @Expose()
-  get id(): number { return this._id; }
   set id(id: number) { this._id = id; }
+  get id(): number { return this._id; }
 
   @prop({ required: true })
   name: string;

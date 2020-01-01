@@ -61,7 +61,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   }
 
   private getMongoDuplicationMessage(exception: Error) {
-    const collectionKeyValueRegex = exception.message.match(/collection: .*\.(\S*) .*key:\s+{\s+(\w*):\s+(?:"(.*)"|(.*))\s+}/) || [];
+    const collectionKeyValueRegex = exception.message.match(/collection: [^.]*\.(\S*).*key:\s+{\s+(.*):\s+(?:"(.*)"|(.*))\s+}/);
+    if (collectionKeyValueRegex === null) {
+      return 'Have duplicates, cannot save this data';
+    }
+
     const collection = collectionKeyValueRegex[1] || '';
     const key = collectionKeyValueRegex[2] || '';
     const value = collectionKeyValueRegex[3] || collectionKeyValueRegex[4] || '';
