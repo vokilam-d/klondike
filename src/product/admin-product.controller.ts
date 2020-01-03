@@ -23,14 +23,14 @@ import { MediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
 
+@UsePipes(new ValidationPipe({ transform: true }))
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('admin/products')
 export class AdminProductController {
 
   constructor(private readonly productsService: ProductService) {
   }
 
-  @UsePipes(new ValidationPipe({ transform: true }))
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   async getProducts(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponsePaginationDto<AdminProductDto[]>> {
     const [ results, itemsTotal ] = await Promise.all([this.productsService.getAllProductsWithQty(sortingPaging), this.productsService.countProducts()]);
@@ -44,7 +44,6 @@ export class AdminProductController {
     };
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async getProduct(@Param('id') id: string): Promise<AdminProductDto> {
     const product = await this.productsService.getProductWithQtyById(parseInt(id));
@@ -52,8 +51,6 @@ export class AdminProductController {
     return plainToClass(AdminProductDto, product, { excludeExtraneousValues: true });
   }
 
-  @UsePipes(new ValidationPipe({ transform: true }))
-  @UseInterceptors(ClassSerializerInterceptor)
   @Post()
   async addProduct(@Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminProductDto> {
     const created = await this.productsService.createProduct(productDto);
@@ -61,8 +58,6 @@ export class AdminProductController {
     return plainToClass(AdminProductDto, created, { excludeExtraneousValues: true });
   }
 
-  @UsePipes(new ValidationPipe({ transform: true }))
-  @UseInterceptors(ClassSerializerInterceptor)
   @Put(':id')
   async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminProductDto> {
     const updated = await this.productsService.updateProduct(productId, productDto);
@@ -70,7 +65,6 @@ export class AdminProductController {
     return plainToClass(AdminProductDto, updated, { excludeExtraneousValues: true });
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @Delete(':id')
   async deleteProduct(@Param('id') productId: number): Promise<AdminProductDto> {
     const deleted = await this.productsService.deleteProduct(productId);
