@@ -14,14 +14,14 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
-import { AdminAddOrUpdateProductDto, AdminResponseProductDto } from '../shared/dtos/admin/product.dto';
+import { AdminAddOrUpdateProductDto, AdminProductDto } from '../shared/dtos/admin/product.dto';
 import { ProductService } from './product.service';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
-import { ListResponseDto } from '../shared/dtos/admin/common-response.dto';
+import { ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
 
 @Controller('admin/products')
 export class AdminProductController {
@@ -32,13 +32,12 @@ export class AdminProductController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  async getProducts(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ListResponseDto<AdminResponseProductDto>> {
+  async getProducts(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponsePaginationDto<AdminProductDto[]>> {
     const [ results, itemsTotal ] = await Promise.all([this.productsService.getAllProductsWithQty(sortingPaging), this.productsService.countProducts()]);
     const pagesTotal = Math.floor(itemsTotal / sortingPaging.limit);
 
     return {
-      data: plainToClass(AdminResponseProductDto, results, { excludeExtraneousValues: true }),
-      // data: results as any,
+      data: plainToClass(AdminProductDto, results, { excludeExtraneousValues: true }),
       page: sortingPaging.page,
       pagesTotal,
       itemsTotal
@@ -47,36 +46,36 @@ export class AdminProductController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
-  async getProduct(@Param('id') id: string): Promise<AdminResponseProductDto> {
+  async getProduct(@Param('id') id: string): Promise<AdminProductDto> {
     const product = await this.productsService.getProductWithQtyById(parseInt(id));
 
-    return plainToClass(AdminResponseProductDto, product, { excludeExtraneousValues: true });
+    return plainToClass(AdminProductDto, product, { excludeExtraneousValues: true });
   }
 
   @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(ClassSerializerInterceptor)
   @Post()
-  async addProduct(@Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminResponseProductDto> {
+  async addProduct(@Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminProductDto> {
     const created = await this.productsService.createProduct(productDto);
 
-    return plainToClass(AdminResponseProductDto, created, { excludeExtraneousValues: true });
+    return plainToClass(AdminProductDto, created, { excludeExtraneousValues: true });
   }
 
   @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(ClassSerializerInterceptor)
   @Put(':id')
-  async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminResponseProductDto> {
+  async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminProductDto> {
     const updated = await this.productsService.updateProduct(productId, productDto);
 
-    return plainToClass(AdminResponseProductDto, updated, { excludeExtraneousValues: true });
+    return plainToClass(AdminProductDto, updated, { excludeExtraneousValues: true });
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Delete(':id')
-  async deleteProduct(@Param('id') productId: number): Promise<AdminResponseProductDto> {
+  async deleteProduct(@Param('id') productId: number): Promise<AdminProductDto> {
     const deleted = await this.productsService.deleteProduct(productId);
 
-    return plainToClass(AdminResponseProductDto, deleted, { excludeExtraneousValues: true });
+    return plainToClass(AdminProductDto, deleted, { excludeExtraneousValues: true });
   }
 
   /**

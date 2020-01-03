@@ -35,7 +35,7 @@ export class AdminAddOrUpdateProductDto {
   sortOrder: number;
 }
 
-export class AdminResponseProductDto extends AdminAddOrUpdateProductDto {
+export class AdminProductDto extends AdminAddOrUpdateProductDto {
   @Expose()
   @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
   id: number;

@@ -1,8 +1,8 @@
-export class CommonResponseDto<T> {
+export class ResponseDto<T> {
   data: T;
 }
 
-export class ListResponseDto<T> extends CommonResponseDto<T[]> {
+export class ResponsePaginationDto<T> extends ResponseDto<T> {
   page: number;
   pagesTotal: number;
   itemsTotal: number;

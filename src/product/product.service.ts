@@ -4,7 +4,7 @@ import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { InventoryService } from '../inventory/inventory.service';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { AdminAddOrUpdateProductDto, AdminResponseProductDto } from '../shared/dtos/admin/product.dto';
+import { AdminAddOrUpdateProductDto, AdminProductDto } from '../shared/dtos/admin/product.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { FastifyRequest } from 'fastify';
 import { MediaService } from '../shared/media-uploader/media-uploader/media.service';
@@ -25,7 +25,7 @@ export class ProductService {
               private readonly pageRegistryService: PageRegistryService) {
   }
 
-  async getAllProductsWithQty(sortingPaginating: AdminSortingPaginatingDto = new AdminSortingPaginatingDto()): Promise<AdminResponseProductDto[]> {
+  async getAllProductsWithQty(sortingPaginating: AdminSortingPaginatingDto = new AdminSortingPaginatingDto()): Promise<AdminProductDto[]> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');
@@ -51,7 +51,7 @@ export class ProductService {
     return products;
   }
 
-  async getProductWithQtyById(id: number): Promise<DocumentType<AdminResponseProductDto>> {
+  async getProductWithQtyById(id: number): Promise<DocumentType<AdminProductDto>> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');
