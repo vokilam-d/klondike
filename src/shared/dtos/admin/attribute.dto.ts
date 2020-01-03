@@ -10,7 +10,7 @@ export class AdminAttributeValueDto {
   @Expose()
   @IsString()
   @IsNotEmpty()
-  name: string;
+  label: string;
 
   @Expose()
   @IsBoolean()

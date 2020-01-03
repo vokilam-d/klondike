@@ -6,7 +6,7 @@ export class AttributeValue {
   id: string;
 
   @prop()
-  name: string;
+  label: string;
 
   @prop()
   isDefault: boolean;
