@@ -1,15 +1,15 @@
-import { arrayProp, prop } from '@typegoose/typegoose';
+import { prop } from '@typegoose/typegoose';
 
 export class ProductSelectedAttribute {
   /**
    * @type Attribute.id
    */
   @prop({ index: true })
-  id: string;
+  attributeId: string;
 
   /**
    * @type AttributeValue.id
    */
-  @arrayProp({ items: String })
-  valueIds: string[];
+  @prop()
+  valueId: string;
 }

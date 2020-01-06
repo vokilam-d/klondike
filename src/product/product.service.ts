@@ -14,6 +14,8 @@ import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { Inventory } from '../inventory/models/inventory.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { ClientSession } from 'mongoose';
+import { ProductVariant } from './models/product-variant.model';
+import { AdminProductVariantDto } from '../shared/dtos/admin/product-variant.dto';
 
 @Injectable()
 export class ProductService {
@@ -104,7 +106,13 @@ export class ProductService {
       await session.commitTransaction();
 
       await this.deleteTmpMedias(tmpMedias);
-      return newProductModel.toJSON();
+
+      const converted = newProductModel.toJSON();
+      converted.variants.forEach(variant => {
+        const variantDto = productDto.variants.find(variantDto => variantDto.sku === variantDto.sku);
+        variant.qty = variantDto.qty;
+      });
+      return converted;
 
     } catch (ex) {
       await session.abortTransaction();
@@ -125,10 +133,28 @@ export class ProductService {
 
     try {
       const mediasToDelete: Media[] = [];
+      const tmpMedias: MediaDto[] = [];
+
+      const variantsToUpdate: AdminProductVariantDto[] = [];
+      const variantsToAdd: AdminProductVariantDto[] = [];
+      productDto.variants.forEach(variantDto => {
+        if (variantDto.id) {
+          variantsToUpdate.push(variantDto);
+        } else {
+          variantsToAdd.push(variantDto);
+        }
+      });
+
+      for (const variantDto of variantsToAdd) {
+        tmpMedias.push(...variantDto.medias);
+        variantDto.medias = await this.checkTmpAndSaveMedias(variantDto.medias);
+
+        await this.inventoryService.createInventory(variantDto.sku, found.id, variantDto.qty, session);
+        await this.createProductPageRegistry(variantDto.slug, session);
+      }
 
       for (const variant of found.variants) {
-
-        const variantInDto = productDto.variants.find(dtoVariant => variant._id.equals(dtoVariant.id));
+        const variantInDto = variantsToUpdate.find(variantDto => variant._id.equals(variantDto.id));
         if (!variantInDto) {
           mediasToDelete.push(...variant.medias);
           await this.deleteProductPageRegistry(variant.slug, session);
@@ -155,8 +181,14 @@ export class ProductService {
       await found.save({ session });
       await session.commitTransaction();
       await this.deleteMedias(mediasToDelete);
+      await this.deleteTmpMedias(tmpMedias);
 
-      return found.toJSON();
+      const converted = found.toJSON();
+      converted.variants.forEach(variant => {
+        const variantDto = productDto.variants.find(variantDto => variantDto.sku === variant.sku);
+        variant.qty = variantDto.qty;
+      });
+      return converted;
 
     } catch (ex) {
       await session.abortTransaction();
@@ -206,9 +238,10 @@ export class ProductService {
     for (let media of mediaDtos) {
       const isTmp = media.variantsUrls.original.includes('/tmp/');
       if (isTmp) {
-        media = await this.mediaService.processAndSaveTmp(Product.collectionName, media);
+        medias.push(await this.mediaService.processAndSaveTmp(Product.collectionName, media));
+      } else {
+        medias.push(media);
       }
-      medias.push(media);
     }
 
     return medias;

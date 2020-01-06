@@ -35,6 +35,7 @@ export class AdminProductVariantDto {
   isEnabled: boolean;
 
   @Expose()
+  @Transform(price => parseFloat(price))
   @IsNumber()
   price: number;
 
@@ -56,6 +57,7 @@ export class AdminProductVariantDto {
   metaTags: MetaTagsDto;
 
   @Expose()
+  @Transform(price => parseFloat(price))
   @IsNumber()
   qty: number;
 }

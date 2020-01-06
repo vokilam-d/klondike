@@ -5,9 +5,9 @@ import { alphaNumDashUnderscoreRegex } from '../../contants';
 export class AdminProductSelectedAttributeDto {
   @Expose()
   @Matches(alphaNumDashUnderscoreRegex)
-  id: string;
+  attributeId: string;
 
   @Expose()
-  @Matches(alphaNumDashUnderscoreRegex, { each: true })
-  valueIds: string[];
+  @Matches(alphaNumDashUnderscoreRegex)
+  valueId: string;
 }
