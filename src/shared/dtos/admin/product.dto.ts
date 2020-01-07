@@ -10,7 +10,6 @@ export class AdminAddOrUpdateProductDto {
   isEnabled: boolean;
 
   @Expose()
-  @IsDefined()
   @IsString()
   name: string;
 

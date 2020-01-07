@@ -11,12 +11,10 @@ export class AdminProductVariantDto {
   id: string;
 
   @Expose()
-  @IsDefined()
   @IsString()
   name: string;
 
   @Expose()
-  @IsDefined()
   @IsString()
   sku: string;
 

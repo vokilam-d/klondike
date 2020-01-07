@@ -23,6 +23,8 @@ import { MediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
 
+
+
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('admin/products')
@@ -34,7 +36,7 @@ export class AdminProductController {
   @Get()
   async getProducts(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponsePaginationDto<AdminProductDto[]>> {
     const [ results, itemsTotal ] = await Promise.all([this.productsService.getAllProductsWithQty(sortingPaging), this.productsService.countProducts()]);
-    const pagesTotal = Math.floor(itemsTotal / sortingPaging.limit);
+    const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
 
     return {
       data: plainToClass(AdminProductDto, results, { excludeExtraneousValues: true }),

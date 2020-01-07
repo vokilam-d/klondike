@@ -21,8 +21,8 @@ export class Attribute {
   __v: any;
 
   @Expose()
-  get id(): string { return this._id; }
   set id(id: string) { this._id = id; }
+  get id(): string { return this._id; }
 
   @prop()
   label: string; // UI name

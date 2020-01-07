@@ -14,7 +14,6 @@ import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { Inventory } from '../inventory/models/inventory.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { ClientSession } from 'mongoose';
-import { ProductVariant } from './models/product-variant.model';
 import { AdminProductVariantDto } from '../shared/dtos/admin/product-variant.dto';
 
 @Injectable()
@@ -199,15 +198,15 @@ export class ProductService {
   }
 
   async deleteProduct(productId: number): Promise<Product> {
-    const deleted = await this.productModel.findByIdAndDelete(productId).exec();
-    if (!deleted) {
-      throw new NotFoundException(`No product with id '${productId}'`);
-    }
-
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
     try {
+      const deleted = await this.productModel.findByIdAndDelete(productId).exec();
+      if (!deleted) {
+        throw new NotFoundException(`No product with id '${productId}'`);
+      }
+
       const mediasToDelete: Media[] = [];
 
       for (const variant of deleted.variants) {

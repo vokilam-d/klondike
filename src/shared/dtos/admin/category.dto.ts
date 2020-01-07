@@ -9,7 +9,6 @@ export class AdminAddOrUpdateCategoryDto {
   isEnabled: boolean;
 
   @Expose()
-  @IsDefined()
   @IsString()
   name: string;
 

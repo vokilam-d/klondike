@@ -19,8 +19,6 @@ export class AdminAttributeValueDto {
 
 export class AdminUpdateAttributeDto {
   @Expose()
-  @IsDefined()
-  @IsNotEmpty()
   @IsString()
   label: string;
 

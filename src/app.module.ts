@@ -9,6 +9,7 @@ import { ProductModule } from './product/product.module';
 import { CartModule } from './cart/cart.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { AttributeModule } from './attribute/attribute.module';
+import { CustomerModule } from './customer/customer.module';
 
 @Module({
   imports: [
@@ -30,9 +31,11 @@ import { AttributeModule } from './attribute/attribute.module';
     ProductModule,
     CartModule,
     InventoryModule,
-    AttributeModule
+    AttributeModule,
+    CustomerModule
   ],
-  providers: [GlobalExceptionFilter]
+  providers: [GlobalExceptionFilter],
+  controllers: []
 })
 export class AppModule {
   static port: number;
