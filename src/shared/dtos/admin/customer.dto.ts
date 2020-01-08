@@ -38,6 +38,11 @@ export class AdminCustomerAddressDto {
   @IsOptional()
   @IsString()
   novaposhtaOffice: any;
+
+  @Expose()
+  @IsOptional()
+  @IsBoolean()
+  isDefault: boolean;
 }
 
 export class AdminAddOrUpdateCustomerDto {

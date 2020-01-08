@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Customer } from './modesl/customer.model';
+import { Customer } from './models/customer.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { AdminAddOrUpdateCustomerDto } from '../shared/dtos/admin/customer.dto';

@@ -19,6 +19,9 @@ export class CustomerAddress {
 
   @prop({ default: '' })
   novaposhtaOffice: any;
+
+  @prop({ default: false })
+  isDefault: boolean;
 }
 
 export class Customer {
