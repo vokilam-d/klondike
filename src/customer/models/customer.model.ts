@@ -52,7 +52,7 @@ export class Customer {
   password: any;
 
   @prop({ default: new Date() })
-  creationDate: Date;
+  createdDate: Date;
 
   @prop({ default: null })
   lastLoggedIn: Date;

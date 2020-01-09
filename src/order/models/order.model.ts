@@ -45,7 +45,7 @@ export class Order {
   address: ShippingAddress;
 
   @prop({ default: new Date() })
-  dateCreated: Date;
+  createdDate: Date;
 
   @prop()
   isConfirmationEmailSent: boolean;
@@ -68,8 +68,14 @@ export class Order {
   @prop()
   status: any;
 
+  @prop()
+  clientNote: string;
+
+  @prop()
+  adminNote: string;
+
   @arrayProp({ items: String })
-  notes: string[];
+  logs: string[];
 
   @prop()
   orderTotalPrice: number;

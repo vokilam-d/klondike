@@ -16,7 +16,7 @@ export class AdminAddOrUpdateOrderDto {
   @Expose()
   @IsDate()
   @Type(() => Date)
-  dateCreated: Date;
+  createdDate: Date;
 
   @Expose()
   @IsBoolean()
@@ -45,7 +45,15 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsString()
-  notes: string[];
+  clientNote: string;
+
+  @Expose()
+  @IsString()
+  adminNote: string;
+
+  @Expose()
+  @IsString({ each: true })
+  logs: string[];
 
   @Expose()
   @IsNumber()

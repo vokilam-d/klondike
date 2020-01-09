@@ -72,7 +72,7 @@ export class AdminAddOrUpdateCustomerDto {
   @IsOptional()
   @IsDate()
   @Type(() => Date)
-  creationDate: Date;
+  createdDate: Date;
 
   @Expose()
   @IsOptional()
