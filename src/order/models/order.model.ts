@@ -44,7 +44,7 @@ export class Order {
   @prop()
   address: ShippingAddress;
 
-  @prop()
+  @prop({ default: new Date() })
   dateCreated: Date;
 
   @prop()
