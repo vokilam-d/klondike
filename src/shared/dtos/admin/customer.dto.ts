@@ -2,7 +2,6 @@ import { Expose, Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsDate,
-  IsDefined,
   IsEmail,
   IsNumber,
   IsOptional,
@@ -11,7 +10,7 @@ import {
   ValidateNested
 } from 'class-validator';
 
-export class AdminCustomerAddressDto {
+export class AdminShippingAddressDto {
   @Expose()
   @IsString()
   firstName: string;
@@ -103,8 +102,8 @@ export class AdminAddOrUpdateCustomerDto {
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => AdminCustomerAddressDto)
-  addresses: AdminCustomerAddressDto[];
+  @Type(() => AdminShippingAddressDto)
+  addresses: AdminShippingAddressDto[];
 
   @Expose()
   @IsNumber(undefined, { each: true })

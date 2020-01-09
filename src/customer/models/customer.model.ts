@@ -1,7 +1,7 @@
 import { Exclude, Expose } from 'class-transformer';
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 
-export class CustomerAddress {
+export class ShippingAddress {
   @prop({ required: true })
   firstName: string;
 
@@ -69,8 +69,8 @@ export class Customer {
   @prop({ default: '' })
   note: string;
 
-  @arrayProp({ items: CustomerAddress })
-  addresses: CustomerAddress[];
+  @arrayProp({ items: ShippingAddress })
+  addresses: ShippingAddress[];
 
   @arrayProp({ items: Number, default: [] })
   reviewIds: number[];

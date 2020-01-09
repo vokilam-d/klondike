@@ -10,6 +10,7 @@ import { CartModule } from './cart/cart.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { AttributeModule } from './attribute/attribute.module';
 import { CustomerModule } from './customer/customer.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -32,7 +33,8 @@ import { CustomerModule } from './customer/customer.module';
     CartModule,
     InventoryModule,
     AttributeModule,
-    CustomerModule
+    CustomerModule,
+    OrderModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []
