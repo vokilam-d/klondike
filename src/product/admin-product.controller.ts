@@ -21,7 +21,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
-import { ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
+import { ResponseDto, ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
 
 
 
@@ -47,31 +47,39 @@ export class AdminProductController {
   }
 
   @Get(':id')
-  async getProduct(@Param('id') id: string): Promise<AdminProductDto> {
+  async getProduct(@Param('id') id: string): Promise<ResponseDto<AdminProductDto>> {
     const product = await this.productsService.getProductWithQtyById(parseInt(id));
 
-    return plainToClass(AdminProductDto, product, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminProductDto, product, { excludeExtraneousValues: true })
+    };
   }
 
   @Post()
-  async addProduct(@Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminProductDto> {
+  async addProduct(@Body() productDto: AdminAddOrUpdateProductDto): Promise<ResponseDto<AdminProductDto>> {
     const created = await this.productsService.createProduct(productDto);
 
-    return plainToClass(AdminProductDto, created, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminProductDto, created, { excludeExtraneousValues: true })
+    };
   }
 
   @Put(':id')
-  async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<AdminProductDto> {
+  async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<ResponseDto<AdminProductDto>> {
     const updated = await this.productsService.updateProduct(productId, productDto);
 
-    return plainToClass(AdminProductDto, updated, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminProductDto, updated, { excludeExtraneousValues: true })
+    };
   }
 
   @Delete(':id')
-  async deleteProduct(@Param('id') productId: number): Promise<AdminProductDto> {
+  async deleteProduct(@Param('id') productId: number): Promise<ResponseDto<AdminProductDto>> {
     const deleted = await this.productsService.deleteProduct(productId);
 
-    return plainToClass(AdminProductDto, deleted, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminProductDto, deleted, { excludeExtraneousValues: true })
+    };
   }
 
   /**

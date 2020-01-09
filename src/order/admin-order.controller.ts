@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
-import { ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
+import { ResponseDto, ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
 
@@ -42,30 +42,38 @@ export class AdminOrderController {
   }
 
   @Get(':id')
-  async getOrder(@Param('id') id: string): Promise<AdminOrderDto> {
+  async getOrder(@Param('id') id: string): Promise<ResponseDto<AdminOrderDto>> {
     const order = await this.orderService.getOrderById(parseInt(id));
 
-    return plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
   }
 
   @Post()
-  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto): Promise<AdminOrderDto> {
+  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
     const created = await this.orderService.createOrder(orderDto);
 
-    return plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true })
+    };
   }
 
   @Put(':id')
-  async updateOrder(@Param('id') orderId: number, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<AdminOrderDto> {
+  async updateOrder(@Param('id') orderId: number, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
     const updated = await this.orderService.updateOrder(orderId, orderDto);
 
-    return plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+    };
   }
 
   @Delete(':id')
-  async deleteOrder(@Param('id') orderId: number): Promise<AdminOrderDto> {
+  async deleteOrder(@Param('id') orderId: number): Promise<ResponseDto<AdminOrderDto>> {
     const deleted = await this.orderService.deleteOrder(orderId);
 
-    return plainToClass(AdminOrderDto, deleted, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminOrderDto, deleted, { excludeExtraneousValues: true })
+    };
   }
 }

@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
-import { ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
+import { ResponseDto, ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../shared/dtos/admin/customer.dto';
 
@@ -42,30 +42,38 @@ export class AdminCustomerController {
   }
 
   @Get(':id')
-  async getCustomer(@Param('id') id: string): Promise<AdminCustomerDto> {
+  async getCustomer(@Param('id') id: string): Promise<ResponseDto<AdminCustomerDto>> {
     const customer = await this.customerService.getCustomerById(parseInt(id));
 
-    return plainToClass(AdminCustomerDto, customer, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminCustomerDto, customer, { excludeExtraneousValues: true })
+    };
   }
 
   @Post()
-  async addCustomer(@Body() customerDto: AdminAddOrUpdateCustomerDto): Promise<AdminCustomerDto> {
+  async addCustomer(@Body() customerDto: AdminAddOrUpdateCustomerDto): Promise<ResponseDto<AdminCustomerDto>> {
     const created = await this.customerService.createCustomer(customerDto);
 
-    return plainToClass(AdminCustomerDto, created, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminCustomerDto, created, { excludeExtraneousValues: true })
+    };
   }
 
   @Put(':id')
-  async updateCustomer(@Param('id') customerId: number, @Body() customerDto: AdminAddOrUpdateCustomerDto): Promise<AdminCustomerDto> {
+  async updateCustomer(@Param('id') customerId: number, @Body() customerDto: AdminAddOrUpdateCustomerDto): Promise<ResponseDto<AdminCustomerDto>> {
     const updated = await this.customerService.updateCustomer(customerId, customerDto);
 
-    return plainToClass(AdminCustomerDto, updated, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminCustomerDto, updated, { excludeExtraneousValues: true })
+    };
   }
 
   @Delete(':id')
-  async deleteCustomer(@Param('id') customerId: number): Promise<AdminCustomerDto> {
+  async deleteCustomer(@Param('id') customerId: number): Promise<ResponseDto<AdminCustomerDto>> {
     const deleted = await this.customerService.deleteCustomer(customerId);
 
-    return plainToClass(AdminCustomerDto, deleted, { excludeExtraneousValues: true });
+    return {
+      data: plainToClass(AdminCustomerDto, deleted, { excludeExtraneousValues: true })
+    };
   }
 }
