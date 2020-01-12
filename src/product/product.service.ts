@@ -93,9 +93,10 @@ export class ProductService {
 
       for (const dtoVariant of productDto.variants) {
         const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
-        savedVariant.medias = await this.checkTmpAndSaveMedias(dtoVariant.medias);
+        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.checkTmpAndSaveMedias(dtoVariant.medias);
 
-        tmpMedias.push(...dtoVariant.medias);
+        savedVariant.medias = savedMedias;
+        tmpMedias.push(...checkedTmpMedias);
 
         await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qty, session);
         await this.createProductPageRegistry(dtoVariant.slug, session);
@@ -145,8 +146,9 @@ export class ProductService {
       });
 
       for (const variantDto of variantsToAdd) {
-        tmpMedias.push(...variantDto.medias);
-        variantDto.medias = await this.checkTmpAndSaveMedias(variantDto.medias);
+        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.checkTmpAndSaveMedias(variantDto.medias);
+        variantDto.medias = savedMedias;
+        tmpMedias.push(...checkedTmpMedias);
 
         await this.inventoryService.createInventory(variantDto.sku, found.id, variantDto.qty, session);
         await this.createProductPageRegistry(variantDto.slug, session);
@@ -168,7 +170,9 @@ export class ProductService {
           }
         }
 
-        variant.medias = await this.checkTmpAndSaveMedias(variantInDto.medias);
+        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.checkTmpAndSaveMedias(variantInDto.medias);
+        variantInDto.medias = savedMedias;
+        tmpMedias.push(...checkedTmpMedias);
 
         if (variant.slug !== variantInDto.slug) {
           await this.updateProductPageRegistry(variant.slug, variantInDto.slug, session);
@@ -231,19 +235,21 @@ export class ProductService {
     return this.mediaService.upload(request, Product.collectionName);
   }
 
-  private async checkTmpAndSaveMedias(mediaDtos: MediaDto[]): Promise<Media[]> {
-    const medias = [];
+  private async checkTmpAndSaveMedias(mediaDtos: MediaDto[]): Promise<{ tmpMedias: Media[], savedMedias: Media[] }> {
+    const tmpMedias = [];
+    const savedMedias = [];
 
     for (let media of mediaDtos) {
       const isTmp = media.variantsUrls.original.includes('/tmp/');
       if (isTmp) {
-        medias.push(await this.mediaService.processAndSaveTmp(Product.collectionName, media));
+        tmpMedias.push(media);
+        savedMedias.push(await this.mediaService.processAndSaveTmp(Product.collectionName, media));
       } else {
-        medias.push(media);
+        savedMedias.push(media);
       }
     }
 
-    return medias;
+    return { tmpMedias, savedMedias };
   }
 
   private async deleteMedias(medias: Media[]): Promise<void> {
