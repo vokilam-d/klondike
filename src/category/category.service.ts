@@ -4,11 +4,7 @@ import { PageRegistryService } from '../page-registry/page-registry.service';
 import { ProductService } from '../product/product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import {
-  AdminAddOrUpdateCategoryDto,
-  AdminCategoriesTreeDto,
-  AdminCategoryTreeItem
-} from '../shared/dtos/admin/category.dto';
+import { AdminAddOrUpdateCategoryDto, AdminCategoryTreeItem } from '../shared/dtos/admin/category.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
@@ -22,7 +18,7 @@ export class CategoryService {
               private productService: ProductService) {
   }
 
-  async getCategoriesTree(): Promise<AdminCategoriesTreeDto> {
+  async getCategoriesTree(): Promise<AdminCategoryTreeItem[]> {
     const treeItems: AdminCategoryTreeItem[] = [];
     const childrenMap: { [parentId: number]: AdminCategoryTreeItem[] } = {};
 
@@ -54,7 +50,7 @@ export class CategoryService {
 
     populateChildrenArray(treeItems);
 
-    return new AdminCategoriesTreeDto({ categories: treeItems });
+    return treeItems;
   }
 
   async getCategoryById(id: string | number): Promise<DocumentType<Category>> {

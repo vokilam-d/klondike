@@ -49,13 +49,3 @@ export class AdminCategoryTreeItem {
     Object.assign(this, value);
   }
 }
-
-export class AdminCategoriesTreeDto {
-  @Expose()
-  @Type(() => AdminCategoryTreeItem)
-  categories: AdminCategoryTreeItem[];
-
-  constructor(value: Partial<AdminCategoriesTreeDto>) {
-    Object.assign(this, value);
-  }
-}

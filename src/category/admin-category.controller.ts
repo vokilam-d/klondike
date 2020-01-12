@@ -14,7 +14,7 @@ import {
 import { CategoryService } from './category.service';
 import {
   AdminAddOrUpdateCategoryDto,
-  AdminCategoriesTreeDto,
+  AdminCategoryTreeItem,
   AdminResponseCategoryDto
 } from '../shared/dtos/admin/category.dto';
 import { plainToClass } from 'class-transformer';
@@ -29,10 +29,10 @@ export class AdminCategoryController {
   }
 
   @Get('tree')
-  async getCategoriesTree(): Promise<ResponseDto<AdminCategoriesTreeDto>> {
-    const tree = await this.categoryService.getCategoriesTree() as any;
+  async getCategoriesTree(): Promise<ResponseDto<AdminCategoryTreeItem[]>> {
+    const tree = await this.categoryService.getCategoriesTree();
     return {
-      data: plainToClass(AdminCategoriesTreeDto, tree, { excludeExtraneousValues: true })
+      data: plainToClass(AdminCategoryTreeItem, tree, { excludeExtraneousValues: true })
     };
   }
 
