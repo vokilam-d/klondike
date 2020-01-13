@@ -11,6 +11,8 @@ import { InventoryModule } from './inventory/inventory.module';
 import { AttributeModule } from './attribute/attribute.module';
 import { CustomerModule } from './customer/customer.module';
 import { OrderModule } from './order/order.module';
+import { ShippingMethodModule } from './shipping-method/shipping-method.module';
+import { PaymentMethodModule } from './payment-method/payment-method.module';
 
 @Module({
   imports: [
@@ -34,7 +36,9 @@ import { OrderModule } from './order/order.module';
     InventoryModule,
     AttributeModule,
     CustomerModule,
-    OrderModule
+    OrderModule,
+    ShippingMethodModule,
+    PaymentMethodModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []
