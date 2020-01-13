@@ -41,10 +41,20 @@ export class AdminAddOrUpdateOrderDto {
   isConfirmationEmailSent: boolean;
 
   @Expose()
-  paymentMethod: any;
+  @IsString()
+  paymentMethodId: string;
 
   @Expose()
-  shippingMethod: any;
+  @IsString()
+  paymentMethodName: string;
+
+  @Expose()
+  @IsString()
+  shippingMethodId: string;
+
+  @Expose()
+  @IsString()
+  shippingMethodName: string;
 
   @Expose()
   @IsBoolean()

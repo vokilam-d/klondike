@@ -66,10 +66,16 @@ export class Order {
   isConfirmationEmailSent: boolean;
 
   @prop()
-  paymentMethod: any;
+  paymentMethodId: string;
 
   @prop()
-  shippingMethod: any;
+  paymentMethodName: string;
+
+  @prop()
+  shippingMethodId: string;
+
+  @prop()
+  shippingMethodName: string;
 
   @prop()
   isCallbackNeeded: boolean;
