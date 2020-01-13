@@ -8,6 +8,9 @@ export class OrderItem {
   name: string;
 
   @prop()
+  sku: string;
+
+  @prop()
   originalPrice: number;
 
   @prop()
@@ -23,7 +26,7 @@ export class OrderItem {
   discountAmountInPercent: number;
 
   @prop()
-  totalPrice: number;
+  totalCost: number;
 }
 
 export class Order {
@@ -40,6 +43,18 @@ export class Order {
 
   @prop()
   customerId: number;
+
+  @prop()
+  customerFirstName: string;
+
+  @prop()
+  customerLastName: string;
+
+  @prop({ default: '' })
+  customerEmail: string;
+
+  @prop({ default: '' })
+  customerPhoneNumber: string;
 
   @prop()
   address: ShippingAddress;

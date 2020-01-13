@@ -1,5 +1,5 @@
 import { Expose, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { AdminShippingAddressDto } from './customer.dto';
 import { AdminOrderItemDto } from './order-item.dto';
 
@@ -7,6 +7,24 @@ export class AdminAddOrUpdateOrderDto {
   @Expose()
   @IsNumber()
   customerId: number;
+
+  @Expose()
+  @IsString()
+  customerFirstName: string;
+
+  @Expose()
+  @IsString()
+  customerLastName: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  customerEmail: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  customerPhoneNumber: string;
 
   @Expose()
   @ValidateNested()

@@ -45,4 +45,7 @@ export class ProductVariant {
 
   @prop()
   metaTags: MetaTags;
+
+  @prop({ default: true })
+  isDiscountApplicable: boolean;
 }

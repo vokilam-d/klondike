@@ -116,6 +116,16 @@ export class AdminAddOrUpdateCustomerDto {
   @Expose()
   @IsNumber(undefined, { each: true })
   wishlistProductIds: number[];
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  discountPercent: number;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  totalOrdersCost: number;
 }
 
 export class AdminCustomerDto extends AdminAddOrUpdateCustomerDto {

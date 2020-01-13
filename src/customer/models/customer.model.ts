@@ -81,6 +81,12 @@ export class Customer {
   @arrayProp({ items: Number, default: [] })
   wishlistProductIds: number[];
 
+  @prop({ default: 0 })
+  discountPercent: number;
+
+  @prop({ default: 0 })
+  totalOrdersCost: number;
+
 
   static collectionName: string = 'customer';
 }

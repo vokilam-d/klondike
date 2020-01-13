@@ -58,4 +58,8 @@ export class AdminProductVariantDto {
   @Transform(price => parseFloat(price))
   @IsNumber()
   qty: number;
+
+  @Expose()
+  @IsBoolean()
+  isDiscountApplicable: boolean;
 }

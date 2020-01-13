@@ -7,6 +7,10 @@ export class AdminOrderItemDto {
   name: string;
 
   @Expose()
+  @IsString()
+  sku: string;
+
+  @Expose()
   @IsNumber()
   originalPrice: number;
 
@@ -28,5 +32,5 @@ export class AdminOrderItemDto {
 
   @Expose()
   @IsNumber()
-  totalPrice: number;
+  totalCost: number;
 }
