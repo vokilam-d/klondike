@@ -25,7 +25,7 @@ export class PaymentMethod {
   sortOrder: number;
 
 
-  static collectionName: string = 'shipping_method';
+  static collectionName: string = 'payment-method';
 }
 
 export const PaymentMethodModel = getModelForClass(PaymentMethod, {

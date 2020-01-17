@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer';
-import { IsBoolean, IsDefined, IsNotEmpty, IsString, Matches, ValidateNested } from 'class-validator';
-import { alphaNumDashUnderscoreRegex } from '../../contants';
+import { IsBoolean, IsNotEmpty, IsString, Matches, ValidateNested } from 'class-validator';
+import { alphaNumDashUnderscoreRegex } from '../../constants';
 
 export class AdminAttributeValueDto {
   @Expose()

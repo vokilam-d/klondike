@@ -1,5 +1,5 @@
 import { Expose, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { MediaDto } from './media.dto';
 import { MetaTagsDto } from './meta-tags.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';

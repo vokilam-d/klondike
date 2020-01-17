@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { ShippingMethod } from './models/shipping-method.model';
 import { ShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
+import { Types } from 'mongoose';
+import { toObjectId } from '../shared/object-id.function';
 
 @Injectable()
 export class ShippingMethodService {
@@ -11,7 +13,7 @@ export class ShippingMethodService {
 
   async getAllShippingMethods(): Promise<ShippingMethod[]> {
     const methods = await this.shippingMethodModel.find().exec();
-    return methods;
+    return methods.map(m => m.toJSON());
   }
 
   async createShippingMethod(methodDto: ShippingMethodDto): Promise<ShippingMethod> {
@@ -22,22 +24,27 @@ export class ShippingMethodService {
   }
 
   async updateShippingMethod(methodId: string, methodDto: ShippingMethodDto): Promise<ShippingMethod> {
-    const found = await this.shippingMethodModel.findById(methodId);
+
+    const found = await this.shippingMethodModel.findById(methodId).exec();
     if (!found) {
       throw new NotFoundException(`Shipping method with id '${methodId}' not found`);
     }
 
-    Object.keys(found).forEach(key => found[key] = methodDto[key]);
+    Object.keys(methodDto).forEach(key => found[key] = methodDto[key]);
     await found.save();
     return found;
   }
 
   async deleteShippingMethod(methodId: string): Promise<ShippingMethod> {
-    const deleted = await this.shippingMethodModel.findByIdAndDelete(methodId);
+    const deleted = await this.shippingMethodModel.findByIdAndDelete(this.toMethodId(methodId)).exec();
     if (!deleted) {
       throw new NotFoundException(`Shipping method with id '${methodId}' not found`);
     }
 
     return deleted;
+  }
+
+  private toMethodId(id: string): Types.ObjectId {
+    return toObjectId(id, () => { throw new BadRequestException('Invalid shipping method ID'); });
   }
 }

@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsNumber, IsPositive, IsString } from 'class-validator';
-import { sortFieldRegex } from '../../contants';
+import { sortFieldRegex } from '../../constants';
 
 const defaultSortField = '-_id';
 
