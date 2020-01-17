@@ -1,16 +1,8 @@
-import { Exclude, Expose } from 'class-transformer';
 import { getModelForClass, prop } from '@typegoose/typegoose';
+import { Types } from 'mongoose';
 
 export class PaymentMethod {
-  @Exclude()
-  _id: any;
-
-  @Exclude()
-  __v: any;
-
-  @Expose()
-  set id(id: string) { this._id = id; }
-  get id(): string { return this._id; }
+  _id: Types.ObjectId;
 
   @prop({ default: true })
   isEnabled: boolean;
