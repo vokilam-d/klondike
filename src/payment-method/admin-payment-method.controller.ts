@@ -18,7 +18,6 @@ import { plainToClass } from 'class-transformer';
 
 
 @UsePipes(new ValidationPipe({ transform: true }))
-@UseInterceptors(ClassSerializerInterceptor)
 @Controller('admin/payment-method')
 export class AdminPaymentMethodController {
   constructor(private readonly paymentMethodService: PaymentMethodService) {

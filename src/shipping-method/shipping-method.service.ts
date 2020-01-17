@@ -1,10 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { ShippingMethod } from './models/shipping-method.model';
 import { ShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
-import { Types } from 'mongoose';
-import { toObjectId } from '../shared/object-id.function';
 
 @Injectable()
 export class ShippingMethodService {
@@ -13,7 +11,7 @@ export class ShippingMethodService {
 
   async getAllShippingMethods(): Promise<ShippingMethod[]> {
     const methods = await this.shippingMethodModel.find().exec();
-    return methods.map(m => m.toJSON());
+    return methods;
   }
 
   async createShippingMethod(methodDto: ShippingMethodDto): Promise<ShippingMethod> {
@@ -36,15 +34,11 @@ export class ShippingMethodService {
   }
 
   async deleteShippingMethod(methodId: string): Promise<ShippingMethod> {
-    const deleted = await this.shippingMethodModel.findByIdAndDelete(this.toMethodId(methodId)).exec();
+    const deleted = await this.shippingMethodModel.findByIdAndDelete(methodId).exec();
     if (!deleted) {
       throw new NotFoundException(`Shipping method with id '${methodId}' not found`);
     }
 
     return deleted;
-  }
-
-  private toMethodId(id: string): Types.ObjectId {
-    return toObjectId(id, () => { throw new BadRequestException('Invalid shipping method ID'); });
   }
 }
