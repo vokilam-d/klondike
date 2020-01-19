@@ -1,5 +1,14 @@
 import { Expose, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested
+} from 'class-validator';
 import { AdminShippingAddressDto } from './customer.dto';
 import { AdminOrderItemDto } from './order-item.dto';
 
@@ -32,11 +41,13 @@ export class AdminAddOrUpdateOrderDto {
   address: AdminShippingAddressDto;
 
   @Expose()
+  @IsOptional()
   @IsDate()
   @Type(() => Date)
   createdDate: Date;
 
   @Expose()
+  @IsOptional()
   @IsBoolean()
   isConfirmationEmailSent: boolean;
 
@@ -61,9 +72,12 @@ export class AdminAddOrUpdateOrderDto {
   isCallbackNeeded: boolean;
 
   @Expose()
+  @IsOptional()
   novaposhtaTrackingId: any;
 
   @Expose()
+  @IsArray()
+  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => AdminOrderItemDto)
   items: AdminOrderItemDto[];
@@ -84,6 +98,7 @@ export class AdminAddOrUpdateOrderDto {
   logs: string[];
 
   @Expose()
+  @IsOptional()
   @IsNumber()
   orderTotalPrice: number;
 
@@ -94,9 +109,6 @@ export class AdminAddOrUpdateOrderDto {
   @Expose()
   @IsNumber(undefined, { each: true })
   shipmentIds: number[];
-
-  @Expose()
-  attributes: any[];
 }
 
 export class AdminOrderDto extends AdminAddOrUpdateOrderDto {

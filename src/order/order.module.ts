@@ -3,6 +3,11 @@ import { AdminOrderController } from './admin-order.controller';
 import { OrderService } from './order.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Order, OrderModel } from './models/order.model';
+import { AdminOrderItemController } from './admin-order-item.controller';
+import { OrderItemService } from './order-item.service';
+import { ProductModule } from '../product/product.module';
+import { InventoryModule } from '../inventory/inventory.module';
+import { CustomerModule } from '../customer/customer.module';
 
 const orderModel = {
   name: OrderModel.modelName,
@@ -12,9 +17,12 @@ const orderModel = {
 
 @Module({
   imports: [
-    MongooseModule.forFeature([orderModel])
+    MongooseModule.forFeature([orderModel]),
+    ProductModule,
+    InventoryModule,
+    CustomerModule
   ],
-  controllers: [AdminOrderController],
-  providers: [OrderService]
+  controllers: [AdminOrderController, AdminOrderItemController],
+  providers: [OrderService, OrderItemService]
 })
 export class OrderModule {}

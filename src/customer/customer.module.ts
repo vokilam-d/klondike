@@ -15,6 +15,7 @@ const customerModel = {
     MongooseModule.forFeature([customerModel])
   ],
   providers: [CustomerService],
-  controllers: [AdminCustomerController]
+  controllers: [AdminCustomerController],
+  exports: [CustomerService]
 })
 export class CustomerModule {}

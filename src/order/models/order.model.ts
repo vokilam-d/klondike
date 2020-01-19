@@ -1,4 +1,3 @@
-import { Exclude, Expose } from 'class-transformer';
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { ShippingAddress } from '../../customer/models/customer.model';
 
@@ -23,21 +22,16 @@ export class OrderItem {
   cost: number;
 
   @prop()
-  discountAmountInPercent: number;
+  discountPercent: number;
 
   @prop()
   totalCost: number;
 }
 
 export class Order {
-  @Exclude()
   @prop()
   _id: number;
 
-  @Exclude()
-  __v: any;
-
-  @Expose()
   set id(id: number) { this._id = id; }
   get id(): number { return this._id; }
 
@@ -106,9 +100,6 @@ export class Order {
 
   @arrayProp({ items: Number })
   shipmentIds: number[];
-
-  @arrayProp({ items: String })
-  attributes: string[];
 
 
   static collectionName: string = 'order';

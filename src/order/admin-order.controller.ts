@@ -1,17 +1,4 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { ResponseDto, ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
@@ -19,9 +6,7 @@ import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
 
 
-
 @UsePipes(new ValidationPipe({ transform: true }))
-@UseInterceptors(ClassSerializerInterceptor)
 @Controller('admin/orders')
 export class AdminOrderController {
 

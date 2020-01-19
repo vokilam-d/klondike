@@ -123,7 +123,7 @@ export class CategoryService {
   }
 
   async getCategoryItems(categoryId: number) {
-    const products = await this.productService.findProductsByCategoryId(categoryId);
+    const products = await this.productService.getProductsByCategoryId(categoryId);
     return products;
   }
 

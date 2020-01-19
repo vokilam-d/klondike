@@ -264,7 +264,7 @@ export class ProductService {
     }
   }
 
-  findProductsByCategoryId(categoryId: number) {
+  getProductsByCategoryId(categoryId: number) {
     return this.productModel.find(
       {
         categoryIds: categoryId
@@ -292,5 +292,11 @@ export class ProductService {
 
   async countProducts(): Promise<number> {
     return this.productModel.estimatedDocumentCount().exec();
+  }
+
+  getProductBySku(sku: string): Promise<Product> {
+    return this.productModel.findOne({
+      'variants.sku': sku
+    }).exec();
   }
 }

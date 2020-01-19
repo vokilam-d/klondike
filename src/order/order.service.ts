@@ -36,6 +36,8 @@ export class OrderService {
   async createOrder(orderDto: AdminAddOrUpdateOrderDto): Promise<Order> {
     const newOrder = new this.orderModel(orderDto);
     newOrder.id = await this.counterService.getCounter(Order.collectionName);
+    newOrder.createdDate = new Date();
+    newOrder.orderTotalPrice = newOrder.items.reduce((acc, item) => acc + item.totalCost, 0);
 
     await newOrder.save();
 
