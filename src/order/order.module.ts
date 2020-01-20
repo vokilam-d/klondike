@@ -6,7 +6,6 @@ import { Order, OrderModel } from './models/order.model';
 import { AdminOrderItemController } from './admin-order-item.controller';
 import { OrderItemService } from './order-item.service';
 import { ProductModule } from '../product/product.module';
-import { InventoryModule } from '../inventory/inventory.module';
 import { CustomerModule } from '../customer/customer.module';
 
 const orderModel = {
@@ -19,7 +18,6 @@ const orderModel = {
   imports: [
     MongooseModule.forFeature([orderModel]),
     ProductModule,
-    InventoryModule,
     CustomerModule
   ],
   controllers: [AdminOrderController, AdminOrderItemController],

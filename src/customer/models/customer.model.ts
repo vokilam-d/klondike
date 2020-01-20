@@ -1,4 +1,3 @@
-import { Exclude, Expose } from 'class-transformer';
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 
 export class ShippingAddress {
@@ -25,14 +24,9 @@ export class ShippingAddress {
 }
 
 export class Customer {
-  @Exclude()
   @prop()
   _id: number;
 
-  @Exclude()
-  __v: any;
-
-  @Expose()
   set id(id: number) { this._id = id; }
   get id(): number { return this._id; }
 

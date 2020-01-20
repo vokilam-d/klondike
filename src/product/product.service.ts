@@ -81,6 +81,35 @@ export class ProductService {
     return found;
   }
 
+  async getProductWithQtyBySku(sku: string): Promise<DocumentType<AdminProductDto>> {
+    const variantsProp = getPropertyOf<Product>('variants');
+    const skuProp = getPropertyOf<Inventory>('sku');
+    const qtyProp = getPropertyOf<Inventory>('qty');
+
+    const aggregation = await this.productModel.aggregate()
+      .match({ [variantsProp + '.' + skuProp]: sku })
+      .unwind(variantsProp)
+      .lookup({
+        'from': Inventory.collectionName,
+        'let': { [variantsProp]: `$${variantsProp}` },
+        'pipeline': [
+          { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+        ],
+        'as': variantsProp
+      })
+      .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
+      .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
+      .exec();
+
+    const found = aggregation[0];
+    if (!found) {
+      throw new NotFoundException(`Product with sku '${sku}' not found`);
+    }
+
+    return found;
+  }
+
   async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
@@ -292,11 +321,5 @@ export class ProductService {
 
   async countProducts(): Promise<number> {
     return this.productModel.estimatedDocumentCount().exec();
-  }
-
-  getProductBySku(sku: string): Promise<Product> {
-    return this.productModel.findOne({
-      'variants.sku': sku
-    }).exec();
   }
 }
