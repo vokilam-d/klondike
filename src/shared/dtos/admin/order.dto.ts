@@ -14,6 +14,7 @@ import { AdminOrderItemDto } from './order-item.dto';
 
 export class AdminAddOrUpdateOrderDto {
   @Expose()
+  @IsOptional()
   @IsNumber()
   customerId: number;
 
@@ -39,6 +40,10 @@ export class AdminAddOrUpdateOrderDto {
   @ValidateNested()
   @Type(() => AdminShippingAddressDto)
   address: AdminShippingAddressDto;
+
+  @Expose()
+  @IsBoolean()
+  shouldSaveAddress: boolean;
 
   @Expose()
   @IsOptional()

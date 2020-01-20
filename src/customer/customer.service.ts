@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Customer } from './models/customer.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
-import { AdminAddOrUpdateCustomerDto } from '../shared/dtos/admin/customer.dto';
+import { AdminAddOrUpdateCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
 
 @Injectable()
@@ -49,6 +49,18 @@ export class CustomerService {
     }
 
     Object.keys(customerDto).forEach(key => found[key] = customerDto[key]);
+    await found.save();
+
+    return found;
+  }
+
+  async addCustomerAddress(customerId: number, address: AdminShippingAddressDto): Promise<Customer> {
+    const found = await this.customerModel.findById(customerId).exec();
+    if (!found) {
+      throw new NotFoundException(`Customer with id '${customerId}' not found`);
+    }
+
+    found.addresses.push(address);
     await found.save();
 
     return found;

@@ -22,6 +22,8 @@ export class OrderItemService {
 
     const orderItem = new OrderItem();
     orderItem.name = variant.name;
+    orderItem.productId = foundProduct._id;
+    orderItem.variantId = variant._id;
     orderItem.sku = variant.sku;
     orderItem.originalPrice = variant.price;
     orderItem.price = variant.price;
@@ -35,7 +37,6 @@ export class OrderItemService {
     }
 
     orderItem.totalCost = Math.round(orderItem.cost - (orderItem.cost * orderItem.discountPercent / 100));
-
     return orderItem;
   }
 }

@@ -1,4 +1,4 @@
-import { Expose, Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { MediaDto } from './media.dto';
 import { MetaTagsDto } from './meta-tags.dto';
@@ -6,6 +6,9 @@ import { AdminProductSelectedAttributeDto } from './product-selected-attribute.d
 import { transliterate } from '../../helpers/transliterate.function';
 
 export class AdminProductVariantDto {
+  @Exclude()
+  _id: string;
+
   @Expose()
   @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
   id: string;

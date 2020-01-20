@@ -52,7 +52,7 @@ export class ProductService {
     return products;
   }
 
-  async getProductWithQtyById(id: number): Promise<DocumentType<AdminProductDto>> {
+  async getProductWithQtyById(id: number): Promise<AdminProductDto> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');
@@ -81,7 +81,7 @@ export class ProductService {
     return found;
   }
 
-  async getProductWithQtyBySku(sku: string): Promise<DocumentType<AdminProductDto>> {
+  async getProductWithQtyBySku(sku: string): Promise<AdminProductDto> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');

@@ -7,6 +7,12 @@ export class OrderItem {
   name: string;
 
   @prop()
+  productId: number;
+
+  @prop()
+  variantId: string;
+
+  @prop()
   sku: string;
 
   @prop()
@@ -52,6 +58,9 @@ export class Order {
 
   @prop()
   address: ShippingAddress;
+
+  @prop()
+  shouldSaveAddress: boolean;
 
   @prop({ default: new Date() })
   createdDate: Date;

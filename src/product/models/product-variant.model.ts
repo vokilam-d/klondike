@@ -3,18 +3,13 @@ import { Media } from '../../shared/models/media.model';
 import { MetaTags } from '../../shared/models/meta-tags.model';
 import { ProductSelectedAttribute } from './product-selected-attribute.model';
 import { Types } from 'mongoose';
-import { Exclude } from 'class-transformer';
 
 export class ProductVariant {
-  @Exclude()
   @prop()
   _id: Types.ObjectId;
 
   get id() { return this._id; }
   set id(id) { this._id = id || new Types.ObjectId(); }
-
-  @Exclude()
-  __v: any;
 
   @prop({ required: true })
   name: string;

@@ -7,6 +7,14 @@ export class AdminOrderItemDto {
   name: string;
 
   @Expose()
+  @IsNumber()
+  productId: number;
+
+  @Expose()
+  @IsString()
+  variantId: string;
+
+  @Expose()
   @IsString()
   sku: string;
 
