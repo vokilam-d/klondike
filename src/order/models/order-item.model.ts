@@ -30,4 +30,7 @@ export class OrderItem {
 
   @prop()
   totalCost: number;
+
+  @prop()
+  imageUrl: string;
 }

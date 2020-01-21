@@ -41,4 +41,8 @@ export class AdminOrderItemDto {
   @Expose()
   @IsNumber()
   totalCost: number;
+
+  @Expose()
+  @IsString()
+  imageUrl: string;
 }

@@ -25,6 +25,9 @@ export class OrderItemService {
     orderItem.productId = foundProduct._id;
     orderItem.variantId = variant._id;
     orderItem.sku = variant.sku;
+    if (variant.medias[0]) {
+      orderItem.imageUrl = variant.medias[0].variantsUrls.small;
+    }
     orderItem.originalPrice = variant.price;
     orderItem.price = variant.price;
     orderItem.qty = qty;
