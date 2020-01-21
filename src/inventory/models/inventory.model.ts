@@ -1,4 +1,4 @@
-import { CartedInventory } from './carted-inventory.model';
+import { OrderedInventory } from './ordered-inventory.model';
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 
 export class Inventory {
@@ -8,11 +8,11 @@ export class Inventory {
   @prop({ index: true })
   productId: number;
 
-  @prop()
+  @prop({ min: 0 })
   qty: number;
 
-  @arrayProp({ items: CartedInventory, default: [], _id: false })
-  carted: CartedInventory[];
+  @arrayProp({ items: OrderedInventory, default: [], _id: false })
+  ordered: OrderedInventory[];
 
   static collectionName: string = 'inventory';
 }

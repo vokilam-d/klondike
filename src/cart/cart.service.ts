@@ -28,10 +28,10 @@ export class CartService {
     cartItem.details = new CartItemDetails();
     cartItem.details.name = product.name;
 
-    const updatedInventory = await this.inventory.addCarted(sku, qty, cartId);
-    if (!updatedInventory) {
-      throw new BadRequestException(`Not enough products '${sku}' in stock`);
-    }
+    // const updatedInventory = await this.inventory.addCarted(sku, qty, cartId);
+    // if (!updatedInventory) {
+    //   throw new BadRequestException(`Not enough products '${sku}' in stock`);
+    // }
 
     const updatedCart = await this.cartModel.findOneAndUpdate(
       { '_id': cartId, 'status': ECartStatus.ACTIVE },
@@ -43,10 +43,10 @@ export class CartService {
 
   async setQtyInCart(cartId: Types.ObjectId, sku: string, newQty: number, oldQty: number): Promise<DocumentType<Cart>> {
 
-    const updatedInventory = await this.inventory.updateCartedQty(sku, newQty, oldQty, cartId);
-    if (!updatedInventory) {
-      throw new ConflictException(`Not enough products '${sku}' in stock`);
-    }
+    // const updatedInventory = await this.inventory.updateCartedQty(sku, newQty, oldQty, cartId);
+    // if (!updatedInventory) {
+    //   throw new ConflictException(`Not enough products '${sku}' in stock`);
+    // }
 
     const updated = await this.cartModel.findOneAndUpdate(
       { '_id': cartId, 'items.sku': sku },
@@ -59,7 +59,7 @@ export class CartService {
 
   async removeFromCart(cartId: Types.ObjectId, sku: string, qty: number): Promise<DocumentType<Cart>> {
 
-    await this.inventory.returnCartedToStock(sku, qty, cartId);
+    // await this.inventory.returnCartedToStock(sku, qty, cartId);
 
     const updated = await this.cartModel.findOneAndUpdate(
       { '_id': cartId },

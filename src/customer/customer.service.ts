@@ -5,6 +5,7 @@ import { ReturnModelType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { AdminAddOrUpdateCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
+import { ClientSession } from "mongoose";
 
 @Injectable()
 export class CustomerService {
@@ -33,11 +34,11 @@ export class CustomerService {
     return found;
   }
 
-  async createCustomer(customerDto: AdminAddOrUpdateCustomerDto): Promise<Customer> {
+  async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
     const newCustomer = new this.customerModel(customerDto);
-    newCustomer.id = await this.counterService.getCounter(Customer.collectionName);
+    newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
 
-    await newCustomer.save();
+    await newCustomer.save({ session });
 
     return newCustomer;
   }
@@ -54,14 +55,14 @@ export class CustomerService {
     return found;
   }
 
-  async addCustomerAddress(customerId: number, address: AdminShippingAddressDto): Promise<Customer> {
-    const found = await this.customerModel.findById(customerId).exec();
+  async addCustomerAddress(customerId: number, address: AdminShippingAddressDto, session: ClientSession): Promise<Customer> {
+    const found = await this.customerModel.findById(customerId).session(session).exec();
     if (!found) {
       throw new NotFoundException(`Customer with id '${customerId}' not found`);
     }
 
     found.addresses.push(address);
-    await found.save();
+    await found.save({ session });
 
     return found;
   }

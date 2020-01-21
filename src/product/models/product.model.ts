@@ -4,6 +4,7 @@ import { ProductVariant } from './product-variant.model';
 import { ProductSelectedAttribute } from './product-selected-attribute.model';
 
 export class Product {
+  @prop()
   _id: number;
 
   set id(id: number) { this._id = id; }

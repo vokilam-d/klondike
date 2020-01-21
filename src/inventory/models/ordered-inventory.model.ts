@@ -1,12 +1,12 @@
 import { prop } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
 
-export class CartedInventory {
-  @prop()
+export class OrderedInventory {
+  @prop({ min: 1 })
   qty: number;
 
   @prop()
-  cartId: Types.ObjectId;
+  orderId: number;
 
   @prop()
   timestamp: any;

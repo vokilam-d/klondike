@@ -1,8 +1,10 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Inventory } from './models/inventory.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { ClientSession, Types } from 'mongoose';
+import { ClientSession } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { getPropertyOf } from '../shared/helpers/get-property-of.function';
+import { OrderedInventory } from './models/ordered-inventory.model';
 
 @Injectable()
 export class InventoryService {
@@ -17,10 +19,10 @@ export class InventoryService {
     return newInventory;
   }
 
-  async getInventory(sku: string): Promise<DocumentType<Inventory>> {
-    const found = await this.inventoryModel.findOne({ sku }).exec();
+  async getInventory(sku: string, session?: ClientSession): Promise<DocumentType<Inventory>> {
+    const found = await this.inventoryModel.findOne({ sku }).session(session).exec();
     if (!found) {
-      throw new NotFoundException(`Cannot find inventory for sku '${sku}'`);
+      throw new NotFoundException(`Cannot find inventory with sku '${sku}'`);
     }
 
     return found;
@@ -28,18 +30,14 @@ export class InventoryService {
 
   async updateInventory(oldSku: string, newSku: string = oldSku, qty: number, session: ClientSession) {
 
-    const found = await this.inventoryModel.findOne({ sku: oldSku }).session(session).exec();
+    const found = await this.getInventory(oldSku, session);
 
-    if (!found) {
-      throw new NotFoundException(`Cannot find inventory with sku '${oldSku}'`);
+    const qtyInOrders = found.ordered.reduce((sum, ordered) => sum + ordered.qty, 0);
+    if (qtyInOrders > qty) {
+      throw new ForbiddenException(`Cannot set quantity: more than '${qty}' items are ordered`);
     }
 
-    const qtyInCarts = found.carted.reduce((sum, cart) => sum + cart.qty, 0);
-    if (qtyInCarts > qty) {
-      throw new ConflictException(`Cannot set quantity: more than ${qty} items are saved in carts`);
-    }
-
-    found.qty = qty - qtyInCarts;
+    found.qty = qty - qtyInOrders;
     found.sku = newSku;
 
     await found.save({ session });
@@ -47,52 +45,70 @@ export class InventoryService {
     return found;
   }
 
-  async addCarted(sku: string, qty: number, cartId: Types.ObjectId) {
+  addToOrdered(sku: string, qty: number, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
+    const skuProp = getPropertyOf<Inventory>('sku');
+    const qtyProp = getPropertyOf<Inventory>('qty');
+    const orderedProp = getPropertyOf<Inventory>('ordered');
+    const orderedInventory = new OrderedInventory();
+    orderedInventory.qty = qty;
+    orderedInventory.orderId = orderId;
+    orderedInventory.timestamp = new Date();
+
     const query = {
-      'sku': sku,
-      'qty': { '$gte': qty }
+      [skuProp]: sku,
+      [qtyProp]: { '$gte': qty }
     };
     const update = {
-      '$inc': { 'qty': -qty },
-      '$push': { 'carted': { 'qty': qty, 'cartId': cartId, 'timestamp': new Date() } }
+      '$inc': { [qtyProp]: -qty },
+      '$push': { [orderedProp]: orderedInventory }
     };
     const options = { 'new': true };
 
-    const updated = this.inventoryModel.findOneAndUpdate(query, update, options);
-    return updated;
+    return this.inventoryModel.findOneAndUpdate(query, update, options).session(session).exec();
   }
 
-  async updateCartedQty(sku: string, newQty: number, oldQty: number, cartId: Types.ObjectId) {
-    const deltaQty = newQty - oldQty;
-
+  async retrieveFromOrderedBackToStock(sku: string, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
+    const skuProp = getPropertyOf<Inventory>('sku');
+    const qtyProp = getPropertyOf<Inventory>('qty');
+    const orderedProp = getPropertyOf<Inventory>('ordered');
+    const orderIdProp = getPropertyOf<OrderedInventory>('orderId');
     const query = {
-      'sku': sku,
-      'qty': { '$gte': deltaQty },
-      'carted.cartId': cartId
+      [skuProp]: sku,
+      [orderedProp + '.' + orderIdProp]: orderId
     };
+
+    const found = await this.inventoryModel.findOne(query).exec();
+    if (!found) {
+      // what is better? return or throw
+      throw new BadRequestException(`Ordered inventory for sku '${sku}' and order id '${orderId}' not found`);
+    }
+
+    const orderedQty = found.ordered.find(ordered => ordered.orderId === orderId).qty;
+
     const update = {
-      '$inc': { 'qty': -deltaQty },
-      '$set': { 'carted.$.qty': newQty, 'timestamp': new Date() }
+      '$inc': { [qtyProp]: orderedQty },
+      '$pull': { [orderedProp]: { [orderIdProp]: orderId } }
     };
     const options = { 'new': true };
 
-    const updated = await this.inventoryModel.findOneAndUpdate(query, update, options);
-    return updated;
+    return this.inventoryModel.findOneAndUpdate(query, update, options).session(session).exec();
   }
 
-  async returnCartedToStock(sku: string, qty: number, cartId: Types.ObjectId) {
+  async removeFromOrdered(sku: string, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
+    const skuProp = getPropertyOf<Inventory>('sku');
+    const orderedProp = getPropertyOf<Inventory>('ordered');
+    const orderIdProp = getPropertyOf<OrderedInventory>('orderId');
+
     const query = {
-      'sku': sku,
-      'carted.cartId': cartId,
-      'carted.qty': qty
+      [skuProp]: sku,
+      [orderedProp + '.' + orderIdProp]: orderId
     };
     const update = {
-      '$inc': { 'qty': qty },
-      '$pull': { 'carted': { 'cartId': cartId } }
+      '$pull': { [orderedProp]: { [orderIdProp]: orderId } }
     };
+    const options = { 'new': true };
 
-    const updated = await this.inventoryModel.findOneAndUpdate(query, update);
-    return updated;
+    return this.inventoryModel.findOneAndUpdate(query, update, options).session(session).exec();
   }
 
   deleteInventory(sku: string, session: ClientSession) {

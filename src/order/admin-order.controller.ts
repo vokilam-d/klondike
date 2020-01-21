@@ -45,20 +45,11 @@ export class AdminOrderController {
   }
 
   @Put(':id')
-  async updateOrder(@Param('id') orderId: number, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderService.updateOrder(orderId, orderDto);
+  async editOrder(@Param('id') orderId: number, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
+    const updated = await this.orderService.editOrder(orderId, orderDto);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
-    };
-  }
-
-  @Delete(':id')
-  async deleteOrder(@Param('id') orderId: number): Promise<ResponseDto<AdminOrderDto>> {
-    const deleted = await this.orderService.deleteOrder(orderId);
-
-    return {
-      data: plainToClass(AdminOrderDto, deleted, { excludeExtraneousValues: true })
     };
   }
 }
