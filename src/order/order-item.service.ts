@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { ProductService } from '../product/product.service';
-import { OrderItem } from './models/order.model';
 import { CustomerService } from '../customer/customer.service';
+import { OrderItem } from './models/order-item.model';
 
 @Injectable()
 export class OrderItemService {
@@ -29,14 +29,14 @@ export class OrderItemService {
     orderItem.price = variant.price;
     orderItem.qty = qty;
     orderItem.cost = orderItem.price * orderItem.qty;
-    orderItem.discountPercent = 0;
+    orderItem.discountValue = 0;
 
     if (variant.isDiscountApplicable && customerId) {
       const customer = await this.customerService.getCustomerById(customerId);
-      orderItem.discountPercent = customer.discountPercent;
+      orderItem.discountValue = Math.round(orderItem.cost * customer.discountPercent / 100);
     }
 
-    orderItem.totalCost = Math.round(orderItem.cost - (orderItem.cost * orderItem.discountPercent / 100));
+    orderItem.totalCost = orderItem.cost - orderItem.discountValue;
     return orderItem;
   }
 }

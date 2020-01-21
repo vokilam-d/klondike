@@ -36,7 +36,7 @@ export class AdminOrderItemDto {
 
   @Expose()
   @IsNumber()
-  discountPercent: number;
+  discountValue: number;
 
   @Expose()
   @IsNumber()

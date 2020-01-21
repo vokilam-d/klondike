@@ -1,38 +1,6 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { ShippingAddress } from '../../customer/models/customer.model';
-
-
-export class OrderItem {
-  @prop()
-  name: string;
-
-  @prop()
-  productId: number;
-
-  @prop()
-  variantId: string;
-
-  @prop()
-  sku: string;
-
-  @prop()
-  originalPrice: number;
-
-  @prop()
-  price: number;
-
-  @prop()
-  qty: number;
-
-  @prop()
-  cost: number;
-
-  @prop()
-  discountPercent: number;
-
-  @prop()
-  totalCost: number;
-}
+import { OrderItem } from './order-item.model';
 
 export class Order {
   @prop()
