@@ -106,14 +106,6 @@ export class AdminAddOrUpdateOrderDto {
   @IsOptional()
   @IsNumber()
   orderTotalPrice: number;
-
-  @Expose()
-  @IsNumber(undefined, { each: true })
-  invoiceIds: number[];
-
-  @Expose()
-  @IsNumber(undefined, { each: true })
-  shipmentIds: number[];
 }
 
 export class AdminOrderDto extends AdminAddOrUpdateOrderDto {

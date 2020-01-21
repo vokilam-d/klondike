@@ -72,12 +72,6 @@ export class Order {
   @prop()
   orderTotalPrice: number;
 
-  @arrayProp({ items: Number })
-  invoiceIds: number[];
-
-  @arrayProp({ items: Number })
-  shipmentIds: number[];
-
 
   static collectionName: string = 'order';
 }
