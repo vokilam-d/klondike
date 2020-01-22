@@ -8,7 +8,10 @@ export class PaymentMethod {
   isEnabled: boolean;
 
   @prop()
-  name: string;
+  adminName: string;
+
+  @prop()
+  clientName: string;
 
   @prop({ default: 0 })
   price: number;

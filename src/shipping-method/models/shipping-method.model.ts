@@ -8,7 +8,10 @@ export class ShippingMethod {
   isEnabled: boolean;
 
   @prop()
-  name: string;
+  adminName: string;
+
+  @prop()
+  clientName: string;
 
   @prop({ default: 0 })
   price: number;

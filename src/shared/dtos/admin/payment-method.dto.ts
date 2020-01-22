@@ -13,8 +13,13 @@ export class PaymentMethodDto {
 
   @Expose()
   @IsString()
-  @Matches(notEmptyStringRegex, { message: 'Field \'name\' should not be empty'})
-  name: string;
+  @Matches(notEmptyStringRegex, { message: 'Field \'clientName\' should not be empty'})
+  clientName: string;
+
+  @Expose()
+  @IsString()
+  @Matches(notEmptyStringRegex, { message: 'Field \'adminName\' should not be empty'})
+  adminName: string;
 
   @Expose()
   @IsNumber()

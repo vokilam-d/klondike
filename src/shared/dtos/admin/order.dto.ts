@@ -62,7 +62,11 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsString()
-  paymentMethodName: string;
+  paymentMethodClientName: string;
+
+  @Expose()
+  @IsString()
+  paymentMethodAdminName: string;
 
   @Expose()
   @IsString()
@@ -70,7 +74,11 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsString()
-  shippingMethodName: string;
+  shippingMethodClientName: string;
+
+  @Expose()
+  @IsString()
+  shippingMethodAdminName: string;
 
   @Expose()
   @IsBoolean()
