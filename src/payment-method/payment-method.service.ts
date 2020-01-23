@@ -27,7 +27,7 @@ export class PaymentMethodService {
       throw new NotFoundException(`Payment method with id '${methodId}' not found`);
     }
 
-    Object.keys(found).forEach(key => found[key] = methodDto[key]);
+    Object.keys(methodDto).forEach(key => found[key] = methodDto[key]);
     await found.save();
     return found;
   }

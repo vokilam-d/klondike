@@ -1,6 +1,7 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { ShippingAddress } from '../../customer/models/customer.model';
 import { OrderItem } from './order-item.model';
+import { EOrderStatus } from '../../shared/enums/order-status.enum';
 
 export class Order {
   @prop()
@@ -64,7 +65,7 @@ export class Order {
   items: OrderItem[];
 
   @prop()
-  status: any;
+  status: EOrderStatus;
 
   @prop()
   clientNote: string;
