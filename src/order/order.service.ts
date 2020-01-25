@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
-import { ReturnModelType } from '@typegoose/typegoose';
+import { ReturnModelType, DocumentType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { AdminAddOrUpdateOrderDto } from '../shared/dtos/admin/order.dto';
 import { CounterService } from '../shared/counter/counter.service';
@@ -10,12 +10,16 @@ import { AdminAddOrUpdateCustomerDto, AdminShippingAddressDto } from '../shared/
 import { InventoryService } from '../inventory/inventory.service';
 import { EOrderStatus } from '../shared/enums/order-status.enum';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
+import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
+import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
+import { Customer } from '../customer/models/customer.model';
 
 @Injectable()
 export class OrderService {
 
   constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
               private counterService: CounterService,
+              private pdfGeneratorService: PdfGeneratorService,
               private inventoryService: InventoryService,
               private customerService: CustomerService) {
   }
@@ -31,7 +35,7 @@ export class OrderService {
     return found;
   }
 
-  async getOrderById(orderId: number): Promise<Order> {
+  async getOrderById(orderId: number): Promise<DocumentType<Order>> {
     const found = await this.orderModel.findById(orderId).exec();
     if (!found) {
       throw new NotFoundException(`Order with id '${orderId}' not found`);
@@ -45,31 +49,39 @@ export class OrderService {
     session.startTransaction();
     try {
 
-      if (orderDto.customerId && orderDto.shouldSaveAddress) {
-        await this.customerService.addCustomerAddress(orderDto.customerId, orderDto.address, session);
+      let customer: Customer;
 
-      } else if (!orderDto.customerId) {
+      if (orderDto.customerId) {
+        if (orderDto.shouldSaveAddress) {
+          customer = await this.customerService.addCustomerAddress(orderDto.customerId, orderDto.address, session);
+        } else {
+          customer = await this.customerService.getCustomerById(orderDto.customerId);
+        }
+
+      } else {
         if (!orderDto.customerFirstName) { orderDto.customerFirstName = orderDto.address.firstName; }
         if (!orderDto.customerLastName) { orderDto.customerLastName = orderDto.address.lastName; }
         if (!orderDto.customerPhoneNumber) { orderDto.customerPhoneNumber = orderDto.address.phoneNumber; }
 
-        const customer = new AdminAddOrUpdateCustomerDto();
-        customer.firstName = orderDto.customerFirstName;
-        customer.lastName = orderDto.customerLastName;
-        customer.email = orderDto.customerEmail;
-        customer.phoneNumber = orderDto.customerPhoneNumber;
-        customer.addresses = [{ ...orderDto.address, isDefault: true }];
+        const customerDto = new AdminAddOrUpdateCustomerDto();
+        customerDto.firstName = orderDto.customerFirstName;
+        customerDto.lastName = orderDto.customerLastName;
+        customerDto.email = orderDto.customerEmail;
+        customerDto.phoneNumber = orderDto.customerPhoneNumber;
+        customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
 
-        const createdCustomer = await this.customerService.createCustomer(customer, session);
+        customer = await this.customerService.createCustomer(customerDto, session);
 
-        orderDto.customerId = createdCustomer.id;
+        orderDto.customerId = customer.id;
       }
 
       const newOrder = new this.orderModel(orderDto);
       newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
+      newOrder.clientId = addLeadingZeros(newOrder.id);
       newOrder.createdDate = new Date();
       newOrder.status = EOrderStatus.NEW;
-      newOrder.orderTotalPrice = newOrder.items.reduce((acc, item) => acc + item.totalCost, 0);
+      newOrder.discountPercent = customer.discountPercent;
+      this.setOrderPrices(newOrder);
 
       for (const item of orderDto.items) {
         await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
@@ -110,6 +122,7 @@ export class OrderService {
       }
 
       Object.keys(orderDto).forEach(key => found[key] = orderDto[key]);
+      this.setOrderPrices(found);
       await found.save({ session });
       await session.commitTransaction();
 
@@ -219,6 +232,8 @@ export class OrderService {
 
       found.status = EOrderStatus.SHIPPED;
 
+      // todo add totalPrice to customer
+
       await found.save({ session });
       await session.commitTransaction();
 
@@ -229,6 +244,26 @@ export class OrderService {
       throw ex;
     } finally {
       session.endSession();
+    }
+  }
+
+  async printOrder(orderId: number) {
+    const order = await this.getOrderById(orderId);
+    return {
+      fileName: `Заказ №${order.clientId}.pdf`,
+      pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON())
+    };
+  }
+
+  private setOrderPrices(order: Order) {
+    if (!order.totalItemsCost) { order.totalItemsCost = 0; }
+    if (!order.totalCost) { order.totalCost = 0; }
+    if (!order.discountValue) { order.discountValue = 0; }
+
+    for (let item of order.items) {
+      order.totalItemsCost += item.cost;
+      order.totalCost += item.totalCost;
+      order.discountValue += item.discountValue;
     }
   }
 }

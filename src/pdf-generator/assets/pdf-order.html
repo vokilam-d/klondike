@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/typography.css">
+    <link rel="stylesheet" href="css/pdf-order.css">
+
+</head>
+<body>
+<div class="page">
+    <header class="header">
+        <div class="header__store-info">
+            <div class="header__store-name">"Клондайк" - всё для творчества!</div>
+            <a class="header__link header__link--phone" href="tel:+380502627214">+38 (050) 26-27-214</a>
+            <a class="header__link header__link--phone" href="tel:+380678811962">+38 (067) 88-11-962</a>
+            <a class="header__link header__link--phone" href="tel:+380933444342">+38 (093) 34-44-342</a>
+            <a class="header__link" href="mailto:info@klondike.com.ua">info@klondike.com.ua</a>
+            <a class="header__link" href="https://klondike.com.ua">https://klondike.com.ua</a>
+        </div>
+
+        <div class="header__order-info">
+            <div class="header__order">
+                <div class="header__order-row">Заказ: <span class="header__value">№{{ id }}</span></div>
+                <div class="header__order-row">Дата: <span class="header__value">{{ date }}</span></div>
+                <div class="header__order-row">Сумма: <span class="header__value">{{ totalOrderCost }} грн</span></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="address-methods">
+        <div class="address">
+            <div class="address-methods__title">Адрес доставки</div>
+            <div class="address__content">
+                {{ addressName }}<br>
+                {{ addressPhone }}<br>
+                {{ addressCity }}<br>
+                {{#if addressPost}}
+                {{ addressPost }} отд. Новой Почты<br>
+                {{/if}}
+                {{ addressStreet }}
+            </div>
+        </div>
+
+        <div class="methods">
+            <div class="address-methods__title">Способ доставки и оплаты</div>
+            <div class="methods__method">{{ shipping }}</div>
+            <div class="methods__method">{{ payment }}</div>
+        </div>
+    </main>
+
+    <table class="products">
+        <thead>
+            <tr>
+                <th class="products__name">Товары</th>
+                <th class="products__qty">Кол-во</th>
+                <th class="products__price">Цена</th>
+                <th class="products__cost">Стоимость</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each products}}
+            <tr class="products__product">
+                <td class="products__name">
+                    {{ this.name }}
+                    <div class="products__sku">
+                        SKU: {{ this.sku }}
+                    </div>
+                </td>
+                <td class="products__qty">
+                    {{ this.qty }}
+                </td>
+                <td class="products__price">
+                    {{ this.price }} грн
+                </td>
+                <td class="products__cost">
+                    {{ this.cost }} грн
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <div class="summary">
+        <div class="summary__row">
+            <div class="summary__key">Стоимость товаров</div>
+            <div class="summary__value">{{ totalProductsCost }} грн</div>
+        </div>
+        <div class="summary__row">
+            <div class="summary__key">Скидка (Накопительная скидка {{ discountPercent }}%)</div>
+            <div class="summary__value">-{{ discountValue }} грн</div>
+        </div>
+        <div class="summary__row">
+            <div class="summary__key">Общий итог</div>
+            <div class="summary__value summary__value--total">{{ totalOrderCost }} грн</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

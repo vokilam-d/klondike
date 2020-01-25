@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, Res, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { ResponseDto, ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
@@ -7,10 +7,8 @@ import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/or
 import { OrderActionDto } from '../shared/dtos/admin/order-action.dto';
 import { EOrderAction } from '../shared/enums/order-action.enum';
 import { AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
-
-
-class ShippingAddressDto {
-}
+import { FastifyReply } from 'fastify';
+import { ServerResponse } from 'http';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/orders')
@@ -39,6 +37,16 @@ export class AdminOrderController {
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
     };
+  }
+
+  @Get(':id/invoice')
+  async printOrder(@Param('id') id: string, @Res() reply: FastifyReply<ServerResponse>) {
+    const { fileName, pdf } = await this.orderService.printOrder(parseInt(id));
+
+    reply
+      .type('application/pdf')
+      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(fileName)}`)
+      .send(pdf);
   }
 
   @Post()

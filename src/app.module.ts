@@ -13,6 +13,7 @@ import { CustomerModule } from './customer/customer.module';
 import { OrderModule } from './order/order.module';
 import { ShippingMethodModule } from './shipping-method/shipping-method.module';
 import { PaymentMethodModule } from './payment-method/payment-method.module';
+import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { PaymentMethodModule } from './payment-method/payment-method.module';
     CustomerModule,
     OrderModule,
     ShippingMethodModule,
-    PaymentMethodModule
+    PaymentMethodModule,
+    PdfGeneratorModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []

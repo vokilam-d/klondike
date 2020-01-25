@@ -113,11 +113,31 @@ export class AdminAddOrUpdateOrderDto {
   @Expose()
   @IsOptional()
   @IsNumber()
-  orderTotalPrice: number;
+  totalItemsCost: number;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  discountPercent: number;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  discountValue: number;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  totalCost: number;
 }
 
 export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
+  @Transform(((value, obj) => value ? value : obj._id))
   id: number;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  clientId: string;
 }

@@ -8,6 +8,7 @@ import { OrderItemService } from './order-item.service';
 import { ProductModule } from '../product/product.module';
 import { CustomerModule } from '../customer/customer.module';
 import { InventoryModule } from '../inventory/inventory.module';
+import { PdfGeneratorModule } from '../pdf-generator/pdf-generator.module';
 
 const orderModel = {
   name: OrderModel.modelName,
@@ -20,6 +21,7 @@ const orderModel = {
     MongooseModule.forFeature([orderModel]),
     ProductModule,
     CustomerModule,
+    PdfGeneratorModule,
     InventoryModule
   ],
   controllers: [AdminOrderController, AdminOrderItemController],

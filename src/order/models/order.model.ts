@@ -11,6 +11,9 @@ export class Order {
   get id(): number { return this._id; }
 
   @prop()
+  clientId: string;
+
+  @prop()
   customerId: number;
 
   @prop()
@@ -77,7 +80,16 @@ export class Order {
   logs: string[];
 
   @prop()
-  orderTotalPrice: number;
+  totalItemsCost: number;
+
+  @prop()
+  discountPercent: number;
+
+  @prop()
+  discountValue: number;
+
+  @prop()
+  totalCost: number;
 
 
   static collectionName: string = 'order';
