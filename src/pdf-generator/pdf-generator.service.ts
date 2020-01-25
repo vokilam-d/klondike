@@ -66,21 +66,21 @@ export class PdfGeneratorService {
     const hours = addLeadingZeros(date.getHours(), 2);
     const minutes = addLeadingZeros(date.getMinutes(), 2);
 
-    return `${day} ${month}. ${year} г., ${hours}:${minutes}`;
+    return `${day} ${month} ${year} г., ${hours}:${minutes}`;
   }
 }
 
 const MONTHS = [
-  'янв',
-  'фев',
-  'март',
-  'апр',
+  'янв.',
+  'фев.',
+  'март.',
+  'апр.',
   'май',
   'июнь',
   'июль',
-  'авг',
-  'сен',
-  'окт',
-  'ноя',
-  'дек',
+  'авг.',
+  'сен.',
+  'окт.',
+  'ноя.',
+  'дек.',
 ];
