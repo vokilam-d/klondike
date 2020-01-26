@@ -6,6 +6,8 @@ import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { AdminAddOrUpdateCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { ClientSession } from "mongoose";
+import { Order } from '../order/models/order.model';
+import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 
 @Injectable()
 export class CustomerService {
@@ -78,5 +80,29 @@ export class CustomerService {
 
   countCustomers(): Promise<number> {
     return this.customerModel.estimatedDocumentCount().exec();
+  }
+
+  async addOrderToCustomer(customerId: number, order: Order, session: ClientSession): Promise<Customer> {
+    const orderIdsProp = getPropertyOf<Customer>('orderIds');
+
+    const customer = await this.customerModel.findByIdAndUpdate(
+      customerId,
+      { $push: { [orderIdsProp]: order.id } },
+      { new: true }
+    ).session(session).exec();
+
+    return customer;
+  }
+
+  async incrementTotalOrdersCost(customerId: number, order: Order, session: ClientSession): Promise<Customer> {
+    const totalProp = getPropertyOf<Customer>('totalOrdersCost');
+
+    const customer = await this.customerModel.findByIdAndUpdate(
+      customerId,
+      { $inc: { [totalProp]: order.totalItemsCost } },
+      { new: true }
+    ).session(session).exec();
+
+    return customer;
   }
 }

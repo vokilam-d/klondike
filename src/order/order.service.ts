@@ -86,6 +86,7 @@ export class OrderService {
       for (const item of orderDto.items) {
         await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
       }
+      await this.customerService.addOrderToCustomer(customer.id, newOrder, session);
 
       await newOrder.save({ session });
       await session.commitTransaction();
@@ -232,7 +233,7 @@ export class OrderService {
 
       found.status = EOrderStatus.SHIPPED;
 
-      // todo add totalPrice to customer
+      await this.customerService.incrementTotalOrdersCost(found.customerId, found, session);
 
       await found.save({ session });
       await session.commitTransaction();
