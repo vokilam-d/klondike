@@ -1,0 +1,2151 @@
+[
+  {
+    "value_id": 1,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 1,
+    "value": "Root Catalog"
+  },
+  {
+    "value_id": 2,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": "Default Category"
+  },
+  {
+    "value_id": 3,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 4,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": "default-category"
+  },
+  {
+    "value_id": 9,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": "default-category"
+  },
+  {
+    "value_id": 10,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "Золочение"
+  },
+  {
+    "value_id": 11,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "Купить товары для золочения (поталь, жидкая поталь, шеллак и др.)"
+  },
+  {
+    "value_id": 12,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "PRODUCTS_AND_PAGE"
+  },
+  {
+    "value_id": 13,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "zolochenie"
+  },
+  {
+    "value_id": 14,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "zolochenie"
+  },
+  {
+    "value_id": 15,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "Краски, патины, воски"
+  },
+  {
+    "value_id": 16,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "Купить художественные краски (акрил, масло, акварель, гуашь и др.)"
+  },
+  {
+    "value_id": 17,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 18,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "kraski"
+  },
+  {
+    "value_id": 19,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "kraski"
+  },
+  {
+    "value_id": 20,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 5,
+    "value": "Купить художественные кисти (круглые, плоские, овальные и др.)"
+  },
+  {
+    "value_id": 21,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 5,
+    "value": "Кисти"
+  },
+  {
+    "value_id": 22,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 5,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 23,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 5,
+    "value": "kisti"
+  },
+  {
+    "value_id": 24,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 5,
+    "value": "kisti.html"
+  },
+  {
+    "value_id": 25,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 6,
+    "value": "Купить художественные лаки в интернет-магазине Клондайк"
+  },
+  {
+    "value_id": 26,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 6,
+    "value": "Лаки"
+  },
+  {
+    "value_id": 27,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 6,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 28,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 6,
+    "value": "laki"
+  },
+  {
+    "value_id": 29,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 6,
+    "value": "laki.html"
+  },
+  {
+    "value_id": 30,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 7,
+    "value": "Купить товары для состаривания (патины, битумы и др.)"
+  },
+  {
+    "value_id": 31,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 7,
+    "value": "Состаривание"
+  },
+  {
+    "value_id": 32,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 7,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 33,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 7,
+    "value": "sostarivanie"
+  },
+  {
+    "value_id": 34,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 7,
+    "value": "sostarivanie.html"
+  },
+  {
+    "value_id": 35,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 8,
+    "value": "Купить клей для приклевания бумаги, потали, стекла и др."
+  },
+  {
+    "value_id": 36,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 8,
+    "value": "Клеи"
+  },
+  {
+    "value_id": 37,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 8,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 38,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 8,
+    "value": "klei"
+  },
+  {
+    "value_id": 39,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 8,
+    "value": "klei.html"
+  },
+  {
+    "value_id": 40,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 9,
+    "value": "Купить патину в Украине по выгодной цене (магазин Клондайк)"
+  },
+  {
+    "value_id": 41,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 9,
+    "value": "Патины"
+  },
+  {
+    "value_id": 42,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 9,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 43,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 9,
+    "value": "patiny"
+  },
+  {
+    "value_id": 44,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 9,
+    "value": "patiny"
+  },
+  {
+    "value_id": 45,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 10,
+    "value": "Купить пигменты (металлические и растворимые) в Украине"
+  },
+  {
+    "value_id": 46,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 10,
+    "value": "Пигменты"
+  },
+  {
+    "value_id": 47,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 10,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 48,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 10,
+    "value": "pigmenty"
+  },
+  {
+    "value_id": 49,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 10,
+    "value": "pigmenty"
+  },
+  {
+    "value_id": 50,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "Купить поталь (трансферная, свободная, рулонная, в книжке)"
+  },
+  {
+    "value_id": 51,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "Поталь"
+  },
+  {
+    "value_id": 52,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "PRODUCTS_AND_PAGE"
+  },
+  {
+    "value_id": 53,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "potal"
+  },
+  {
+    "value_id": 54,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "potal"
+  },
+  {
+    "value_id": 55,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "Купить зеркальную поталь по лучшей цене в Украине "
+  },
+  {
+    "value_id": 56,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "Зеркальная поталь"
+  },
+  {
+    "value_id": 57,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 58,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "zerkalnaya-potal"
+  },
+  {
+    "value_id": 59,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "zerkalnaya-potal"
+  },
+  {
+    "value_id": 60,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "Купить клей для потали в Украине выгодно (мордан, миксион)"
+  },
+  {
+    "value_id": 61,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "Клеи для позолоты (мордан, миксион)"
+  },
+  {
+    "value_id": 62,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 63,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "klei-dlya-potali-i-susalnogo-zolota-mordan-mixion"
+  },
+  {
+    "value_id": 64,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "klei-dlya-potali-i-susalnogo-zolota-mordan-mixion"
+  },
+  {
+    "value_id": 65,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 14,
+    "value": "Купить лаки для потали по хорошей цене (шеллак, цапон лак, мекка)."
+  },
+  {
+    "value_id": 66,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 14,
+    "value": "Лаки для позолоты"
+  },
+  {
+    "value_id": 67,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 14,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 68,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 14,
+    "value": "laki-dlya-potali-i-susalnogo-zolota-shellac"
+  },
+  {
+    "value_id": 69,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 14,
+    "value": "laki-dlya-potali-i-susalnogo-zolota-shellac"
+  },
+  {
+    "value_id": 70,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 15,
+    "value": "Купить жидкую поталь в Украине (Kreul, Renesans, др)"
+  },
+  {
+    "value_id": 71,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 15,
+    "value": "Жидкая поталь"
+  },
+  {
+    "value_id": 72,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 15,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 73,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 15,
+    "value": "zhidkaya-potal"
+  },
+  {
+    "value_id": 74,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 15,
+    "value": "zhidkaya-potal"
+  },
+  {
+    "value_id": 75,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "Купить инструменты позолотчика (большой ассортимент товаров)"
+  },
+  {
+    "value_id": 76,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "Инструменты позолотчика"
+  },
+  {
+    "value_id": 77,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 78,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "instrumenty-pozolotchika"
+  },
+  {
+    "value_id": 79,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "instrumenty-pozolotchika"
+  },
+  {
+    "value_id": 80,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 17,
+    "value": "Купить металлические пигменты, супервату для золочения, хлопья потали"
+  },
+  {
+    "value_id": 81,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 17,
+    "value": "Металлические пигменты, вата, хлопья"
+  },
+  {
+    "value_id": 82,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 17,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 83,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 17,
+    "value": "metallicheskie-pigmenty-vata-hlopya"
+  },
+  {
+    "value_id": 84,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 17,
+    "value": "metallicheskie-pigmenty-vata-hlopya"
+  },
+  {
+    "value_id": 85,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "Купить битум, патины для состариваня позолоты. Лучший ассортимент."
+  },
+  {
+    "value_id": 86,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "Состаривание позолоты"
+  },
+  {
+    "value_id": 87,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 88,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "sostarivanie-pozoloty"
+  },
+  {
+    "value_id": 89,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "sostarivanie-pozoloty"
+  },
+  {
+    "value_id": 90,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 19,
+    "value": "Купить акриловые краски недорого. Хороший ассортимент."
+  },
+  {
+    "value_id": 91,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 19,
+    "value": "Акриловые краски"
+  },
+  {
+    "value_id": 92,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 19,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 93,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 19,
+    "value": "akrilovye-kraski"
+  },
+  {
+    "value_id": 94,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 19,
+    "value": "akrilovye-kraski"
+  },
+  {
+    "value_id": 95,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "Купить масляные художественные краски для живописи."
+  },
+  {
+    "value_id": 96,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "Масляные краски"
+  },
+  {
+    "value_id": 97,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 98,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "maslyanye-kraski"
+  },
+  {
+    "value_id": 99,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "maslyanye-kraski"
+  },
+  {
+    "value_id": 100,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 21,
+    "value": "Купить металлизированные краски (жидкая поталь и другое)"
+  },
+  {
+    "value_id": 101,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 21,
+    "value": "Металлизированные краски"
+  },
+  {
+    "value_id": 102,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 21,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 103,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 21,
+    "value": "metallizirovannye-kraski"
+  },
+  {
+    "value_id": 104,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 21,
+    "value": "metallizirovannye-kraski"
+  },
+  {
+    "value_id": 105,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 22,
+    "value": "Купить воски для декорирования поверхностей"
+  },
+  {
+    "value_id": 106,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 22,
+    "value": "Воски"
+  },
+  {
+    "value_id": 107,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 22,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 108,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 22,
+    "value": "voski"
+  },
+  {
+    "value_id": 109,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 22,
+    "value": "voski"
+  },
+  {
+    "value_id": 110,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 23,
+    "value": "Купить веерные кисти. Хороший выбор веерных кистей."
+  },
+  {
+    "value_id": 111,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 23,
+    "value": "Веерные кисти"
+  },
+  {
+    "value_id": 112,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 23,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 113,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 23,
+    "value": "veernye-kisti"
+  },
+  {
+    "value_id": 114,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 23,
+    "value": "veernye-kisti"
+  },
+  {
+    "value_id": 115,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 24,
+    "value": "Купить круглые кисти. Хороший выбор круглых кистей."
+  },
+  {
+    "value_id": 116,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 24,
+    "value": "Круглые кисти"
+  },
+  {
+    "value_id": 117,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 24,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 118,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 24,
+    "value": "kruglye-kisti"
+  },
+  {
+    "value_id": 119,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 24,
+    "value": "kruglye-kisti"
+  },
+  {
+    "value_id": 120,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 25,
+    "value": "Купить овальные кисти. Хороший выбор овальные кистей."
+  },
+  {
+    "value_id": 121,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 25,
+    "value": "Овальные кисти"
+  },
+  {
+    "value_id": 122,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 25,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 123,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 25,
+    "value": "ovalnye-kisti"
+  },
+  {
+    "value_id": 124,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 25,
+    "value": "ovalnye-kisti"
+  },
+  {
+    "value_id": 125,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": "Купить флейцы. Хороший выбор флейцев."
+  },
+  {
+    "value_id": 126,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": "Флейцы"
+  },
+  {
+    "value_id": 127,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 128,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": "flejcy"
+  },
+  {
+    "value_id": 129,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": "flejcy.html"
+  },
+  {
+    "value_id": 130,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 27,
+    "value": "Купить лампензель. Лучший выбор лампензелей в Украине"
+  },
+  {
+    "value_id": 131,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 27,
+    "value": "Лампензели"
+  },
+  {
+    "value_id": 132,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 27,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 133,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 27,
+    "value": "lampenzeli"
+  },
+  {
+    "value_id": 134,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 27,
+    "value": "lampenzeli"
+  },
+  {
+    "value_id": 135,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 28,
+    "value": "Купить художественные водно-акриловые лаки в Украине"
+  },
+  {
+    "value_id": 136,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 28,
+    "value": "Водные лаки"
+  },
+  {
+    "value_id": 137,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 28,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 138,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 28,
+    "value": "vodnye-laki"
+  },
+  {
+    "value_id": 139,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 28,
+    "value": "vodnye-laki"
+  },
+  {
+    "value_id": 140,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 29,
+    "value": "Купить художественные масляные лаки в Украине"
+  },
+  {
+    "value_id": 141,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 29,
+    "value": "Масляные лаки"
+  },
+  {
+    "value_id": 142,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 29,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 143,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 29,
+    "value": "maslyanye-laki"
+  },
+  {
+    "value_id": 144,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 29,
+    "value": "maslyanye-laki"
+  },
+  {
+    "value_id": 169,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": "Плоские кисти"
+  },
+  {
+    "value_id": 170,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 171,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": "ploskie-kisti"
+  },
+  {
+    "value_id": 172,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": "ploskie-kisti"
+  },
+  {
+    "value_id": 176,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": null
+  },
+  {
+    "value_id": 177,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": null
+  },
+  {
+    "value_id": 178,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": null
+  },
+  {
+    "value_id": 181,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 31,
+    "value": "Спиртовые лаки"
+  },
+  {
+    "value_id": 182,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 31,
+    "value": "Купить спиртовые лаки (шеллак, цапон лак)"
+  },
+  {
+    "value_id": 183,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 31,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 184,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 31,
+    "value": "spirtovye-laki"
+  },
+  {
+    "value_id": 185,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 31,
+    "value": "spirtovye-laki"
+  },
+  {
+    "value_id": 187,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": null
+  },
+  {
+    "value_id": 188,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": "Купить художественные плоские кисти"
+  },
+  {
+    "value_id": 189,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": null
+  },
+  {
+    "value_id": 190,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": null
+  },
+  {
+    "value_id": 202,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 33,
+    "value": "Купить металлические пигменты"
+  },
+  {
+    "value_id": 203,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 33,
+    "value": "pigmenty/metallicheskie-pigmenty.html"
+  },
+  {
+    "value_id": 204,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 33,
+    "value": "metallicheskie-pigmenty"
+  },
+  {
+    "value_id": 205,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 33,
+    "value": "Металлические пигменты"
+  },
+  {
+    "value_id": 206,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 33,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 209,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "Купить аксессуары для художников и мастериц"
+  },
+  {
+    "value_id": 210,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "aksessuary.html"
+  },
+  {
+    "value_id": 211,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "aksessuary"
+  },
+  {
+    "value_id": 212,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "Инструменты и аксессуары"
+  },
+  {
+    "value_id": 213,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 223,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 224,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "left"
+  },
+  {
+    "value_id": 232,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 233,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 234,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 235,
+    "attribute_id": 155,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 236,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 237,
+    "attribute_id": 167,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 238,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 239,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "left"
+  },
+  {
+    "value_id": 240,
+    "attribute_id": 171,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 241,
+    "attribute_id": 172,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 242,
+    "attribute_id": 173,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 243,
+    "attribute_id": 179,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 260,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "Лаки на растворителях (нитро, акрил)"
+  },
+  {
+    "value_id": 261,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "Лаки на растворителях. (Уретан-акриловые, нитро-лаки и т.п.)"
+  },
+  {
+    "value_id": 262,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 263,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "laki-na-rastvoritelyah"
+  },
+  {
+    "value_id": 264,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "laki-na-rastvoritelyah"
+  },
+  {
+    "value_id": 265,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "Лаки на растворителях"
+  },
+  {
+    "value_id": 266,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 267,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "left"
+  },
+  {
+    "value_id": 304,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 305,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 306,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 307,
+    "attribute_id": 155,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 308,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 309,
+    "attribute_id": 167,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 310,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 311,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "left"
+  },
+  {
+    "value_id": 312,
+    "attribute_id": 171,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 313,
+    "attribute_id": 172,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 314,
+    "attribute_id": 173,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 315,
+    "attribute_id": 179,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 321,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 322,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 323,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 324,
+    "attribute_id": 155,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 325,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 326,
+    "attribute_id": 167,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 327,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 328,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "left"
+  },
+  {
+    "value_id": 329,
+    "attribute_id": 171,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 330,
+    "attribute_id": 172,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 331,
+    "attribute_id": 173,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 332,
+    "attribute_id": 179,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 439,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 440,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "left"
+  },
+  {
+    "value_id": 452,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 453,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "left"
+  },
+  {
+    "value_id": 477,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 478,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 479,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 480,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 481,
+    "attribute_id": 155,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 482,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 483,
+    "attribute_id": 167,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 484,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 485,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": "left"
+  },
+  {
+    "value_id": 486,
+    "attribute_id": 171,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 487,
+    "attribute_id": 172,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 488,
+    "attribute_id": 173,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 489,
+    "attribute_id": 179,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 491,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 492,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 493,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 494,
+    "attribute_id": 155,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 495,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 496,
+    "attribute_id": 167,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 497,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 498,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "left"
+  },
+  {
+    "value_id": 499,
+    "attribute_id": 171,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 500,
+    "attribute_id": 172,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 501,
+    "attribute_id": 173,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 502,
+    "attribute_id": 179,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 503,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "Сусаль"
+  },
+  {
+    "value_id": 504,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "Cусальное золото - ассортимент свободного, трансферного"
+  },
+  {
+    "value_id": 505,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 506,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "susalnoe-zoloto"
+  },
+  {
+    "value_id": 507,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "susalnoe-zoloto"
+  },
+  {
+    "value_id": 508,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 509,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "left"
+  },
+  {
+    "value_id": 511,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 512,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 513,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 514,
+    "attribute_id": 155,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 515,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 516,
+    "attribute_id": 167,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 517,
+    "attribute_id": 171,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 518,
+    "attribute_id": 172,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 519,
+    "attribute_id": 173,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 520,
+    "attribute_id": 179,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 524,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 525,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 526,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 527,
+    "attribute_id": 155,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 528,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 529,
+    "attribute_id": 167,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 530,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 531,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "left"
+  },
+  {
+    "value_id": 532,
+    "attribute_id": 171,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 533,
+    "attribute_id": 172,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 534,
+    "attribute_id": 173,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 535,
+    "attribute_id": 179,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 537,
+    "attribute_id": 45,
+    "store_id": 1,
+    "entity_id": 2,
+    "value": "Default Category"
+  },
+  {
+    "value_id": 538,
+    "attribute_id": 52,
+    "store_id": 1,
+    "entity_id": 2,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 539,
+    "attribute_id": 119,
+    "store_id": 1,
+    "entity_id": 2,
+    "value": "default-category"
+  },
+  {
+    "value_id": 541,
+    "attribute_id": 168,
+    "store_id": 1,
+    "entity_id": 2,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 542,
+    "attribute_id": 169,
+    "store_id": 1,
+    "entity_id": 2,
+    "value": "left"
+  },
+  {
+    "value_id": 557,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 558,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 559,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 560,
+    "attribute_id": 155,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 561,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 562,
+    "attribute_id": 167,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 563,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 564,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "left"
+  },
+  {
+    "value_id": 565,
+    "attribute_id": 171,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 566,
+    "attribute_id": 172,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 567,
+    "attribute_id": 173,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 568,
+    "attribute_id": 179,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 569,
+    "attribute_id": 221,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 571,
+    "attribute_id": 45,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "Грунты"
+  },
+  {
+    "value_id": 572,
+    "attribute_id": 49,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "Купить художественные грунты. Грунт для холста, грун под позолоту."
+  },
+  {
+    "value_id": 573,
+    "attribute_id": 52,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "PRODUCTS"
+  },
+  {
+    "value_id": 574,
+    "attribute_id": 119,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "grunty"
+  },
+  {
+    "value_id": 575,
+    "attribute_id": 120,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "grunty"
+  },
+  {
+    "value_id": 576,
+    "attribute_id": 168,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "dropdown_simple"
+  },
+  {
+    "value_id": 577,
+    "attribute_id": 169,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "left"
+  },
+  {
+    "value_id": 606,
+    "attribute_id": 48,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 607,
+    "attribute_id": 60,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 608,
+    "attribute_id": 63,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 609,
+    "attribute_id": 155,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 610,
+    "attribute_id": 163,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 611,
+    "attribute_id": 167,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 612,
+    "attribute_id": 171,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 613,
+    "attribute_id": 172,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 614,
+    "attribute_id": 173,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 615,
+    "attribute_id": 179,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 616,
+    "attribute_id": 221,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 631,
+    "attribute_id": 221,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  }
+]

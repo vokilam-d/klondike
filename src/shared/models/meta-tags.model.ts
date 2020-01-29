@@ -9,12 +9,12 @@ export class MetaTags {
   @Exclude()
   __v: any;
 
-  @prop()
+  @prop({ default: '' })
   title: string;
 
-  @prop()
+  @prop({ default: '' })
   description: string;
 
-  @prop()
+  @prop({ default: '' })
   keywords: string;
 }

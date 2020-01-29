@@ -1,0 +1,1500 @@
+[
+  {
+    "value_id": 5,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "<p>В интернет-магазине Клондайк Вы можете приобрести товары для золочения, такие как поталь, жидкую поталь, мордан, клей для потали (мордан), лак для потали, лампензели, подушку позолотчика, нож позолотчика, шеллак, цапон-лак и другие товары для позолотчиков по хорошей цене.</p>"
+  },
+  {
+    "value_id": 6,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "Купить товары для позолоты (поталь, мордан, лампензели, подушка позолотчика, шеллак)\r\n"
+  },
+  {
+    "value_id": 7,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "<p>Купить акриловые краски, масляные краски, акварельные краски, пастель, гуашь, металлизированные краски, жидкую поталь по хорошей цене. Большой ассортимент художественных красок.</p>\r\n"
+  },
+  {
+    "value_id": 8,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "Акриловые краски, масляные краски, акварельные краски, жидкая поталь, гуашь, темпера и др.\r\n"
+  },
+  {
+    "value_id": 9,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 5,
+    "value": "Купить художественные кисти (колонок, белка, синтетика, лиса, барсук и др.)"
+  },
+  {
+    "value_id": 10,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 5,
+    "value": "<p>Широкий ассортимент кистей украинского и зарубежного производства. Представлены художественные кисти как синтетические, так и натурального ворса (колонок, синтетика, белка, лиса и др.).</p>"
+  },
+  {
+    "value_id": 11,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 6,
+    "value": "Купить художественные лаки по выгодной цене Ассортимент товаров: водные лаки, масляные лаки"
+  },
+  {
+    "value_id": 12,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 6,
+    "value": "<p>Лаки для художников, декораторов, позолотчиков и мастериц.</p>"
+  },
+  {
+    "value_id": 13,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 7,
+    "value": "Купить товары для старения. В ассортименте водные и битумные патины. Выгодно"
+  },
+  {
+    "value_id": 14,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 7,
+    "value": "<p>Патины используются для декорирования различных поверхностей. Например, для придания рельефу античного вида.</p>"
+  },
+  {
+    "value_id": 15,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 8,
+    "value": "Купить клей в интернет-магазине художественных товаров \"Клондайк\""
+  },
+  {
+    "value_id": 16,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 8,
+    "value": "<p>Купить клей для приклевания бумаги, потали (мордан, миксион), стекла и др.</p>"
+  },
+  {
+    "value_id": 17,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 9,
+    "value": "Купить акриловую патину, битум. Патины для придания различных декоративных эффектов."
+  },
+  {
+    "value_id": 18,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 9,
+    "value": "<p>Патины используются для декорирования поверхностей (как плоских, так и рельефных). Патины бывают на водной, спиртовой, масляной и нитро- основе.</p>"
+  },
+  {
+    "value_id": 19,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 10,
+    "value": "Купить художественные и декоративные пигменты по хорошей цене в интернет-магазине Клондайк"
+  },
+  {
+    "value_id": 20,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 10,
+    "value": "<p>Пигменты применяются в художественных, декоратирных и позолотческих работах.</p>"
+  },
+  {
+    "value_id": 21,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "Купить золотую и серебряную поталь. Лучшая цена в Украине. Листовая поталь, в хлопьях и др."
+  },
+  {
+    "value_id": 22,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "<p>Купить поталь в магазине Клондайк по выгодной цене.</p><p>В ассортименте зеркальная поталь, золотая поталь, серебряная поталь, трансферная поталь, поталь в рулоне, серебряная поталь, оксиды потали, свободная поталь, медная поталь, трансферная зеркальная поталь, жидкая поталь, творёная поталь, поталь свободная, поталь с проложкой.</p>"
+  },
+  {
+    "value_id": 23,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "Зеркальная поталь также называется: высокоглянцевая поталь, супер-поталь, японская поталь."
+  },
+  {
+    "value_id": 24,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "<p>Купить зеркальную поталь (также известна под названиями супер-поталь, высокоглянцевая поталь, японская поталь, полиментная поталь) по хорошей цене. В нашем ассортименте Вы найдёте листовую зеркальную поталь 8*8.5см, 13.5*14см, трансферную зеркальную поталь, вату для золочения</p>"
+  },
+  {
+    "value_id": 25,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "Купить клей для потали и сусального золота (мордан, болюс, полимент, миксион)."
+  },
+  {
+    "value_id": 26,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "<p>Купить клей для потали и сусального золота, мордан, миксион, полимент, болюс</p>"
+  },
+  {
+    "value_id": 27,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 14,
+    "value": "Купить финишные и грунтовочные лаки для потали и сусальноего золота (шеллаки, цапуны)"
+  },
+  {
+    "value_id": 28,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 14,
+    "value": "<p>Финишные и патинирующие лаки для потали. Шеллак, цапон лак (цапун), мекка, нитролаки для потали используют для защиты позолоты потали от окисления и механических повреждений.</p>"
+  },
+  {
+    "value_id": 29,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 15,
+    "value": "Купить металлизированную краску для имитации золочения поталью и сусальным золотом."
+  },
+  {
+    "value_id": 30,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 15,
+    "value": "<p>Ассортимент жидкой потали (металлизированные краски). Жидкая поталь на нитрооснове.</p>"
+  },
+  {
+    "value_id": 31,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "Купить подушку позолотчика, нож позолотчика, агатовый зубок, перчатки позолотчика."
+  },
+  {
+    "value_id": 32,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "<p>Купить подушку позолотчика, нож позолотчика, агатовый зубок, перчатки позолотчика в интернет-магазине Клондайк по хорошей цене. Хороший ассортимент товаров для позолотчиков.</p>"
+  },
+  {
+    "value_id": 33,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 17,
+    "value": "Купить вату для золочения (Лана, супервата) в Украине. Лучшая цена. Хлопья потали."
+  },
+  {
+    "value_id": 34,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 17,
+    "value": "<p>Вата для золочения (также известная как Лана, супервата) применяется для облегчённого золочения поверхностей. Техника позолоты ватой проще, чем золочение с использование листовой потали.</p>"
+  },
+  {
+    "value_id": 35,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "Купить битум, патину для придания позолоченным поверхностям античного эффекта. Интернет-магазин Клондайк"
+  },
+  {
+    "value_id": 36,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "<p>Битум применяется для патинирования различных изделий (рельеф на мебели и лепнине, др.). Также в разделе Вы можете найти другие средства для состаривания позолоты.</p>"
+  },
+  {
+    "value_id": 37,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 19,
+    "value": "Удобный широкий выбор акриловой краски разных цветов и производителей. "
+  },
+  {
+    "value_id": 38,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 19,
+    "value": "<p>Акриловые краски легко растворимы водой, не нуждаются в использовании растворителей как другие краски. Акриловые краски быстро сохнут</p>"
+  },
+  {
+    "value_id": 39,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "Купить масляные краски для художников и живописи недорого в магазине Клондайк."
+  },
+  {
+    "value_id": 40,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "<p>Масляные краски изготовляются на льняном (или другом) масле с использование пигментов. Качество краски часто определяется качеством и насыщенностью пигмента.</p>"
+  },
+  {
+    "value_id": 41,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 21,
+    "value": "Купить металлизированные краски для имитации позолоты поталью (жидкая поталь. др)"
+  },
+  {
+    "value_id": 42,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 21,
+    "value": "<p>Металлизированные краски представляют собой металлическую стружку мелкого помола на основе медиуме. Основа может быть как нитро, так и масляной или водной. Наиболее качественные металлические краски (обычно на нитро-основе) называют жидкой поталью.</p>"
+  },
+  {
+    "value_id": 43,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 22,
+    "value": "Купить художественные воски в Украине, недорого. Воски применяются для декорированя поверхностей."
+  },
+  {
+    "value_id": 44,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 22,
+    "value": "<p>Воски используют для декорирования различных изделий (мебель, изделия хенд-мейда).</p>"
+  },
+  {
+    "value_id": 45,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 23,
+    "value": "Купить натуральные беличьи и синтетические веерные кисти в магазине Клондайк"
+  },
+  {
+    "value_id": 46,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 23,
+    "value": "<p>Ассортимент веерных кистей.</p>"
+  },
+  {
+    "value_id": 47,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 24,
+    "value": "Купить натуральные беличьи и синтетические круглые кисти в магазине Клондайк"
+  },
+  {
+    "value_id": 48,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 24,
+    "value": "<p>Ассортимент круглых кистей.</p>"
+  },
+  {
+    "value_id": 49,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 25,
+    "value": "Купить натуральные беличьи и синтетические овальные кисти в магазине Клондайк"
+  },
+  {
+    "value_id": 50,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 25,
+    "value": "<p>Ассортимент овальных кистей.</p>"
+  },
+  {
+    "value_id": 51,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": "Купить флейц в Украине недорого. Выбор художественных флейцев."
+  },
+  {
+    "value_id": 52,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": "<p>Ассортимент флейцев.</p>"
+  },
+  {
+    "value_id": 53,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 27,
+    "value": "Купить лампензели из натурального (беличьи лампензели) и синтетического ворса."
+  },
+  {
+    "value_id": 54,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 27,
+    "value": "<p>Ассортимент лампензелей.</p>"
+  },
+  {
+    "value_id": 55,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 28,
+    "value": "Купить художественные финишные водные лаки в Киеве"
+  },
+  {
+    "value_id": 56,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 28,
+    "value": "<p>Ассортимент водных лаков.</p>"
+  },
+  {
+    "value_id": 57,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 29,
+    "value": "Купить художественные масляные лаки в Киеве"
+  },
+  {
+    "value_id": 58,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 29,
+    "value": "<p>Ассортимент масляных лаков.</p>"
+  },
+  {
+    "value_id": 61,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": "<p>Ассортимент синтетических и натуральных (белка, лиса, щетина, барсук) кистей.</p>"
+  },
+  {
+    "value_id": 62,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": null
+  },
+  {
+    "value_id": 63,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 26,
+    "value": null
+  },
+  {
+    "value_id": 64,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 31,
+    "value": "<p>Ассортимент спиртовых лаков (шеллак, спиртовой цапон лак)</p>"
+  },
+  {
+    "value_id": 65,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 31,
+    "value": "Купить шеллак недорого. Спиртовые лаки отличаются быстротой высыхания и отсутствием вредных растворителей."
+  },
+  {
+    "value_id": 66,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": "Широкий ассортимент натуральных (белка, лиса) и синтетических плоских кистей"
+  },
+  {
+    "value_id": 67,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": "Широкий ассортимент натуральных (белка, лиса) и синтетических плоских кистей"
+  },
+  {
+    "value_id": 68,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 30,
+    "value": null
+  },
+  {
+    "value_id": 71,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 33,
+    "value": "Купить металлические пигменты в интернет-магазине Клондайк"
+  },
+  {
+    "value_id": 72,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 33,
+    "value": "Ассортимент металлических пигментов"
+  },
+  {
+    "value_id": 73,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "Купить аксессуары для художников и мастериц в инетернет-магазине Клондайк"
+  },
+  {
+    "value_id": 74,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "Аксессуары для художников, позолотчиков, мастериц"
+  },
+  {
+    "value_id": 77,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "0"
+  },
+  {
+    "value_id": 78,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "0"
+  },
+  {
+    "value_id": 87,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 88,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 89,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 90,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "0"
+  },
+  {
+    "value_id": 91,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "0"
+  },
+  {
+    "value_id": 92,
+    "attribute_id": 170,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 93,
+    "attribute_id": 174,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 94,
+    "attribute_id": 175,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 95,
+    "attribute_id": 176,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 96,
+    "attribute_id": 177,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 97,
+    "attribute_id": 178,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 98,
+    "attribute_id": 180,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 99,
+    "attribute_id": 181,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": null
+  },
+  {
+    "value_id": 100,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 11,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 101,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 21,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 102,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 15,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 103,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "Лаками на растворителях обычно называют лаки на летучих основах. Такие как нитроцеллюлозный лак, уретан-акриловый лак. Обычно такие лаки быстрее сохнут. Дают относительно стойкую плёнку. Такими лаками нужно пользоваться только в хорошо проветриваемых помещениях."
+  },
+  {
+    "value_id": 104,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "Лаками на растворителях обычно называют лаки на летучих основах. Такие как нитроцеллюлозный лак, уретан-акриловый лак. Обычно такие лаки быстрее сохнут. Однако лаками на растворителях нужно пользоваться только в хорошо проветриваемых помещениях."
+  },
+  {
+    "value_id": 105,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "0"
+  },
+  {
+    "value_id": 106,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "0"
+  },
+  {
+    "value_id": 107,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 35,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 108,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 8,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 109,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 110,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 111,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 112,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "0"
+  },
+  {
+    "value_id": 113,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "0"
+  },
+  {
+    "value_id": 114,
+    "attribute_id": 170,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 115,
+    "attribute_id": 174,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 116,
+    "attribute_id": 175,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 117,
+    "attribute_id": 176,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 118,
+    "attribute_id": 177,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 119,
+    "attribute_id": 178,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 120,
+    "attribute_id": 180,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 121,
+    "attribute_id": 181,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": null
+  },
+  {
+    "value_id": 122,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 12,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 123,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 124,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 125,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "0"
+  },
+  {
+    "value_id": 126,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": "0"
+  },
+  {
+    "value_id": 127,
+    "attribute_id": 170,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 128,
+    "attribute_id": 174,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 129,
+    "attribute_id": 175,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 130,
+    "attribute_id": 176,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 131,
+    "attribute_id": 177,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 132,
+    "attribute_id": 178,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 133,
+    "attribute_id": 180,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 134,
+    "attribute_id": 181,
+    "store_id": 0,
+    "entity_id": 13,
+    "value": null
+  },
+  {
+    "value_id": 135,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 33,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 136,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 9,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 137,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 138,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 10,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 139,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 17,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 140,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 24,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 143,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "0"
+  },
+  {
+    "value_id": 144,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "0"
+  },
+  {
+    "value_id": 153,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 34,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 156,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "0"
+  },
+  {
+    "value_id": 157,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 4,
+    "value": "0"
+  },
+  {
+    "value_id": 166,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 167,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 5,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 168,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 6,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 169,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 31,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 170,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 7,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":true,\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 171,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 172,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 173,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 174,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 175,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": "0"
+  },
+  {
+    "value_id": 176,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": "0"
+  },
+  {
+    "value_id": 177,
+    "attribute_id": 170,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 178,
+    "attribute_id": 174,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 179,
+    "attribute_id": 175,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 180,
+    "attribute_id": 176,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 181,
+    "attribute_id": 177,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 182,
+    "attribute_id": 178,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 183,
+    "attribute_id": 180,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 184,
+    "attribute_id": 181,
+    "store_id": 0,
+    "entity_id": 2,
+    "value": null
+  },
+  {
+    "value_id": 185,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 186,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 187,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "0"
+  },
+  {
+    "value_id": 188,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "0"
+  },
+  {
+    "value_id": 189,
+    "attribute_id": 170,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 190,
+    "attribute_id": 174,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 191,
+    "attribute_id": 175,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 192,
+    "attribute_id": 176,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 193,
+    "attribute_id": 177,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 194,
+    "attribute_id": 178,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 195,
+    "attribute_id": 180,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 196,
+    "attribute_id": 181,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": null
+  },
+  {
+    "value_id": 197,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 20,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 198,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "Сусальное золото предстовляет собой тончайшие листы натурального золота высокой пробы. Применяется для золочения икон, иконостасов, лепнины, мебели и др. Сусальное золото упаковывается в книги в свободном или трансферном виде. Проба сусального золота часто измеряется каратами. 24 карата соответствуют тысячной пробе, 12 карат - пятисотой. Вес золота в книге называется лигатурным весом."
+  },
+  {
+    "value_id": 199,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "Купить сусальное золото по хорошей цене"
+  },
+  {
+    "value_id": 200,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "0"
+  },
+  {
+    "value_id": 201,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "0"
+  },
+  {
+    "value_id": 202,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 203,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 204,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 205,
+    "attribute_id": 170,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 206,
+    "attribute_id": 174,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 207,
+    "attribute_id": 175,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 208,
+    "attribute_id": 176,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 209,
+    "attribute_id": 177,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 210,
+    "attribute_id": 178,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 211,
+    "attribute_id": 180,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 212,
+    "attribute_id": 181,
+    "store_id": 0,
+    "entity_id": 36,
+    "value": null
+  },
+  {
+    "value_id": 213,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 214,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 215,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "0"
+  },
+  {
+    "value_id": 216,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "0"
+  },
+  {
+    "value_id": 217,
+    "attribute_id": 170,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 218,
+    "attribute_id": 174,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 219,
+    "attribute_id": 175,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 220,
+    "attribute_id": 176,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 221,
+    "attribute_id": 177,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 222,
+    "attribute_id": 178,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 223,
+    "attribute_id": 180,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 224,
+    "attribute_id": 181,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": null
+  },
+  {
+    "value_id": 225,
+    "attribute_id": 186,
+    "store_id": 0,
+    "entity_id": 16,
+    "value": "{\"type\":\"Smile\\\\ElasticsuiteVirtualCategory\\\\Model\\\\Rule\\\\Condition\\\\Combine\",\"attribute\":null,\"operator\":null,\"value\":\"1\",\"is_value_processed\":null,\"aggregator\":\"all\"}"
+  },
+  {
+    "value_id": 226,
+    "attribute_id": 161,
+    "store_id": 1,
+    "entity_id": 2,
+    "value": "0"
+  },
+  {
+    "value_id": 231,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 232,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 233,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "0"
+  },
+  {
+    "value_id": 234,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": "0"
+  },
+  {
+    "value_id": 235,
+    "attribute_id": 170,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 236,
+    "attribute_id": 174,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 237,
+    "attribute_id": 175,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 238,
+    "attribute_id": 176,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 239,
+    "attribute_id": 177,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 240,
+    "attribute_id": 178,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 241,
+    "attribute_id": 180,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 242,
+    "attribute_id": 181,
+    "store_id": 0,
+    "entity_id": 18,
+    "value": null
+  },
+  {
+    "value_id": 243,
+    "attribute_id": 47,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "Ассортимент художественных грунтов, грунты для позолоты."
+  },
+  {
+    "value_id": 244,
+    "attribute_id": 51,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "Ассортимент художественных грунтов в интернет-магазине \"Клондайк\""
+  },
+  {
+    "value_id": 245,
+    "attribute_id": 158,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "0"
+  },
+  {
+    "value_id": 246,
+    "attribute_id": 161,
+    "store_id": 0,
+    "entity_id": 39,
+    "value": "0"
+  },
+  {
+    "value_id": 253,
+    "attribute_id": 50,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 254,
+    "attribute_id": 64,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 255,
+    "attribute_id": 170,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 256,
+    "attribute_id": 174,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 257,
+    "attribute_id": 175,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 258,
+    "attribute_id": 176,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 259,
+    "attribute_id": 177,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 260,
+    "attribute_id": 178,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 261,
+    "attribute_id": 180,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  },
+  {
+    "value_id": 262,
+    "attribute_id": 181,
+    "store_id": 0,
+    "entity_id": 3,
+    "value": null
+  }
+]

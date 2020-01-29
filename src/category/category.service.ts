@@ -73,7 +73,7 @@ export class CategoryService {
     return found.toJSON();
   }
 
-  async createCategory(category: AdminAddOrUpdateCategoryDto): Promise<Category> {
+  async createCategory(category: AdminAddOrUpdateCategoryDto, migrate?: any): Promise<Category> {
     category.slug = category.slug === '' ? transliterate(category.name) : category.slug;
 
     const duplicate = await this.categoryModel.findOne({ slug: category.slug, parentId: category.parentId }).exec();
@@ -82,7 +82,9 @@ export class CategoryService {
     }
 
     const newCategoryModel = new this.categoryModel(category);
-    newCategoryModel.id = await this.counterService.getCounter(Category.collectionName);
+    if (!migrate) {
+      newCategoryModel.id = await this.counterService.getCounter(Category.collectionName);
+    }
 
     await newCategoryModel.save();
 
