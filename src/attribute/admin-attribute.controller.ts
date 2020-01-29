@@ -6,7 +6,7 @@ import {
   Get,
   Param,
   Post,
-  Put,
+  Put, Query,
   UseInterceptors,
   UsePipes,
   ValidationPipe

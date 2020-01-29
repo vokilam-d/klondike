@@ -56,8 +56,8 @@ export class AdminProductController {
   }
 
   @Post()
-  async addProduct(@Body() productDto: AdminAddOrUpdateProductDto): Promise<ResponseDto<AdminProductDto>> {
-    const created = await this.productsService.createProduct(productDto);
+  async addProduct(@Body() productDto: AdminAddOrUpdateProductDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminProductDto>> {
+    const created = await this.productsService.createProduct(productDto, migrate);
 
     return {
       data: plainToClass(AdminProductDto, created, { excludeExtraneousValues: true })

@@ -1,5 +1,4 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { Exclude, Expose } from 'class-transformer';
 
 export class AttributeValue {
   @prop()
@@ -8,19 +7,14 @@ export class AttributeValue {
   @prop()
   label: string;
 
-  @prop()
+  @prop({ default: false })
   isDefault: boolean;
 }
 
 export class Attribute {
-  @Exclude()
   @prop()
   _id: string; // internal code-name
 
-  @Exclude()
-  __v: any;
-
-  @Expose()
   set id(id: string) { this._id = id; }
   get id(): string { return this._id; }
 

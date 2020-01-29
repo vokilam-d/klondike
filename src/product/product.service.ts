@@ -110,7 +110,7 @@ export class ProductService {
     return found;
   }
 
-  async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
+  async createProduct(productDto: AdminAddOrUpdateProductDto, migrate?: any): Promise<Product> {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
@@ -118,7 +118,9 @@ export class ProductService {
       const tmpMedias: MediaDto[] = [];
 
       const newProductModel = new this.productModel(productDto);
-      newProductModel.id = await this.counterService.getCounter(Product.collectionName);
+      if (!migrate) {
+        newProductModel.id = await this.counterService.getCounter(Product.collectionName);
+      }
 
       for (const dtoVariant of productDto.variants) {
         const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);

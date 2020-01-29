@@ -1,13 +1,12 @@
 import { Expose } from 'class-transformer';
-import { Matches } from 'class-validator';
-import { alphaNumDashUnderscoreRegex } from '../../constants';
+import { IsString } from 'class-validator';
 
 export class AdminProductSelectedAttributeDto {
   @Expose()
-  @Matches(alphaNumDashUnderscoreRegex)
+  @IsString()
   attributeId: string;
 
   @Expose()
-  @Matches(alphaNumDashUnderscoreRegex)
+  @IsString()
   valueId: string;
 }

@@ -4,6 +4,8 @@ import { Database } from './mysql-db';
 import { AdminAddOrUpdateCategoryDto, AdminResponseCategoryDto } from '../src/shared/dtos/admin/category.dto';
 import { MetaTagsDto } from '../src/shared/dtos/admin/meta-tags.dto';
 import axios from 'axios';
+import { AdminProductDto } from '../src/shared/dtos/admin/product.dto';
+import { AdminAttributeDto, AdminAttributeValueDto } from '../src/shared/dtos/admin/attribute.dto';
 
 export class Migrate {
   /**
@@ -107,7 +109,81 @@ export class Migrate {
       try {
         await axios.post(`http://localhost:3500/api/v1/admin/categories`, dto, { params: { migrate: true } });
       } catch (ex) {
-        console.error(ex);
+        console.error(`[Categories]: '${dto.id}' '${dto.name}' error: `, ex.response.status);
+        console.error(ex.response.data.message);
+        console.log(`'${dto.id}' dto: `);
+        console.log(dto);
+      }
+    }
+  }
+
+  async populateProductAttributes() {
+    const attrsFile = fs.readFileSync(this.datafilesdir + 'eav_attribute.json', 'utf-8');
+    const attributes: any[] = Array.from(JSON.parse(attrsFile));
+    const optionsFile = fs.readFileSync(this.datafilesdir + 'eav_attribute_option.json', 'utf-8');
+    const options: any[] = Array.from(JSON.parse(optionsFile));
+    const optionValuesFile = fs.readFileSync(this.datafilesdir + 'eav_attribute_option_value.json', 'utf-8');
+    const optionValues: any[] = Array.from(JSON.parse(optionValuesFile));
+
+    for (const attr of attributes) {
+      if (attr.entity_type_id !== 4) { continue; }
+
+      const dto = {} as AdminAttributeDto;
+      dto.id = attr.attribute_code;
+      dto.label = attr.frontend_label;
+      dto.groupName = '';
+      dto.values = [];
+
+      const attrOptions = options.filter(option => option.attribute_id === attr.attribute_id);
+      for (const option of attrOptions) {
+        const attrOptionValues = optionValues.filter(optionValue => optionValue.option_id === option.option_id);
+        const valueDto = {} as AdminAttributeValueDto;
+        for (const optionValue of attrOptionValues) {
+          if (optionValue.store_id === 0) {
+            valueDto.id = optionValue.value
+          }
+          if (optionValue.store_id === 1) {
+            valueDto.label = optionValue.value
+          }
+        }
+        if (!valueDto.label) {
+          valueDto.label = valueDto.id;
+        }
+        dto.values.push(valueDto);
+      }
+
+      if (!dto.values.length) {
+        console.log(`[ProductAttributes]: Skip empty attribute: '${dto.id}'`);
+        continue;
+      }
+
+      try {
+        await axios.post(`http://localhost:3500/api/v1/admin/attributes`, dto);
+      } catch (ex) {
+        console.error(`[ProductAttributes]: '${dto.id}' error: `, ex.response.status);
+        console.error(ex.response.data.message);
+        console.log(`'${dto.id}' dto: `);
+        console.log(dto);
+      }
+    }
+  }
+
+  async populateProducts() {
+    const file = fs.readFileSync(this.datafilesdir + 'catalog_product_flat_1.json', 'utf-8');
+    const products: any[] = Array.from(JSON.parse(file));
+
+    for (const product of products) {
+      if (product.parent_id < 2) { continue; }
+
+      const dto = {} as AdminProductDto;
+
+      try {
+        await axios.post(`http://localhost:3500/api/v1/admin/products`, dto, { params: { migrate: true } });
+      } catch (ex) {
+        console.error(`[Product]: '${dto.id}' error: `, ex.response.status);
+        console.error(ex.response.data.message);
+        console.log(`'${dto.id}' dto: `);
+        console.log(dto);
       }
     }
   }

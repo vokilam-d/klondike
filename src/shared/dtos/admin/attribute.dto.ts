@@ -1,10 +1,9 @@
 import { Expose, Type } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsString, Matches, ValidateNested } from 'class-validator';
-import { alphaNumDashUnderscoreRegex } from '../../constants';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class AdminAttributeValueDto {
   @Expose()
-  @Matches(alphaNumDashUnderscoreRegex, { message: `Attribute id must contain only alphanumeric, dashes or underscore` })
+  @IsString()
   id: string;
 
   @Expose()
@@ -13,6 +12,7 @@ export class AdminAttributeValueDto {
   label: string;
 
   @Expose()
+  @IsOptional()
   @IsBoolean()
   isDefault: boolean;
 }
@@ -34,7 +34,7 @@ export class AdminUpdateAttributeDto {
 
 export class AdminCreateAttributeDto extends AdminUpdateAttributeDto {
   @Expose()
-  @Matches(alphaNumDashUnderscoreRegex, { message: `Attribute id must contain only alphanumeric, dashes or underscore` })
+  @IsString()
   id: string;
 }
 

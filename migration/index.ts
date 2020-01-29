@@ -8,7 +8,9 @@ async function migrate() {
   // await migrate.retrieveModels();
   // await migrate.retrieveMysqlData();
 
-  await migrate.populateCategories();
+  // await migrate.populateCategories();
+  await migrate.populateProductAttributes();
+  // await migrate.populateProducts();
 
   process.exit();
 }

@@ -31,6 +31,9 @@ export class Product {
   @prop({ default: 0, index: true })
   sortOrder: number;
 
+  @prop({ default: 0 })
+  salesCount: number;
+
   static collectionName: string = 'product';
 }
 

@@ -1,4 +1,4 @@
-import { ArrayNotEmpty, IsBoolean, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsBoolean, IsDefined, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductVariantDto } from './product-variant.dto';
@@ -32,6 +32,11 @@ export class AdminAddOrUpdateProductDto {
   @Expose()
   @IsNumber()
   sortOrder: number;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  salesCount: number;
 }
 
 export class AdminProductDto extends AdminAddOrUpdateProductDto {
