@@ -1,7 +1,7 @@
-import * as path from "path";
-import * as fs from "fs";
+import * as path from 'path';
+import * as fs from 'fs';
 import { Database } from './mysql-db';
-import { AdminAddOrUpdateCategoryDto, AdminResponseCategoryDto } from '../src/shared/dtos/admin/category.dto';
+import { AdminResponseCategoryDto } from '../src/shared/dtos/admin/category.dto';
 import { MetaTagsDto } from '../src/shared/dtos/admin/meta-tags.dto';
 import axios from 'axios';
 import * as FormData from 'form-data';
@@ -11,7 +11,9 @@ import { AdminProductVariantDto } from '../src/shared/dtos/admin/product-variant
 import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/product-selected-attribute.dto';
 import { MediaDto } from '../src/shared/dtos/admin/media.dto';
 import { AdminCustomerDto, AdminShippingAddressDto } from '../src/shared/dtos/admin/customer.dto';
-import { AdminOrderDto } from '../src/shared/dtos/admin/order.dto';
+import { AdminAddOrUpdateOrderDto } from '../src/shared/dtos/admin/order.dto';
+import { AdminOrderItemDto } from '../src/shared/dtos/admin/order-item.dto';
+import { CreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.dto';
 
 export class Migrate {
   /**
@@ -356,8 +358,8 @@ export class Migrate {
 
       dto.password = null; // todo handle password;
 
-      dto.createdDate = new Date(customer.created_at);
-      dto.lastLoggedIn = dto.createdDate;
+      dto.createdAt = new Date(customer.created_at);
+      dto.lastLoggedIn = dto.createdAt;
       dto.isLocked = customer.is_active !== 1;
       dto.isEmailConfirmed = customer.confirmation !== null;
       dto.isPhoneNumberConfirmed = false;
@@ -401,11 +403,11 @@ export class Migrate {
       }
 
       dto.discountPercent = 0;
-      if (dto.totalOrdersCost >= 500 && dto.totalOrdersCost <= 1499) {
+      if (dto.totalOrdersCost >= 500 && dto.totalOrdersCost < 1500) {
         dto.discountPercent = 3;
-      } else if (dto.totalOrdersCost >= 1500 && dto.totalOrdersCost <= 2999) {
+      } else if (dto.totalOrdersCost >= 1500 && dto.totalOrdersCost < 3000) {
         dto.discountPercent = 5;
-      } else if (dto.totalOrdersCost >= 3000 && dto.totalOrdersCost <= 4999) {
+      } else if (dto.totalOrdersCost >= 3000 && dto.totalOrdersCost < 5000) {
         dto.discountPercent = 7;
       } else if (dto.totalOrdersCost >= 5000) {
         dto.discountPercent = 10;
@@ -428,16 +430,128 @@ export class Migrate {
 
   async populateOrders() {
     console.log('.\n.\n***     Start migrating Orders     ***\n.\n.');
-    const ordersFile = fs.readFileSync(this.datafilesdir + '.json', 'utf-8');
-    const orders: any[] = Array.from(JSON.parse(ordersFile));
+    const orders: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'sales_order.json', 'utf-8')));
+    const addresses: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'sales_order_address.json', 'utf-8')));
+    const orderPayments: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'sales_order_payment.json', 'utf-8')));
+    const orderAttrEntities: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'amasty_order_attribute_entity.json', 'utf-8')));
+    const orderAttrEntityValues: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'amasty_order_attribute_entity_int.json', 'utf-8')));
+    const shipmentTracks: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'sales_shipment_track.json', 'utf-8')));
+    const orderAttrsFlat: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'amasty_order_attribute_grid_flat.json', 'utf-8')));
+    const magOrderItems: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'sales_order_item.json', 'utf-8')));
     let count: number = 0;
 
     for (const order of orders) {
-      const dto = {} as AdminOrderDto;
+      const dto = {} as AdminAddOrUpdateOrderDto;
+      dto.id = order.entity_id;
+      dto.idForCustomer = order.increment_id;
+      dto.customerId = order.customer_id;
+      dto.customerFirstName = order.customer_firstname || '';
+      dto.customerLastName = order.customer_lastname || '';
+      dto.customerEmail = order.customer_email;
+
+      dto.address = {} as AdminShippingAddressDto;
+      const foundAddress = addresses.find(address => address.entity_id === order.shipping_address_id);
+      dto.address.firstName = foundAddress.firstname;
+      dto.address.lastName = foundAddress.lastname;
+      dto.address.phoneNumber = foundAddress.telephone;
+      dto.address.city = foundAddress.city;
+      dto.address.novaposhtaOffice = foundAddress.street;
+
+      dto.shouldSaveAddress = false;
+      dto.createdAt = order.created_at;
+      dto.isConfirmationEmailSent = order.email_sent !== null;
+
+      const foundPayment = orderPayments.find(payment => payment.parent_id === order.entity_id);
+      if (foundPayment.method === 'wayforpay') {
+        dto.paymentMethodClientName = 'Предоплата на карту. После оформления заказа Вам поступит сообщение с номером карты и суммой (комиссия по тарифам Вашего банка, для карт Привата 0,5% минимум 5 грн)';
+      } else {
+        dto.paymentMethodClientName = JSON.parse(foundPayment.additional_information) && JSON.parse(foundPayment.additional_information).method_title;
+      }
+
+      dto.paymentMethodId = '';
+      dto.paymentMethodAdminName = dto.paymentMethodClientName;
+
+      dto.shippingMethodId = '';
+      dto.shippingMethodClientName = order.shipping_description;
+      dto.shippingMethodAdminName = order.shipping_description;
+
+      dto.isCallbackNeeded = false;
+      const foundAttrEntity = orderAttrEntities.find(entity => entity.parent_entity_type === 1 && entity.parent_id === order.entity_id);
+      if (foundAttrEntity) {
+        const foundAttrEntityValue = orderAttrEntityValues.find(value => value.attribute_id === 225 && value.entity_id === foundAttrEntity.entity_id);
+        if (foundAttrEntityValue) {
+          dto.isCallbackNeeded = foundAttrEntityValue.value_id === 455;
+        }
+      }
+
+      dto.novaposhtaTrackingId = '';
+      const foundTracking = shipmentTracks.find(track => track.order_id === order.entity_id);
+      if (foundTracking) {
+        dto.novaposhtaTrackingId = foundTracking.track_number;
+      }
+
+      dto.items = [];
+      for (const magOrderItem of magOrderItems) {
+        if (magOrderItem.order_id === order.entity_id) {
+          const orderItem = {} as AdminOrderItemDto;
+          orderItem.name = magOrderItem.name;
+          orderItem.productId = magOrderItem.product_id;
+          orderItem.variantId = '';
+          orderItem.sku = magOrderItem.sku;
+          orderItem.qty = magOrderItem.qty_ordered;
+          orderItem.discountValue = magOrderItem.discount_amount;
+          orderItem.price = magOrderItem.price;
+          orderItem.originalPrice = magOrderItem.original_price;
+          orderItem.cost = magOrderItem.row_total;
+          orderItem.totalCost = orderItem.cost - orderItem.discountValue;
+
+          try {
+            const orderItemDto = {} as CreateOrderItemDto;
+            orderItemDto.sku = magOrderItem.sku;
+            orderItemDto.qty = magOrderItem.qty_ordered;
+            orderItemDto.customerId = magOrderItem.customer_id;
+            const response = await axios.post<{ data: AdminOrderItemDto }>(`http://localhost:3500/api/v1/admin/order-items`, orderItemDto, { params: { migrate: true } });
+
+            orderItem.variantId = response.data.data.variantId;
+            orderItem.imageUrl = response.data.data.imageUrl;
+
+            dto.items.push(orderItem);
+          } catch (ex) {
+            if (ex.response.status === 404) {
+
+              dto.items.push(orderItem);
+
+            } else {
+              console.error(`[Order Items]: '${dto.id}' error: `, ex.response.status);
+              console.error(this.buildErrorMessage(ex.response.data));
+            }
+          }
+        }
+      }
+      if (!dto.items.length) { continue; }
+
+      dto.status = order.status;
+      dto.state = order.state;
+
+      dto.clientNote = '';
+      dto.adminNote = '';
+      const foundFlat = orderAttrsFlat.find(flat => flat.parent_id === order.entity_id);
+      if (foundFlat) {
+        dto.clientNote = foundFlat.buyer_order_comment || '';
+        dto.adminNote = foundFlat.manager_order_comment || '';
+      }
+
+      dto.logs = [];
+      dto.totalItemsCost = order.subtotal;
+      dto.discountValue = Math.abs(order.discount_amount);
+      dto.discountPercent = Math.round((dto.discountValue / dto.totalItemsCost) * 100);
+      dto.discountLabel = order.discount_description;
+      dto.totalCost = order.grand_total;
+
 
       try {
         await axios.post(`http://localhost:3500/api/v1/admin/orders`, dto, { params: { migrate: true } });
-        console.log(`[Orders]: Migrated '${dto}' with id '${dto.id}'`);
+        console.log(`[Orders]: Migrated id: `, dto.id);
 
         count++;
       } catch (ex) {

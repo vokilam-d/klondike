@@ -44,49 +44,52 @@ export class OrderService {
     return found;
   }
 
-  async createOrder(orderDto: AdminAddOrUpdateOrderDto): Promise<Order> {
+  async createOrder(orderDto: AdminAddOrUpdateOrderDto, migrate: any): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
 
-      let customer: Customer;
+      const newOrder = new this.orderModel(orderDto);
 
-      if (orderDto.customerId) {
-        if (orderDto.shouldSaveAddress) {
-          customer = await this.customerService.addCustomerAddress(orderDto.customerId, orderDto.address, session);
+      if (!migrate) {
+        let customer: Customer;
+
+        if (orderDto.customerId) {
+          if (orderDto.shouldSaveAddress) {
+            customer = await this.customerService.addCustomerAddress(orderDto.customerId, orderDto.address, session);
+          } else {
+            customer = await this.customerService.getCustomerById(orderDto.customerId);
+          }
+
         } else {
-          customer = await this.customerService.getCustomerById(orderDto.customerId);
+          if (!orderDto.customerFirstName) { orderDto.customerFirstName = orderDto.address.firstName; }
+          if (!orderDto.customerLastName) { orderDto.customerLastName = orderDto.address.lastName; }
+          if (!orderDto.customerPhoneNumber) { orderDto.customerPhoneNumber = orderDto.address.phoneNumber; }
+
+          const customerDto = new AdminAddOrUpdateCustomerDto();
+          customerDto.firstName = orderDto.customerFirstName;
+          customerDto.lastName = orderDto.customerLastName;
+          customerDto.email = orderDto.customerEmail;
+          customerDto.phoneNumber = orderDto.customerPhoneNumber;
+          customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
+
+          customer = await this.customerService.createCustomer(customerDto, session);
+
+          orderDto.customerId = customer.id;
         }
 
-      } else {
-        if (!orderDto.customerFirstName) { orderDto.customerFirstName = orderDto.address.firstName; }
-        if (!orderDto.customerLastName) { orderDto.customerLastName = orderDto.address.lastName; }
-        if (!orderDto.customerPhoneNumber) { orderDto.customerPhoneNumber = orderDto.address.phoneNumber; }
+        newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
+        newOrder.idForCustomer = addLeadingZeros(newOrder.id);
+        newOrder.createdAt = new Date();
+        newOrder.status = EOrderStatus.NEW;
+        newOrder.discountPercent = customer.discountPercent;
+        this.setOrderPrices(newOrder);
 
-        const customerDto = new AdminAddOrUpdateCustomerDto();
-        customerDto.firstName = orderDto.customerFirstName;
-        customerDto.lastName = orderDto.customerLastName;
-        customerDto.email = orderDto.customerEmail;
-        customerDto.phoneNumber = orderDto.customerPhoneNumber;
-        customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
-
-        customer = await this.customerService.createCustomer(customerDto, session);
-
-        orderDto.customerId = customer.id;
+        for (const item of orderDto.items) {
+          await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
+        }
+        await this.customerService.addOrderToCustomer(customer.id, newOrder, session);
       }
-
-      const newOrder = new this.orderModel(orderDto);
-      newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
-      newOrder.idForClient = addLeadingZeros(newOrder.id);
-      newOrder.createdDate = new Date();
-      newOrder.status = EOrderStatus.NEW;
-      newOrder.discountPercent = customer.discountPercent;
-      this.setOrderPrices(newOrder);
-
-      for (const item of orderDto.items) {
-        await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
-      }
-      await this.customerService.addOrderToCustomer(customer.id, newOrder, session);
 
       await newOrder.save({ session });
       await session.commitTransaction();
@@ -251,7 +254,7 @@ export class OrderService {
   async printOrder(orderId: number) {
     const order = await this.getOrderById(orderId);
     return {
-      fileName: `Заказ №${order.idForClient}.pdf`,
+      fileName: `Заказ №${order.idForCustomer}.pdf`,
       pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON())
     };
   }

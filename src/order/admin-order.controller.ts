@@ -9,6 +9,7 @@ import { EOrderAction } from '../shared/enums/order-action.enum';
 import { AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
+import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/orders')
@@ -39,6 +40,15 @@ export class AdminOrderController {
     };
   }
 
+  @Post()
+  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminOrderDto>> {
+    const created = await this.orderService.createOrder(orderDto, migrate);
+
+    return {
+      data: plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true })
+    };
+  }
+
   @Get(':id/invoice')
   async printOrder(@Param('id') id: string, @Res() reply: FastifyReply<ServerResponse>) {
     const { fileName, pdf } = await this.orderService.printOrder(parseInt(id));
@@ -47,15 +57,6 @@ export class AdminOrderController {
       .type('application/pdf')
       .header('Content-Disposition', `attachment;filename=${encodeURIComponent(fileName)}`)
       .send(pdf);
-  }
-
-  @Post()
-  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
-    const created = await this.orderService.createOrder(orderDto);
-
-    return {
-      data: plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true })
-    };
   }
 
   @Put(':id')

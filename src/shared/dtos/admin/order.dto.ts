@@ -14,6 +14,15 @@ import { AdminOrderItemDto } from './order-item.dto';
 
 export class AdminAddOrUpdateOrderDto {
   @Expose()
+  @Transform(((value, obj) => value ? value : obj._id))
+  id: number; // todo remove after migration
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  idForCustomer: string; // todo remove after migration
+
+  @Expose()
   @IsOptional()
   @IsNumber()
   customerId: number;
@@ -49,7 +58,7 @@ export class AdminAddOrUpdateOrderDto {
   @IsOptional()
   @IsDate()
   @Type(() => Date)
-  createdDate: Date;
+  createdAt: Date;
 
   @Expose()
   @IsOptional()
@@ -94,6 +103,9 @@ export class AdminAddOrUpdateOrderDto {
   @ValidateNested({ each: true })
   @Type(() => AdminOrderItemDto)
   items: AdminOrderItemDto[];
+
+  @Expose()
+  state: any;
 
   @Expose()
   status: any;
@@ -144,5 +156,5 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   @Expose()
   @IsOptional()
   @IsString()
-  idForClient: string;
+  idForCustomer: string;
 }

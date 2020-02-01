@@ -9,15 +9,17 @@ export class OrderItemService {
               private readonly customerService: CustomerService) {
   }
 
-  async createOrderItem(sku: string, qty: number, customerId?: number): Promise<OrderItem> {
+  async createOrderItem(sku: string, qty: number, customerId?: number, migrate?): Promise<OrderItem> {
     const foundProduct = await this.productService.getProductWithQtyBySku(sku);
     if (!foundProduct) {
       throw new BadRequestException(`Product with sku '${sku}' not found`);
     }
     const variant = foundProduct.variants.find(v => v.sku === sku);
 
-    if (variant.qty < qty) {
-      throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${qty}. In stock: ${variant.qty}`);
+    if (!migrate) { // todo remove after migrate
+      if (variant.qty < qty) {
+        throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${qty}. In stock: ${variant.qty}`);
+      }
     }
 
     const orderItem = new OrderItem();

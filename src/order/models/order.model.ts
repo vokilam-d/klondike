@@ -11,9 +11,9 @@ export class Order {
   get id(): number { return this._id; }
 
   @prop()
-  idForClient: string;
+  idForCustomer: string;
 
-  @prop()
+  @prop({ index: true })
   customerId: number;
 
   @prop()
@@ -35,7 +35,7 @@ export class Order {
   shouldSaveAddress: boolean;
 
   @prop({ default: new Date() })
-  createdDate: Date;
+  createdAt: Date;
 
   @prop()
   isConfirmationEmailSent: boolean;
@@ -66,6 +66,9 @@ export class Order {
 
   @arrayProp({ items: OrderItem })
   items: OrderItem[];
+
+  @prop()
+  state: any;
 
   @prop()
   status: EOrderStatus;

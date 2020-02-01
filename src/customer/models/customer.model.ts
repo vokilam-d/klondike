@@ -46,7 +46,7 @@ export class Customer {
   password: any;
 
   @prop({ default: new Date() })
-  createdDate: Date;
+  createdAt: Date;
 
   @prop({ default: null })
   lastLoggedIn: Date;
