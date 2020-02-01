@@ -36,9 +36,11 @@ export class CustomerService {
     return found;
   }
 
-  async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
+  async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession, migrate?): Promise<Customer> {
     const newCustomer = new this.customerModel(customerDto);
-    newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
+    if (!migrate) {
+      newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
+    }
 
     await newCustomer.save({ session });
 

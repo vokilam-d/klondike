@@ -9,9 +9,11 @@ async function migrate() {
   // await migrate.retrieveMysqlData();
 
   // await migrate.populateCategories();
-  await migrate.populateProductAttributes();
+  // await migrate.populateProductAttributes();
   // await migrate.populateProducts();
+  await migrate.populateCustomers();
 
+  console.log(`.\n.\n***     Finish migrating from Magento MySQL to MongoDB. It took: ${Math.floor(process.uptime())}s.    ***\n.\n.\n.`);
   process.exit();
 }
 

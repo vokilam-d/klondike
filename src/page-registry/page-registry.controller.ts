@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { PageRegistryService } from './page-registry.service';
 
 @Controller('pages')
@@ -8,12 +8,12 @@ export class PageRegistryController {
   }
 
   @Get()
-  findAll(@Req() req) {
+  findAll() {
     return this.pageRegistryService.getAllPages();
   }
 
   @Get(':slug')
-  findPage(@Param('slug') slug: string, @Req() req) {
+  findPage(@Param('slug') slug: string) {
     return this.pageRegistryService.getPageType(slug);
   }
 }

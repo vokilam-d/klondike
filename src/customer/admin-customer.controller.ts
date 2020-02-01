@@ -17,6 +17,7 @@ import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { ResponseDto, ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../shared/dtos/admin/customer.dto';
+import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
 
 
 
@@ -51,8 +52,8 @@ export class AdminCustomerController {
   }
 
   @Post()
-  async addCustomer(@Body() customerDto: AdminAddOrUpdateCustomerDto): Promise<ResponseDto<AdminCustomerDto>> {
-    const created = await this.customerService.createCustomer(customerDto);
+  async addCustomer(@Body() customerDto: AdminAddOrUpdateCustomerDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminCustomerDto>> {
+    const created = await this.customerService.createCustomer(customerDto, undefined, migrate);
 
     return {
       data: plainToClass(AdminCustomerDto, created, { excludeExtraneousValues: true })

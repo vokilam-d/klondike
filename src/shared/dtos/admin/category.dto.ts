@@ -5,6 +5,9 @@ import { transliterate } from '../../helpers/transliterate.function';
 
 export class AdminAddOrUpdateCategoryDto {
   @Expose()
+  id?: number; // todo remove after migrate
+
+  @Expose()
   @IsBoolean()
   isEnabled: boolean;
 

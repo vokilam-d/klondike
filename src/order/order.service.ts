@@ -77,7 +77,7 @@ export class OrderService {
 
       const newOrder = new this.orderModel(orderDto);
       newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
-      newOrder.clientId = addLeadingZeros(newOrder.id);
+      newOrder.idForClient = addLeadingZeros(newOrder.id);
       newOrder.createdDate = new Date();
       newOrder.status = EOrderStatus.NEW;
       newOrder.discountPercent = customer.discountPercent;
@@ -251,7 +251,7 @@ export class OrderService {
   async printOrder(orderId: number) {
     const order = await this.getOrderById(orderId);
     return {
-      fileName: `Заказ №${order.clientId}.pdf`,
+      fileName: `Заказ №${order.idForClient}.pdf`,
       pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON())
     };
   }

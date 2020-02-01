@@ -127,6 +127,11 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsOptional()
+  @IsString()
+  discountLabel: string;
+
+  @Expose()
+  @IsOptional()
   @IsNumber()
   totalCost: number;
 }
@@ -139,5 +144,5 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   @Expose()
   @IsOptional()
   @IsString()
-  clientId: string;
+  idForClient: string;
 }

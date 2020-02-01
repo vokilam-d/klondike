@@ -11,7 +11,7 @@ export class Order {
   get id(): number { return this._id; }
 
   @prop()
-  clientId: string;
+  idForClient: string;
 
   @prop()
   customerId: number;
@@ -87,6 +87,9 @@ export class Order {
 
   @prop()
   discountValue: number;
+
+  @prop()
+  discountLabel: string;
 
   @prop()
   totalCost: number;

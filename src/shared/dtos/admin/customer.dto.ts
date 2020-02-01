@@ -46,6 +46,10 @@ export class AdminShippingAddressDto {
 
 export class AdminAddOrUpdateCustomerDto {
   @Expose()
+  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
+  id: number; // todo remove after migrate
+
+  @Expose()
   @IsString()
   firstName: string;
 

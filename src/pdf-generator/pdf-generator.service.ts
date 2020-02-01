@@ -36,7 +36,7 @@ export class PdfGeneratorService {
 
   private buildTemplateContextForOrder(order: Order): any {
     return {
-      id: order.clientId,
+      id: order.idForClient,
       date: this.convertDate(order.createdDate),
       totalOrderCost: order.totalCost,
       addressName: `${order.address.firstName} ${order.address.lastName}`,

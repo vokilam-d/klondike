@@ -1,1 +1,482 @@
-[{"log_id":1,"customer_id":17,"last_login_at":"2019-03-04 19:42:06","last_logout_at":null},{"log_id":3,"customer_id":18,"last_login_at":"2019-03-04 09:31:36","last_logout_at":"2019-03-04 09:28:42"},{"log_id":54,"customer_id":19,"last_login_at":"2019-03-04 19:28:03","last_logout_at":"2019-03-04 19:27:52"},{"log_id":68,"customer_id":20,"last_login_at":"2019-03-04 19:59:51","last_logout_at":"2019-03-04 19:59:10"},{"log_id":71,"customer_id":21,"last_login_at":"2019-06-07 18:58:38","last_logout_at":"2019-03-04 20:40:33"},{"log_id":1127,"customer_id":22,"last_login_at":"2019-08-24 18:20:29","last_logout_at":null},{"log_id":1205,"customer_id":23,"last_login_at":"2019-06-03 10:29:26","last_logout_at":"2019-06-02 23:35:54"},{"log_id":12160,"customer_id":26,"last_login_at":"2019-04-03 22:00:38","last_logout_at":"2019-04-03 22:01:00"},{"log_id":123981,"customer_id":27,"last_login_at":"2019-06-10 18:28:34","last_logout_at":"2019-05-26 10:35:40"},{"log_id":135123,"customer_id":28,"last_login_at":"2019-05-28 07:51:11","last_logout_at":null},{"log_id":135125,"customer_id":29,"last_login_at":"2019-06-01 16:57:31","last_logout_at":null},{"log_id":135133,"customer_id":30,"last_login_at":"2019-06-03 10:32:12","last_logout_at":null},{"log_id":135134,"customer_id":31,"last_login_at":"2019-06-03 19:24:58","last_logout_at":"2019-06-03 22:03:56"},{"log_id":135138,"customer_id":32,"last_login_at":"2019-06-05 22:24:55","last_logout_at":null},{"log_id":135139,"customer_id":33,"last_login_at":"2019-06-05 22:55:44","last_logout_at":null},{"log_id":135140,"customer_id":34,"last_login_at":"2019-06-05 23:01:59","last_logout_at":null},{"log_id":135141,"customer_id":35,"last_login_at":"2019-06-05 23:04:17","last_logout_at":null},{"log_id":135142,"customer_id":36,"last_login_at":"2019-06-05 23:34:16","last_logout_at":null},{"log_id":135143,"customer_id":37,"last_login_at":"2019-06-05 23:38:47","last_logout_at":null},{"log_id":135144,"customer_id":38,"last_login_at":"2019-06-05 23:45:42","last_logout_at":null},{"log_id":135145,"customer_id":39,"last_login_at":"2019-06-06 07:45:25","last_logout_at":null},{"log_id":135146,"customer_id":40,"last_login_at":"2019-06-07 18:14:23","last_logout_at":null},{"log_id":135147,"customer_id":41,"last_login_at":"2019-06-06 22:36:22","last_logout_at":null},{"log_id":135676,"customer_id":42,"last_login_at":"2019-06-08 14:33:22","last_logout_at":"2019-06-08 14:33:02"},{"log_id":135679,"customer_id":43,"last_login_at":"2019-06-08 14:37:40","last_logout_at":null},{"log_id":135681,"customer_id":44,"last_login_at":"2019-06-08 15:02:50","last_logout_at":null},{"log_id":135682,"customer_id":45,"last_login_at":"2019-06-08 15:10:41","last_logout_at":"2019-06-08 15:11:43"},{"log_id":135684,"customer_id":46,"last_login_at":"2019-06-08 15:12:27","last_logout_at":null},{"log_id":135685,"customer_id":47,"last_login_at":"2019-06-08 15:14:19","last_logout_at":null},{"log_id":135686,"customer_id":48,"last_login_at":"2019-06-08 15:24:55","last_logout_at":null},{"log_id":135688,"customer_id":49,"last_login_at":"2019-06-08 16:04:17","last_logout_at":null},{"log_id":135689,"customer_id":50,"last_login_at":"2019-06-08 19:58:44","last_logout_at":"2019-06-08 20:03:06"},{"log_id":135705,"customer_id":51,"last_login_at":"2019-06-08 20:22:32","last_logout_at":null},{"log_id":135706,"customer_id":52,"last_login_at":"2019-06-08 20:34:06","last_logout_at":"2019-06-08 20:33:51"},{"log_id":135709,"customer_id":53,"last_login_at":"2019-06-08 20:40:05","last_logout_at":null},{"log_id":135710,"customer_id":54,"last_login_at":"2019-06-08 20:48:05","last_logout_at":null},{"log_id":135712,"customer_id":55,"last_login_at":"2019-06-08 20:54:15","last_logout_at":null},{"log_id":135714,"customer_id":56,"last_login_at":"2019-06-08 22:40:18","last_logout_at":"2019-06-09 19:49:47"},{"log_id":135721,"customer_id":57,"last_login_at":"2019-06-09 13:26:51","last_logout_at":null},{"log_id":135722,"customer_id":58,"last_login_at":"2019-06-09 14:05:10","last_logout_at":null},{"log_id":135724,"customer_id":59,"last_login_at":"2019-06-11 17:47:38","last_logout_at":"2019-06-11 17:50:21"},{"log_id":135731,"customer_id":60,"last_login_at":"2019-06-11 17:50:37","last_logout_at":null},{"log_id":135732,"customer_id":61,"last_login_at":"2019-06-11 18:19:42","last_logout_at":null},{"log_id":135733,"customer_id":62,"last_login_at":"2019-06-11 18:48:11","last_logout_at":null},{"log_id":136089,"customer_id":63,"last_login_at":"2019-07-22 13:43:18","last_logout_at":"2019-07-22 13:48:51"},{"log_id":163245,"customer_id":64,"last_login_at":"2019-08-04 11:07:33","last_logout_at":"2019-08-04 20:06:00"},{"log_id":191558,"customer_id":67,"last_login_at":"2019-06-22 18:18:31","last_logout_at":null},{"log_id":191574,"customer_id":68,"last_login_at":"2019-06-22 18:20:09","last_logout_at":null},{"log_id":191599,"customer_id":69,"last_login_at":"2019-06-22 18:25:45","last_logout_at":null},{"log_id":191610,"customer_id":70,"last_login_at":"2019-08-04 12:04:39","last_logout_at":"2019-07-23 20:40:59"},{"log_id":209848,"customer_id":71,"last_login_at":"2019-06-25 21:45:51","last_logout_at":null},{"log_id":212994,"customer_id":73,"last_login_at":"2019-07-22 13:49:25","last_logout_at":null},{"log_id":212995,"customer_id":74,"last_login_at":"2019-07-22 13:51:10","last_logout_at":null},{"log_id":212996,"customer_id":75,"last_login_at":"2019-07-22 13:52:01","last_logout_at":null},{"log_id":212997,"customer_id":76,"last_login_at":"2019-07-22 13:54:23","last_logout_at":"2019-07-22 13:56:12"},{"log_id":212999,"customer_id":77,"last_login_at":"2019-07-22 14:01:37","last_logout_at":"2019-07-22 14:01:29"},{"log_id":213004,"customer_id":78,"last_login_at":"2019-07-22 14:05:08","last_logout_at":null},{"log_id":213005,"customer_id":79,"last_login_at":"2019-08-14 17:47:09","last_logout_at":null},{"log_id":213024,"customer_id":80,"last_login_at":"2019-08-02 19:19:56","last_logout_at":"2019-08-02 19:21:37"},{"log_id":213032,"customer_id":81,"last_login_at":"2019-08-02 19:57:04","last_logout_at":"2019-08-02 21:41:01"},{"log_id":213034,"customer_id":82,"last_login_at":"2019-08-02 21:42:21","last_logout_at":null},{"log_id":213035,"customer_id":83,"last_login_at":"2019-08-02 22:02:47","last_logout_at":null},{"log_id":213036,"customer_id":84,"last_login_at":"2019-08-04 09:14:53","last_logout_at":"2019-08-04 11:07:22"},{"log_id":213044,"customer_id":87,"last_login_at":"2019-08-04 18:00:53","last_logout_at":null},{"log_id":213047,"customer_id":88,"last_login_at":"2019-08-04 20:06:23","last_logout_at":null},{"log_id":213048,"customer_id":89,"last_login_at":"2019-08-04 20:17:34","last_logout_at":"2019-08-04 20:32:16"},{"log_id":213052,"customer_id":90,"last_login_at":"2019-08-04 20:50:55","last_logout_at":"2019-08-04 20:50:25"},{"log_id":213055,"customer_id":91,"last_login_at":"2019-08-04 21:04:02","last_logout_at":"2019-08-04 21:03:44"},{"log_id":213062,"customer_id":92,"last_login_at":"2019-10-31 19:31:51","last_logout_at":"2019-08-16 22:43:55"},{"log_id":213076,"customer_id":96,"last_login_at":"2019-08-06 20:50:52","last_logout_at":"2019-08-06 21:54:18"},{"log_id":215457,"customer_id":110,"last_login_at":"2019-08-17 16:38:19","last_logout_at":null},{"log_id":215461,"customer_id":113,"last_login_at":"2019-08-17 07:57:15","last_logout_at":null},{"log_id":215463,"customer_id":117,"last_login_at":"2019-08-17 20:06:31","last_logout_at":null},{"log_id":215464,"customer_id":118,"last_login_at":"2019-08-18 20:33:14","last_logout_at":null},{"log_id":215465,"customer_id":121,"last_login_at":"2019-08-19 11:41:18","last_logout_at":null},{"log_id":215466,"customer_id":128,"last_login_at":"2019-08-19 15:19:17","last_logout_at":null},{"log_id":215467,"customer_id":133,"last_login_at":"2019-08-24 12:45:48","last_logout_at":null},{"log_id":215468,"customer_id":136,"last_login_at":"2019-08-21 14:31:09","last_logout_at":null},{"log_id":216791,"customer_id":138,"last_login_at":"2019-08-22 07:26:53","last_logout_at":null},{"log_id":217939,"customer_id":143,"last_login_at":"2019-08-22 19:29:30","last_logout_at":null}]
+[
+  {
+    "log_id": 1,
+    "customer_id": 17,
+    "last_login_at": "2019-03-04 19:42:06",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 3,
+    "customer_id": 18,
+    "last_login_at": "2019-03-04 09:31:36",
+    "last_logout_at": "2019-03-04 09:28:42"
+  },
+  {
+    "log_id": 54,
+    "customer_id": 19,
+    "last_login_at": "2019-03-04 19:28:03",
+    "last_logout_at": "2019-03-04 19:27:52"
+  },
+  {
+    "log_id": 68,
+    "customer_id": 20,
+    "last_login_at": "2019-03-04 19:59:51",
+    "last_logout_at": "2019-03-04 19:59:10"
+  },
+  {
+    "log_id": 71,
+    "customer_id": 21,
+    "last_login_at": "2019-06-07 18:58:38",
+    "last_logout_at": "2019-03-04 20:40:33"
+  },
+  {
+    "log_id": 1127,
+    "customer_id": 22,
+    "last_login_at": "2019-08-24 18:20:29",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 1205,
+    "customer_id": 23,
+    "last_login_at": "2019-06-03 10:29:26",
+    "last_logout_at": "2019-06-02 23:35:54"
+  },
+  {
+    "log_id": 12160,
+    "customer_id": 26,
+    "last_login_at": "2019-04-03 22:00:38",
+    "last_logout_at": "2019-04-03 22:01:00"
+  },
+  {
+    "log_id": 123981,
+    "customer_id": 27,
+    "last_login_at": "2019-06-10 18:28:34",
+    "last_logout_at": "2019-05-26 10:35:40"
+  },
+  {
+    "log_id": 135123,
+    "customer_id": 28,
+    "last_login_at": "2019-05-28 07:51:11",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135125,
+    "customer_id": 29,
+    "last_login_at": "2019-06-01 16:57:31",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135133,
+    "customer_id": 30,
+    "last_login_at": "2019-06-03 10:32:12",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135134,
+    "customer_id": 31,
+    "last_login_at": "2019-06-03 19:24:58",
+    "last_logout_at": "2019-06-03 22:03:56"
+  },
+  {
+    "log_id": 135138,
+    "customer_id": 32,
+    "last_login_at": "2019-06-05 22:24:55",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135139,
+    "customer_id": 33,
+    "last_login_at": "2019-06-05 22:55:44",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135140,
+    "customer_id": 34,
+    "last_login_at": "2019-06-05 23:01:59",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135141,
+    "customer_id": 35,
+    "last_login_at": "2019-06-05 23:04:17",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135142,
+    "customer_id": 36,
+    "last_login_at": "2019-06-05 23:34:16",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135143,
+    "customer_id": 37,
+    "last_login_at": "2019-06-05 23:38:47",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135144,
+    "customer_id": 38,
+    "last_login_at": "2019-06-05 23:45:42",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135145,
+    "customer_id": 39,
+    "last_login_at": "2019-06-06 07:45:25",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135146,
+    "customer_id": 40,
+    "last_login_at": "2019-06-07 18:14:23",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135147,
+    "customer_id": 41,
+    "last_login_at": "2019-06-06 22:36:22",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135676,
+    "customer_id": 42,
+    "last_login_at": "2019-06-08 14:33:22",
+    "last_logout_at": "2019-06-08 14:33:02"
+  },
+  {
+    "log_id": 135679,
+    "customer_id": 43,
+    "last_login_at": "2019-06-08 14:37:40",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135681,
+    "customer_id": 44,
+    "last_login_at": "2019-06-08 15:02:50",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135682,
+    "customer_id": 45,
+    "last_login_at": "2019-06-08 15:10:41",
+    "last_logout_at": "2019-06-08 15:11:43"
+  },
+  {
+    "log_id": 135684,
+    "customer_id": 46,
+    "last_login_at": "2019-06-08 15:12:27",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135685,
+    "customer_id": 47,
+    "last_login_at": "2019-06-08 15:14:19",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135686,
+    "customer_id": 48,
+    "last_login_at": "2019-06-08 15:24:55",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135688,
+    "customer_id": 49,
+    "last_login_at": "2019-06-08 16:04:17",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135689,
+    "customer_id": 50,
+    "last_login_at": "2019-06-08 19:58:44",
+    "last_logout_at": "2019-06-08 20:03:06"
+  },
+  {
+    "log_id": 135705,
+    "customer_id": 51,
+    "last_login_at": "2019-06-08 20:22:32",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135706,
+    "customer_id": 52,
+    "last_login_at": "2019-06-08 20:34:06",
+    "last_logout_at": "2019-06-08 20:33:51"
+  },
+  {
+    "log_id": 135709,
+    "customer_id": 53,
+    "last_login_at": "2019-06-08 20:40:05",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135710,
+    "customer_id": 54,
+    "last_login_at": "2019-06-08 20:48:05",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135712,
+    "customer_id": 55,
+    "last_login_at": "2019-06-08 20:54:15",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135714,
+    "customer_id": 56,
+    "last_login_at": "2019-06-08 22:40:18",
+    "last_logout_at": "2019-06-09 19:49:47"
+  },
+  {
+    "log_id": 135721,
+    "customer_id": 57,
+    "last_login_at": "2019-06-09 13:26:51",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135722,
+    "customer_id": 58,
+    "last_login_at": "2019-06-09 14:05:10",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135724,
+    "customer_id": 59,
+    "last_login_at": "2019-06-11 17:47:38",
+    "last_logout_at": "2019-06-11 17:50:21"
+  },
+  {
+    "log_id": 135731,
+    "customer_id": 60,
+    "last_login_at": "2019-06-11 17:50:37",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135732,
+    "customer_id": 61,
+    "last_login_at": "2019-06-11 18:19:42",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 135733,
+    "customer_id": 62,
+    "last_login_at": "2019-06-11 18:48:11",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 136089,
+    "customer_id": 63,
+    "last_login_at": "2019-07-22 13:43:18",
+    "last_logout_at": "2019-07-22 13:48:51"
+  },
+  {
+    "log_id": 163245,
+    "customer_id": 64,
+    "last_login_at": "2019-08-04 11:07:33",
+    "last_logout_at": "2019-08-04 20:06:00"
+  },
+  {
+    "log_id": 191558,
+    "customer_id": 67,
+    "last_login_at": "2019-06-22 18:18:31",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 191574,
+    "customer_id": 68,
+    "last_login_at": "2019-06-22 18:20:09",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 191599,
+    "customer_id": 69,
+    "last_login_at": "2019-06-22 18:25:45",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 191610,
+    "customer_id": 70,
+    "last_login_at": "2019-08-04 12:04:39",
+    "last_logout_at": "2019-07-23 20:40:59"
+  },
+  {
+    "log_id": 209848,
+    "customer_id": 71,
+    "last_login_at": "2019-06-25 21:45:51",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 212994,
+    "customer_id": 73,
+    "last_login_at": "2019-07-22 13:49:25",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 212995,
+    "customer_id": 74,
+    "last_login_at": "2019-07-22 13:51:10",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 212996,
+    "customer_id": 75,
+    "last_login_at": "2019-07-22 13:52:01",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 212997,
+    "customer_id": 76,
+    "last_login_at": "2019-07-22 13:54:23",
+    "last_logout_at": "2019-07-22 13:56:12"
+  },
+  {
+    "log_id": 212999,
+    "customer_id": 77,
+    "last_login_at": "2019-07-22 14:01:37",
+    "last_logout_at": "2019-07-22 14:01:29"
+  },
+  {
+    "log_id": 213004,
+    "customer_id": 78,
+    "last_login_at": "2019-07-22 14:05:08",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 213005,
+    "customer_id": 79,
+    "last_login_at": "2019-08-14 17:47:09",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 213024,
+    "customer_id": 80,
+    "last_login_at": "2019-08-02 19:19:56",
+    "last_logout_at": "2019-08-02 19:21:37"
+  },
+  {
+    "log_id": 213032,
+    "customer_id": 81,
+    "last_login_at": "2019-08-02 19:57:04",
+    "last_logout_at": "2019-08-02 21:41:01"
+  },
+  {
+    "log_id": 213034,
+    "customer_id": 82,
+    "last_login_at": "2019-08-02 21:42:21",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 213035,
+    "customer_id": 83,
+    "last_login_at": "2019-08-02 22:02:47",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 213036,
+    "customer_id": 84,
+    "last_login_at": "2019-08-04 09:14:53",
+    "last_logout_at": "2019-08-04 11:07:22"
+  },
+  {
+    "log_id": 213044,
+    "customer_id": 87,
+    "last_login_at": "2019-08-04 18:00:53",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 213047,
+    "customer_id": 88,
+    "last_login_at": "2019-08-04 20:06:23",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 213048,
+    "customer_id": 89,
+    "last_login_at": "2019-08-04 20:17:34",
+    "last_logout_at": "2019-08-04 20:32:16"
+  },
+  {
+    "log_id": 213052,
+    "customer_id": 90,
+    "last_login_at": "2019-08-04 20:50:55",
+    "last_logout_at": "2019-08-04 20:50:25"
+  },
+  {
+    "log_id": 213055,
+    "customer_id": 91,
+    "last_login_at": "2019-08-04 21:04:02",
+    "last_logout_at": "2019-08-04 21:03:44"
+  },
+  {
+    "log_id": 213062,
+    "customer_id": 92,
+    "last_login_at": "2019-10-31 19:31:51",
+    "last_logout_at": "2019-08-16 22:43:55"
+  },
+  {
+    "log_id": 213076,
+    "customer_id": 96,
+    "last_login_at": "2019-08-06 20:50:52",
+    "last_logout_at": "2019-08-06 21:54:18"
+  },
+  {
+    "log_id": 215457,
+    "customer_id": 110,
+    "last_login_at": "2019-08-17 16:38:19",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 215461,
+    "customer_id": 113,
+    "last_login_at": "2019-08-17 07:57:15",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 215463,
+    "customer_id": 117,
+    "last_login_at": "2019-08-17 20:06:31",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 215464,
+    "customer_id": 118,
+    "last_login_at": "2019-08-18 20:33:14",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 215465,
+    "customer_id": 121,
+    "last_login_at": "2019-08-19 11:41:18",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 215466,
+    "customer_id": 128,
+    "last_login_at": "2019-08-19 15:19:17",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 215467,
+    "customer_id": 133,
+    "last_login_at": "2019-08-24 12:45:48",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 215468,
+    "customer_id": 136,
+    "last_login_at": "2019-08-21 14:31:09",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 216791,
+    "customer_id": 138,
+    "last_login_at": "2019-08-22 07:26:53",
+    "last_logout_at": null
+  },
+  {
+    "log_id": 217939,
+    "customer_id": 143,
+    "last_login_at": "2019-08-22 19:29:30",
+    "last_logout_at": null
+  }
+]

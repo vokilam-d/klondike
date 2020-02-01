@@ -1,1 +1,38 @@
-[{"value_id":1,"attribute_id":226,"entity_id":85,"value":"тестовый коммент о покупателе"},{"value_id":2,"attribute_id":226,"entity_id":92,"value":"коммент про покупателя"},{"value_id":5,"attribute_id":226,"entity_id":100,"value":"оплатила way for pay"},{"value_id":8,"attribute_id":226,"entity_id":114,"value":"самовывоз, неуравновешенный"},{"value_id":9,"attribute_id":226,"entity_id":141,"value":"2,5"},{"value_id":10,"attribute_id":226,"entity_id":145,"value":"№3"}]
+[
+  {
+    "value_id": 1,
+    "attribute_id": 226,
+    "entity_id": 85,
+    "value": "тестовый коммент о покупателе"
+  },
+  {
+    "value_id": 2,
+    "attribute_id": 226,
+    "entity_id": 92,
+    "value": "коммент про покупателя"
+  },
+  {
+    "value_id": 5,
+    "attribute_id": 226,
+    "entity_id": 100,
+    "value": "оплатила way for pay"
+  },
+  {
+    "value_id": 8,
+    "attribute_id": 226,
+    "entity_id": 114,
+    "value": "самовывоз, неуравновешенный"
+  },
+  {
+    "value_id": 9,
+    "attribute_id": 226,
+    "entity_id": 141,
+    "value": "2,5"
+  },
+  {
+    "value_id": 10,
+    "attribute_id": 226,
+    "entity_id": 145,
+    "value": "№3"
+  }
+]
