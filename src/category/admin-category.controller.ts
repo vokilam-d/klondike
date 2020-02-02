@@ -67,4 +67,9 @@ export class AdminCategoryController {
       data: plainToClass(AdminResponseCategoryDto, deleted, { excludeExtraneousValues: true })
     };
   }
+
+  @Post('counter') // todo remove this and all counter updates
+  updateCounter() {
+    return this.categoryService.updateCounter();
+  }
 }

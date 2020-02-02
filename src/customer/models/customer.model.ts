@@ -36,7 +36,7 @@ export class Customer {
   @prop({ default: '' })
   lastName: string;
 
-  @prop({ index: true, default: '' })
+  @prop({ index: true, unique: true, default: '' })
   email: string;
 
   @prop({ default: '' })

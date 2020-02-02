@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from './models/product.model';
-import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
+import { ReturnModelType } from '@typegoose/typegoose';
 import { InventoryService } from '../inventory/inventory.service';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { InjectModel } from '@nestjs/mongoose';
@@ -323,5 +323,10 @@ export class ProductService {
 
   async countProducts(): Promise<number> {
     return this.productModel.estimatedDocumentCount().exec();
+  }
+
+  async updateCounter() {
+    const lastProduct = await this.productModel.findOne().sort('-_id').exec();
+    return this.counterService.setCounter(Product.collectionName, lastProduct.id);
   }
 }

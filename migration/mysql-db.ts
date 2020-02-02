@@ -11,14 +11,21 @@ export class Database {
   private conn: Connection;
 
   constructor() {
-    this.conn = createConnection(`mysql://klondike_stg_u:klondike_stg@173.249.23.253:3306/klondike_stg_base?connectionLimit=10&dateStrings=true`);
-    this.conn.connect((err) => {
-      if (err) {
-        process.exit();
-      } else {
-        console.log('Mysql connect success!');
-      }
-    });
+    this.conn = createConnection(`mysql://klondike_user:Phoh1ai1010@173.249.23.253:3306/klondike_base?connectionLimit=10&dateStrings=true`);
+  }
+
+  public async connect() {
+    return new Promise((resolve, reject) => {
+      this.conn.connect((err) => {
+        if (err) {
+          process.exit();
+          reject();
+        } else {
+          console.log('Mysql connect success!');
+          resolve();
+        }
+      });
+    })
   }
 
   /**

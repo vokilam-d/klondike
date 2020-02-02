@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
-import { ReturnModelType, DocumentType } from '@typegoose/typegoose';
+import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { AdminAddOrUpdateOrderDto } from '../shared/dtos/admin/order.dto';
 import { CounterService } from '../shared/counter/counter.service';
@@ -48,36 +48,35 @@ export class OrderService {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
+      let customer: Customer;
+
+      if (orderDto.customerId) {
+        if (orderDto.shouldSaveAddress) {
+          customer = await this.customerService.addCustomerAddress(orderDto.customerId, orderDto.address, session);
+        } else {
+          customer = await this.customerService.getCustomerById(orderDto.customerId);
+        }
+
+      } else {
+        if (!orderDto.customerFirstName) { orderDto.customerFirstName = orderDto.address.firstName; }
+        if (!orderDto.customerLastName) { orderDto.customerLastName = orderDto.address.lastName; }
+        if (!orderDto.customerPhoneNumber) { orderDto.customerPhoneNumber = orderDto.address.phoneNumber; }
+
+        const customerDto = new AdminAddOrUpdateCustomerDto();
+        customerDto.firstName = orderDto.customerFirstName;
+        customerDto.lastName = orderDto.customerLastName;
+        customerDto.email = orderDto.customerEmail;
+        customerDto.phoneNumber = orderDto.customerPhoneNumber;
+        customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
+
+        customer = await this.customerService.createCustomer(customerDto, session, migrate);
+
+        orderDto.customerId = customer.id;
+      }
 
       const newOrder = new this.orderModel(orderDto);
 
       if (!migrate) {
-        let customer: Customer;
-
-        if (orderDto.customerId) {
-          if (orderDto.shouldSaveAddress) {
-            customer = await this.customerService.addCustomerAddress(orderDto.customerId, orderDto.address, session);
-          } else {
-            customer = await this.customerService.getCustomerById(orderDto.customerId);
-          }
-
-        } else {
-          if (!orderDto.customerFirstName) { orderDto.customerFirstName = orderDto.address.firstName; }
-          if (!orderDto.customerLastName) { orderDto.customerLastName = orderDto.address.lastName; }
-          if (!orderDto.customerPhoneNumber) { orderDto.customerPhoneNumber = orderDto.address.phoneNumber; }
-
-          const customerDto = new AdminAddOrUpdateCustomerDto();
-          customerDto.firstName = orderDto.customerFirstName;
-          customerDto.lastName = orderDto.customerLastName;
-          customerDto.email = orderDto.customerEmail;
-          customerDto.phoneNumber = orderDto.customerPhoneNumber;
-          customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
-
-          customer = await this.customerService.createCustomer(customerDto, session);
-
-          orderDto.customerId = customer.id;
-        }
-
         newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
         newOrder.idForCustomer = addLeadingZeros(newOrder.id);
         newOrder.createdAt = new Date();
@@ -269,5 +268,10 @@ export class OrderService {
       order.totalCost += item.totalCost;
       order.discountValue += item.discountValue;
     }
+  }
+
+  async updateCounter() {
+    const lastOrder = await this.orderModel.findOne().sort('-_id').exec();
+    return this.counterService.setCounter(Order.collectionName, lastOrder.id);
   }
 }

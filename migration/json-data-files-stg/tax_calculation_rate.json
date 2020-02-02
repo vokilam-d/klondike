@@ -1,0 +1,1 @@
+[{"tax_calculation_rate_id":1,"tax_country_id":"US","tax_region_id":12,"tax_postcode":"*","code":"US-CA-*-Rate 1","rate":8.25,"zip_is_range":null,"zip_from":null,"zip_to":null},{"tax_calculation_rate_id":2,"tax_country_id":"US","tax_region_id":43,"tax_postcode":"*","code":"US-NY-*-Rate 1","rate":8.375,"zip_is_range":null,"zip_from":null,"zip_to":null}]

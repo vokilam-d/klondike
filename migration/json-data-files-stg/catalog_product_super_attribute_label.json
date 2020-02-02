@@ -1,0 +1,37 @@
+[
+  {
+    "value_id": 85,
+    "product_super_attribute_id": 85,
+    "store_id": 0,
+    "use_default": 0,
+    "value": "Объём"
+  },
+  {
+    "value_id": 88,
+    "product_super_attribute_id": 88,
+    "store_id": 0,
+    "use_default": 0,
+    "value": "Количество листов"
+  },
+  {
+    "value_id": 89,
+    "product_super_attribute_id": 89,
+    "store_id": 0,
+    "use_default": 0,
+    "value": "Цвет поталь"
+  },
+  {
+    "value_id": 92,
+    "product_super_attribute_id": 92,
+    "store_id": 0,
+    "use_default": 0,
+    "value": "Цвет поталь"
+  },
+  {
+    "value_id": 93,
+    "product_super_attribute_id": 93,
+    "store_id": 0,
+    "use_default": 0,
+    "value": "Длина"
+  }
+]

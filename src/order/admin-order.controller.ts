@@ -77,6 +77,11 @@ export class AdminOrderController {
     };
   }
 
+  @Post('counter') // todo remove this and all counter updates
+  updateCounter() {
+    return this.orderService.updateCounter();
+  }
+
   @Post(':id/actions/:actionName')
   async performAction(@Param() params: OrderActionDto): Promise<ResponseDto<AdminOrderDto>> {
     let order;

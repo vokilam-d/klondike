@@ -146,4 +146,9 @@ export class CategoryService {
   private deleteCategoryPageRegistry(slug: string) {
     return this.pageRegistryService.deletePageRegistry(slug, null);
   }
+
+  async updateCounter() {
+    const lastCategory = await this.categoryModel.findOne().sort('-_id').exec();
+    return this.counterService.setCounter(Category.collectionName, lastCategory.id);
+  }
 }

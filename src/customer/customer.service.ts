@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer } from './models/customer.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
 import { AdminAddOrUpdateCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
-import { ClientSession } from "mongoose";
+import { ClientSession } from 'mongoose';
 import { Order } from '../order/models/order.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 
@@ -37,8 +37,18 @@ export class CustomerService {
   }
 
   async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession, migrate?): Promise<Customer> {
+    const query: Partial<Customer> = { email: customerDto.email };
+    const foundByEmail = await this.customerModel.findOne(query).exec();
+    if (foundByEmail) {
+      if (migrate) { // todo just throw after migrate
+        return foundByEmail;
+      } else {
+        throw new ConflictException(`Customer with email '${customerDto.email}' already exists`);
+      }
+    }
+
     const newCustomer = new this.customerModel(customerDto);
-    if (!migrate) {
+    if (!migrate || (migrate && !customerDto.id)) {
       newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
     }
 
@@ -106,5 +116,10 @@ export class CustomerService {
     ).session(session).exec();
 
     return customer;
+  }
+
+  async updateCounter() {
+    const lastCustomer = await this.customerModel.findOne().sort('-_id').exec();
+    return this.counterService.setCounter(Customer.collectionName, lastCustomer.id);
   }
 }

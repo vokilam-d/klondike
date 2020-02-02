@@ -77,4 +77,9 @@ export class AdminCustomerController {
       data: plainToClass(AdminCustomerDto, deleted, { excludeExtraneousValues: true })
     };
   }
+
+  @Post('counter') // todo remove this and all counter updates
+  updateCounter() {
+    return this.customerService.updateCounter();
+  }
 }

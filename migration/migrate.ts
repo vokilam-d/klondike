@@ -67,6 +67,35 @@ export class Migrate {
     });
   }
 
+  public setModels() {
+    this.models = [
+      'amasty_order_attribute_entity',
+      'amasty_order_attribute_entity_int',
+      'amasty_order_attribute_grid_flat',
+      'catalog_category_flat_store_1',
+      'catalog_product_flat_1',
+      'cataloginventory_stock_item',
+      'catalog_category_product',
+      'catalog_product_entity_varchar',
+      'catalog_product_entity_media_gallery_value_to_entity',
+      'catalog_product_entity_media_gallery_value',
+      'catalog_product_entity_media_gallery',
+      'customer_entity',
+      'customer_entity_varchar',
+      'customer_address_entity',
+      'eav_attribute',
+      'eav_attribute_option',
+      'eav_attribute_option_value',
+      'review',
+      'review_detail',
+      'sales_order',
+      'sales_order_address',
+      'sales_order_payment',
+      'sales_shipment_track',
+      'sales_order_item'
+    ]
+  }
+
   /**
    * Retrieve data for each model from MySQL, and generate corresponding data file in json.
    *
@@ -120,6 +149,7 @@ export class Migrate {
 
       try {
         await axios.post(`http://localhost:3500/api/v1/admin/categories`, dto, { params: { migrate: true } });
+        console.log(`[Categories]: Migrated '${dto.name}' with id '${dto.id}'`);
         count++;
       } catch (ex) {
         console.error(`[Categories]: '${dto.id}' '${dto.name}' error: `, ex.response.status);
@@ -170,13 +200,11 @@ export class Migrate {
         dto.values.push(valueDto);
       }
 
-      if (!dto.values.length) {
-        console.log(`[ProductAttributes]: Skip empty attribute: '${dto.id}'`);
-        continue;
-      }
+      if (!dto.values.length) { continue; }
 
       try {
         await axios.post(`http://localhost:3500/api/v1/admin/attributes`, dto);
+        console.log(`[ProductAttributes]: Migrated '${dto.label}' with id '${dto.id}'`);
         count++;
       } catch (ex) {
         console.error(`[ProductAttributes]: '${dto.id}' error: `, ex.response.status);
@@ -212,8 +240,10 @@ export class Migrate {
     const savedAttributes: AdminAttributeDto[] = attrsResponse.data.data;
 
 
-    for (const product of products) {
-      if (product.parent_id < 2) { continue; }
+    // for (const product of products) {
+    const addProduct = async (product) => {
+      // if (product.parent_id < 2) { continue; }
+      if (product.parent_id < 2) { return; }
 
       const dto = {} as AdminProductDto;
       dto.id = product.entity_id;
@@ -275,7 +305,8 @@ export class Migrate {
       variantDto.medias = [];
       for (let tmpMedia of tmpMedias) {
         try {
-          const imgResponse = await axios.get(`http://173.249.23.253:5200/media/catalog/product${tmpMedia.url}`, { responseType: 'arraybuffer' });
+          // const imgResponse = await axios.get(`http://173.249.23.253:5200/media/catalog/product${tmpMedia.url}`, { responseType: 'arraybuffer' });
+          const imgResponse = await axios.get(`https://klondike.com.ua/media/catalog/product${tmpMedia.url}`, { responseType: 'arraybuffer' });
           const form = new FormData();
           form.append('file', imgResponse.data, { filename: path.parse(tmpMedia.url).base });
 
@@ -328,6 +359,10 @@ export class Migrate {
         console.log(dto.variants[0].medias);
         console.log(dto.variants[0].metaTags);
       }
+    };
+
+    for (const batch of this.getBatches(products)) {
+      await Promise.all(batch.map(product => addProduct(product)));
     }
 
     console.log(`.\n.\n***     Finish migrating PRODUCTS     ***\nCount: ${count} \n.\n.`);
@@ -440,7 +475,8 @@ export class Migrate {
     const magOrderItems: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'sales_order_item.json', 'utf-8')));
     let count: number = 0;
 
-    for (const order of orders) {
+    // for (const order of orders) {
+    const addOrder = async (order) => {
       const dto = {} as AdminAddOrUpdateOrderDto;
       dto.id = order.entity_id;
       dto.idForCustomer = order.increment_id;
@@ -455,7 +491,9 @@ export class Migrate {
       dto.address.lastName = foundAddress.lastname;
       dto.address.phoneNumber = foundAddress.telephone;
       dto.address.city = foundAddress.city;
-      dto.address.novaposhtaOffice = foundAddress.street;
+      dto.address.novaposhtaOffice = '';
+      if (foundAddress.postcode !== '-') { dto.address.novaposhtaOffice = foundAddress.postcode; }
+      if (foundAddress.street !== '-') { dto.address.novaposhtaOffice = foundAddress.street; }
 
       dto.shouldSaveAddress = false;
       dto.createdAt = order.created_at;
@@ -528,7 +566,8 @@ export class Migrate {
           }
         }
       }
-      if (!dto.items.length) { continue; }
+
+      if (!dto.items.length) { return; }
 
       dto.status = order.status;
       dto.state = order.state;
@@ -560,8 +599,17 @@ export class Migrate {
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
       }
+    };
+
+    for (const batches of this.getBatches(orders, 2)) {
+      await Promise.all(batches.map(order => addOrder(order)));
     }
+
     console.log(`.\n.\n***     Finish migrating Orders     ***\nCount: ${count} \n.\n.`);
+  }
+
+  async updateCounter(entity: string) {
+    await axios.post(`http://localhost:3500/api/v1/admin/${entity}/counter`);
   }
 
 
@@ -578,6 +626,22 @@ export class Migrate {
 
 
 
+  private getBatches<T = any>(arr: T[], size: number = 2): T[][] {
+    const result = [];
+    for (let i = 0; i < arr.length; i++) {
+      if (i % size !== 0) {
+        continue;
+      }
+
+      const resultItem = [];
+      for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
+        resultItem.push(arr[i + k]);
+      }
+      result.push(resultItem);
+    }
+
+    return result;
+  }
 
   private buildErrorMessage(response: any): string {
     const errors: string[] = [];

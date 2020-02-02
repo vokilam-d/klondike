@@ -91,4 +91,9 @@ export class AdminProductController {
 
     reply.status(201).send(media);
   }
+
+  @Post('counter') // todo remove this and all counter updates
+  updateCounter() {
+    return this.productsService.updateCounter();
+  }
 }
