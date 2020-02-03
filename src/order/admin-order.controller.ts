@@ -9,7 +9,6 @@ import { EOrderAction } from '../shared/enums/order-action.enum';
 import { AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
-import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/orders')

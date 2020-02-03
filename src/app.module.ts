@@ -14,6 +14,7 @@ import { OrderModule } from './order/order.module';
 import { ShippingMethodModule } from './shipping-method/shipping-method.module';
 import { PaymentMethodModule } from './payment-method/payment-method.module';
 import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
+import { StoreReviewModule } from './store-review/store-review.module';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
     OrderModule,
     ShippingMethodModule,
     PaymentMethodModule,
-    PdfGeneratorModule
+    PdfGeneratorModule,
+    StoreReviewModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []

@@ -7,6 +7,7 @@ import { FastifyAdapter } from '@nestjs/platform-fastify';
 import * as fastifyMultipart from 'fastify-multipart';
 import * as fastifyStatic from 'fastify-static';
 import { join } from 'path';
+import * as requestIp from 'request-ip';
 
 declare const module: any;
 
@@ -24,6 +25,7 @@ async function bootstrap() {
   app.enableCors();
   app.use(helmet());
   app.use(compression());
+  app.use(requestIp.mw());
 
   await app.listen(AppModule.port, () => console.log(`It's rolling on ${AppModule.port}!`));
 
