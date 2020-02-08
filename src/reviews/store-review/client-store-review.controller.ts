@@ -1,7 +1,7 @@
 import { Controller, Headers, Param, Post } from '@nestjs/common';
 import { StoreReviewService } from './store-review.service';
-import { IpAddress } from '../shared/decorators/ip-address.decorator';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { IpAddress } from '../../shared/decorators/ip-address.decorator';
+import { ResponseDto } from '../../shared/dtos/admin/response.dto';
 
 @Controller('store-review')
 export class ClientStoreReviewController {
@@ -11,7 +11,7 @@ export class ClientStoreReviewController {
 
   @Post(':id/vote')
   async createVote(@Param('id') reviewId: string, @IpAddress() ipAddress: string | null, @Headers() headers): Promise<ResponseDto<boolean>> {
-    await this.storeReviewService.createVote(parseInt(reviewId), ipAddress, headers['userId'], headers['customerId']);
+    await this.storeReviewService.createVote(parseInt(reviewId), ipAddress, headers.userId, headers.customerId);
 
     return {
       data: true

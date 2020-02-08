@@ -21,8 +21,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
-import { ResponseDto, ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
-
+import { ResponseDto } from '../shared/dtos/admin/response.dto';
 
 
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -34,7 +33,7 @@ export class AdminProductController {
   }
 
   @Get()
-  async getProducts(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponsePaginationDto<AdminProductDto[]>> {
+  async getProducts(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponseDto<AdminProductDto[]>> {
     const [ results, itemsTotal ] = await Promise.all([this.productsService.getAllProductsWithQty(sortingPaging), this.productsService.countProducts()]);
     const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
 
@@ -92,7 +91,7 @@ export class AdminProductController {
     reply.status(201).send(media);
   }
 
-  @Post('counter') // todo remove this and all counter updates
+  @Post('counter') // todo remove this and all counter updates after migrate
   updateCounter() {
     return this.productsService.updateCounter();
   }

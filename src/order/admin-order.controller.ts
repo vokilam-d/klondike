@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Res, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
-import { ResponseDto, ResponsePaginationDto } from '../shared/dtos/admin/response.dto';
+import { ResponseDto } from '../shared/dtos/admin/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../shared/dtos/admin/order-action.dto';
@@ -18,7 +18,7 @@ export class AdminOrderController {
   }
 
   @Get()
-  async getAllOrders(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponsePaginationDto<AdminOrderDto[]>> {
+  async getAllOrders(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponseDto<AdminOrderDto[]>> {
     const [ results, itemsTotal ] = await Promise.all([this.orderService.getAllOrders(sortingPaging), this.orderService.countOrders()]);
     const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
 

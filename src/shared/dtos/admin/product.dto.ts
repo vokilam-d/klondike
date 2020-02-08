@@ -6,7 +6,7 @@ import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in
 
 export class AdminAddOrUpdateProductDto {
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
+  @Transform(((value, obj) => value ? value : obj._id))
   id: number; // todo remove after migrate
 
   @Expose()
@@ -56,6 +56,6 @@ export class AdminProductDto extends AdminAddOrUpdateProductDto {
   _id: number;
 
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
+  @Transform(((value, obj) => value ? value : obj._id))
   id: number;
 }

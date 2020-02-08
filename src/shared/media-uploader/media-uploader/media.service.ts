@@ -10,6 +10,7 @@ import { Media } from '../../models/media.model';
 import { readableBytes } from '../../helpers/readable-bytes.function';
 import { EMediaVariant } from '../../enums/media-variant.enum';
 import { MediaDto } from 'shared/dtos/admin/media.dto';
+import { Product } from '../../../product/models/product.model';
 
 const pipeline = promisify(pipelineImport);
 
@@ -88,7 +89,24 @@ export class MediaService {
     });
   }
 
-  async processAndSaveTmp(mediaTypeDirName: string, mediaDto: MediaDto): Promise<Media> {
+  async checkTmpAndSaveMedias(mediaDtos: MediaDto[], mediaTypeDirName: string): Promise<{ tmpMedias: Media[], savedMedias: Media[] }> {
+    const tmpMedias = [];
+    const savedMedias = [];
+
+    for (let media of mediaDtos) {
+      const isTmp = media.variantsUrls.original.includes('/tmp/');
+      if (isTmp) {
+        tmpMedias.push(media);
+        savedMedias.push(await this.processAndSaveTmp(media, mediaTypeDirName));
+      } else {
+        savedMedias.push(media);
+      }
+    }
+
+    return { tmpMedias, savedMedias };
+  }
+
+  private async processAndSaveTmp(mediaDto: MediaDto, mediaTypeDirName: string): Promise<Media> {
     const media = new Media();
     media.altText = mediaDto.altText;
     media.isHidden = mediaDto.isHidden;
@@ -118,29 +136,41 @@ export class MediaService {
       media.variantsUrls[option.variant] = `/${pathToFile}`;
     }
 
-
-
     this.logger.log(`Saved image '${fileNameToSave}' in directory '${dir}'.`);
 
     return media;
   }
 
-  async deleteTmp(mediaDto: MediaDto, mediaTypeDirName: string) {
-    const { base: tmpFileName } = parse(mediaDto.variantsUrls.original);
-    const pathToTmpFile = join(UPLOAD_DIR_NAME, TMP_DIR_NAME, mediaTypeDirName, tmpFileName);
+  async deleteTmpMedias(mediaDtos: MediaDto[], mediaTypeDirName: string) {
+    for (const mediaDto of mediaDtos) {
+      const { base: tmpFileName } = parse(mediaDto.variantsUrls.original);
+      const pathToTmpFile = join(UPLOAD_DIR_NAME, TMP_DIR_NAME, mediaTypeDirName, tmpFileName);
 
-    await fs.promises.unlink(pathToTmpFile);
+      try {
+        await fs.promises.unlink(pathToTmpFile);
+      } catch (e) {
+        this.logger.error(`Could not delete tmp media:`, pathToTmpFile);
+        this.logger.error(e);
+      }
+    }
   }
 
-  async delete(media: Media, mediaTypeDirName: string) {
-    for (const url of Object.values(media.variantsUrls)) {
-      const { base: fileName } = parse(url);
-      const pathToFile = join(UPLOAD_DIR_NAME, mediaTypeDirName, fileName);
+  async deleteSavedMedias(medias: Media[], mediaTypeDirName: string) {
+    for (const media of medias) {
+      for (const url of Object.values(media.variantsUrls)) {
+        const { base: fileName } = parse(url);
+        const pathToFile = join(UPLOAD_DIR_NAME, mediaTypeDirName, fileName);
 
-      await fs.promises.unlink(pathToFile);
+        try {
+          await fs.promises.unlink(pathToFile);
+        } catch (e) {
+          this.logger.error(`Could not delete saved media:`, pathToFile);
+          this.logger.error(e);
+        }
+      }
+
+      this.logger.log(`Deleted image '${media.variantsUrls.original}'.`);
     }
-
-    this.logger.log(`Deleted image '${media.variantsUrls.original}'.`);
   }
 
   private async getUniqueFileName(dir: string, fileName: string, iteration: number = 0): Promise<string> {

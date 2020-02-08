@@ -124,7 +124,7 @@ export class ProductService {
 
       for (const dtoVariant of productDto.variants) {
         const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
-        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.checkTmpAndSaveMedias(dtoVariant.medias);
+        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(dtoVariant.medias, Product.collectionName);
 
         savedVariant.medias = savedMedias;
         tmpMedias.push(...checkedTmpMedias);
@@ -136,7 +136,7 @@ export class ProductService {
       await newProductModel.save();
       await session.commitTransaction();
 
-      await this.deleteTmpMedias(tmpMedias);
+      await this.mediaService.deleteTmpMedias(tmpMedias, Product.collectionName);
 
       const converted = newProductModel.toJSON();
       converted.variants.forEach(variant => {
@@ -177,7 +177,7 @@ export class ProductService {
       });
 
       for (const variantDto of variantsToAdd) {
-        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.checkTmpAndSaveMedias(variantDto.medias);
+        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(variantDto.medias, Product.collectionName);
         variantDto.medias = savedMedias;
         tmpMedias.push(...checkedTmpMedias);
 
@@ -201,7 +201,7 @@ export class ProductService {
           }
         }
 
-        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.checkTmpAndSaveMedias(variantInDto.medias);
+        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(variantInDto.medias, Product.collectionName);
         variantInDto.medias = savedMedias;
         tmpMedias.push(...checkedTmpMedias);
 
@@ -214,8 +214,8 @@ export class ProductService {
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
       await found.save({ session });
       await session.commitTransaction();
-      await this.deleteMedias(mediasToDelete);
-      await this.deleteTmpMedias(tmpMedias);
+      await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
+      await this.mediaService.deleteTmpMedias(tmpMedias, Product.collectionName);
 
       const converted = found.toJSON();
       converted.variants.forEach(variant => {
@@ -239,7 +239,7 @@ export class ProductService {
     try {
       const deleted = await this.productModel.findByIdAndDelete(productId).exec();
       if (!deleted) {
-        throw new NotFoundException(`No product with id '${productId}'`);
+        throw new NotFoundException(`No product found with id '${productId}'`);
       }
 
       const mediasToDelete: Media[] = [];
@@ -251,7 +251,7 @@ export class ProductService {
       }
 
       await session.commitTransaction();
-      await this.deleteMedias(mediasToDelete);
+      await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
 
       return deleted;
     } catch (ex) {
@@ -264,35 +264,6 @@ export class ProductService {
 
   uploadMedia(request: FastifyRequest): Promise<Media> {
     return this.mediaService.upload(request, Product.collectionName);
-  }
-
-  private async checkTmpAndSaveMedias(mediaDtos: MediaDto[]): Promise<{ tmpMedias: Media[], savedMedias: Media[] }> {
-    const tmpMedias = [];
-    const savedMedias = [];
-
-    for (let media of mediaDtos) {
-      const isTmp = media.variantsUrls.original.includes('/tmp/');
-      if (isTmp) {
-        tmpMedias.push(media);
-        savedMedias.push(await this.mediaService.processAndSaveTmp(Product.collectionName, media));
-      } else {
-        savedMedias.push(media);
-      }
-    }
-
-    return { tmpMedias, savedMedias };
-  }
-
-  private async deleteMedias(medias: Media[]): Promise<void> {
-    for (const media of medias) {
-      await this.mediaService.delete(media, Product.collectionName);
-    }
-  }
-
-  private async deleteTmpMedias(medias: MediaDto[]): Promise<void> {
-    for (const media of medias) {
-      await this.mediaService.deleteTmp(media, Product.collectionName);
-    }
   }
 
   getProductsByCategoryId(categoryId: number) {

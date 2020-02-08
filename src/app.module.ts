@@ -14,7 +14,8 @@ import { OrderModule } from './order/order.module';
 import { ShippingMethodModule } from './shipping-method/shipping-method.module';
 import { PaymentMethodModule } from './payment-method/payment-method.module';
 import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
-import { StoreReviewModule } from './store-review/store-review.module';
+import { StoreReviewModule } from './reviews/store-review/store-review.module';
+import { ProductReviewModule } from './reviews/product-review/product-review.module';
 
 @Module({
   imports: [
@@ -42,7 +43,8 @@ import { StoreReviewModule } from './store-review/store-review.module';
     ShippingMethodModule,
     PaymentMethodModule,
     PdfGeneratorModule,
-    StoreReviewModule
+    StoreReviewModule,
+    ProductReviewModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []
