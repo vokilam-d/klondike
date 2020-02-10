@@ -15,6 +15,8 @@ import { Inventory } from '../inventory/models/inventory.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { ClientSession } from 'mongoose';
 import { AdminProductVariantDto } from '../shared/dtos/admin/product-variant.dto';
+import { ProductReviewDto } from '../shared/dtos/admin/product-review.dto';
+import { ProductReview } from '../reviews/product-review/models/product-review.model';
 
 @Injectable()
 export class ProductService {
@@ -133,7 +135,7 @@ export class ProductService {
         await this.createProductPageRegistry(dtoVariant.slug, session);
       }
 
-      await newProductModel.save();
+      await newProductModel.save({ session });
       await session.commitTransaction();
 
       await this.mediaService.deleteTmpMedias(tmpMedias, Product.collectionName);
@@ -299,5 +301,27 @@ export class ProductService {
   async updateCounter() {
     const lastProduct = await this.productModel.findOne().sort('-_id').exec();
     return this.counterService.setCounter(Product.collectionName, lastProduct.id);
+  }
+
+  async addReviewId(review: ProductReview, session?: ClientSession): Promise<Product> {
+    const update: Partial<Product> = {
+      reviewIds: review._id as any
+    };
+
+    return this.productModel
+      .findByIdAndUpdate(review.productId, { $push: update }, { new: true })
+      .session(session)
+      .exec();
+  }
+
+  async deleteReviewId(review: ProductReview, session?: ClientSession): Promise<Product> {
+    const update: Partial<Product> = {
+      reviewIds: review._id as any
+    };
+
+    return this.productModel
+      .findByIdAndUpdate(review.productId, { $pull: update }, { new: true })
+      .session(session)
+      .exec();
   }
 }

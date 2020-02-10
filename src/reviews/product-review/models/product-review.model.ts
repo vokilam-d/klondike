@@ -29,10 +29,10 @@ export class ProductReview extends BaseReview {
   productId: number;
 
   @prop()
-  productVariantId: string;
+  productName: string;
 
   @prop()
-  productVariantName: string;
+  productVariantId: string;
 
   @arrayProp({ items: ProductReviewComment, default: [] })
   comments: ProductReviewComment[];

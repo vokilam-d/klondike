@@ -43,11 +43,11 @@ export class ProductReviewDto extends BaseReviewDto {
 
   @Expose()
   @IsString()
-  productVariantId: string;
+  productName: string;
 
   @Expose()
   @IsString()
-  productVariantName: string;
+  productVariantId: string;
 
   @Expose()
   @ValidateNested({ each: true })

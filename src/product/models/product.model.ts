@@ -34,6 +34,12 @@ export class Product {
   @prop({ default: 0 })
   salesCount: number;
 
+  /**
+   * @type ProductReview._id
+   */
+  @arrayProp({ items: String, default: [] })
+  reviewIds: string[];
+
   static collectionName: string = 'product';
 }
 

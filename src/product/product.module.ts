@@ -18,8 +18,7 @@ const productModel = {
   imports: [
     MongooseModule.forFeature([productModel]),
     InventoryModule,
-    PageRegistryModule,
-    ProductReviewModule
+    PageRegistryModule
   ],
   controllers: [AdminProductController, ClientProductController],
   providers: [ProductService],

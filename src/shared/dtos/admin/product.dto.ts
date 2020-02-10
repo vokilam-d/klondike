@@ -49,6 +49,11 @@ export class AdminAddOrUpdateProductDto {
   @Expose()
   @IsOptional()
   updatedAt: any;
+
+  @Expose()
+  @IsOptional()
+  @IsString({ each: true })
+  reviewIds: string[];
 }
 
 export class AdminProductDto extends AdminAddOrUpdateProductDto {
