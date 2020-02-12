@@ -305,7 +305,7 @@ export class ProductService {
     return this.counterService.setCounter(Product.collectionName, lastProduct.id);
   }
 
-  async addReview(review: ProductReview, session?: ClientSession): Promise<Product> {
+  async addReviewToProduct(review: ProductReview, session?: ClientSession): Promise<Product> {
     const conditions: Partial<Product> = { _id: review.productId };
     const countProp = getPropertyOf<Product>('reviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
@@ -331,7 +331,7 @@ export class ProductService {
       .exec();
   }
 
-  async removeReview(review: ProductReview, session?: ClientSession): Promise<Product> {
+  async removeReviewFromProduct(review: ProductReview, session?: ClientSession): Promise<Product> {
     const conditions: Partial<Product> = { _id: review.productId };
     const countProp = getPropertyOf<Product>('reviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');

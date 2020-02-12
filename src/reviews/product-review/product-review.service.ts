@@ -25,11 +25,11 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Produ
   }
 
   async createReview(reviewDto: ProductReviewDto): Promise<ProductReviewDto> {
-    return super.createReview(reviewDto, (review, session) => this.productService.addReview(review, session));
+    return super.createReview(reviewDto, (review, session) => this.productService.addReviewToProduct(review, session));
   }
 
   async deleteReview(reviewId: string): Promise<ProductReviewDto> {
-    return super.deleteReview(reviewId, (review, session) => this.productService.removeReview(review, session));
+    return super.deleteReview(reviewId, (review, session) => this.productService.removeReviewFromProduct(review, session));
   }
 
   async deleteReviewsByProductId(productId: number, session: ClientSession) {
