@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from './models/product.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { InventoryService } from '../inventory/inventory.service';
@@ -10,13 +10,13 @@ import { FastifyRequest } from 'fastify';
 import { MediaService } from '../shared/media-uploader/media-uploader/media.service';
 import { Media } from '../shared/models/media.model';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
-import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
 import { Inventory } from '../inventory/models/inventory.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { ClientSession } from 'mongoose';
 import { AdminProductVariantDto } from '../shared/dtos/admin/product-variant.dto';
-import { ProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductReview } from '../reviews/product-review/models/product-review.model';
+import { ProductReviewService } from '../reviews/product-review/product-review.service';
 
 @Injectable()
 export class ProductService {
@@ -25,10 +25,11 @@ export class ProductService {
               private readonly inventoryService: InventoryService,
               private readonly counterService: CounterService,
               private readonly mediaService: MediaService,
+              @Inject(forwardRef(() => ProductReviewService)) private readonly productReviewService: ProductReviewService,
               private readonly pageRegistryService: PageRegistryService) {
   }
 
-  async getAllProductsWithQty(sortingPaginating: AdminSortingPaginatingDto = new AdminSortingPaginatingDto()): Promise<AdminProductDto[]> {
+  async getAllProductsWithQty(sortingPaginating: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto()): Promise<AdminProductDto[]> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');
@@ -245,12 +246,13 @@ export class ProductService {
       }
 
       const mediasToDelete: Media[] = [];
-
       for (const variant of deleted.variants) {
         await this.inventoryService.deleteInventory(variant.sku, session);
         await this.deleteProductPageRegistry(variant.slug, session);
         mediasToDelete.push(...variant.medias);
       }
+
+      await this.productReviewService.deleteReviewsByProductId(productId, session);
 
       await session.commitTransaction();
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
@@ -303,24 +305,55 @@ export class ProductService {
     return this.counterService.setCounter(Product.collectionName, lastProduct.id);
   }
 
-  async addReviewId(review: ProductReview, session?: ClientSession): Promise<Product> {
-    const update: Partial<Product> = {
-      reviewIds: review._id as any
-    };
+  async addReview(review: ProductReview, session?: ClientSession): Promise<Product> {
+    const conditions: Partial<Product> = { _id: review.productId };
+    const countProp = getPropertyOf<Product>('reviewsCount');
+    const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
 
     return this.productModel
-      .findByIdAndUpdate(review.productId, { $push: update }, { new: true })
+      .updateOne(
+        conditions,
+        [
+          { $set: { [countProp]: { $toInt: { $add: [ `$${countProp}`, 1 ] } } } },
+          {
+            $set: {
+              [ratingProp]: {
+                $ifNull: [
+                  { $divide: [{ $add: [`$${ratingProp}`, review.rating] }, 2] },
+                  review.rating
+                ]
+              }
+            }
+          }
+        ]
+      )
       .session(session)
       .exec();
   }
 
-  async deleteReviewId(review: ProductReview, session?: ClientSession): Promise<Product> {
-    const update: Partial<Product> = {
-      reviewIds: review._id as any
-    };
+  async removeReview(review: ProductReview, session?: ClientSession): Promise<Product> {
+    const conditions: Partial<Product> = { _id: review.productId };
+    const countProp = getPropertyOf<Product>('reviewsCount');
+    const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
 
     return this.productModel
-      .findByIdAndUpdate(review.productId, { $pull: update }, { new: true })
+      .updateOne(
+        conditions,
+        [
+          { $set: { [countProp]: { $toInt: { $subtract: [ `$${countProp}`, 1 ] } } } },
+          {
+            $set: {
+              [ratingProp]: {
+                $cond: {
+                  if: { $lte: [`$${countProp}`, 0]},
+                  then: null,
+                  else: { $subtract: [{ $multiply: [`$${ratingProp}`, 2] }, review.rating] }
+                }
+              }
+            }
+          }
+        ]
+      )
       .session(session)
       .exec();
   }

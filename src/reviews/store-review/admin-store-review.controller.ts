@@ -18,7 +18,7 @@ import { StoreReviewService } from './store-review.service';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
-import { AdminSortingPaginatingDto } from '../../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/filter.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/store-reviews')
@@ -28,9 +28,9 @@ export class AdminStoreReviewController {
   }
 
   @Get()
-  async findAllReviews(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponseDto<StoreReviewDto[]>> {
+  async findAllReviews(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<StoreReviewDto[]>> {
     const [ results, itemsTotal ] = await Promise.all([
-      this.storeReviewService.findAllReviews(sortingPaging),
+      this.storeReviewService.findReviews(sortingPaging),
       this.storeReviewService.countReviews()
     ]);
     const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);

@@ -1,24 +1,11 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  Request,
-  Response,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
-import { AdminSortingPaginatingDto } from '../../shared/dtos/admin/filter.dto';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, Response, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ResponseDto } from '../../shared/dtos/admin/response.dto';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { ServerResponse } from "http";
+import { ServerResponse } from 'http';
 import { ProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReviewService } from './product-review.service';
+import { ProductReviewFilterDto } from '../../shared/dtos/admin/product-review-filter.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/product-reviews')
@@ -27,19 +14,29 @@ export class AdminProductReviewController {
   }
 
   @Get()
-  async findAllReviews(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponseDto<ProductReviewDto[]>> {
-    const [ results, itemsTotal ] = await Promise.all([
-      this.productReviewService.findAllReviews(sortingPaging),
-      this.productReviewService.countReviews()
-    ]);
-    const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
+  async findAllReviews(@Query() spf: ProductReviewFilterDto): Promise<ResponseDto<ProductReviewDto | ProductReviewDto[]>> {
 
-    return {
-      data: plainToClass(ProductReviewDto, results, { excludeExtraneousValues: true }),
-      page: sortingPaging.page,
-      pagesTotal,
-      itemsTotal
-    };
+    if (spf.productId) {
+
+      const results = await this.productReviewService.findReviewsByProductId(spf.productId);
+      return {
+        data: plainToClass(ProductReviewDto, results, { excludeExtraneousValues: true })
+      };
+
+    } else {
+      const [ results, itemsTotal ] = await Promise.all([
+        this.productReviewService.findReviews(spf),
+        this.productReviewService.countReviews()
+      ]);
+      const pagesTotal = Math.ceil(itemsTotal / spf.limit);
+
+      return {
+        data: plainToClass(ProductReviewDto, results, { excludeExtraneousValues: true }),
+        page: spf.page,
+        pagesTotal,
+        itemsTotal
+      };
+    }
   }
 
   @Get(':id')

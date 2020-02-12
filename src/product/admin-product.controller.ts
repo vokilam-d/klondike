@@ -20,7 +20,7 @@ import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
-import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
 import { ResponseDto } from '../shared/dtos/admin/response.dto';
 
 
@@ -33,7 +33,7 @@ export class AdminProductController {
   }
 
   @Get()
-  async getProducts(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponseDto<AdminProductDto[]>> {
+  async getProducts(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminProductDto[]>> {
     const [ results, itemsTotal ] = await Promise.all([this.productsService.getAllProductsWithQty(sortingPaging), this.productsService.countProducts()]);
     const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
 

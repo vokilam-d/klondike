@@ -1,11 +1,11 @@
-import { ReturnModelType } from '@typegoose/typegoose';
+import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { BaseReview, ReviewVote } from './models/base-review.model';
 import { MediaService } from '../../shared/media-uploader/media-uploader/media.service';
 import { FastifyRequest } from 'fastify';
 import { Media } from '../../shared/models/media.model';
 import { MediaDto } from '../../shared/dtos/admin/media.dto';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { AdminSortingPaginatingDto } from '../../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/filter.dto';
 import { BaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
 import { ClientSession } from 'mongoose';
 
@@ -15,19 +15,19 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
   protected abstract reviewModel: ReturnModelType<new (...args: any) => T>;
   protected abstract mediaService: MediaService;
 
-  async findAllReviews(sortingPaginating: AdminSortingPaginatingDto = new AdminSortingPaginatingDto(),
-                       ipAddress?: string,
-                       userId?: string,
-                       customerId?: number): Promise<U[]> {
+  async findReviews(spf: AdminSortingPaginatingFilterDto,
+                    ipAddress?: string,
+                    userId?: string,
+                    customerId?: number): Promise<U[]> {
 
     const reviews = await this.reviewModel
       .find()
-      .sort(sortingPaginating.sort)
-      .skip(sortingPaginating.skip)
-      .limit(sortingPaginating.limit)
+      .sort(spf.sort)
+      .skip(spf.skip)
+      .limit(spf.limit)
       .exec();
 
-    return reviews.map(review => this.transformReviewToDto(review.toJSON(), ipAddress, userId, customerId));
+    return reviews.map(review => this.transformReviewToDto(review, ipAddress, userId, customerId));
   }
 
   async findReview(reviewId: string, ipAddress?: string, userId?: string, customerId?: number): Promise<U> {
@@ -36,7 +36,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
       throw new NotFoundException(`Review with id '${reviewId}' not found`);
     }
 
-    return this.transformReviewToDto(review.toJSON(), ipAddress, userId, customerId);
+    return this.transformReviewToDto(review, ipAddress, userId, customerId);
   }
 
   async createReview(reviewDto: U, callback?: (review: T, session: ClientSession) => Promise<any>): Promise<U> {
@@ -52,11 +52,14 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
       tmpMedias.push(...checkedTmpMedias);
 
       await review.save({ session });
-      if (callback) await callback(review, session);
+      if (callback) {
+        const a = await callback(review, session);
+        console.log(a);
+      }
       await session.commitTransaction();
       await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
 
-      return this.transformReviewToDto(review.toJSON());
+      return this.transformReviewToDto(review);
     } catch (ex) {
       await session.abortTransaction();
       throw ex;
@@ -91,7 +94,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
     await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
     await this.mediaService.deleteSavedMedias(mediasToDelete, this.collectionName);
 
-    return this.transformReviewToDto(review.toJSON());
+    return this.transformReviewToDto(review);
   }
 
   async deleteReview(reviewId: string, callback?: (review: T, session: ClientSession) => Promise<any>): Promise<U> {
@@ -107,7 +110,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
 
       await this.mediaService.deleteSavedMedias(deleted.medias, this.collectionName);
 
-      return this.transformReviewToDto(deleted.toJSON());
+      return this.transformReviewToDto(deleted);
     } catch (ex) {
       await session.abortTransaction();
       throw ex;
@@ -141,7 +144,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
     await foundReview.save();
   }
 
-  abstract transformReviewToDto(review: T, ipAddress?: string, userId?: string, customerId?: number): U;
+  abstract transformReviewToDto(review: DocumentType<T>, ipAddress?: string, userId?: string, customerId?: number): U;
 
   async countReviews(): Promise<number> {
     return this.reviewModel.estimatedDocumentCount().exec();

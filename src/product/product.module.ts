@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product, ProductModel } from './models/product.model';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -18,7 +18,8 @@ const productModel = {
   imports: [
     MongooseModule.forFeature([productModel]),
     InventoryModule,
-    PageRegistryModule
+    PageRegistryModule,
+    forwardRef(() => ProductReviewModule)
   ],
   controllers: [AdminProductController, ClientProductController],
   providers: [ProductService],

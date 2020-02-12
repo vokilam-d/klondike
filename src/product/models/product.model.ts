@@ -34,11 +34,11 @@ export class Product {
   @prop({ default: 0 })
   salesCount: number;
 
-  /**
-   * @type ProductReview._id
-   */
-  @arrayProp({ items: String, default: [] })
-  reviewIds: string[];
+  @prop({ default: 0 })
+  reviewsCount: number;
+
+  @prop({ min: 1, max: 5, default: null })
+  reviewsAvgRating: number;
 
   static collectionName: string = 'product';
 }

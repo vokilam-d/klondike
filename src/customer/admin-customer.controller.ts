@@ -13,7 +13,7 @@ import {
   ValidationPipe
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
-import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
 import { ResponseDto } from '../shared/dtos/admin/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../shared/dtos/admin/customer.dto';
@@ -28,7 +28,7 @@ export class AdminCustomerController {
   }
 
   @Get()
-  async getAllCustomers(@Query() sortingPaging: AdminSortingPaginatingDto): Promise<ResponseDto<AdminCustomerDto[]>> {
+  async getAllCustomers(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminCustomerDto[]>> {
     const [ results, itemsTotal ] = await Promise.all([this.customerService.getAllCustomers(sortingPaging), this.customerService.countCustomers()]);
     const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
 

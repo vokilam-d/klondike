@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ProductReviewService } from './product-review.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProductReview, ProductReviewModel } from './models/product-review.model';
@@ -12,8 +12,12 @@ const productReviewModel = {
 };
 
 @Module({
-  imports: [MongooseModule.forFeature([productReviewModel]), ProductModule],
+  imports: [
+    MongooseModule.forFeature([productReviewModel]),
+    forwardRef(() => ProductModule)
+  ],
   providers: [ProductReviewService],
-  controllers: [AdminProductReviewController]
+  controllers: [AdminProductReviewController],
+  exports: [ProductReviewService]
 })
 export class ProductReviewModule {}

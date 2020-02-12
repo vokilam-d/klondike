@@ -2,7 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer } from './models/customer.model';
 import { ReturnModelType } from '@typegoose/typegoose';
-import { AdminSortingPaginatingDto } from '../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
 import { AdminAddOrUpdateCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { ClientSession } from 'mongoose';
@@ -16,7 +16,7 @@ export class CustomerService {
               private counterService: CounterService) {
   }
 
-  async getAllCustomers(sortingPaging: AdminSortingPaginatingDto = new AdminSortingPaginatingDto()): Promise<Customer[]> {
+  async getAllCustomers(sortingPaging: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto()): Promise<Customer[]> {
     const found = await this.customerModel
       .find()
       .sort(sortingPaging.sort)
