@@ -1,5 +1,5 @@
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { MediaDto } from './media.dto';
 import { MetaTagsDto } from './meta-tags.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
@@ -65,4 +65,9 @@ export class AdminProductVariantDto {
   @Expose()
   @IsBoolean()
   isDiscountApplicable: boolean;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  salesCount: number;
 }

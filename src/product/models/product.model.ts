@@ -32,9 +32,6 @@ export class Product {
   sortOrder: number;
 
   @prop({ default: 0 })
-  salesCount: number;
-
-  @prop({ default: 0 })
   reviewsCount: number;
 
   @prop({ min: 1, max: 5, default: null })

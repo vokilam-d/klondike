@@ -13,6 +13,7 @@ import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
 import { Customer } from '../customer/models/customer.model';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class OrderService {
@@ -21,6 +22,7 @@ export class OrderService {
               private counterService: CounterService,
               private pdfGeneratorService: PdfGeneratorService,
               private inventoryService: InventoryService,
+              private productService: ProductService,
               private customerService: CustomerService) {
   }
 
@@ -236,6 +238,9 @@ export class OrderService {
       found.status = EOrderStatus.SHIPPED;
 
       await this.customerService.incrementTotalOrdersCost(found.customerId, found, session);
+      for (const item of found.items) {
+        await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
+      }
 
       await found.save({ session });
       await session.commitTransaction();

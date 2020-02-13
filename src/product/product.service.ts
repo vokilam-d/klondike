@@ -17,6 +17,7 @@ import { ClientSession } from 'mongoose';
 import { AdminProductVariantDto } from '../shared/dtos/admin/product-variant.dto';
 import { ProductReview } from '../reviews/product-review/models/product-review.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
+import { ProductVariant } from './models/product-variant.model';
 
 @Injectable()
 export class ProductService {
@@ -305,7 +306,7 @@ export class ProductService {
     return this.counterService.setCounter(Product.collectionName, lastProduct.id);
   }
 
-  async addReviewToProduct(review: ProductReview, session?: ClientSession): Promise<Product> {
+  async addReviewToProduct(review: ProductReview, session?: ClientSession): Promise<any> {
     const conditions: Partial<Product> = { _id: review.productId };
     const countProp = getPropertyOf<Product>('reviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
@@ -331,7 +332,7 @@ export class ProductService {
       .exec();
   }
 
-  async removeReviewFromProduct(review: ProductReview, session?: ClientSession): Promise<Product> {
+  async removeReviewFromProduct(review: ProductReview, session?: ClientSession): Promise<any> {
     const conditions: Partial<Product> = { _id: review.productId };
     const countProp = getPropertyOf<Product>('reviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
@@ -353,6 +354,20 @@ export class ProductService {
             }
           }
         ]
+      )
+      .session(session)
+      .exec();
+  }
+
+  async incrementSalesCount(productId: number, variantId: string, count: number, session: ClientSession): Promise<any> {
+    const conditions: Partial<Product> = { _id: productId, variants: variantId as any };
+    const variantsProp = getPropertyOf<Product>('variants');
+    const countProp = getPropertyOf<ProductVariant>('salesCount');
+
+    return this.productModel
+      .updateOne(
+        conditions,
+        { $inc: { [`${variantsProp}.$.${countProp}`]: count } }
       )
       .session(session)
       .exec();

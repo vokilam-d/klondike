@@ -5,7 +5,7 @@ import { ProductSelectedAttribute } from './product-selected-attribute.model';
 import { Types } from 'mongoose';
 
 export class ProductVariant {
-  @prop()
+  @prop({ index: true })
   _id: Types.ObjectId;
 
   get id() { return this._id; }
@@ -43,4 +43,7 @@ export class ProductVariant {
 
   @prop({ default: true })
   isDiscountApplicable: boolean;
+
+  @prop({ default: 0 })
+  salesCount: number;
 }

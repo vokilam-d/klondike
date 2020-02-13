@@ -76,7 +76,7 @@ export class AdminOrderController {
     };
   }
 
-  @Post('counter') // todo remove this and all counter updates
+  @Post('counter') // todo remove this and all counter updates after migrate
   updateCounter() {
     return this.orderService.updateCounter();
   }

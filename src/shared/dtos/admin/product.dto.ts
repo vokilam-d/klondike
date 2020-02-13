@@ -39,11 +39,6 @@ export class AdminAddOrUpdateProductDto {
 
   @Expose()
   @IsOptional()
-  @IsNumber()
-  salesCount: number;
-
-  @Expose()
-  @IsOptional()
   createdAt: any;
 
   @Expose()
