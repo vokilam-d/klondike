@@ -7,6 +7,7 @@ import { ProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReview } from './models/product-review.model';
 import { ProductService } from '../../product/product.service';
 import { ClientSession } from 'mongoose';
+import { CounterService } from '../../shared/counter/counter.service';
 
 @Injectable()
 export class ProductReviewService extends BaseReviewService<ProductReview, ProductReviewDto> {
@@ -15,6 +16,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Produ
 
   constructor(@InjectModel(ProductReview.name) protected readonly reviewModel: ReturnModelType<typeof ProductReview>,
               @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
+              protected readonly counterService: CounterService,
               protected readonly mediaService: MediaService) {
     super();
   }
@@ -24,8 +26,8 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Produ
     return found.map(review => this.transformReviewToDto(review));
   }
 
-  async createReview(reviewDto: ProductReviewDto): Promise<ProductReviewDto> {
-    return super.createReview(reviewDto, (review, session) => this.productService.addReviewToProduct(review, session));
+  async createReview(reviewDto: ProductReviewDto, migrate?): Promise<ProductReviewDto> {
+    return super.createReview(reviewDto, (review, session) => this.productService.addReviewToProduct(review, session), migrate);
   }
 
   async deleteReview(reviewId: string): Promise<ProductReviewDto> {

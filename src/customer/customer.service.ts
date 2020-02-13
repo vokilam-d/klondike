@@ -40,7 +40,7 @@ export class CustomerService {
     const query: Partial<Customer> = { email: customerDto.email };
     const foundByEmail = await this.customerModel.findOne(query).exec();
     if (foundByEmail) {
-      if (migrate) { // todo just throw after migrate
+      if (migrate) { // todo just throw err after migrate
         return foundByEmail;
       } else {
         throw new ConflictException(`Customer with email '${customerDto.email}' already exists`);

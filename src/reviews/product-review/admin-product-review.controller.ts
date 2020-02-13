@@ -55,8 +55,8 @@ export class AdminProductReviewController {
   }
 
   @Post()
-  async createProductReview(@Body() productReviewDto: ProductReviewDto): Promise<ResponseDto<ProductReviewDto>> {
-    const review = await this.productReviewService.createReview(productReviewDto);
+  async createProductReview(@Body() productReviewDto: ProductReviewDto, @Query('migrate') migrate: any): Promise<ResponseDto<ProductReviewDto>> {
+    const review = await this.productReviewService.createReview(productReviewDto, migrate);
     return {
       data: plainToClass(ProductReviewDto, review, { excludeExtraneousValues: true })
     }

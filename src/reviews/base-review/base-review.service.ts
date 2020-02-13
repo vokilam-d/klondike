@@ -8,12 +8,14 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/filter.dto';
 import { BaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
 import { ClientSession } from 'mongoose';
+import { CounterService } from '../../shared/counter/counter.service';
 
 export abstract class BaseReviewService<T extends BaseReview, U extends BaseReviewDto> {
 
   protected abstract collectionName: string;
   protected abstract reviewModel: ReturnModelType<new (...args: any) => T>;
   protected abstract mediaService: MediaService;
+  protected abstract counterService: CounterService;
 
   async findReviews(spf: AdminSortingPaginatingFilterDto,
                     ipAddress?: string,
@@ -39,23 +41,24 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
     return this.transformReviewToDto(review, ipAddress, userId, customerId);
   }
 
-  async createReview(reviewDto: U, callback?: (review: T, session: ClientSession) => Promise<any>): Promise<U> {
+  async createReview(reviewDto: U, callback?: (review: T, session: ClientSession) => Promise<any>, migrate?): Promise<U> {
     const session = await this.reviewModel.db.startSession();
     session.startTransaction();
 
     try {
       const tmpMedias: MediaDto[] = [];
+      reviewDto.id = 100;
       const review = new this.reviewModel(reviewDto);
+      if (!migrate) {
+        review.id = await this.counterService.getCounter(this.collectionName, session);
+      }
 
       const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(reviewDto.medias, this.collectionName);
       review.medias = savedMedias;
       tmpMedias.push(...checkedTmpMedias);
 
       await review.save({ session });
-      if (callback) {
-        const a = await callback(review, session);
-        console.log(a);
-      }
+      if (callback) { await callback(review, session); }
       await session.commitTransaction();
       await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
 

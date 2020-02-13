@@ -1,6 +1,5 @@
 import { arrayProp, prop } from '@typegoose/typegoose';
 import { Media } from '../../../shared/models/media.model';
-import { Types } from 'mongoose';
 
 export class ReviewVote {
   @prop()
@@ -13,8 +12,12 @@ export class ReviewVote {
   ip: string;
 }
 
-export class BaseReview {
-  _id: Types.ObjectId;
+export abstract class BaseReview {
+  @prop()
+  _id: number;
+
+  abstract set id(id: number);
+  abstract get id(): number;
 
   @prop({ default: true })
   isEnabled: boolean;
@@ -45,6 +48,4 @@ export class BaseReview {
 
   @prop({ default: new Date() })
   createdAt: Date;
-
-  collectionName: string;
 }

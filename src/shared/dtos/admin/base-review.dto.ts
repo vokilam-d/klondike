@@ -4,8 +4,8 @@ import { MediaDto } from './media.dto';
 
 export class BaseReviewDto {
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
-  id: string;
+  @Transform(((value, obj) => value ? value : obj._id))
+  id: number;
 
   @Expose()
   @IsBoolean()

@@ -2,6 +2,9 @@ import { getModelForClass, prop } from '@typegoose/typegoose';
 import { BaseReview } from '../../base-review/models/base-review.model';
 
 export class StoreReview extends BaseReview {
+  set id(id: number) { this._id = id; }
+  get id(): number { return this._id; }
+
   @prop({ default: '' })
   managerComment: string;
 

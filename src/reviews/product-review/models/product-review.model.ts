@@ -25,6 +25,9 @@ export class ProductReviewComment {
 }
 
 export class ProductReview extends BaseReview {
+  set id(id: number) { this._id = id; }
+  get id(): number { return this._id; }
+
   @prop()
   productId: number;
 
