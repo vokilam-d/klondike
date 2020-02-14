@@ -186,6 +186,7 @@ export class Migrate {
 
     for (const attr of attributes) {
       if (attr.entity_type_id !== 4) { continue; }
+      if (attr.attribute_code === 'is_general_discount_applicable') { continue; }
 
       const dto = {} as AdminAttributeDto;
       dto.id = attr.attribute_code;
@@ -279,6 +280,8 @@ export class Migrate {
 
       dto.attributes = [];
       Object.keys(product).forEach(key => {
+        if (key === 'is_general_discount_applicable') { return; }
+
         if (product[key] !== null) {
           const savedAttribute = savedAttributes.find(attr => attr.id === key);
           if (savedAttribute) {

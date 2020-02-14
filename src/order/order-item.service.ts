@@ -16,7 +16,7 @@ export class OrderItemService {
     }
     const variant = foundProduct.variants.find(v => v.sku === sku);
 
-    if (!migrate) { // todo remove after migrate
+    if (!migrate) { // todo remove this line after migrate
       if (variant.qty < qty) {
         throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${qty}. In stock: ${variant.qty}`);
       }
