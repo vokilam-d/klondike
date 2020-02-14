@@ -11,6 +11,7 @@ export class Database {
   private conn: Connection;
 
   constructor() {
+    this.conn = createConnection(process.env.MYSQL_CONN);
   }
 
   public async connect() {
