@@ -2,7 +2,6 @@ import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { Category } from '../../category/models/category.model';
 import { ProductVariant } from './product-variant.model';
 import { ProductSelectedAttribute } from './product-selected-attribute.model';
-import { StoreReviewModel } from '../../reviews/store-review/models/store-review.model';
 
 export class Product {
   @prop()

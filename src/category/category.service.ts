@@ -8,6 +8,7 @@ import { AdminAddOrUpdateCategoryDto, AdminCategoryTreeItem } from '../shared/dt
 import { CounterService } from '../shared/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
+import { ClientSession } from 'mongoose';
 
 @Injectable()
 export class CategoryService {
@@ -78,18 +79,28 @@ export class CategoryService {
 
     const duplicate = await this.categoryModel.findOne({ slug: category.slug, parentId: category.parentId }).exec();
     if (duplicate) {
-      throw new BadRequestException(`Category with slug '${category.slug}' already exists`);
+      throw new BadRequestException(`Category with slug '${category.slug}' already exists in parent with ID '${category.parentId}'`);
     }
 
-    const newCategoryModel = new this.categoryModel(category);
-    if (!migrate) {
-      newCategoryModel.id = await this.counterService.getCounter(Category.collectionName);
+    const session = await this.categoryModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const newCategoryModel = new this.categoryModel(category);
+      if (!migrate) {
+        newCategoryModel.id = await this.counterService.getCounter(Category.collectionName, session);
+      }
+
+      await newCategoryModel.save({ session });
+
+      this.createCategoryPageRegistry(newCategoryModel.slug, session);
+      return plainToClass(Category, newCategoryModel.toJSON());
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
     }
-
-    await newCategoryModel.save();
-
-    this.createCategoryPageRegistry(newCategoryModel.slug);
-    return plainToClass(Category, newCategoryModel.toJSON());
   }
 
   async updateCategory(categoryId: string | number, category: AdminAddOrUpdateCategoryDto): Promise<Category> {
@@ -98,30 +109,51 @@ export class CategoryService {
     const found = await this.getCategoryById(categoryId);
     const oldSlug = found.slug;
 
-    Object.keys(category).forEach(key => {
-      if (category[key] !== undefined && key !== 'id') {
-        found[key] = category[key];
+      Object.keys(category).forEach(key => {
+        if (category[key] !== undefined && key !== 'id') {
+          found[key] = category[key];
+        }
+      });
+
+    const session = await this.categoryModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const saved = await found.save({ session });
+      if (oldSlug !== category.slug) {
+        this.updateCategoryPageRegistry(found.slug, category.slug, session);
       }
-    });
 
-    const saved = await found.save();
-
-    if (oldSlug !== category.slug) {
-      this.updateCategoryPageRegistry(found.slug, category.slug);
+      return saved.toJSON();
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
     }
-
-    return saved.toJSON();
   }
 
   async deleteCategory(categoryId: number): Promise<DocumentType<Category>> {
-    const deleted = await this.categoryModel.findByIdAndDelete(categoryId).exec();
-    if (deleted === null) {
-      throw new NotFoundException(`Category with id '${categoryId}' not found`);
+    const session = await this.categoryModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const deleted = await this.categoryModel.findByIdAndDelete(categoryId).session(session).exec();
+      if (deleted === null) {
+        throw new NotFoundException(`Category with id '${categoryId}' not found`);
+      }
+
+      await this.productService.removeCategoryId(categoryId, session);
+      await this.deleteCategoryPageRegistry(deleted.slug, session);
+      await session.commitTransaction();
+
+      return deleted.toJSON();
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
     }
-
-    this.deleteCategoryPageRegistry(deleted.slug);
-
-    return deleted.toJSON();
   }
 
   async getCategoryItems(categoryId: number) {
@@ -129,22 +161,22 @@ export class CategoryService {
     return products;
   }
 
-  private createCategoryPageRegistry(slug: string) {
+  private createCategoryPageRegistry(slug: string, session: ClientSession) {
     return this.pageRegistryService.createPageRegistry({
       slug,
       type: 'category'
-    }, null);
+    }, session);
   }
 
-  private updateCategoryPageRegistry(oldSlug: string, newSlug: string) {
+  private updateCategoryPageRegistry(oldSlug: string, newSlug: string, session: ClientSession) {
     return this.pageRegistryService.updatePageRegistry(oldSlug, {
       slug: newSlug,
       type: 'category'
-    }, null);
+    }, session);
   }
 
-  private deleteCategoryPageRegistry(slug: string) {
-    return this.pageRegistryService.deletePageRegistry(slug, null);
+  private deleteCategoryPageRegistry(slug: string, session: ClientSession) {
+    return this.pageRegistryService.deletePageRegistry(slug, session);
   }
 
   async updateCounter() {

@@ -372,4 +372,17 @@ export class ProductService {
       .session(session)
       .exec();
   }
+
+  async removeCategoryId(categoryId: number, session: ClientSession): Promise<any> {
+    const conditions: Partial<Product> = { categoryIds: categoryId as any };
+    const update: Partial<Product> = { categoryIds: categoryId as any };
+
+    return this.productModel
+      .updateMany(
+        conditions,
+        { $pull: update }
+      )
+      .session(session)
+      .exec();
+  }
 }
