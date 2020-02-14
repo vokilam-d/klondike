@@ -47,7 +47,6 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
 
     try {
       const tmpMedias: MediaDto[] = [];
-      reviewDto.id = 100;
       const review = new this.reviewModel(reviewDto);
       if (!migrate) {
         review.id = await this.counterService.getCounter(this.collectionName, session);
@@ -155,5 +154,10 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
 
   protected hasVoted(review: T, ipAddress: string, userId: string, customerId: number): boolean {
     return review.votes.some(vote => vote.ip === ipAddress || vote.userId === userId || vote.customerId === customerId);
+  }
+
+  async updateCounter() {
+    const lastReview = await this.reviewModel.findOne().sort('-_id').exec();
+    return this.counterService.setCounter(this.collectionName, lastReview.id);
   }
 }

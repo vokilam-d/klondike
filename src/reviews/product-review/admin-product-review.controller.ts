@@ -47,6 +47,11 @@ export class AdminProductReviewController {
     };
   }
 
+  @Post('counter') // todo remove this and all counter updates after migrate
+  updateCounter() {
+    return this.productReviewService.updateCounter();
+  }
+
   @Post('media')
   async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
     const media = await this.productReviewService.uploadMedia(request);

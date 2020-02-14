@@ -4,6 +4,7 @@ import { Database } from './mysql-db';
 import { AdminResponseCategoryDto } from '../src/shared/dtos/admin/category.dto';
 import { MetaTagsDto } from '../src/shared/dtos/admin/meta-tags.dto';
 import axios from 'axios';
+import { attach } from 'retry-axios';
 import * as FormData from 'form-data';
 import { AdminProductDto } from '../src/shared/dtos/admin/product.dto';
 import { AdminAttributeDto, AdminAttributeValueDto } from '../src/shared/dtos/admin/attribute.dto';
@@ -14,6 +15,8 @@ import { AdminCustomerDto, AdminShippingAddressDto } from '../src/shared/dtos/ad
 import { AdminAddOrUpdateOrderDto } from '../src/shared/dtos/admin/order.dto';
 import { AdminOrderItemDto } from '../src/shared/dtos/admin/order-item.dto';
 import { CreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.dto';
+import { StoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
+import { ProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
 
 export class Migrate {
   /**
@@ -92,7 +95,8 @@ export class Migrate {
       'sales_order_address',
       'sales_order_payment',
       'sales_shipment_track',
-      'sales_order_item'
+      'sales_order_item',
+      'intenso_review_storeowner_comment'
     ]
   }
 
@@ -148,11 +152,18 @@ export class Migrate {
       dto.slug = category.url_key;
 
       try {
-        await axios.post(`http://localhost:3500/api/v1/admin/categories`, dto, { params: { migrate: true } });
-        console.log(`[Categories]: Migrated '${dto.name}' with id '${dto.id}'`);
+        await axios.post(
+          `http://localhost:3500/api/v1/admin/categories`,
+          dto,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); } }
+          }
+        );
+        console.log(`[Categories]: Migrated id`, dto.id, `- '${dto.name}'`);
         count++;
       } catch (ex) {
-        console.error(`[Categories]: '${dto.id}' '${dto.name}' error: `, ex.response.status);
+        console.error(`[Categories ERROR]: '${dto.id}' '${dto.name}': `, ex.response.status);
         console.error(this.buildErrorMessage(ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
@@ -203,11 +214,18 @@ export class Migrate {
       if (!dto.values.length) { continue; }
 
       try {
-        await axios.post(`http://localhost:3500/api/v1/admin/attributes`, dto);
-        console.log(`[ProductAttributes]: Migrated '${dto.label}' with id '${dto.id}'`);
+        await axios.post(
+          `http://localhost:3500/api/v1/admin/attributes`,
+          dto,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); } }
+          }
+        );
+        console.log(`[ProductAttributes]: Migrated id`, dto.id, `- '${dto.label}'`);
         count++;
       } catch (ex) {
-        console.error(`[ProductAttributes]: '${dto.id}' error: `, ex.response.status);
+        console.error(`[ProductAttributes ERROR]: '${dto.id}': `, ex.response.status);
         console.error(this.buildErrorMessage(ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
@@ -252,7 +270,6 @@ export class Migrate {
       dto.isEnabled = true;
       dto.name = product.name || '';
       dto.sortOrder = 0;
-      dto.salesCount = 0;
 
       dto.categoryIds = [];
       const categoryProductsForProduct = categoryProducts.filter(cp => cp.product_id === product.entity_id);
@@ -285,6 +302,7 @@ export class Migrate {
       variantDto.attributes = [];
       variantDto.isEnabled = true;
       variantDto.price = product.price || 0;
+      variantDto.salesCount = 0;
 
       const tmpMedias: {alt: string; disabled: number; position: number; url: string;}[] = [];
       for (const mediaValue of mediaValues) {
@@ -347,12 +365,19 @@ export class Migrate {
       dto.variants.push(variantDto);
 
       try {
-        await axios.post(`http://localhost:3500/api/v1/admin/products`, dto, { params: { migrate: true } });
-        console.log(`[Products]: Migrated '${dto.name}' with id '${dto.id}'`);
+        await axios.post(
+          `http://localhost:3500/api/v1/admin/products`,
+          dto,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); } }
+          }
+        );
+        console.log(`[Products]: Migrated id`, dto.id, `- '${dto.name}'`);
 
         count++;
       } catch (ex) {
-        console.error(`[Products]: '${dto.id}' error: `, ex.response.status);
+        console.error(`[Products ERROR]: '${dto.id}': `, ex.response.status);
         console.error(this.buildErrorMessage(ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
@@ -449,12 +474,19 @@ export class Migrate {
       }
 
       try {
-        await axios.post(`http://localhost:3500/api/v1/admin/customers`, dto, { params: { migrate: true } });
-        console.log(`[Customers]: Migrated '${dto.firstName} ${dto.lastName}' with id '${dto.id}'`);
+        await axios.post(
+          `http://localhost:3500/api/v1/admin/customers`,
+          dto,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); } }
+          }
+        );
+        console.log(`[Customers]: Migrated id`, dto.id, `- '${dto.firstName} ${dto.lastName}'`);
 
         count++;
       } catch (ex) {
-        console.error(`[Customers]: '${dto.id}' error: `, ex.response.status);
+        console.error(`[Customers ERROR]: '${dto.id}': `, ex.response.status);
         console.error(this.buildErrorMessage(ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
@@ -548,7 +580,14 @@ export class Migrate {
             orderItemDto.sku = magOrderItem.sku;
             orderItemDto.qty = magOrderItem.qty_ordered;
             orderItemDto.customerId = magOrderItem.customer_id;
-            const response = await axios.post<{ data: AdminOrderItemDto }>(`http://localhost:3500/api/v1/admin/order-items`, orderItemDto, { params: { migrate: true } });
+            const response = await axios.post<{ data: AdminOrderItemDto }>(
+              `http://localhost:3500/api/v1/admin/order-items`,
+              orderItemDto,
+              {
+                params: { migrate: true },
+                raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); } }
+              }
+            );
 
             orderItem.variantId = response.data.data.variantId;
             orderItem.imageUrl = response.data.data.imageUrl;
@@ -560,7 +599,7 @@ export class Migrate {
               dto.items.push(orderItem);
 
             } else {
-              console.error(`[Order Items]: '${dto.id}' error: `, ex.response.status);
+              console.error(`[Order Items ERROR]: '${dto.id}': `, ex.response.status);
               console.error(this.buildErrorMessage(ex.response.data));
             }
           }
@@ -589,12 +628,19 @@ export class Migrate {
 
 
       try {
-        await axios.post(`http://localhost:3500/api/v1/admin/orders`, dto, { params: { migrate: true } });
+        await axios.post(
+          `http://localhost:3500/api/v1/admin/orders`,
+          dto,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); } }
+          }
+        );
         console.log(`[Orders]: Migrated id: `, dto.id);
 
         count++;
       } catch (ex) {
-        console.error(`[Orders]: '${dto.id}' error: `, ex.response.status);
+        console.error(`[Orders ERROR]: '${dto.id}': `, ex.response.status);
         console.error(this.buildErrorMessage(ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
@@ -608,8 +654,123 @@ export class Migrate {
     console.log(`.\n.\n***     Finish migrating Orders     ***\nCount: ${count} \n.\n.`);
   }
 
+  async populateStoreReviews() {
+    console.log('.\n.\n***     Start migrating Store Reviews     ***\n.\n.');
+    const store_reviews: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'review.json', 'utf-8')))
+      .filter((review: any) => review.entity_pk_value === 218);
+    const reviewDetails: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'review_detail.json', 'utf-8')));
+    const owner_comments: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'intenso_review_storeowner_comment.json', 'utf-8')));
+    let count: number = 0;
+
+    // const addStoreReviews = async (store_review) => {
+    for (const store_review of store_reviews) {
+
+      const dto = {} as StoreReviewDto;
+      dto.id = store_review.review_id;
+      dto.isEnabled = true;
+      dto.votesCount = 0;
+      dto.hasClientVoted = false;
+      const store_review_details = reviewDetails.find(rd => rd.review_id === store_review.review_id);
+      dto.name = store_review_details.nickname;
+      dto.text = store_review_details.detail;
+      dto.customerId = store_review_details.customer_id;
+      dto.email = null;
+      dto.rating = 5;
+      dto.sortOrder = 0;
+      dto.medias = [];
+      dto.createdAt = new Date(store_review.created_at);
+
+      const owner_comment = owner_comments.find(c => c.review_id === store_review.review_id);
+      dto.managerComment = owner_comment ? owner_comment.text : '';
+
+      try {
+        await axios.post(
+          `http://localhost:3500/api/v1/admin/store-reviews`,
+          dto,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); } }
+          }
+        );
+        console.log(`[Store Reviews]: Migrated id: `, dto.id);
+
+        count++;
+      } catch (ex) {
+        console.error(`[Store Reviews ERROR]: '${dto.id}': `, ex.response.status);
+        console.error(this.buildErrorMessage(ex.response.data));
+        console.log(`'${dto.id}' dto: `);
+        console.log(dto);
+      }
+    }
+
+    // for (const batches of this.getBatches(store_reviews, 2)) {
+    //   await Promise.all(batches.map(order => addStoreReviews(order)));
+    // }
+
+    console.log(`.\n.\n***     Finish migrating Store Reviews     ***\nCount: ${count} \n.\n.`);
+  }
+
+  async populateProductReviews() {
+    console.log('.\n.\n***     Start migrating Product Reviews     ***\n.\n.');
+    const product_reviews: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'review.json', 'utf-8')))
+      .filter((review: any) => review.entity_pk_value !== 218);
+    const reviewDetails: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'review_detail.json', 'utf-8')));
+    const products: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_flat_1.json', 'utf-8')));
+    let count: number = 0;
+
+    // const addProductReviews = async (store_review) => {
+    for (const product_review of product_reviews) {
+
+      const dto = {} as ProductReviewDto;
+      dto.id = product_review.review_id;
+      dto.isEnabled = true;
+      dto.votesCount = 0;
+      dto.hasClientVoted = false;
+      const product_review_details = reviewDetails.find(rd => rd.review_id === product_review.review_id);
+      dto.name = product_review_details.nickname;
+      dto.text = product_review_details.detail;
+      dto.customerId = product_review_details.customer_id;
+      dto.email = null;
+      dto.rating = 5;
+      dto.sortOrder = 0;
+      dto.medias = [];
+      dto.createdAt = new Date(product_review.created_at);
+      dto.productId = product_review.entity_pk_value;
+      const product = products.find(p => p.entity_id === product_review.entity_pk_value);
+      dto.productName = product.name;
+      dto.comments = [];
+
+
+      try {
+        await axios.post(
+          `http://localhost:3500/api/v1/admin/product-reviews`,
+          dto,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); } }
+          }
+        );
+        console.log(`[Product Reviews]: Migrated id: `, dto.id);
+
+        count++;
+      } catch (ex) {
+        console.error(`[Product Reviews ERROR]: '${dto.id}': `, ex.response.status);
+        console.error(this.buildErrorMessage(ex.response.data));
+        console.log(`'${dto.id}' dto: `);
+        console.log(dto);
+      }
+    }
+
+    // for (const batches of this.getBatches(store_reviews, 2)) {
+    //   await Promise.all(batches.map(order => addProductReviews(order)));
+    // }
+
+    console.log(`.\n.\n***     Finish migrating Product Reviews     ***\nCount: ${count} \n.\n.`);
+  }
+
   async updateCounter(entity: string) {
-    await axios.post(`http://localhost:3500/api/v1/admin/${entity}/counter`);
+    await axios.post(
+      `http://localhost:3500/api/v1/admin/${entity}/counter`);
   }
 
 

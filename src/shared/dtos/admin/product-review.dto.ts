@@ -46,6 +46,7 @@ export class ProductReviewDto extends BaseReviewDto {
   productName: string;
 
   @Expose()
+  @IsOptional()
   @IsString()
   productVariantId: string;
 
