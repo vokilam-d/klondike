@@ -1,6 +1,5 @@
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { BaseReview, ReviewVote } from './models/base-review.model';
-import { MediaService } from '../../shared/media-uploader/media-uploader/media.service';
 import { FastifyRequest } from 'fastify';
 import { Media } from '../../shared/models/media.model';
 import { MediaDto } from '../../shared/dtos/admin/media.dto';
@@ -9,6 +8,7 @@ import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/filter.
 import { BaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
 import { ClientSession } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
+import { MediaService } from '../../shared/media-service/media.service';
 
 export abstract class BaseReviewService<T extends BaseReview, U extends BaseReviewDto> {
 

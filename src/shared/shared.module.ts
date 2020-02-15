@@ -3,7 +3,7 @@ import { ConfigService } from './config/config.service';
 import { CounterService } from './counter/counter.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Counter, CounterModel } from './counter/counter.model';
-import { MediaService } from './media-uploader/media-uploader/media.service';
+import { MediaService } from './media-service/media.service';
 
 const counterModel = {
   name: CounterModel.modelName,

@@ -16,6 +16,7 @@ import { PaymentMethodModule } from './payment-method/payment-method.module';
 import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
 import { StoreReviewModule } from './reviews/store-review/store-review.module';
 import { ProductReviewModule } from './reviews/product-review/product-review.module';
+import { WysiwygModule } from './wysiwyg/wysiwyg.module';
 
 @Module({
   imports: [
@@ -44,7 +45,8 @@ import { ProductReviewModule } from './reviews/product-review/product-review.mod
     PaymentMethodModule,
     PdfGeneratorModule,
     StoreReviewModule,
-    ProductReviewModule
+    ProductReviewModule,
+    WysiwygModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []

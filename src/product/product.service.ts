@@ -7,7 +7,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { AdminAddOrUpdateProductDto, AdminProductDto } from '../shared/dtos/admin/product.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { FastifyRequest } from 'fastify';
-import { MediaService } from '../shared/media-uploader/media-uploader/media.service';
 import { Media } from '../shared/models/media.model';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
@@ -18,6 +17,7 @@ import { AdminProductVariantDto } from '../shared/dtos/admin/product-variant.dto
 import { ProductReview } from '../reviews/product-review/models/product-review.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { ProductVariant } from './models/product-variant.model';
+import { MediaService } from '../shared/media-service/media.service';
 
 @Injectable()
 export class ProductService {

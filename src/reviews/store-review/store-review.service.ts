@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { StoreReview } from './models/store-review.model';
 import { BaseReviewService } from '../base-review/base-review.service';
-import { MediaService } from '../../shared/media-uploader/media-uploader/media.service';
 import { StoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
 import { CounterService } from '../../shared/counter/counter.service';
+import { MediaService } from '../../shared/media-service/media.service';
 
 @Injectable()
 export class StoreReviewService extends BaseReviewService<StoreReview, StoreReviewDto> {

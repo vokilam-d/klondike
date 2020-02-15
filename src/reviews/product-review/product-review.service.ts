@@ -1,13 +1,13 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { MediaService } from '../../shared/media-uploader/media-uploader/media.service';
 import { BaseReviewService } from '../base-review/base-review.service';
 import { ProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReview } from './models/product-review.model';
 import { ProductService } from '../../product/product.service';
 import { ClientSession } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
+import { MediaService } from '../../shared/media-service/media.service';
 
 @Injectable()
 export class ProductReviewService extends BaseReviewService<ProductReview, ProductReviewDto> {
