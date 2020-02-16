@@ -7,6 +7,8 @@ import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { readableDate } from '../shared/helpers/readable-date.function';
 
 enum EEmailType {
+  EmailConfirmation = 'email-confirmation',
+  RegistrationSuccess = 'registration-success',
   OrderConfirmation = 'order-confirmation'
 }
 
@@ -26,7 +28,6 @@ export class EmailService {
     }
   };
   private senderName = 'Клондайк <info@klondike.com.ua>';
-  private orderConfirmHtmlPath = `${__dirname}/templates/order-confirmation.html`;
 
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
@@ -47,6 +48,22 @@ export class EmailService {
     return this.sendEmail(to, subject, html, attachment);
   }
 
+  async sendRegisterConfirmEmail(email: string, confirmationLink: string) {
+    const to = email;
+    const subject = 'Подтвердите email';
+    const html = this.getEmailHtml(EEmailType.EmailConfirmation, { confirmationLink, email });
+
+    return this.sendEmail(to, subject, html);
+  }
+
+  async sendRegisterSuccessEmail(email: string, firstName: string, lastName: string) {
+    const to = email;
+    const subject = 'Добро пожаловать';
+    const html = this.getEmailHtml(EEmailType.RegistrationSuccess, { email, firstName, lastName });
+
+    return this.sendEmail(to, subject, html);
+  }
+
   private async sendEmail(to: string, subject: string, html: string, attachment?: any) {
     const transport = await nodemailer.createTransport(this.transportOptions);
     const attachments = [];
@@ -62,15 +79,9 @@ export class EmailService {
   }
 
   private getEmailHtml(emailType: EEmailType, templateContext: any = {}): string {
-    let filepath: string;
+    const filepath: string = `${__dirname}/templates/${emailType}.html`;
 
-    switch (emailType) {
-      case EEmailType.OrderConfirmation:
-        filepath = this.orderConfirmHtmlPath;
-        break;
-    }
-
-    return handlebars.compile(fs.readFileSync(this.orderConfirmHtmlPath, 'utf8'))(templateContext);
+    return handlebars.compile(fs.readFileSync(filepath, 'utf8'))(templateContext);
   }
 
   private getOrderConfirmationTemplateContext(order: Order): any {
