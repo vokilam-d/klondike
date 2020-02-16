@@ -17,6 +17,7 @@ import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
 import { StoreReviewModule } from './reviews/store-review/store-review.module';
 import { ProductReviewModule } from './reviews/product-review/product-review.module';
 import { WysiwygModule } from './wysiwyg/wysiwyg.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -46,7 +47,8 @@ import { WysiwygModule } from './wysiwyg/wysiwyg.module';
     PdfGeneratorModule,
     StoreReviewModule,
     ProductReviewModule,
-    WysiwygModule
+    WysiwygModule,
+    EmailModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []

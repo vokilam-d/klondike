@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
-// import * as htmlPdf from 'html-pdf';
 import * as handlebars from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { Order } from '../order/models/order.model';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
+import { readableDate } from '../shared/helpers/readable-date.function';
 
 @Injectable()
 export class PdfGeneratorService {
@@ -36,8 +36,8 @@ export class PdfGeneratorService {
 
   private buildTemplateContextForOrder(order: Order): any {
     return {
-      id: order.idForCustomer,
-      date: this.convertDate(order.createdAt),
+      orderId: order.idForCustomer,
+      orderDateTime: readableDate(order.createdAt),
       totalOrderCost: order.totalCost,
       addressName: `${order.address.firstName} ${order.address.lastName}`,
       addressPhone: order.address.phoneNumber,
@@ -51,36 +51,15 @@ export class PdfGeneratorService {
         sku: item.sku,
         qty: item.qty,
         price: item.price,
-        cost: item.cost
+        cost: item.cost,
+        imageUrl: item.imageUrl,
+        slug: item.slug
       })),
       totalProductsCost: order.totalItemsCost,
       discountPercent: order.discountPercent,
       discountValue: order.discountValue
-    }
-  }
-
-  private convertDate(date: Date): string {
-    const day = addLeadingZeros(date.getDay(), 2);
-    const month = MONTHS[date.getMonth()];
-    const year = date.getFullYear();
-    const hours = addLeadingZeros(date.getHours(), 2);
-    const minutes = addLeadingZeros(date.getMinutes(), 2);
-
-    return `${day} ${month} ${year} г., ${hours}:${minutes}`;
+    };
   }
 }
 
-const MONTHS = [
-  'янв.',
-  'фев.',
-  'март.',
-  'апр.',
-  'май',
-  'июнь',
-  'июль',
-  'авг.',
-  'сен.',
-  'окт.',
-  'ноя.',
-  'дек.',
-];
+

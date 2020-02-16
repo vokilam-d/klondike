@@ -35,6 +35,7 @@ export class OrderItemService {
     orderItem.qty = qty;
     orderItem.cost = orderItem.price * orderItem.qty;
     orderItem.discountValue = 0;
+    orderItem.slug = variant.slug;
 
     if (variant.isDiscountApplicable && customerId) {
       const customer = await this.customerService.getCustomerById(customerId);

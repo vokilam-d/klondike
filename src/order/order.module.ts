@@ -25,6 +25,7 @@ const orderModel = {
     InventoryModule
   ],
   controllers: [AdminOrderController, AdminOrderItemController],
-  providers: [OrderService, OrderItemService]
+  providers: [OrderService, OrderItemService],
+  exports: [OrderService]
 })
 export class OrderModule {}

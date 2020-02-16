@@ -33,4 +33,7 @@ export class OrderItem {
 
   @prop()
   imageUrl: string;
+
+  @prop()
+  slug: string;
 }

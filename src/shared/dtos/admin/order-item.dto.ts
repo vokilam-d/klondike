@@ -46,4 +46,9 @@ export class AdminOrderItemDto {
   @IsOptional()
   @IsString()
   imageUrl: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  slug: string;
 }

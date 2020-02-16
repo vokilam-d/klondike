@@ -22,8 +22,8 @@
 
         <div class="header__order-info">
             <div class="header__order">
-                <div class="header__order-row">Заказ: <span class="header__value">№{{ id }}</span></div>
-                <div class="header__order-row">Дата: <span class="header__value">{{ date }}</span></div>
+                <div class="header__order-row">Заказ: <span class="header__value">№{{ orderId }}</span></div>
+                <div class="header__order-row">Дата: <span class="header__value">{{ orderDateTime }}</span></div>
                 <div class="header__order-row">Сумма: <span class="header__value">{{ totalOrderCost }} грн</span></div>
             </div>
         </div>
@@ -89,7 +89,7 @@
         </div>
         <div class="summary__row">
             <div class="summary__key">Скидка (Накопительная скидка {{ discountPercent }}%)</div>
-            <div class="summary__value">-{{ discountValue }} грн</div>
+            <div class="summary__value">{{ discountValue }} грн</div>
         </div>
         <div class="summary__row">
             <div class="summary__key">Общий итог</div>
