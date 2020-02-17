@@ -16,7 +16,7 @@ enum EEmailType {
 export class EmailService {
 
   private transportOptions = {
-    host: 'smtp.klondike.com.ua',
+    host: process.env.SMTP_HOST,
     port: 465,
     secure: true,
     auth: {
