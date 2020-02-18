@@ -110,11 +110,11 @@ export class CategoryService {
     const found = await this.getCategoryById(categoryId);
     const oldSlug = found.slug;
 
-      Object.keys(category).forEach(key => {
-        if (category[key] !== undefined && key !== 'id') {
-          found[key] = category[key];
-        }
-      });
+    Object.keys(category).forEach(key => {
+      if (category[key] !== undefined && key !== 'id') {
+        found[key] = category[key];
+      }
+    });
 
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();

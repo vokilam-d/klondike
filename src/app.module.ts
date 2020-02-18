@@ -19,6 +19,7 @@ import { ProductReviewModule } from './reviews/product-review/product-review.mod
 import { WysiwygModule } from './wysiwyg/wysiwyg.module';
 import { EmailModule } from './email/email.module';
 import { GoogleModule } from './google/google.module';
+import { CurrencyModule } from './currency/currency.module';
 
 @Module({
   imports: [
@@ -50,7 +51,8 @@ import { GoogleModule } from './google/google.module';
     ProductReviewModule,
     WysiwygModule,
     EmailModule,
-    GoogleModule
+    GoogleModule,
+    CurrencyModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []
