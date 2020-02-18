@@ -18,6 +18,7 @@ import { StoreReviewModule } from './reviews/store-review/store-review.module';
 import { ProductReviewModule } from './reviews/product-review/product-review.module';
 import { WysiwygModule } from './wysiwyg/wysiwyg.module';
 import { EmailModule } from './email/email.module';
+import { GoogleModule } from './google/google.module';
 
 @Module({
   imports: [
@@ -48,7 +49,8 @@ import { EmailModule } from './email/email.module';
     StoreReviewModule,
     ProductReviewModule,
     WysiwygModule,
-    EmailModule
+    EmailModule,
+    GoogleModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []
