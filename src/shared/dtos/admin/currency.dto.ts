@@ -1,11 +1,11 @@
 import { Expose, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsEnum, IsNumber, IsString } from 'class-validator';
-import { ECurrency } from '../../enums/currency.enum';
+import { ECurrencyCode } from '../../enums/currency.enum';
 
 export class AdminCurrencyDto {
   @Expose()
-  @IsEnum(ECurrency)
-  id: ECurrency;
+  @IsEnum(ECurrencyCode)
+  id: ECurrencyCode;
 
   @Expose()
   @IsString()

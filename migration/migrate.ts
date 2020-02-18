@@ -17,7 +17,7 @@ import { AdminOrderItemDto } from '../src/shared/dtos/admin/order-item.dto';
 import { CreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.dto';
 import { StoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
 import { ProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
-import { ECurrency } from '../src/shared/enums/currency.enum';
+import { ECurrencyCode } from '../src/shared/enums/currency.enum';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3500';
@@ -311,10 +311,10 @@ export class Migrate {
       variantDto.priceInDefaultCurrency = product.price || 0;
       const euro_price_attr = euro_price_attrs.find(attr => attr.entity_id === product.entity_id);
       if (euro_price_attr) {
-        variantDto.currency = ECurrency.EUR;
+        variantDto.currency = ECurrencyCode.EUR;
         variantDto.price = euro_price_attr.value || 0;
       } else {
-        variantDto.currency = ECurrency.UAH;
+        variantDto.currency = ECurrencyCode.UAH;
         variantDto.price = variantDto.priceInDefaultCurrency;
       }
 

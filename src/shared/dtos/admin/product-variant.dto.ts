@@ -4,7 +4,7 @@ import { MediaDto } from './media.dto';
 import { MetaTagsDto } from './meta-tags.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { transliterate } from '../../helpers/transliterate.function';
-import { ECurrency } from '../../enums/currency.enum';
+import { ECurrencyCode } from '../../enums/currency.enum';
 
 export class AdminProductVariantDto {
   @Exclude()
@@ -52,8 +52,8 @@ export class AdminProductVariantDto {
   price: number;
 
   @Expose()
-  @IsEnum(ECurrency)
-  currency: ECurrency;
+  @IsEnum(ECurrencyCode)
+  currency: ECurrencyCode;
 
   @Expose()
   @Transform(price => parseFloat(price))

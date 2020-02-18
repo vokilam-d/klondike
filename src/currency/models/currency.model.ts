@@ -1,9 +1,9 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
-import { ECurrency } from '../../shared/enums/currency.enum';
+import { ECurrencyCode } from '../../shared/enums/currency.enum';
 
 export class Currency {
   @prop()
-  _id: ECurrency;
+  _id: ECurrencyCode;
 
   set id(id) { this._id = id; }
   get id() { return this._id; }

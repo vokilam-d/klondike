@@ -3,7 +3,7 @@ import { CurrencyService } from './currency.service';
 import { ResponseDto } from '../shared/dtos/admin/response.dto';
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { plainToClass } from 'class-transformer';
-import { ECurrency } from '../shared/enums/currency.enum';
+import { ECurrencyCode } from '../shared/enums/currency.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/currency')
@@ -32,7 +32,7 @@ export class AdminCurrencyController {
 
   @Put(':currencyCode')
   async updateCurrency(
-    @Param('currencyCode') currencyCode: ECurrency,
+    @Param('currencyCode') currencyCode: ECurrencyCode,
     @Body() currencyDto: AdminCurrencyDto
   ): Promise<ResponseDto<AdminCurrencyDto>> {
 
