@@ -92,14 +92,15 @@ export class CategoryService {
       }
 
       await newCategoryModel.save({ session });
-
       this.createCategoryPageRegistry(newCategoryModel.slug, session);
+      await session.commitTransaction();
+
       return plainToClass(Category, newCategoryModel.toJSON());
     } catch (ex) {
       await session.abortTransaction();
       throw ex;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
 
@@ -123,6 +124,7 @@ export class CategoryService {
       if (oldSlug !== category.slug) {
         this.updateCategoryPageRegistry(found.slug, category.slug, session);
       }
+      await session.commitTransaction();
 
       return saved.toJSON();
     } catch (ex) {

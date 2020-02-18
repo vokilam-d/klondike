@@ -17,8 +17,10 @@ import { AdminOrderItemDto } from '../src/shared/dtos/admin/order-item.dto';
 import { CreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.dto';
 import { StoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
 import { ProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
+import { ECurrency } from '../src/shared/enums/currency.enum';
 
 export class Migrate {
+  private apiHostname = 'http://localhost:3500';
   /**
    * Hold name of the models to be generated
    *
@@ -80,6 +82,12 @@ export class Migrate {
       'cataloginventory_stock_item',
       'catalog_category_product',
       'catalog_product_entity_varchar',
+      'catalog_product_entity_text',
+      'catalog_product_entity_int',
+      'catalog_product_entity_decimal',
+      'catalog_product_entity_tier_price',
+      'catalog_product_entity_datetime',
+      'catalog_product_entity_gallery',
       'catalog_product_entity_media_gallery_value_to_entity',
       'catalog_product_entity_media_gallery_value',
       'catalog_product_entity_media_gallery',
@@ -153,7 +161,7 @@ export class Migrate {
 
       try {
         await axios.post(
-          `http://localhost:3500/api/v1/admin/categories`,
+          `${this.apiHostname}/api/v1/admin/categories`,
           dto,
           {
             params: { migrate: true },
@@ -181,6 +189,7 @@ export class Migrate {
     const options: any[] = Array.from(JSON.parse(optionsFile));
     const optionValuesFile = fs.readFileSync(this.datafilesdir + 'eav_attribute_option_value.json', 'utf-8');
     const optionValues: any[] = Array.from(JSON.parse(optionValuesFile));
+    const attrDecimals: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_decimal.json', 'utf-8')));
 
     let count: number = 0;
 
@@ -216,7 +225,7 @@ export class Migrate {
 
       try {
         await axios.post(
-          `http://localhost:3500/api/v1/admin/attributes`,
+          `${this.apiHostname}/api/v1/admin/attributes`,
           dto,
           {
             params: { migrate: true },
@@ -238,24 +247,18 @@ export class Migrate {
 
   async populateProducts() {
     console.log('.\n.\n***     Start migrating PRODUCTS     ***\n.\n.');
-    const productsFile = fs.readFileSync(this.datafilesdir + 'catalog_product_flat_1.json', 'utf-8');
-    const products: any[] = Array.from(JSON.parse(productsFile));
-    const inventoryFile = fs.readFileSync(this.datafilesdir + 'cataloginventory_stock_item.json', 'utf-8');
-    const inventories: any[] = Array.from(JSON.parse(inventoryFile));
-    const categoryProductsFile = fs.readFileSync(this.datafilesdir + 'catalog_category_product.json', 'utf-8');
-    const categoryProducts: any[] = Array.from(JSON.parse(categoryProductsFile));
-    const productMetasFile = fs.readFileSync(this.datafilesdir + 'catalog_product_entity_varchar.json', 'utf-8');
-    const productMetas: any[] = Array.from(JSON.parse(productMetasFile));
-    const mediaValueToEntitiesFile = fs.readFileSync(this.datafilesdir + 'catalog_product_entity_media_gallery_value_to_entity.json', 'utf-8');
-    const mediaValueToEntities: any[] = Array.from(JSON.parse(mediaValueToEntitiesFile));
-    const mediaValuesFile = fs.readFileSync(this.datafilesdir + 'catalog_product_entity_media_gallery_value.json', 'utf-8');
-    const mediaValues: any[] = Array.from(JSON.parse(mediaValuesFile));
-    const mediaGalleriesFile = fs.readFileSync(this.datafilesdir + 'catalog_product_entity_media_gallery.json', 'utf-8');
-    const mediaGalleries: any[] = Array.from(JSON.parse(mediaGalleriesFile));
+    const products: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_flat_1.json', 'utf-8')));
+    const inventories: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'cataloginventory_stock_item.json', 'utf-8')));
+    const categoryProducts: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_category_product.json', 'utf-8')));
+    const catalog_product_entity_varchars: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_varchar.json', 'utf-8')));
+    const mediaValueToEntities: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_media_gallery_value_to_entity.json', 'utf-8')));
+    const mediaValues: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_media_gallery_value.json', 'utf-8')));
+    const mediaGalleries: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_media_gallery.json', 'utf-8')));
+    const euro_price_attrs: any[] = Array.from<any>(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_decimal.json', 'utf-8'))).filter(attr => attr.attribute_id === 233);
 
     let count: number = 0;
 
-    const attrsResponse = await axios.get(`http://localhost:3500/api/v1/admin/attributes`);
+    const attrsResponse = await axios.get(`${this.apiHostname}/api/v1/admin/attributes`);
     const savedAttributes: AdminAttributeDto[] = attrsResponse.data.data;
 
 
@@ -304,7 +307,17 @@ export class Migrate {
       variantDto.slug = product.url_key || '';
       variantDto.attributes = [];
       variantDto.isEnabled = true;
-      variantDto.price = product.price || 0;
+
+      variantDto.priceInDefaultCurrency = product.price || 0;
+      const euro_price_attr = euro_price_attrs.find(attr => attr.entity_id === product.entity_id);
+      if (euro_price_attr) {
+        variantDto.currency = ECurrency.EUR;
+        variantDto.price = euro_price_attr.value || 0;
+      } else {
+        variantDto.currency = ECurrency.UAH;
+        variantDto.price = variantDto.priceInDefaultCurrency;
+      }
+
       variantDto.salesCount = 0;
 
       const tmpMedias: {alt: string; disabled: number; position: number; url: string;}[] = [];
@@ -326,12 +339,11 @@ export class Migrate {
       variantDto.medias = [];
       for (let tmpMedia of tmpMedias) {
         try {
-          // const imgResponse = await axios.get(`http://173.249.23.253:5200/media/catalog/product${tmpMedia.url}`, { responseType: 'arraybuffer' });
           const imgResponse = await axios.get(`https://klondike.com.ua/media/catalog/product${tmpMedia.url}`, { responseType: 'arraybuffer' });
           const form = new FormData();
           form.append('file', imgResponse.data, { filename: path.parse(tmpMedia.url).base });
 
-          const { data: media } = await axios.post<MediaDto>(`http://localhost:3500/api/v1/admin/products/media`, form, { headers: form.getHeaders() });
+          const { data: media } = await axios.post<MediaDto>(`${this.apiHostname}/api/v1/admin/products/media`, form, { headers: form.getHeaders() });
           media.altText = tmpMedia.alt || '';
           media.isHidden = tmpMedia.disabled === 0;
 
@@ -344,19 +356,28 @@ export class Migrate {
       }
 
       variantDto.fullDescription = product.description || '';
-      variantDto.shortDescription = product.short_description || '';
+      variantDto.shortDescription = (product.short_description || '').replace(/(<([^>]+)>)/ig,"");;
 
       variantDto.metaTags = {} as MetaTagsDto;
-      productMetas.forEach(productMeta => {
-        if (productMeta.entity_id === product.entity_id) {
-          if (productMeta.attribute_id === 84) {
-            variantDto.metaTags.title = productMeta.value;
+      catalog_product_entity_varchars.forEach(varchar => {
+        if (varchar.entity_id === product.entity_id) {
+          if (varchar.attribute_id === 84) {
+            variantDto.metaTags.title = varchar.value;
           }
-          if (productMeta.attribute_id === 85) {
-            variantDto.metaTags.keywords = productMeta.value;
+          if (varchar.attribute_id === 85) {
+            variantDto.metaTags.keywords = varchar.value;
           }
-          if (productMeta.attribute_id === 86) {
-            variantDto.metaTags.description = productMeta.value;
+          if (varchar.attribute_id === 86) {
+            variantDto.metaTags.description = varchar.value;
+          }
+          if (varchar.attribute_id === 229) {
+            variantDto.gtin = varchar.value;
+          }
+          if (varchar.attribute_id === 222) {
+            variantDto.vendorCode = varchar.value;
+          }
+          if (varchar.attribute_id === 236) {
+            variantDto.googleAdsProductTitle = varchar.value;
           }
         }
       });
@@ -369,7 +390,7 @@ export class Migrate {
 
       try {
         await axios.post(
-          `http://localhost:3500/api/v1/admin/products`,
+          `${this.apiHostname}/api/v1/admin/products`,
           dto,
           {
             params: { migrate: true },
@@ -389,7 +410,7 @@ export class Migrate {
       }
     };
 
-    for (const batch of this.getBatches(products)) {
+    for (const batch of this.getBatches(products, 3)) {
       await Promise.all(batch.map(product => addProduct(product)));
     }
 
@@ -478,7 +499,7 @@ export class Migrate {
 
       try {
         await axios.post(
-          `http://localhost:3500/api/v1/admin/customers`,
+          `${this.apiHostname}/api/v1/admin/customers`,
           dto,
           {
             params: { migrate: true },
@@ -584,7 +605,7 @@ export class Migrate {
             orderItemDto.qty = magOrderItem.qty_ordered;
             orderItemDto.customerId = magOrderItem.customer_id;
             const response = await axios.post<{ data: AdminOrderItemDto }>(
-              `http://localhost:3500/api/v1/admin/order-items`,
+              `${this.apiHostname}/api/v1/admin/order-items`,
               orderItemDto,
               {
                 params: { migrate: true },
@@ -632,7 +653,7 @@ export class Migrate {
 
       try {
         await axios.post(
-          `http://localhost:3500/api/v1/admin/orders`,
+          `${this.apiHostname}/api/v1/admin/orders`,
           dto,
           {
             params: { migrate: true },
@@ -688,7 +709,7 @@ export class Migrate {
 
       try {
         await axios.post(
-          `http://localhost:3500/api/v1/admin/store-reviews`,
+          `${this.apiHostname}/api/v1/admin/store-reviews`,
           dto,
           {
             params: { migrate: true },
@@ -746,7 +767,7 @@ export class Migrate {
 
       try {
         await axios.post(
-          `http://localhost:3500/api/v1/admin/product-reviews`,
+          `${this.apiHostname}/api/v1/admin/product-reviews`,
           dto,
           {
             params: { migrate: true },
@@ -773,7 +794,7 @@ export class Migrate {
 
   async updateCounter(entity: string) {
     await axios.post(
-      `http://localhost:3500/api/v1/admin/${entity}/counter`);
+      `${this.apiHostname}/api/v1/admin/${entity}/counter`);
   }
 
 

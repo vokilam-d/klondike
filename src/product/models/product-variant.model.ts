@@ -3,6 +3,7 @@ import { Media } from '../../shared/models/media.model';
 import { MetaTags } from '../../shared/models/meta-tags.model';
 import { ProductSelectedAttribute } from './product-selected-attribute.model';
 import { Types } from 'mongoose';
+import { ECurrency } from '../../shared/enums/currency.enum';
 
 export class ProductVariant {
   @prop({ index: true })
@@ -17,6 +18,12 @@ export class ProductVariant {
   @prop({ required: true, index: true, unique: true })
   sku: string;
 
+  @prop({ index: true })
+  vendorCode: string;
+
+  @prop({ index: true })
+  gtin: string;
+
   @prop({ required: true, index: true, unique: true })
   slug: string;
 
@@ -28,6 +35,12 @@ export class ProductVariant {
 
   @prop({ default: 0 })
   price: number;
+
+  @prop({ default: ECurrency.UAH })
+  currency: ECurrency;
+
+  @prop({ default: 0 })
+  priceInDefaultCurrency: number;
 
   @arrayProp({ items: Media, default: [] })
   medias: Media[];
@@ -46,4 +59,7 @@ export class ProductVariant {
 
   @prop({ default: 0 })
   salesCount: number;
+
+  @prop()
+  googleAdsProductTitle: string;
 }

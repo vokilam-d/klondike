@@ -1,9 +1,10 @@
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { MediaDto } from './media.dto';
 import { MetaTagsDto } from './meta-tags.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { transliterate } from '../../helpers/transliterate.function';
+import { ECurrency } from '../../enums/currency.enum';
 
 export class AdminProductVariantDto {
   @Exclude()
@@ -20,6 +21,16 @@ export class AdminProductVariantDto {
   @Expose()
   @IsString()
   sku: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  vendorCode: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  gtin: string;
 
   @Expose()
   @IsString()
@@ -39,6 +50,15 @@ export class AdminProductVariantDto {
   @Transform(price => parseFloat(price))
   @IsNumber()
   price: number;
+
+  @Expose()
+  @IsEnum(ECurrency)
+  currency: ECurrency;
+
+  @Expose()
+  @Transform(price => parseFloat(price))
+  @IsNumber()
+  priceInDefaultCurrency: number;
 
   @Expose()
   @ValidateNested({ each: true })
@@ -70,4 +90,9 @@ export class AdminProductVariantDto {
   @IsOptional()
   @IsNumber()
   salesCount: number;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  googleAdsProductTitle: string;
 }
