@@ -20,6 +20,7 @@ import { WysiwygModule } from './wysiwyg/wysiwyg.module';
 import { EmailModule } from './email/email.module';
 import { GoogleModule } from './google/google.module';
 import { CurrencyModule } from './currency/currency.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { CurrencyModule } from './currency/currency.module';
       }),
       inject: [ConfigService]
     }),
+    ScheduleModule.forRoot(),
     SharedModule,
 
     CategoryModule,

@@ -1,9 +1,10 @@
-import { HttpService, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpService, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Currency } from './models/currency.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { ECurrencyCode } from '../shared/enums/currency.enum';
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { InjectModel } from '@nestjs/mongoose';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 type ExchangeRate = {
   bid: number;
@@ -21,6 +22,7 @@ type ExchangeRates = {
 @Injectable()
 export class CurrencyService {
 
+  private logger = new Logger(CurrencyService.name);
   private auctionExchangeRateUrl = 'http://api.minfin.com.ua/auction/info/58ec1c89d7ea9221853cf7b777a02c686c455a03/';
 
   constructor(@InjectModel(Currency.name) private readonly currencyModel: ReturnModelType<typeof Currency>,
@@ -33,6 +35,7 @@ export class CurrencyService {
     return currencies.map(currency => currency.toJSON());
   }
 
+  @Cron(CronExpression.EVERY_HOUR)
   async updateExchangeRates(): Promise<Currency[]> {
     const currencies = await this.currencyModel.find().exec();
 
@@ -46,6 +49,7 @@ export class CurrencyService {
       currency.exchangeRate = rate.bid;
 
       await currency.save();
+      this.logger.log(`Updated currency '${currency.id}' rate to ${currency.exchangeRate}`);
     }
 
     return currencies.map(currency => currency.toJSON());
