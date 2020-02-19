@@ -1,9 +1,8 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { AdminCurrencyController } from './admin-currency.controller';
 import { CurrencyService } from './currency.service';
 import { Currency, CurrencyModel } from './models/currency.model';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ProductModule } from '../product/product.module';
 
 const currencyModel = {
   name: CurrencyModel.modelName,
@@ -12,7 +11,10 @@ const currencyModel = {
 };
 
 @Module({
-  imports: [MongooseModule.forFeature([currencyModel]), ProductModule],
+  imports: [
+    MongooseModule.forFeature([currencyModel]),
+    HttpModule
+  ],
   controllers: [AdminCurrencyController],
   providers: [CurrencyService]
 })

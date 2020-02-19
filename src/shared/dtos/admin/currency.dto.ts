@@ -1,5 +1,5 @@
 import { Expose, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsEnum, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ECurrencyCode } from '../../enums/currency.enum';
 
 export class AdminCurrencyDto {
@@ -20,6 +20,7 @@ export class AdminCurrencyDto {
   isDefault: boolean;
 
   @Expose()
+  @IsOptional()
   @IsDate()
   @Type(() => Date)
   updatedAt: Date;

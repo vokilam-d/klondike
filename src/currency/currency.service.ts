@@ -1,8 +1,9 @@
-import { HttpService, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpService, Injectable, NotFoundException } from '@nestjs/common';
 import { Currency } from './models/currency.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { ECurrencyCode } from '../shared/enums/currency.enum';
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
+import { InjectModel } from '@nestjs/mongoose';
 
 type ExchangeRate = {
   bid: number;
@@ -22,7 +23,7 @@ export class CurrencyService {
 
   private auctionExchangeRateUrl = 'http://api.minfin.com.ua/auction/info/58ec1c89d7ea9221853cf7b777a02c686c455a03/';
 
-  constructor(@Inject(Currency.name) private readonly currencyModel: ReturnModelType<typeof Currency>,
+  constructor(@InjectModel(Currency.name) private readonly currencyModel: ReturnModelType<typeof Currency>,
               private readonly http: HttpService) {
   }
 

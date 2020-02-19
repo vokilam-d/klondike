@@ -6,7 +6,7 @@ import { plainToClass } from 'class-transformer';
 import { ECurrencyCode } from '../shared/enums/currency.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
-@Controller('admin/currency')
+@Controller('admin/currencies')
 export class AdminCurrencyController {
 
   constructor(private readonly currencyService: CurrencyService) {
