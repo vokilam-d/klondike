@@ -18,4 +18,14 @@ export class AdminGoogleController {
       .header('Content-Disposition', `attachment;filename=${encodeURIComponent(this.googleShoppingFeedService.shoppingFeedFileName)}`)
       .send(feed);
   }
+
+  @Get('reviews-feed')
+  async getProductReviewsFeed(@Res() reply: FastifyReply<ServerResponse>) {
+    const feed = await this.googleShoppingFeedService.generateProductReviewsFeed();
+
+    reply
+      .type('text/xml')
+      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(this.googleShoppingFeedService.reviewsFeedFileName)}`)
+      .send(feed);
+  }
 }
