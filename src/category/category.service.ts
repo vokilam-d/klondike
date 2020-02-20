@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Category } from './models/category.model';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { ProductService } from '../product/product.service';
@@ -16,7 +16,7 @@ export class CategoryService {
   constructor(@InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
               private pageRegistryService: PageRegistryService,
               private counterService: CounterService,
-              private productService: ProductService) {
+              @Inject(forwardRef(() => ProductService)) private productService: ProductService) {
   }
 
   async getCategoriesTree(): Promise<AdminCategoryTreeItem[]> {
@@ -28,6 +28,7 @@ export class CategoryService {
       const item = {
         id: category.id,
         name: category.name,
+        slug: category.slug,
         children: []
       };
 
@@ -92,7 +93,7 @@ export class CategoryService {
       }
 
       await newCategoryModel.save({ session });
-      this.createCategoryPageRegistry(newCategoryModel.slug, session);
+      await this.createCategoryPageRegistry(newCategoryModel.slug, session);
       await session.commitTransaction();
 
       return plainToClass(Category, newCategoryModel.toJSON());
@@ -104,15 +105,16 @@ export class CategoryService {
     }
   }
 
-  async updateCategory(categoryId: string | number, category: AdminAddOrUpdateCategoryDto): Promise<Category> {
-    category.slug = category.slug === '' ? transliterate(category.name) : category.slug;
+  async updateCategory(categoryId: number, categoryDto: AdminAddOrUpdateCategoryDto): Promise<Category> {
+    categoryDto.slug = categoryDto.slug === '' ? transliterate(categoryDto.name) : categoryDto.slug;
 
     const found = await this.getCategoryById(categoryId);
     const oldSlug = found.slug;
+    const oldName = found.name;
 
-    Object.keys(category).forEach(key => {
-      if (category[key] !== undefined && key !== 'id') {
-        found[key] = category[key];
+    Object.keys(categoryDto).forEach(key => {
+      if (categoryDto[key] !== undefined && key !== 'id') {
+        found[key] = categoryDto[key];
       }
     });
 
@@ -121,12 +123,16 @@ export class CategoryService {
 
     try {
       const saved = await found.save({ session });
-      if (oldSlug !== category.slug) {
-        this.updateCategoryPageRegistry(found.slug, category.slug, session);
+      if (oldSlug !== categoryDto.slug) {
+        await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, session);
       }
-      await session.commitTransaction();
+      if (oldSlug !== categoryDto.slug || oldName !== categoryDto.name) {
+        await this.productService.updateBreadcrumbs({ id: categoryId, name: categoryDto.name, slug: categoryDto.slug}, session);
+      }
 
+      await session.commitTransaction();
       return saved.toJSON();
+
     } catch (ex) {
       await session.abortTransaction();
       throw ex;

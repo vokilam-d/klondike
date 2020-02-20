@@ -56,7 +56,7 @@ export class AdminProductVariantDto {
   currency: ECurrencyCode;
 
   @Expose()
-  @Transform(price => parseFloat(price))
+  @IsOptional()
   @IsNumber()
   priceInDefaultCurrency: number;
 

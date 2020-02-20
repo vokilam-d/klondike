@@ -30,7 +30,11 @@ export class PageRegistryService {
     const newPage = new this.registryModel({ slug: pageRegistry.slug, type: pageRegistry.type});
     await newPage.save({ session });
 
-    this.logger.log(`Created '${newPage.slug}' page-registry.`);
+    if (newPage) {
+      this.logger.log(`Created '${newPage.slug}' page-registry.`);
+    } else {
+      this.logger.error(`Could not create '${pageRegistry.slug}' in page-registry.`);
+    }
     return newPage;
   }
 
@@ -41,7 +45,11 @@ export class PageRegistryService {
       { new: true }
     ).session(session).exec();
 
-    this.logger.log(`Updated '${result.slug}' page-registry.`);
+    if (result) {
+      this.logger.log(`Updated '${result.slug}' page-registry.`);
+    } else {
+      this.logger.error(`Could not update '${oldSlug}' in page-registry.`);
+    }
     return result;
   }
 
@@ -51,7 +59,7 @@ export class PageRegistryService {
     if (deleted) {
       this.logger.log(`Deleted '${deleted.slug}' from page-registry.`);
     } else {
-      this.logger.error(`Could not delete '${slug}' from page-registry.`)
+      this.logger.error(`Could not delete '${slug}' from page-registry.`);
     }
 
     return deleted;

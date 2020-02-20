@@ -3,6 +3,7 @@ import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductVariantDto } from './product-variant.dto';
 import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
+import { ProductBreadcrumbDto } from './product-breadcrumb.dto';
 
 export class AdminAddOrUpdateProductDto {
   @Expose()
@@ -20,6 +21,11 @@ export class AdminAddOrUpdateProductDto {
   @Expose()
   @IsNumber(undefined, { each: true })
   categoryIds: number[];
+
+  @Expose()
+  @ValidateNested({ each: true })
+  @Type(() => ProductBreadcrumbDto)
+  breadcrumbs: ProductBreadcrumbDto[];
 
   @Expose()
   @ValidateNested({ each: true })

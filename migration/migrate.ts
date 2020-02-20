@@ -18,6 +18,7 @@ import { CreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.d
 import { StoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
 import { ProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
 import { ECurrencyCode } from '../src/shared/enums/currency.enum';
+import { stripHtmlTags } from '../src/shared/helpers/strip-html-tags.function';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3500';
@@ -356,7 +357,7 @@ export class Migrate {
       }
 
       variantDto.fullDescription = product.description || '';
-      variantDto.shortDescription = (product.short_description || '').replace(/(<([^>]+)>)/ig,"");;
+      variantDto.shortDescription = stripHtmlTags(product.short_description || '');
 
       variantDto.metaTags = {} as MetaTagsDto;
       catalog_product_entity_varchars.forEach(varchar => {
@@ -671,7 +672,7 @@ export class Migrate {
       }
     };
 
-    for (const batches of this.getBatches(orders, 2)) {
+    for (const batches of this.getBatches(orders, 3)) {
       await Promise.all(batches.map(order => addOrder(order)));
     }
 

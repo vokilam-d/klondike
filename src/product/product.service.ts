@@ -18,6 +18,9 @@ import { ProductReview } from '../reviews/product-review/models/product-review.m
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { ProductVariant } from './models/product-variant.model';
 import { MediaService } from '../shared/media-service/media.service';
+import { CategoryService } from '../category/category.service';
+import { ProductBreadcrumb } from './models/product-breadcrumb.model';
+import { AdminCategoryTreeItem } from '../shared/dtos/admin/category.dto';
 
 @Injectable()
 export class ProductService {
@@ -27,6 +30,7 @@ export class ProductService {
               private readonly counterService: CounterService,
               private readonly mediaService: MediaService,
               @Inject(forwardRef(() => ProductReviewService)) private readonly productReviewService: ProductReviewService,
+              @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
               private readonly pageRegistryService: PageRegistryService) {
   }
 
@@ -125,6 +129,7 @@ export class ProductService {
       if (!migrate) {
         newProductModel.id = await this.counterService.getCounter(Product.collectionName);
       }
+      newProductModel.breadcrumbs = await this.buildBreadcrumbs(newProductModel.categoryIds);
 
       for (const dtoVariant of productDto.variants) {
         const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
@@ -216,6 +221,7 @@ export class ProductService {
       }
 
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
+      found.breadcrumbs = await this.buildBreadcrumbs(found.categoryIds);
       await found.save({ session });
       await session.commitTransaction();
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
@@ -374,8 +380,11 @@ export class ProductService {
   }
 
   async removeCategoryId(categoryId: number, session: ClientSession): Promise<any> {
+    categoryId = parseInt(categoryId as any);
+
     const conditions: Partial<Product> = { categoryIds: categoryId as any };
-    const update: Partial<Product> = { categoryIds: categoryId as any };
+    const breadcrumbToRemove: Partial<ProductBreadcrumb> = { id: categoryId };
+    const update: Partial<Product> = { categoryIds: categoryId as any, breadcrumbs: breadcrumbToRemove as any };
 
     return this.productModel
       .updateMany(
@@ -384,5 +393,49 @@ export class ProductService {
       )
       .session(session)
       .exec();
+  }
+
+  async updateBreadcrumbs(breadcrumb: ProductBreadcrumb, session: ClientSession): Promise<any> {
+    const breadcrumbsProp = getPropertyOf<Product>('breadcrumbs');
+    const idProp = getPropertyOf<ProductBreadcrumb>('id');
+
+    return this.productModel
+      .updateMany(
+        { [`${breadcrumbsProp}.${idProp}`]: breadcrumb.id },
+        { [`${breadcrumbsProp}.$`]: breadcrumb }
+      )
+      .session(session)
+      .exec();
+  }
+
+  private async buildBreadcrumbs(categoryIds: number[]): Promise<ProductBreadcrumb[]> {
+    const breadcrumbsVariants: ProductBreadcrumb[][] = [];
+
+    const populate = (treeItems: AdminCategoryTreeItem[], breadcrumbs: ProductBreadcrumb[] = []) => {
+
+      for (const treeItem of treeItems) {
+        const newBreadcrumbs: ProductBreadcrumb[] = JSON.parse(JSON.stringify(breadcrumbs));
+
+        if (categoryIds.indexOf(treeItem.id) !== -1) {
+          newBreadcrumbs.push({
+            id: treeItem.id,
+            name: treeItem.name,
+            slug: treeItem.slug
+          });
+        }
+
+        if (treeItem.children.length) {
+          populate(treeItem.children, newBreadcrumbs);
+        } else {
+          breadcrumbsVariants.push(newBreadcrumbs);
+        }
+      }
+    };
+
+    const categoryTreeItems = await this.categoryService.getCategoriesTree();
+    populate(categoryTreeItems);
+
+    breadcrumbsVariants.sort((a, b) => b.length - a.length);
+    return breadcrumbsVariants[0] || [];
   }
 }

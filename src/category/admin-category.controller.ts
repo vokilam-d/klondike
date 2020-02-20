@@ -53,8 +53,8 @@ export class AdminCategoryController {
   }
 
   @Put(':id')
-  async updateCategory(@Param('id') id: number, @Body() category: AdminAddOrUpdateCategoryDto): Promise<ResponseDto<AdminResponseCategoryDto>> {
-    const updated = await this.categoryService.updateCategory(id, category);
+  async updateCategory(@Param('id') id: string, @Body() category: AdminAddOrUpdateCategoryDto): Promise<ResponseDto<AdminResponseCategoryDto>> {
+    const updated = await this.categoryService.updateCategory(parseInt(id), category);
     return {
       data: plainToClass(AdminResponseCategoryDto, updated, { excludeExtraneousValues: true })
     };

@@ -41,8 +41,12 @@ export class AdminResponseCategoryDto extends AdminAddOrUpdateCategoryDto {
 export class AdminCategoryTreeItem {
   @Expose()
   id: AdminResponseCategoryDto['id'];
+
   @Expose()
   name: AdminResponseCategoryDto['name'];
+
+  @Expose()
+  slug: AdminResponseCategoryDto['slug'];
 
   @Expose()
   @Type(() => AdminCategoryTreeItem)

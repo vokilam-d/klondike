@@ -7,6 +7,7 @@ import { PageRegistryModule } from '../page-registry/page-registry.module';
 import { ClientProductController } from './client-product.controller';
 import { AdminProductController } from './admin-product.controller';
 import { ProductReviewModule } from '../reviews/product-review/product-review.module';
+import { CategoryModule } from '../category/category.module';
 
 const productModel = {
   name: ProductModel.modelName,
@@ -19,7 +20,8 @@ const productModel = {
     MongooseModule.forFeature([productModel]),
     InventoryModule,
     PageRegistryModule,
-    forwardRef(() => ProductReviewModule)
+    forwardRef(() => ProductReviewModule),
+    forwardRef(() => CategoryModule)
   ],
   controllers: [AdminProductController, ClientProductController],
   providers: [ProductService],
