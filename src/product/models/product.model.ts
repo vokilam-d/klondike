@@ -54,6 +54,6 @@ export const ProductModel = getModelForClass(Product, {
 });
 
 ProductModel.schema.index(
-  { 'variants.name': 'text', 'variants.fullDescription': 'text' },
-  { weights: { 'variants.name': 10, 'variants.fullDescription': 1 } }
+  { 'variants.name': 'text', 'variants.fullDescription': 'text', 'variants.sku': 'text' },
+  { weights: { 'variants.name': 10, 'variants.fullDescription': 1, 'variants.sku': 1 } }
 );

@@ -62,5 +62,7 @@ typings/
 .idea/
 dist/
 upload/
+
 migration/json-data-files/
 migration/json-data-files-stg/
+config/
