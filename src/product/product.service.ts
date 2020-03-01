@@ -52,8 +52,9 @@ export class ProductService implements OnApplicationBootstrap {
                         withVariants: boolean
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    let products;
-    let itemsFiltered;
+    let products: any[];
+    let itemsFiltered: number;
+
     if (spf.hasFilters()) {
       const searchResponse = await this.searchByFilters(spf, withVariants);
       products = searchResponse[0];
@@ -80,9 +81,6 @@ export class ProductService implements OnApplicationBootstrap {
     const qtyProp = getPropertyOf<Inventory>('qty');
 
     return this.productModel.aggregate()
-      .sort(sortingPaginating.sort)
-      .skip(sortingPaginating.skip)
-      .limit(sortingPaginating.limit)
       .unwind(variantsProp)
       .lookup({
         'from': Inventory.collectionName,
@@ -96,6 +94,9 @@ export class ProductService implements OnApplicationBootstrap {
       .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
       .project({ [`${variantsProp}.${descProp}`]: false })
+      .sort(sortingPaginating.sort)
+      .skip(sortingPaginating.skip)
+      .limit(sortingPaginating.limit)
       .exec();
   }
 
@@ -171,7 +172,7 @@ export class ProductService implements OnApplicationBootstrap {
       newProductModel.breadcrumbs = await this.buildBreadcrumbs(newProductModel.categoryIds);
 
       for (const dtoVariant of productDto.variants) {
-        const savedVariant = newProductModel.variants.find(v => v._id.equals(dtoVariant.id));
+        const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
         const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(dtoVariant.medias, Product.collectionName);
 
         savedVariant.medias = savedMedias;
@@ -182,7 +183,7 @@ export class ProductService implements OnApplicationBootstrap {
       }
 
       await newProductModel.save({ session });
-      await this.addSearchData(newProductModel, productDto);
+      await this.addSearchData(newProductModel.toJSON(), productDto);
       await session.commitTransaction();
 
       this.updateCachedProductCount();
@@ -264,7 +265,7 @@ export class ProductService implements OnApplicationBootstrap {
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
       found.breadcrumbs = await this.buildBreadcrumbs(found.categoryIds);
       await found.save({ session });
-      await this.updateSearchData(found, productDto);
+      await this.updateSearchData(found.toJSON(), productDto);
       await session.commitTransaction();
 
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
@@ -575,7 +576,7 @@ export class ProductService implements OnApplicationBootstrap {
       ...product,
       id: product._id,
       variants: product.variants.map(variant => {
-        const variantInDto = productDto.variants.find(v => variant._id.equals(v.id));
+        const variantInDto = productDto.variants.find(v => variant.sku === v.sku);
         return {
           ...variant,
           id: variant._id,

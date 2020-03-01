@@ -1,30 +1,61 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer } from './models/customer.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
-import { AdminAddOrUpdateCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
+import { AdminAddOrUpdateCustomerDto, AdminCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { ClientSession } from 'mongoose';
 import { Order } from '../order/models/order.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
+import { SearchService } from '../shared/search/search.service';
+import { ElasticCustomer } from './models/elastic-customer.model';
+import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { plainToClass } from 'class-transformer';
+import { AdminOrderDto } from '../shared/dtos/admin/order.dto';
 
 @Injectable()
-export class CustomerService {
+export class CustomerService implements OnApplicationBootstrap {
+
+  private cachedCustomerCount: number;
 
   constructor(@InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
+              private readonly searchService: SearchService,
               private counterService: CounterService) {
   }
 
-  async getAllCustomers(sortingPaging: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto()): Promise<Customer[]> {
-    const found = await this.customerModel
-      .find()
-      .sort(sortingPaging.sort)
-      .skip(sortingPaging.skip)
-      .limit(sortingPaging.limit)
-      .exec();
+  onApplicationBootstrap(): any {
+    this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomer());
+  }
 
-    return found;
+  async getCustomersList(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminCustomerDto[]>> {
+    let customers: AdminCustomerDto[];
+    let itemsFiltered: number;
+
+    if (spf.hasFilters()) {
+      const searchResponse = await this.searchByFilters(spf);
+      customers = searchResponse[0];
+      itemsFiltered = searchResponse[1];
+
+    } else {
+      customers = await this.customerModel
+        .find()
+        .sort(spf.sort)
+        .skip(spf.skip)
+        .limit(spf.limit)
+        .exec();
+
+      customers = plainToClass(AdminCustomerDto, customers, { excludeExtraneousValues: true });
+    }
+
+    const itemsTotal = await this.countCustomers();
+    const pagesTotal = Math.ceil(itemsTotal / spf.limit);
+    return {
+      data: customers,
+      itemsTotal,
+      itemsFiltered,
+      pagesTotal
+    };
   }
 
   async getCustomerById(customerId: number): Promise<Customer> {
@@ -53,6 +84,8 @@ export class CustomerService {
     }
 
     await newCustomer.save({ session });
+    this.addSearchData(newCustomer);
+    this.updateCachedCustomerCount();
 
     return newCustomer;
   }
@@ -65,6 +98,7 @@ export class CustomerService {
 
     Object.keys(customerDto).forEach(key => found[key] = customerDto[key]);
     await found.save();
+    this.updateSearchData(found);
 
     return found;
   }
@@ -77,6 +111,7 @@ export class CustomerService {
 
     found.addresses.push(address);
     await found.save({ session });
+    this.updateSearchData(found);
 
     return found;
   }
@@ -87,11 +122,23 @@ export class CustomerService {
       throw new NotFoundException(`Customer with id '${customerId}' not found`);
     }
 
-    return deleted;
+    this.deleteSearchData(deleted);
+    this.updateCachedCustomerCount();
+    return deleted.toJSON();
   }
 
-  countCustomers(): Promise<number> {
-    return this.customerModel.estimatedDocumentCount().exec();
+  async countCustomers(): Promise<number> {
+    if (this.cachedCustomerCount >= 0) {
+      return this.cachedCustomerCount;
+    } else {
+      return this.customerModel.estimatedDocumentCount().exec().then(count => this.cachedCustomerCount = count);
+    }
+  }
+
+  private updateCachedCustomerCount() {
+    this.customerModel.estimatedDocumentCount().exec()
+      .then(count => this.cachedCustomerCount = count)
+      .catch(_ => {});
   }
 
   async addOrderToCustomer(customerId: number, order: Order, session: ClientSession): Promise<Customer> {
@@ -121,5 +168,28 @@ export class CustomerService {
   async updateCounter() {
     const lastCustomer = await this.customerModel.findOne().sort('-_id').exec();
     return this.counterService.setCounter(Customer.collectionName, lastCustomer.id);
+  }
+
+  private async addSearchData(customer: Customer) {
+    const customerDto = plainToClass(AdminCustomerDto, customer, { excludeExtraneousValues: true });
+    await this.searchService.addDocument(Customer.collectionName, customer.id, customerDto);
+  }
+
+  private updateSearchData(customer: Customer): Promise<any> {
+    const customerDto = plainToClass(AdminCustomerDto, customer, { excludeExtraneousValues: true });
+    return this.searchService.updateDocument(Customer.collectionName, customer.id, customerDto);
+  }
+
+  private deleteSearchData(customer: Customer): Promise<any> {
+    return this.searchService.deleteDocument(Customer.collectionName, customer.id);
+  }
+
+  private async searchByFilters(spf: AdminSortingPaginatingFilterDto) {
+    return this.searchService.searchByFilters<AdminCustomerDto>(
+      Customer.collectionName,
+      spf.getNormalizedFilters(),
+      spf.skip,
+      spf.limit
+    );
   }
 }

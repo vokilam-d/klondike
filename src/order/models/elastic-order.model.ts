@@ -20,7 +20,6 @@ class ElasticOrderItem implements Record<keyof AdminOrderItemDto, any>{
 
 export class ElasticOrder implements Record<keyof AdminOrderDto, any>{
   address = {
-    type: 'nested',
     properties: new ElasticShippingAddress()
   };
   adminNote = elasticTextType;
@@ -39,7 +38,6 @@ export class ElasticOrder implements Record<keyof AdminOrderDto, any>{
   isCallbackNeeded = elasticTextType;
   isConfirmationEmailSent = elasticTextType;
   items = {
-    type: 'nested',
     properties: new ElasticOrderItem()
   };
   logs = elasticTextType;

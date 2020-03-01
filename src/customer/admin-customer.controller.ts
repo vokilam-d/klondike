@@ -29,15 +29,7 @@ export class AdminCustomerController {
 
   @Get()
   async getAllCustomers(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminCustomerDto[]>> {
-    const [ results, itemsTotal ] = await Promise.all([this.customerService.getAllCustomers(sortingPaging), this.customerService.countCustomers()]);
-    const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
-
-    return {
-      data: plainToClass(AdminCustomerDto, results, { excludeExtraneousValues: true }),
-      page: sortingPaging.page,
-      pagesTotal,
-      itemsTotal
-    };
+    return this.customerService.getCustomersList(sortingPaging);
   }
 
   @Get(':id')

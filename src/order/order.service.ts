@@ -38,8 +38,8 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async getOrdersList(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
-    let orders;
-    let itemsFiltered;
+    let orders: AdminOrderDto[];
+    let itemsFiltered: number;
 
     if (spf.hasFilters()) {
       const searchResponse = await this.searchByFilters(spf);
@@ -65,18 +65,6 @@ export class OrderService implements OnApplicationBootstrap {
       itemsFiltered,
       pagesTotal
     };
-  }
-
-  async getAllOrders(sortingPaging: AdminSortingPaginatingFilterDto): Promise<Order[]> {
-    // let o
-    const found = await this.orderModel
-      .find()
-      .sort(sortingPaging.sort)
-      .skip(sortingPaging.skip)
-      .limit(sortingPaging.limit)
-      .exec();
-
-    return found;
   }
 
   async getOrderById(orderId: number): Promise<DocumentType<Order>> {
