@@ -29,10 +29,6 @@ import { AdminProductVariantListItem } from '../shared/dtos/admin/product-varian
 import { DEFAULT_CURRENCY } from '../shared/enums/currency.enum';
 import { ElasticProduct } from './models/elastic-product.model';
 
-type productId = number;
-type productVariantId = string;
-type ProductListItem = AdminProductListItemDto;
-
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
 
@@ -360,10 +356,10 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async updateCachedProductCount(): Promise<any> {
-    try {
-      this.cachedProductCount = await this.productModel.estimatedDocumentCount().exec();
-    } catch (e) { }
+  updateCachedProductCount() {
+    this.productModel.estimatedDocumentCount().exec()
+      .then(count => this.cachedProductCount = count)
+      .catch(_ => { });
   }
 
   async updateCounter() {
@@ -515,7 +511,7 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   private async searchByFilters(spf: AdminSortingPaginatingFilterDto, withVariants: boolean) {
-    return this.searchService.searchByFilters<ProductListItem>(
+    return this.searchService.searchByFilters<AdminProductListItemDto>(
       Product.collectionName,
       spf.getNormalizedFilters(),
       spf.skip,

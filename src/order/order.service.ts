@@ -1,9 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
-import { AdminAddOrUpdateOrderDto } from '../shared/dtos/admin/order.dto';
+import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { CustomerService } from '../customer/customer.service';
 import { AdminAddOrUpdateCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
@@ -14,19 +14,61 @@ import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
 import { Customer } from '../customer/models/customer.model';
 import { ProductService } from '../product/product.service';
+import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { plainToClass } from 'class-transformer';
+import { SearchService } from '../shared/search/search.service';
+import { ElasticOrder } from './models/elastic-order.model';
 
 @Injectable()
-export class OrderService {
+export class OrderService implements OnApplicationBootstrap {
+
+  private cachedOrderCount: number;
 
   constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
               private counterService: CounterService,
               private pdfGeneratorService: PdfGeneratorService,
               private inventoryService: InventoryService,
               private productService: ProductService,
+              private readonly searchService: SearchService,
               private customerService: CustomerService) {
   }
 
-  async getAllOrders(sortingPaging: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto()): Promise<Order[]> {
+  onApplicationBootstrap(): any {
+    this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
+  }
+
+  async getOrdersList(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
+    let orders;
+    let itemsFiltered;
+
+    if (spf.hasFilters()) {
+      const searchResponse = await this.searchByFilters(spf);
+      orders = searchResponse[0];
+      itemsFiltered = searchResponse[1];
+
+    } else {
+      orders = await this.orderModel
+        .find()
+        .sort(spf.sort)
+        .skip(spf.skip)
+        .limit(spf.limit)
+        .exec();
+
+      orders = plainToClass(AdminOrderDto, orders, { excludeExtraneousValues: true });
+    }
+
+    const itemsTotal = await this.countOrders();
+    const pagesTotal = Math.ceil(itemsTotal / spf.limit);
+    return {
+      data: orders,
+      itemsTotal,
+      itemsFiltered,
+      pagesTotal
+    };
+  }
+
+  async getAllOrders(sortingPaging: AdminSortingPaginatingFilterDto): Promise<Order[]> {
+    // let o
     const found = await this.orderModel
       .find()
       .sort(sortingPaging.sort)
@@ -93,8 +135,10 @@ export class OrderService {
       }
 
       await newOrder.save({ session });
+      await this.addSearchData(newOrder);
       await session.commitTransaction();
 
+      this.updateCachedOrderCount();
       return newOrder;
 
     } catch (ex) {
@@ -129,6 +173,7 @@ export class OrderService {
       Object.keys(orderDto).forEach(key => found[key] = orderDto[key]);
       this.setOrderPrices(found);
       await found.save({ session });
+      this.updateSearchData(found);
       await session.commitTransaction();
 
       return found;
@@ -153,8 +198,18 @@ export class OrderService {
     return updated;
   }
 
-  countOrders(): Promise<number> {
-    return this.orderModel.estimatedDocumentCount().exec();
+  async countOrders(): Promise<number> {
+    if (this.cachedOrderCount >= 0) {
+      return this.cachedOrderCount;
+    } else {
+      return this.orderModel.estimatedDocumentCount().exec().then(count => this.cachedOrderCount = count);
+    }
+  }
+
+  private updateCachedOrderCount() {
+    this.orderModel.estimatedDocumentCount().exec()
+      .then(count => this.cachedOrderCount = count)
+      .catch(_ => {});
   }
 
   async cancelOrder(orderId: number): Promise<Order> {
@@ -278,5 +333,24 @@ export class OrderService {
   async updateCounter() {
     const lastOrder = await this.orderModel.findOne().sort('-_id').exec();
     return this.counterService.setCounter(Order.collectionName, lastOrder.id);
+  }
+
+  private async addSearchData(order: Order) {
+    const orderDto = plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true });
+    await this.searchService.addDocument(Order.collectionName, order.id, orderDto);
+  }
+
+  private updateSearchData(order: Order): Promise<any> {
+    const orderDto = plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true });
+    return this.searchService.updateDocument(Order.collectionName, order.id, orderDto);
+  }
+
+  private async searchByFilters(spf: AdminSortingPaginatingFilterDto) {
+    return this.searchService.searchByFilters<AdminOrderDto>(
+      Order.collectionName,
+      spf.getNormalizedFilters(),
+      spf.skip,
+      spf.limit
+    );
   }
 }

@@ -18,16 +18,17 @@ export class AdminOrderController {
   }
 
   @Get()
-  async getAllOrders(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
-    const [ results, itemsTotal ] = await Promise.all([this.orderService.getAllOrders(sortingPaging), this.orderService.countOrders()]);
-    const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
-
-    return {
-      data: plainToClass(AdminOrderDto, results, { excludeExtraneousValues: true }),
-      page: sortingPaging.page,
-      pagesTotal,
-      itemsTotal
-    };
+  async getOrdersList(@Query() spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
+    return this.orderService.getOrdersList(spf);
+    // const [ results, itemsTotal ] = await Promise.all([this.orderService.getAllOrders(sortingPaging), this.orderService.countOrders()]);
+    // const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
+    //
+    // return {
+    //   data: plainToClass(AdminOrderDto, results, { excludeExtraneousValues: true }),
+    //   page: sortingPaging.page,
+    //   pagesTotal,
+    //   itemsTotal
+    // };
   }
 
   @Get(':id')
@@ -59,8 +60,8 @@ export class AdminOrderController {
   }
 
   @Put(':id')
-  async editOrder(@Param('id') orderId: number, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderService.editOrder(orderId, orderDto);
+  async editOrder(@Param('id') orderId: string, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
+    const updated = await this.orderService.editOrder(parseInt(orderId), orderDto);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })

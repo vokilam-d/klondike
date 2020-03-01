@@ -14,3 +14,6 @@ export const elasticTextType = {
   },
   "type" : "text"
 };
+export const elasticDateType = {
+  "type": "date"
+};

@@ -13,11 +13,11 @@ export class SearchService {
       node: process.env.ELASTICSEARCH_URI
     });
 
-    this.client.on('response', (err, result) => {
-      if (err) { }
-      delete result.meta.connection;
-      // console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
-    })
+    // this.client.on('response', (err, result) => {
+    //   if (err) { }
+    //   delete result.meta.connection;
+    //   console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
+    // });
   }
 
   async ensureCollection(collection: string, properties): Promise<any> {
@@ -116,17 +116,24 @@ export class SearchService {
     //   }
     // }));
 
-    const multiQueries = filters.map(filter => ({
-      multi_match: {
-        query: filter.value,
-        type: "bool_prefix",
-        fields: [
-          filter.fieldName,
-          `${filter.fieldName}._2gram`,
-          `${filter.fieldName}._3gram`
-        ]
-      }
-    }));
+    const queries = filters.map(filter => {
+      const fields = [];
+      filter.fieldName.split('|').forEach(fieldName => {
+        fields.push(...[
+          fieldName,
+          `${fieldName}._2gram`,
+          `${fieldName}._3gram`
+        ]);
+      });
+
+      return {
+        multi_match: {
+          query: filter.value,
+          type: "bool_prefix",
+          fields
+        }
+      };
+    });
 
     try {
       const { body } = await this.client.search({
@@ -136,7 +143,7 @@ export class SearchService {
         body: {
           query: {
             bool: {
-              must: multiQueries
+              must: queries
             }
             // match_phrase_prefix: searchBody
           }

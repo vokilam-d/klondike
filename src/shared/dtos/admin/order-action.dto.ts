@@ -1,8 +1,10 @@
 import { EOrderAction } from '../../enums/order-action.enum';
-import { IsEnum, IsNumberString } from 'class-validator';
+import { IsEnum, IsNumber } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class OrderActionDto {
-  @IsNumberString()
+  @Transform(value => Number(value))
+  @IsNumber()
   id: number;
 
   @IsEnum(EOrderAction)
