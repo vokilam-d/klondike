@@ -40,7 +40,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       this.logger.error({
         statusCode,
         message: exception.message,
-        stack: exception.stack.split('\n').map(str => str.trim()),
+        stack: exception.stack && exception.stack.split('\n').map(str => str.trim()),
         timestamp,
         method,
         path

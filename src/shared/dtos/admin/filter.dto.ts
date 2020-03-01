@@ -1,9 +1,14 @@
 import { classToPlain, Transform } from 'class-transformer';
-import { IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 import { queryParamArrayDelimiter, sortFieldRegex } from '../../constants';
 import { ReturnModelType } from '@typegoose/typegoose';
 
 const defaultSortField = '-_id';
+
+export interface IFilter {
+  fieldName: string;
+  value: string;
+}
 
 export class AdminSortingPaginatingFilterDto {
   private _sort: string = defaultSortField;
@@ -30,7 +35,7 @@ export class AdminSortingPaginatingFilterDto {
   }
 
   @Transform((value => Number(value)))
-  @IsNumber()
+  @IsPositive()
   limit: number = 20;
 
   @Transform((value => Number(value)))
@@ -39,6 +44,29 @@ export class AdminSortingPaginatingFilterDto {
 
   get skip(): number {
     return (this.page - 1) * this.limit;
+  }
+
+  @IsString()
+  @IsOptional()
+  filters: string;
+
+  hasFilters(): boolean {
+    return !!this.filters;
+  }
+
+  getNormalizedFilters(): IFilter[] {
+    if (!this.hasFilters()) { return []; }
+
+    const filters = decodeURIComponent(this.filters);
+    return filters
+      .split(queryParamArrayDelimiter)
+      .map(filterStr => {
+        const split = filterStr.split(':');
+        return {
+          fieldName: split[0],
+          value: split[1]
+        };
+      });
   }
 
   // getFindConditionsForModel(model: ReturnModelType<new (...args: any) => any>) {

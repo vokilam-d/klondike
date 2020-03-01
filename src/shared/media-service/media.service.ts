@@ -149,7 +149,7 @@ export class MediaService {
       try {
         await fs.promises.unlink(pathToTmpFile);
       } catch (e) {
-        this.logger.error(`Could not delete tmp media:`, pathToTmpFile);
+        this.logger.error(`Could not delete tmp media: ${pathToTmpFile}`);
         this.logger.error(e);
       }
     }

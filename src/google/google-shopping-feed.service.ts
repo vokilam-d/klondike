@@ -7,6 +7,7 @@ import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
 import { ProductBreadcrumb } from '../product/models/product-breadcrumb.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { ProductReviewDto } from '../shared/dtos/admin/product-review.dto';
+import { ProductWithQty } from '../product/models/product-with-qty.model';
 
 type cdata = { $: string };
 
@@ -227,12 +228,12 @@ export class GoogleShoppingFeedService {
     return feed.toString();
   }
 
-  private async getAllProducts(): Promise<AdminProductDto[]> {
+  private async getAllProducts(): Promise<ProductWithQty[]> {
     const countProducts = await this.productService.countProducts();
     const spf = new AdminSortingPaginatingFilterDto();
     spf.limit = countProducts + 100;
 
-    return this.productService.getAllProductsWithQty(spf);
+    return this.productService.getProductsWithQty(spf);
   }
 
   private async getAllReviews(): Promise<ProductReviewDto[]> {

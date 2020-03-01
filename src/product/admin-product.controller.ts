@@ -22,6 +22,7 @@ import { ServerResponse } from 'http';
 import { MediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
 import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
 
 
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -33,16 +34,10 @@ export class AdminProductController {
   }
 
   @Get()
-  async getProducts(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminProductDto[]>> {
-    const [ results, itemsTotal ] = await Promise.all([this.productsService.getAllProductsWithQty(sortingPaging), this.productsService.countProducts()]);
-    const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
+  async getProducts(@Query() spf: AdminSortingPaginatingFilterDto,
+                    @Query('withVariants') withVariants: string): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    return {
-      data: plainToClass(AdminProductDto, results, { excludeExtraneousValues: true }),
-      page: sortingPaging.page,
-      pagesTotal,
-      itemsTotal
-    };
+    return this.productsService.getProductsList(spf, withVariants === 'true');
   }
 
   @Get(':id')

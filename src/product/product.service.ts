@@ -1,10 +1,10 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { Product } from './models/product.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { InventoryService } from '../inventory/inventory.service';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { AdminAddOrUpdateProductDto, AdminProductDto } from '../shared/dtos/admin/product.dto';
+import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { FastifyRequest } from 'fastify';
 import { Media } from '../shared/models/media.model';
@@ -21,25 +21,72 @@ import { MediaService } from '../shared/media-service/media.service';
 import { CategoryService } from '../category/category.service';
 import { ProductBreadcrumb } from './models/product-breadcrumb.model';
 import { AdminCategoryTreeItem } from '../shared/dtos/admin/category.dto';
+import { SearchService } from '../shared/search/search.service';
+import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
+import { ProductWithQty } from './models/product-with-qty.model';
+import { AdminProductVariantListItem } from '../shared/dtos/admin/product-variant-list-item.dto';
+import { DEFAULT_CURRENCY } from '../shared/enums/currency.enum';
+import { ElasticProduct } from './models/elastic-product.model';
+
+type productId = number;
+type productVariantId = string;
+type ProductListItem = AdminProductListItemDto;
 
 @Injectable()
-export class ProductService {
+export class ProductService implements OnApplicationBootstrap {
+
+  private cachedProductCount: number;
 
   constructor(@InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
               private readonly inventoryService: InventoryService,
               private readonly counterService: CounterService,
               private readonly mediaService: MediaService,
+              private readonly searchService: SearchService,
               @Inject(forwardRef(() => ProductReviewService)) private readonly productReviewService: ProductReviewService,
               @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
               private readonly pageRegistryService: PageRegistryService) {
   }
 
-  async getAllProductsWithQty(sortingPaginating: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto()): Promise<AdminProductDto[]> {
+  onApplicationBootstrap(): any {
+    this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
+  }
+
+  async getProductsList(spf: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto(),
+                        withVariants: boolean
+  ): Promise<ResponseDto<AdminProductListItemDto[]>> {
+
+    let products;
+    let itemsFiltered;
+    if (spf.hasFilters()) {
+      const searchResponse = await this.searchByFilters(spf, withVariants);
+      products = searchResponse[0];
+      itemsFiltered = searchResponse[1];
+    } else {
+      products = await this.getProductsWithQty(spf);
+      products = this.transformProductsWithQtyToListItemDtos(products, withVariants);
+    }
+    const itemsTotal = await this.countProducts();
+
+    return {
+      data: products,
+      page: spf.page,
+      pagesTotal: Math.ceil(itemsTotal / spf.limit),
+      itemsTotal,
+      itemsFiltered
+    }
+  }
+
+  async getProductsWithQty(sortingPaginating: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto()): Promise<ProductWithQty[]> {
     const variantsProp = getPropertyOf<Product>('variants');
+    const descProp = getPropertyOf<ProductVariant>('fullDescription');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');
 
-    const products = await this.productModel.aggregate()
+    return this.productModel.aggregate()
+      .sort(sortingPaginating.sort)
+      .skip(sortingPaginating.skip)
+      .limit(sortingPaginating.limit)
       .unwind(variantsProp)
       .lookup({
         'from': Inventory.collectionName,
@@ -52,15 +99,11 @@ export class ProductService {
       })
       .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
-      .sort(sortingPaginating.sort)
-      .skip(sortingPaginating.skip)
-      .limit(sortingPaginating.limit)
+      .project({ [`${variantsProp}.${descProp}`]: false })
       .exec();
-
-    return products;
   }
 
-  async getProductWithQtyById(id: number): Promise<AdminProductDto> {
+  async getProductWithQtyById(id: number): Promise<ProductWithQty> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');
@@ -89,7 +132,7 @@ export class ProductService {
     return found;
   }
 
-  async getProductWithQtyBySku(sku: string): Promise<AdminProductDto> {
+  async getProductWithQtyBySku(sku: string): Promise<ProductWithQty> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');
@@ -132,7 +175,7 @@ export class ProductService {
       newProductModel.breadcrumbs = await this.buildBreadcrumbs(newProductModel.categoryIds);
 
       for (const dtoVariant of productDto.variants) {
-        const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
+        const savedVariant = newProductModel.variants.find(v => v._id.equals(dtoVariant.id));
         const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(dtoVariant.medias, Product.collectionName);
 
         savedVariant.medias = savedMedias;
@@ -143,8 +186,10 @@ export class ProductService {
       }
 
       await newProductModel.save({ session });
+      await this.addSearchData(newProductModel, productDto);
       await session.commitTransaction();
 
+      this.updateCachedProductCount();
       await this.mediaService.deleteTmpMedias(tmpMedias, Product.collectionName);
 
       const converted = newProductModel.toJSON();
@@ -223,7 +268,9 @@ export class ProductService {
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
       found.breadcrumbs = await this.buildBreadcrumbs(found.categoryIds);
       await found.save({ session });
+      await this.updateSearchData(found, productDto);
       await session.commitTransaction();
+
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
       await this.mediaService.deleteTmpMedias(tmpMedias, Product.collectionName);
 
@@ -260,8 +307,10 @@ export class ProductService {
       }
 
       await this.productReviewService.deleteReviewsByProductId(productId, session);
-
+      await this.deleteSearchData(deleted.id);
       await session.commitTransaction();
+
+      this.updateCachedProductCount();
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
 
       return deleted;
@@ -304,7 +353,17 @@ export class ProductService {
   }
 
   async countProducts(): Promise<number> {
-    return this.productModel.estimatedDocumentCount().exec();
+    if (this.cachedProductCount >= 0) {
+      return this.cachedProductCount;
+    } else {
+      return this.productModel.estimatedDocumentCount().exec().then(count => this.cachedProductCount = count);
+    }
+  }
+
+  async updateCachedProductCount(): Promise<any> {
+    try {
+      this.cachedProductCount = await this.productModel.estimatedDocumentCount().exec();
+    } catch (e) { }
   }
 
   async updateCounter() {
@@ -437,5 +496,96 @@ export class ProductService {
 
     breadcrumbsVariants.sort((a, b) => b.length - a.length);
     return breadcrumbsVariants[0] || [];
+  }
+
+  private async addSearchData(product: Product, productDto: AdminAddOrUpdateProductDto) {
+    const productWithQty = this.transformToProductWithQty(product, productDto);
+    const [ listItem ] = this.transformProductsWithQtyToListItemDtos([productWithQty], true);
+    await this.searchService.addDocument(Product.collectionName, product.id, listItem);
+  }
+
+  private updateSearchData(product: Product, productDto: AdminAddOrUpdateProductDto): Promise<any> {
+    const productWithQty = this.transformToProductWithQty(product, productDto);
+    const [ listItem ] = this.transformProductsWithQtyToListItemDtos([productWithQty], true);
+    return this.searchService.updateDocument(Product.collectionName, product.id, listItem);
+  }
+
+  private deleteSearchData(productId: number): Promise<any> {
+    return this.searchService.deleteDocument(Product.collectionName, productId);
+  }
+
+  private async searchByFilters(spf: AdminSortingPaginatingFilterDto, withVariants: boolean) {
+    return this.searchService.searchByFilters<ProductListItem>(
+      Product.collectionName,
+      spf.getNormalizedFilters(),
+      spf.skip,
+      spf.limit
+    ).then(result => {
+      if (!withVariants) {
+        result[0] = result[0].map(product => {
+          delete product.variants;
+          return product;
+        });
+      }
+
+      return result;
+    });
+  }
+
+  private transformProductsWithQtyToListItemDtos(products: ProductWithQty[], withVariants: boolean): AdminProductListItemDto[] {
+    return products.map(product => {
+      const skus: string[] = [];
+      const prices: string[] = [];
+      const quantities: number[] = [];
+      const variants: AdminProductVariantListItem[] = [];
+      let mediaUrl: string = null;
+
+      product.variants.forEach(variant => {
+        skus.push(variant.sku);
+        prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
+        quantities.push(variant.qty);
+        variant.medias.forEach(media => {
+          if (!mediaUrl) { mediaUrl = media.variantsUrls.original; }
+        });
+
+        variants.push({
+          id: variant._id.toString(),
+          isEnabled: variant.isEnabled,
+          mediaUrl: variant.medias[0] && variant.medias[0].variantsUrls.original,
+          name: variant.name,
+          sku: variant.sku,
+          price: variant.price,
+          currency: variant.currency,
+          priceInDefaultCurrency: variant.priceInDefaultCurrency,
+          qty: variant.qty
+        });
+      });
+
+      return {
+        id: product._id,
+        name: product.name,
+        isEnabled: product.isEnabled,
+        skus: skus.join(', '),
+        prices: prices.join(', '),
+        quantities: quantities.join(', '),
+        mediaUrl,
+        ...(withVariants ? { variants } : {})
+      };
+    });
+  }
+
+  private transformToProductWithQty(product: Product, productDto: AdminAddOrUpdateProductDto): ProductWithQty {
+    return {
+      ...product,
+      id: product._id,
+      variants: product.variants.map(variant => {
+        const variantInDto = productDto.variants.find(v => variant._id.equals(v.id));
+        return {
+          ...variant,
+          id: variant._id,
+          qty: variantInDto.qty
+        }
+      })
+    }
   }
 }

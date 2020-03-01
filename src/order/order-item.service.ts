@@ -25,13 +25,13 @@ export class OrderItemService {
     const orderItem = new OrderItem();
     orderItem.name = variant.name;
     orderItem.productId = foundProduct._id;
-    orderItem.variantId = variant._id;
+    orderItem.variantId = variant._id.toString();
     orderItem.sku = variant.sku;
     if (variant.medias[0]) {
       orderItem.imageUrl = variant.medias[0].variantsUrls.small;
     }
-    orderItem.originalPrice = variant.price;
-    orderItem.price = variant.price;
+    orderItem.originalPrice = variant.priceInDefaultCurrency;
+    orderItem.price = variant.priceInDefaultCurrency;
     orderItem.qty = qty;
     orderItem.cost = orderItem.price * orderItem.qty;
     orderItem.discountValue = 0;
