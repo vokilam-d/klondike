@@ -19,6 +19,7 @@ import {
 } from '../shared/dtos/admin/attribute.dto';
 import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -30,12 +31,8 @@ export class AdminAttributeController {
 
 
   @Get()
-  async getAttributes(): Promise<ResponseDto<AdminAttributeDto[]>> {
-    const attributes = await this.attributeService.getAllAttributes();
-
-    return {
-      data: plainToClass(AdminAttributeDto, attributes, { excludeExtraneousValues: true }),
-    };
+  async getAttributes(@Query() spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminAttributeDto[]>> {
+    return this.attributeService.getAttributesResponse(spf);
   }
 
   @Get(':id')

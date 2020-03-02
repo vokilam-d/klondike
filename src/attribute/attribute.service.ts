@@ -1,19 +1,51 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Attribute } from './models/attribute.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
+import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
+import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { plainToClass } from 'class-transformer';
+import { SearchService } from '../shared/search/search.service';
+import { ElasticAttribute } from './models/elastic-attribute.model';
 
 @Injectable()
-export class AttributeService {
+export class AttributeService implements OnApplicationBootstrap {
 
-  constructor(@InjectModel(Attribute.name) private readonly attributeModel: ReturnModelType<typeof Attribute>) {
+  constructor(@InjectModel(Attribute.name) private readonly attributeModel: ReturnModelType<typeof Attribute>,
+              private readonly searchService: SearchService) {
   }
 
-  async getAllAttributes(): Promise<Attribute[]> {
-    const attributes = await this.attributeModel.find().exec();
+  onApplicationBootstrap(): any {
+    this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttribute());
+  }
 
-    return attributes.map(a => a.toJSON());
+  async getAttributesResponse(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminAttributeDto[]>> {
+    let attributes: AdminAttributeDto[];
+    let itemsFiltered: number;
+    if (spf.hasFilters()) {
+      const searchResponse = await this.searchByFilters(spf);
+      attributes = searchResponse[0];
+      itemsFiltered = searchResponse[1];
+    } else {
+      attributes = await this.attributeModel
+        .find()
+        .sort(spf.sort)
+        .skip(spf.skip)
+        .limit(spf.limit)
+        .exec();
+
+      attributes = plainToClass(AdminAttributeDto, attributes, { excludeExtraneousValues: true });
+    }
+
+    const itemsTotal = await this.countAttributes();
+    const pagesTotal = Math.ceil(itemsTotal / spf.limit);
+    return {
+      data: attributes,
+      itemsTotal,
+      itemsFiltered,
+      pagesTotal
+    };
   }
 
   async getAttribute(id: string): Promise<DocumentType<Attribute>> {
@@ -35,6 +67,7 @@ export class AttributeService {
 
     const attribute = new this.attributeModel(attributeDto);
     await attribute.save();
+    this.addSearchData(attribute);
 
     return attribute;
   }
@@ -50,6 +83,7 @@ export class AttributeService {
       });
 
     await attribute.save();
+    this.updateSearchData(attribute);
 
     return attribute;
   }
@@ -59,8 +93,13 @@ export class AttributeService {
     if (!deleted) {
       throw new NotFoundException(`No attribute with id '${attributeId}'`);
     }
+    this.deleteSearchData(deleted);
 
     return deleted;
+  }
+
+  countAttributes(): Promise<number> {
+    return this.attributeModel.estimatedDocumentCount().exec();
   }
 
   private checkDtoForErrors(attributeDto: AdminCreateAttributeDto | AdminUpdateAttributeDto) {
@@ -87,5 +126,28 @@ export class AttributeService {
     if (errors.length > 0) {
       throw new BadRequestException(errors.join('\n'));
     }
+  }
+
+  private async addSearchData(attribute: Attribute) {
+    const attributeDto = plainToClass(AdminAttributeDto, attribute, { excludeExtraneousValues: true });
+    await this.searchService.addDocument(Attribute.collectionName, attribute.id, attributeDto);
+  }
+
+  private updateSearchData(attribute: Attribute): Promise<any> {
+    const attributeDto = plainToClass(AdminAttributeDto, attribute, { excludeExtraneousValues: true });
+    return this.searchService.updateDocument(Attribute.collectionName, attribute.id, attributeDto);
+  }
+
+  private deleteSearchData(attribute: Attribute): Promise<any> {
+    return this.searchService.deleteDocument(Attribute.collectionName, attribute.id);
+  }
+
+  private async searchByFilters(spf: AdminSortingPaginatingFilterDto) {
+    return this.searchService.searchByFilters<AdminAttributeDto>(
+      Attribute.collectionName,
+      spf.getNormalizedFilters(),
+      spf.skip,
+      spf.limit
+    );
   }
 }
