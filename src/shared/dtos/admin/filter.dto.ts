@@ -1,5 +1,5 @@
 import { classToPlain, Transform } from 'class-transformer';
-import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsPositive, IsString, Min } from 'class-validator';
 import { queryParamArrayDelimiter, sortFieldRegex } from '../../constants';
 import { ReturnModelType } from '@typegoose/typegoose';
 
@@ -35,7 +35,7 @@ export class AdminSortingPaginatingFilterDto {
   }
 
   @Transform((value => Number(value)))
-  @IsPositive()
+  @Min(0)
   limit: number = 20;
 
   @Transform((value => Number(value)))
