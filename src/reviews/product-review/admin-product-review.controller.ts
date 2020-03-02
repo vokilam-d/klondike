@@ -14,28 +14,16 @@ export class AdminProductReviewController {
   }
 
   @Get()
-  async findAllReviews(@Query() spf: ProductReviewFilterDto): Promise<ResponseDto<ProductReviewDto | ProductReviewDto[]>> {
+  async findAllReviews(@Query() spf: ProductReviewFilterDto): Promise<ResponseDto<ProductReviewDto[]>> {
 
     if (spf.productId) {
 
-      const results = await this.productReviewService.findReviewsByProductId(spf.productId);
       return {
-        data: plainToClass(ProductReviewDto, results, { excludeExtraneousValues: true })
+        data: await this.productReviewService.findReviewsByProductId(spf.productId)
       };
 
     } else {
-      const [ results, itemsTotal ] = await Promise.all([
-        this.productReviewService.findReviews(spf),
-        this.productReviewService.countReviews()
-      ]);
-      const pagesTotal = Math.ceil(itemsTotal / spf.limit);
-
-      return {
-        data: plainToClass(ProductReviewDto, results, { excludeExtraneousValues: true }),
-        page: spf.page,
-        pagesTotal,
-        itemsTotal
-      };
+      return this.productReviewService.getReviewsResponse(spf);
     }
   }
 

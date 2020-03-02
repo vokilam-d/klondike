@@ -29,18 +29,7 @@ export class AdminStoreReviewController {
 
   @Get()
   async findAllReviews(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<StoreReviewDto[]>> {
-    const [ results, itemsTotal ] = await Promise.all([
-      this.storeReviewService.findReviews(sortingPaging),
-      this.storeReviewService.countReviews()
-    ]);
-    const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
-
-    return {
-      data: plainToClass(StoreReviewDto, results, { excludeExtraneousValues: true }),
-      page: sortingPaging.page,
-      pagesTotal,
-      itemsTotal
-    };
+    return this.storeReviewService.getReviewsResponse(sortingPaging);
   }
 
   @Get(':id')

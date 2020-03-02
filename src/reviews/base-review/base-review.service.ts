@@ -3,33 +3,60 @@ import { BaseReview, ReviewVote } from './models/base-review.model';
 import { FastifyRequest } from 'fastify';
 import { Media } from '../../shared/models/media.model';
 import { MediaDto } from '../../shared/dtos/admin/media.dto';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/filter.dto';
 import { BaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
 import { ClientSession } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
 import { MediaService } from '../../shared/media-service/media.service';
+import { SearchService } from '../../shared/search/search.service';
+import { ResponseDto } from '../../shared/dtos/admin/response.dto';
 
-export abstract class BaseReviewService<T extends BaseReview, U extends BaseReviewDto> {
+export abstract class BaseReviewService<T extends BaseReview, U extends BaseReviewDto> implements OnApplicationBootstrap {
 
   protected abstract collectionName: string;
+  protected abstract ElasticReview: new () => any;
   protected abstract reviewModel: ReturnModelType<new (...args: any) => T>;
   protected abstract mediaService: MediaService;
   protected abstract counterService: CounterService;
+  protected abstract searchService: SearchService;
 
-  async findReviews(spf: AdminSortingPaginatingFilterDto,
-                    ipAddress?: string,
-                    userId?: string,
-                    customerId?: number): Promise<U[]> {
 
-    const reviews = await this.reviewModel
-      .find()
-      .sort(spf.sort)
-      .skip(spf.skip)
-      .limit(spf.limit)
-      .exec();
+  onApplicationBootstrap(): any {
+    this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());
+  }
 
-    return reviews.map(review => this.transformReviewToDto(review, ipAddress, userId, customerId));
+  async getReviewsResponse(spf: AdminSortingPaginatingFilterDto,
+                           ipAddress?: string,
+                           userId?: string,
+                           customerId?: number): Promise<ResponseDto<U[]>> {
+
+    let itemsFiltered: number;
+    let reviews: U[];
+
+    if (spf.hasFilters()) {
+      const searchResponse = await this.searchByFilters(spf);
+      reviews = searchResponse[0];
+      itemsFiltered = searchResponse[1];
+    } else {
+      const reviewModels = await this.reviewModel
+        .find()
+        .sort(spf.sort)
+        .skip(spf.skip)
+        .limit(spf.limit)
+        .exec();
+
+      reviews = reviewModels.map(review => this.transformReviewToDto(review, ipAddress, userId, customerId));
+    }
+
+    const itemsTotal = await this.countReviews();
+    const pagesTotal = Math.ceil(itemsTotal / spf.limit);
+    return {
+      data: reviews,
+      itemsTotal,
+      itemsFiltered,
+      pagesTotal
+    };
   }
 
   async findReview(reviewId: string, ipAddress?: string, userId?: string, customerId?: number): Promise<U> {
@@ -59,6 +86,8 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
       await review.save({ session });
       if (callback) { await callback(review, session); }
       await session.commitTransaction();
+
+      this.addSearchData(review);
       await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
 
       return this.transformReviewToDto(review);
@@ -93,6 +122,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
     Object.keys(reviewDto).forEach(key => { review[key] = reviewDto[key]; });
     await review.save();
 
+    this.updateSearchData(review);
     await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
     await this.mediaService.deleteSavedMedias(mediasToDelete, this.collectionName);
 
@@ -111,6 +141,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
       await session.commitTransaction();
 
       await this.mediaService.deleteSavedMedias(deleted.medias, this.collectionName);
+      this.deleteSearchData(deleted);
 
       return this.transformReviewToDto(deleted);
     } catch (ex) {
@@ -144,6 +175,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
     foundReview.votes.push(vote);
 
     await foundReview.save();
+    this.updateSearchData(foundReview);
   }
 
   abstract transformReviewToDto(review: DocumentType<T>, ipAddress?: string, userId?: string, customerId?: number): U;
@@ -159,5 +191,28 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
   async updateCounter() {
     const lastReview = await this.reviewModel.findOne().sort('-_id').exec();
     return this.counterService.setCounter(this.collectionName, lastReview.id);
+  }
+
+  private async addSearchData(review: DocumentType<T>) {
+    const reviewDto = this.transformReviewToDto(review);
+    await this.searchService.addDocument(this.collectionName, review.id, reviewDto);
+  }
+
+  private updateSearchData(review: DocumentType<T>): Promise<any> {
+    const reviewDto = this.transformReviewToDto(review);
+    return this.searchService.updateDocument(this.collectionName, review.id, reviewDto);
+  }
+
+  private deleteSearchData(review: DocumentType<T>): Promise<any> {
+    return this.searchService.deleteDocument(this.collectionName, review.id);
+  }
+
+  private async searchByFilters(spf: AdminSortingPaginatingFilterDto) {
+    return this.searchService.searchByFilters<U>(
+      this.collectionName,
+      spf.getNormalizedFilters(),
+      spf.skip,
+      spf.limit
+    );
   }
 }

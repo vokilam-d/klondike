@@ -23,6 +23,7 @@ export class AttributeService implements OnApplicationBootstrap {
   async getAttributesResponse(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminAttributeDto[]>> {
     let attributes: AdminAttributeDto[];
     let itemsFiltered: number;
+
     if (spf.hasFilters()) {
       const searchResponse = await this.searchByFilters(spf);
       attributes = searchResponse[0];

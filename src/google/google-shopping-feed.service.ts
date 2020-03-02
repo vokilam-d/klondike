@@ -151,8 +151,7 @@ export class GoogleShoppingFeedService {
   async generateProductReviewsFeed(): Promise<string> {
     const products = await this.getAllProducts();
     const reviewDtos = await this.getAllReviews();
-    console.log(reviewDtos[0]);
-    console.log(reviewDtos[0].createdAt);
+
     const reviews: IShoppingReview[] = [];
 
     reviewDtos.forEach(reviewDto => {
@@ -241,7 +240,8 @@ export class GoogleShoppingFeedService {
     const spf = new AdminSortingPaginatingFilterDto();
     spf.limit = countReviews + 100;
 
-    return this.reviewService.findReviews(spf);
+    const responseDto = await this.reviewService.getReviewsResponse(spf);
+    return responseDto.data;
   }
 
   private buildProductType(breadcrumbs: ProductBreadcrumb[]): string {

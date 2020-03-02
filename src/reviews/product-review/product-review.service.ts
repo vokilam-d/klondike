@@ -8,14 +8,19 @@ import { ProductService } from '../../product/product.service';
 import { ClientSession } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
 import { MediaService } from '../../shared/media-service/media.service';
+import { ElasticProductReview } from './models/elastic-product-review.model';
+import { SearchService } from '../../shared/search/search.service';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class ProductReviewService extends BaseReviewService<ProductReview, ProductReviewDto> {
 
   get collectionName(): string { return ProductReview.collectionName; }
+  protected ElasticReview = ElasticProductReview;
 
   constructor(@InjectModel(ProductReview.name) protected readonly reviewModel: ReturnModelType<typeof ProductReview>,
               @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
+              protected readonly searchService: SearchService,
               protected readonly counterService: CounterService,
               protected readonly mediaService: MediaService) {
     super();
@@ -46,10 +51,12 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Produ
   ): ProductReviewDto {
     review = review.toJSON();
 
-    return {
+    const transformed = {
       ...review,
       votesCount: review.votes.length,
       hasClientVoted: this.hasVoted(review, ipAddress, userId, customerId)
     } as any;
+
+    return plainToClass(ProductReviewDto, transformed, { excludeExtraneousValues: true });
   }
 }
