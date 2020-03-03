@@ -18,6 +18,7 @@ import { ResponseDto } from '../shared/dtos/admin/response.dto';
 import { plainToClass } from 'class-transformer';
 import { SearchService } from '../shared/search/search.service';
 import { ElasticOrder } from './models/elastic-order.model';
+import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -37,7 +38,7 @@ export class OrderService implements OnApplicationBootstrap {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
   }
 
-  async getOrdersList(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
+  async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
     let orders: AdminOrderDto[];
     let itemsFiltered: number;
 
@@ -47,8 +48,14 @@ export class OrderService implements OnApplicationBootstrap {
       itemsFiltered = searchResponse[1];
 
     } else {
+      let conditions: any = {};
+      if (spf.customerId) {
+        const customerIdProp = getPropertyOf<AdminOrderDto>('customerId');
+        conditions[customerIdProp] = spf.customerId;
+      }
+
       orders = await this.orderModel
-        .find()
+        .find(conditions)
         .sort(spf.sort)
         .skip(spf.skip)
         .limit(spf.limit)
@@ -333,10 +340,16 @@ export class OrderService implements OnApplicationBootstrap {
     return this.searchService.updateDocument(Order.collectionName, order.id, orderDto);
   }
 
-  private async searchByFilters(spf: AdminSortingPaginatingFilterDto) {
+  private async searchByFilters(spf: OrderFilterDto) {
+    const filters = spf.getNormalizedFilters();
+    if (spf.customerId) {
+      const customerIdProp = getPropertyOf<AdminOrderDto>('customerId');
+      filters.push({ fieldName: customerIdProp, value: `${spf.customerId}` });
+    }
+
     return this.searchService.searchByFilters<AdminOrderDto>(
       Order.collectionName,
-      spf.getNormalizedFilters(),
+      filters,
       spf.skip,
       spf.limit
     );

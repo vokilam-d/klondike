@@ -9,6 +9,7 @@ import { EOrderAction } from '../shared/enums/order-action.enum';
 import { AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
+import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/orders')
@@ -18,17 +19,8 @@ export class AdminOrderController {
   }
 
   @Get()
-  async getOrdersList(@Query() spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
+  async getOrdersList(@Query() spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
     return this.orderService.getOrdersList(spf);
-    // const [ results, itemsTotal ] = await Promise.all([this.orderService.getAllOrders(sortingPaging), this.orderService.countOrders()]);
-    // const pagesTotal = Math.ceil(itemsTotal / sortingPaging.limit);
-    //
-    // return {
-    //   data: plainToClass(AdminOrderDto, results, { excludeExtraneousValues: true }),
-    //   page: sortingPaging.page,
-    //   pagesTotal,
-    //   itemsTotal
-    // };
   }
 
   @Get(':id')
