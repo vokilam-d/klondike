@@ -40,7 +40,7 @@ export class SearchService {
   }
 
   async addDocument(collection: string, entityId: any, document: any): Promise<any> {
-    console.log({ m: 'addDocument', collection, entityId, document  });
+    // console.log({ m: 'addDocument', collection, entityId, document  });
 
     try {
       await this.client.index({
@@ -56,7 +56,7 @@ export class SearchService {
   }
 
   async updateDocument(collection: string, entityId: any, document: any): Promise<any> {
-    console.log({ m: 'updateDocument', collection, entityId, document });
+    // console.log({ m: 'updateDocument', collection, entityId, document });
 
     try {
       await this.client.update({
@@ -78,7 +78,7 @@ export class SearchService {
   }
 
   async deleteDocument(collection: string, entityId: any): Promise<any> {
-    console.log({ m: 'deleteDocument', collection, entityId });
+    // console.log({ m: 'deleteDocument', collection, entityId });
 
     try {
       await this.client.delete({

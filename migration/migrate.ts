@@ -359,6 +359,31 @@ export class Migrate {
       variantDto.fullDescription = product.description || '';
       variantDto.shortDescription = stripHtmlTags(product.short_description || '');
 
+      const regex = new RegExp(/{{media url=&quot;(.+)&quot;}}/, 'g');
+      do {
+        const exec = regex.exec(variantDto.fullDescription);
+        if (!exec) { continue; }
+
+        const str = exec[0];
+        const urlPart = exec[1];
+
+        try {
+          const imgResponse = await axios.get(`https://klondike.com.ua/media/${urlPart}`, { responseType: 'arraybuffer' });
+          const form = new FormData();
+          form.append('file', imgResponse.data, { filename: path.parse(urlPart).base });
+
+          const newUrl = await axios.post<MediaDto>(`${this.apiHostname}/api/v1/admin/wysiwyg/media`, form, { headers: form.getHeaders() });
+
+          variantDto.fullDescription = variantDto.fullDescription.slice(0, exec.index)
+            + newUrl
+            + variantDto.fullDescription.slice(exec.index + str.length);
+
+        } catch (ex) {
+          console.error(`[WYSIWYG Media]: '${urlPart}' for product '${product.name}' id '${dto.id}' error: `, ex.response.status);
+          console.error(this.buildErrorMessage(ex.response.data));
+        }
+      } while (regex.lastIndex !== 0);
+
       variantDto.metaTags = {} as MetaTagsDto;
       catalog_product_entity_varchars.forEach(varchar => {
         if (varchar.entity_id === product.entity_id) {
