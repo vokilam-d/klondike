@@ -359,7 +359,7 @@ export class Migrate {
       variantDto.fullDescription = product.description || '';
       variantDto.shortDescription = stripHtmlTags(product.short_description || '');
 
-      const regex = new RegExp(/{{media url=&quot;(.+)&quot;}}/, 'g');
+      const regex = new RegExp(/{{media url=&quot;(.+?)&quot;}}/, 'g');
       do {
         const exec = regex.exec(variantDto.fullDescription);
         if (!exec) { continue; }
@@ -372,13 +372,14 @@ export class Migrate {
           const form = new FormData();
           form.append('file', imgResponse.data, { filename: path.parse(urlPart).base });
 
-          const newUrl = await axios.post<MediaDto>(`${this.apiHostname}/api/v1/admin/wysiwyg/media`, form, { headers: form.getHeaders() });
+          const { data: newUrl } = await axios.post<MediaDto>(`${this.apiHostname}/api/v1/admin/wysiwyg/media`, form, { headers: form.getHeaders() });
 
           variantDto.fullDescription = variantDto.fullDescription.slice(0, exec.index)
             + newUrl
             + variantDto.fullDescription.slice(exec.index + str.length);
 
         } catch (ex) {
+          console.dir({ urlPart, str });
           console.error(`[WYSIWYG Media]: '${urlPart}' for product '${product.name}' id '${dto.id}' error: `, ex.response.status);
           console.error(this.buildErrorMessage(ex.response.data));
         }

@@ -29,6 +29,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         uri: _config.get(EConfig.MONGO_URI),
         retryDelay: 500,
         retryAttempts: 3,
+        autoCreate: true,
         useCreateIndex: true,
         useNewUrlParser: true,
         useFindAndModify: false,
