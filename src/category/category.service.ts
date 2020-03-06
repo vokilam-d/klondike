@@ -70,7 +70,7 @@ export class CategoryService {
     return found;
   }
 
-  async getCategoryBySlug(slug: string): Promise<Category> {
+  async getCategoryBySlug(slug: string): Promise<Category> { // todo cache
     const found = await this.categoryModel.findOne({ slug }).exec();
     if (!found) {
       throw new NotFoundException(`Category with slug '${slug}' not found`);

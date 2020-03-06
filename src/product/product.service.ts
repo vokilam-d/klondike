@@ -640,7 +640,7 @@ export class ProductService implements OnApplicationBootstrap {
     });
   }
 
-  private async transformToClientListDto(adminListItemDtos: AdminProductListItemDto[]): Promise<ClientProductListItemDto[]> {
+  private async transformToClientListDto(adminListItemDtos: AdminProductListItemDto[]): Promise<ClientProductListItemDto[]> { // todo cache
     const attributes = await this.attributeService.getAllAttributes();
 
     return adminListItemDtos.map(product => {
