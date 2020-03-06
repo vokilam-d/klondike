@@ -1,26 +1,26 @@
 import { AdminCustomerDto } from '../../shared/dtos/admin/customer.dto';
-import { ElasticShippingAddress } from '../../shared/models/elastic-shipping-address.model';
-import { elasticDateType, elasticTextType } from '../../shared/constants';
+import { ElasticShippingAddressModel } from '../../shared/models/elastic-shipping-address.model';
+import { elasticBooleanType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
 
-export class ElasticCustomer implements Record<keyof AdminCustomerDto, any> {
+export class ElasticCustomerModel implements Record<keyof AdminCustomerDto, any> {
   addresses = {
-    properties: new ElasticShippingAddress()
+    properties: new ElasticShippingAddressModel()
   };
   createdAt = elasticDateType;
   discountPercent = elasticTextType;
   email = elasticTextType;
   firstName = elasticTextType;
-  id = elasticTextType;
-  isEmailConfirmed = elasticTextType;
-  isLocked = elasticTextType;
-  isPhoneNumberConfirmed = elasticTextType;
+  id = elasticIntegerType;
+  isEmailConfirmed = elasticBooleanType;
+  isLocked = elasticBooleanType;
+  isPhoneNumberConfirmed = elasticBooleanType;
   lastLoggedIn = elasticDateType;
   lastName = elasticTextType;
   note = elasticTextType;
-  orderIds = elasticTextType;
+  orderIds = elasticIntegerType;
   password = elasticTextType;
   phoneNumber = elasticTextType;
-  reviewIds = elasticTextType;
-  totalOrdersCost = elasticTextType;
-  wishlistProductIds = elasticTextType;
+  reviewIds = elasticIntegerType;
+  totalOrdersCost = elasticFloatType;
+  wishlistProductIds = elasticIntegerType;
 }

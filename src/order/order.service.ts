@@ -2,7 +2,6 @@ import { ForbiddenException, Injectable, NotFoundException, OnApplicationBootstr
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { CustomerService } from '../customer/customer.service';
@@ -14,10 +13,10 @@ import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
 import { Customer } from '../customer/models/customer.model';
 import { ProductService } from '../product/product.service';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { plainToClass } from 'class-transformer';
 import { SearchService } from '../shared/search/search.service';
-import { ElasticOrder } from './models/elastic-order.model';
+import { ElasticOrderModel } from './models/elastic-order.model';
 import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
 
 @Injectable()
@@ -35,7 +34,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   onApplicationBootstrap(): any {
-    this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
+    this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
@@ -56,7 +55,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       orders = await this.orderModel
         .find(conditions)
-        .sort(spf.sort)
+        .sort(spf.getSortAsObj(true))
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();

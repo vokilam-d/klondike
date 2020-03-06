@@ -19,11 +19,10 @@ import { ProductService } from './product.service';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
-import { MediaDto } from '../shared/dtos/admin/media.dto';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
-
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -37,7 +36,7 @@ export class AdminProductController {
   async getProducts(@Query() spf: AdminSortingPaginatingFilterDto,
                     @Query('withVariants') withVariants: string): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    return this.productsService.getProductsList(spf, withVariants === 'true');
+    return this.productsService.getAdminProductsList(spf, withVariants === 'true');
   }
 
   @Get(':id')
@@ -77,7 +76,7 @@ export class AdminProductController {
   }
 
   /**
-   * @returns MediaDto
+   * @returns AdminMediaDto
    */
   @Post('media')
   async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {

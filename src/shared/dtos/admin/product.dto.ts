@@ -1,4 +1,4 @@
-import { ArrayNotEmpty, IsBoolean, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductVariantDto } from './product-variant.dto';

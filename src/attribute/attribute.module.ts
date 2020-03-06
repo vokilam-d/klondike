@@ -15,6 +15,7 @@ const attributeModel = {
     MongooseModule.forFeature([attributeModel])
   ],
   controllers: [AdminAttributeController],
-  providers: [AttributeService]
+  providers: [AttributeService],
+  exports: [AttributeService]
 })
 export class AttributeModule {}

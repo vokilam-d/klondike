@@ -1,7 +1,7 @@
 import { Controller, Headers, Param, Post } from '@nestjs/common';
 import { StoreReviewService } from './store-review.service';
 import { IpAddress } from '../../shared/decorators/ip-address.decorator';
-import { ResponseDto } from '../../shared/dtos/admin/response.dto';
+import { ResponseDto } from '../../shared/dtos/shared/response.dto';
 
 @Controller('store-review')
 export class ClientStoreReviewController {

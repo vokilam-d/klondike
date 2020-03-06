@@ -4,11 +4,15 @@ import { PageRegistryService } from '../page-registry/page-registry.service';
 import { ProductService } from '../product/product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { AdminAddOrUpdateCategoryDto, AdminCategoryTreeItem } from '../shared/dtos/admin/category.dto';
+import { AdminAddOrUpdateCategoryDto } from '../shared/dtos/admin/category.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
 import { ClientSession } from 'mongoose';
+import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
+import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
+import { ClientSortingPaginatingFilterDto } from '../shared/dtos/client/spf.dto';
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
 
 @Injectable()
 export class CategoryService {
@@ -19,9 +23,9 @@ export class CategoryService {
               @Inject(forwardRef(() => ProductService)) private productService: ProductService) {
   }
 
-  async getCategoriesTree(): Promise<AdminCategoryTreeItem[]> {
-    const treeItems: AdminCategoryTreeItem[] = [];
-    const childrenMap: { [parentId: number]: AdminCategoryTreeItem[] } = {};
+  async getCategoriesTree(): Promise<CategoryTreeItem[]> {
+    const treeItems: CategoryTreeItem[] = [];
+    const childrenMap: { [parentId: number]: CategoryTreeItem[] } = {};
 
     const found = await this.categoryModel.find().exec();
     found.forEach(category => {
@@ -41,7 +45,7 @@ export class CategoryService {
       childrenMap[category.parentId].push(item);
     });
 
-    const populateChildrenArray = (array: AdminCategoryTreeItem[]) => {
+    const populateChildrenArray = (array: CategoryTreeItem[]) => {
       array.forEach(arrayItem => {
         const children = childrenMap[arrayItem.id] || [];
         arrayItem.children.push(...children);
@@ -164,9 +168,9 @@ export class CategoryService {
     }
   }
 
-  async getCategoryItems(categoryId: number) {
-    const products = await this.productService.getProductsByCategoryId(categoryId);
-    return products;
+  async getCategoryItems(slug: string, spf: ClientSortingPaginatingFilterDto): Promise<ResponseDto<ClientProductListItemDto[]>> {
+    const category = await this.getCategoryBySlug(slug);
+    return this.productService.getClientProductListByCategoryId(category.id, spf);
   }
 
   private createCategoryPageRegistry(slug: string, session: ClientSession) {

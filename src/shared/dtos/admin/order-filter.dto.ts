@@ -1,4 +1,4 @@
-import { AdminSortingPaginatingFilterDto } from './filter.dto';
+import { AdminSortingPaginatingFilterDto } from './spf.dto';
 import { IsNumber, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 

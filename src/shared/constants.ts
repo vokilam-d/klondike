@@ -17,3 +17,13 @@ export const elasticTextType = {
 export const elasticDateType = {
   "type": "date"
 };
+export const elasticIntegerType = {
+  "type": "integer"
+};
+export const elasticFloatType = {
+  "type": "scaled_float",
+  "scaling_factor": 100
+};
+export const elasticBooleanType = {
+  "type": "boolean"
+};

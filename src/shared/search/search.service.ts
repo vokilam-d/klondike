@@ -1,6 +1,6 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
-import { IFilter } from '../dtos/admin/filter.dto';
+import { IFilter, ISorting } from '../dtos/shared/spf.dto';
 
 @Injectable()
 export class SearchService {
@@ -35,7 +35,7 @@ export class SearchService {
       });
     } catch (ex) {
       this.logger.error('Could not ensure collection:');
-      this.logger.error(ex);
+      this.logger.error(ex.meta ? ex.meta.body : ex);
     }
   }
 
@@ -51,7 +51,7 @@ export class SearchService {
       });
     } catch (ex) {
       this.logger.error('Could not create document:');
-      this.logger.error(ex);
+      this.logger.error(ex.meta ? ex.meta.body : ex);
     }
   }
 
@@ -72,7 +72,7 @@ export class SearchService {
         await this.addDocument(collection, entityId, document);
       } else {
         this.logger.error('Could not update document:');
-        throw new InternalServerErrorException(ex.meta ? ex.meta.body : ex);
+        this.logger.error(ex.meta ? ex.meta.body : ex);
       }
     }
   }
@@ -87,7 +87,7 @@ export class SearchService {
       });
     } catch (ex) {
       this.logger.error('Could not delete document:');
-      throw new InternalServerErrorException(ex.meta ? ex.meta.body : ex);
+      this.logger.error(ex.meta ? ex.meta.body : ex);
     }
   }
 
@@ -98,12 +98,19 @@ export class SearchService {
       });
     } catch (ex) {
       this.logger.error('Could not delete collection:');
-      throw new InternalServerErrorException(ex.meta ? ex.meta.body : ex);
+      this.logger.error(ex.meta ? ex.meta.body : ex);
     }
   }
 
-  async searchByFilters<T = any>(collection: string, filters: IFilter[], from, size): Promise<[T[], number]> {
-    // console.log({ m: 'searchByFilters', collection, filters });
+  async searchByFilters<T = any>(collection: string,
+                                 filters: IFilter[],
+                                 from: number,
+                                 size: number,
+                                 sortObj: ISorting = { }
+  ): Promise<[T[], number]> {
+
+    // console.log({ m: 'searchByFilters', collection, filters, from, size, sortObj });
+
 
     // const searchBody: any = {};
     // for (const filter of filters) {
@@ -135,11 +142,19 @@ export class SearchService {
       };
     });
 
+    const sort = [];
+    Object.entries(sortObj).forEach(entry => {
+      const [ fieldName, value ] = entry;
+
+      sort.push(`${fieldName}:${value}`);
+    });
+
     try {
       const { body } = await this.client.search({
         index: collection,
         from,
         size,
+        sort,
         body: {
           query: {
             bool: {
@@ -155,7 +170,8 @@ export class SearchService {
       return [hitsSource, itemsFiltered];
     } catch (ex) {
       this.logger.error('Could not search by filters:');
-      throw new InternalServerErrorException(ex.meta ? ex.meta.body : ex);
+      this.logger.error(ex.meta ? ex.meta.body : ex);
+      throw new Error();
     }
   }
 }

@@ -1,10 +1,10 @@
 import { AdminShippingAddressDto } from '../dtos/admin/customer.dto';
-import { elasticAutocompleteType, elasticTextType } from '../constants';
+import { elasticAutocompleteType, elasticBooleanType, elasticTextType } from '../constants';
 
-export class ElasticShippingAddress implements Record<keyof AdminShippingAddressDto, any>{
+export class ElasticShippingAddressModel implements Record<keyof AdminShippingAddressDto, any>{
   city = elasticAutocompleteType;
   firstName = elasticAutocompleteType;
-  isDefault = elasticTextType;
+  isDefault = elasticBooleanType;
   lastName = elasticAutocompleteType;
   novaposhtaOffice = elasticTextType;
   phoneNumber = elasticAutocompleteType;

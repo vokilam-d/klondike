@@ -1,24 +1,11 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  Request,
-  Response,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, Response, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
-import { ResponseDto } from '../../shared/dtos/admin/response.dto';
+import { ResponseDto } from '../../shared/dtos/shared/response.dto';
 import { StoreReviewService } from './store-review.service';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
-import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/spf.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/store-reviews')

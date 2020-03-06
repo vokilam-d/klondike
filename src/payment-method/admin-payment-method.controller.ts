@@ -1,21 +1,8 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { PaymentMethodService } from './payment-method.service';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { PaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { plainToClass } from 'class-transformer';
-
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/payment-method')

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ProductService } from '../product/product.service';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
-import { AdminProductDto } from '../shared/dtos/admin/product.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
 import { create } from 'xmlbuilder2/lib';
 import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
 import { ProductBreadcrumb } from '../product/models/product-breadcrumb.model';

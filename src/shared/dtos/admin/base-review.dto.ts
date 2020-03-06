@@ -1,6 +1,6 @@
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
-import { MediaDto } from './media.dto';
+import { AdminMediaDto } from './media.dto';
 
 export class BaseReviewDto {
   @Expose()
@@ -52,8 +52,8 @@ export class BaseReviewDto {
   @Expose()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => MediaDto)
-  medias: MediaDto[];
+  @Type(() => AdminMediaDto)
+  medias: AdminMediaDto[];
 
   @Expose()
   @IsDate()

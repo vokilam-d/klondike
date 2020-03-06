@@ -2,17 +2,16 @@ import { ConflictException, Injectable, NotFoundException, OnApplicationBootstra
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer } from './models/customer.model';
 import { ReturnModelType } from '@typegoose/typegoose';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { ClientSession } from 'mongoose';
 import { Order } from '../order/models/order.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { SearchService } from '../shared/search/search.service';
-import { ElasticCustomer } from './models/elastic-customer.model';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { ElasticCustomerModel } from './models/elastic-customer.model';
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { plainToClass } from 'class-transformer';
-import { AdminOrderDto } from '../shared/dtos/admin/order.dto';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -25,7 +24,7 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   onApplicationBootstrap(): any {
-    this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomer());
+    this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
   }
 
   async getCustomersList(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminCustomerDto[]>> {
@@ -40,7 +39,7 @@ export class CustomerService implements OnApplicationBootstrap {
     } else {
       customers = await this.customerModel
         .find()
-        .sort(spf.sort)
+        .sort(spf.getSortAsObj(true))
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();

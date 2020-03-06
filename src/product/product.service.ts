@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { Product } from './models/product.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { InventoryService } from '../inventory/inventory.service';
@@ -8,8 +8,8 @@ import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { FastifyRequest } from 'fastify';
 import { Media } from '../shared/models/media.model';
-import { MediaDto } from '../shared/dtos/admin/media.dto';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
+import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
 import { Inventory } from '../inventory/models/inventory.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { ClientSession } from 'mongoose';
@@ -20,24 +20,34 @@ import { ProductVariant } from './models/product-variant.model';
 import { MediaService } from '../shared/media-service/media.service';
 import { CategoryService } from '../category/category.service';
 import { ProductBreadcrumb } from './models/product-breadcrumb.model';
-import { AdminCategoryTreeItem } from '../shared/dtos/admin/category.dto';
 import { SearchService } from '../shared/search/search.service';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
 import { ProductWithQty } from './models/product-with-qty.model';
 import { AdminProductVariantListItem } from '../shared/dtos/admin/product-variant-list-item.dto';
 import { DEFAULT_CURRENCY } from '../shared/enums/currency.enum';
-import { ElasticProduct } from './models/elastic-product.model';
+import { ElasticProductModel } from './models/elastic-product.model';
+import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
+import { SortingPaginatingFilterDto } from '../shared/dtos/shared/spf.dto';
+import {
+  ClientProductListItemDto,
+  ClientProductListItemVariantDto,
+  ClientProductListItemVariantGroupDto
+} from '../shared/dtos/client/product-list-item.dto';
+import { AttributeService } from '../attribute/attribute.service';
+import { ClientSortingPaginatingFilterDto } from '../shared/dtos/client/spf.dto';
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
 
+  private logger = new Logger(ProductService.name);
   private cachedProductCount: number;
 
   constructor(@InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
               private readonly inventoryService: InventoryService,
               private readonly counterService: CounterService,
               private readonly mediaService: MediaService,
+              private readonly attributeService: AttributeService,
               private readonly searchService: SearchService,
               @Inject(forwardRef(() => ProductReviewService)) private readonly productReviewService: ProductReviewService,
               @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
@@ -45,23 +55,30 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   onApplicationBootstrap(): any {
-    this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
+    this.searchService.ensureCollection(Product.collectionName, new ElasticProductModel());
   }
 
-  async getProductsList(spf: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto(),
-                        withVariants: boolean
+  async getAdminProductsList(spf: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto(),
+                             withVariants: boolean
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    let products: any[];
+    let products: AdminProductListItemDto[];
     let itemsFiltered: number;
 
     if (spf.hasFilters()) {
-      const searchResponse = await this.searchByFilters(spf, withVariants);
+      const searchResponse = await this.findByFilters(spf, true);
       products = searchResponse[0];
       itemsFiltered = searchResponse[1];
     } else {
-      products = await this.getProductsWithQty(spf);
-      products = this.transformProductsWithQtyToListItemDtos(products, withVariants);
+      const productsWithQty = await this.getProductsWithQty(spf);
+      products = this.transformToAdminListDto(productsWithQty);
+    }
+
+    if (!withVariants) {
+      products = products.map(product => {
+        delete product.variants;
+        return product;
+      });
     }
     const itemsTotal = await this.countProducts();
 
@@ -71,6 +88,29 @@ export class ProductService implements OnApplicationBootstrap {
       pagesTotal: Math.ceil(itemsTotal / spf.limit),
       itemsTotal,
       itemsFiltered
+    }
+  }
+
+  async getClientProductListByCategoryId(categoryId: number,
+                                         spf: ClientSortingPaginatingFilterDto
+  ): Promise<ResponseDto<ClientProductListItemDto[]>> {
+
+    const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
+    const categoryProp: keyof AdminProductListItemDto = 'categoryIds';
+
+    spf[isEnabledProp] = true;
+    spf[categoryProp] = categoryId;
+
+    const searchResponse = await this.findByFilters(spf, false);
+    const adminDtos = searchResponse[0];
+    const itemsTotal = searchResponse[1];
+    const clientDtos = await this.transformToClientListDto(adminDtos);
+
+    return {
+      data: clientDtos,
+      page: spf.page,
+      pagesTotal: Math.ceil(itemsTotal / spf.limit),
+      itemsTotal
     }
   }
 
@@ -94,7 +134,7 @@ export class ProductService implements OnApplicationBootstrap {
       .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
       .project({ [`${variantsProp}.${descProp}`]: false })
-      .sort(sortingPaginating.sort)
+      .sort(sortingPaginating.getSortAsObj(true))
       .skip(sortingPaginating.skip)
       .limit(sortingPaginating.limit)
       .exec();
@@ -163,7 +203,7 @@ export class ProductService implements OnApplicationBootstrap {
     session.startTransaction();
 
     try {
-      const tmpMedias: MediaDto[] = [];
+      const tmpMedias: AdminMediaDto[] = [];
 
       const newProductModel = new this.productModel(productDto);
       if (!migrate) {
@@ -180,6 +220,10 @@ export class ProductService implements OnApplicationBootstrap {
 
         await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qty, session);
         await this.createProductPageRegistry(dtoVariant.slug, session);
+      }
+
+      if (newProductModel.variants.every(variant => variant.isEnabled === false)) {
+        newProductModel.isEnabled = false;
       }
 
       await newProductModel.save({ session });
@@ -215,7 +259,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     try {
       const mediasToDelete: Media[] = [];
-      const tmpMedias: MediaDto[] = [];
+      const tmpMedias: AdminMediaDto[] = [];
 
       const variantsToUpdate: AdminProductVariantDto[] = [];
       const variantsToAdd: AdminProductVariantDto[] = [];
@@ -264,6 +308,10 @@ export class ProductService implements OnApplicationBootstrap {
 
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
       found.breadcrumbs = await this.buildBreadcrumbs(found.categoryIds);
+      if (found.variants.every(variant => variant.isEnabled === false)) {
+        found.isEnabled = false;
+      }
+
       await found.save({ session });
       await this.updateSearchData(found.toJSON(), productDto);
       await session.commitTransaction();
@@ -321,14 +369,6 @@ export class ProductService implements OnApplicationBootstrap {
 
   uploadMedia(request: FastifyRequest): Promise<Media> {
     return this.mediaService.upload(request, Product.collectionName);
-  }
-
-  getProductsByCategoryId(categoryId: number) {
-    return this.productModel.find(
-      {
-        categoryIds: categoryId
-      },
-    ).exec();
   }
 
   private createProductPageRegistry(slug: string, session: ClientSession) {
@@ -467,7 +507,7 @@ export class ProductService implements OnApplicationBootstrap {
   private async buildBreadcrumbs(categoryIds: number[]): Promise<ProductBreadcrumb[]> {
     const breadcrumbsVariants: ProductBreadcrumb[][] = [];
 
-    const populate = (treeItems: AdminCategoryTreeItem[], breadcrumbs: ProductBreadcrumb[] = []) => {
+    const populate = (treeItems: CategoryTreeItem[], breadcrumbs: ProductBreadcrumb[] = []) => {
 
       for (const treeItem of treeItems) {
         const newBreadcrumbs: ProductBreadcrumb[] = JSON.parse(JSON.stringify(breadcrumbs));
@@ -497,78 +537,30 @@ export class ProductService implements OnApplicationBootstrap {
 
   private async addSearchData(product: Product, productDto: AdminAddOrUpdateProductDto) {
     const productWithQty = this.transformToProductWithQty(product, productDto);
-    const [ listItem ] = this.transformProductsWithQtyToListItemDtos([productWithQty], true);
-    await this.searchService.addDocument(Product.collectionName, product.id, listItem);
+
+    const [ adminListItem ] = this.transformToAdminListDto([productWithQty]);
+    await this.searchService.addDocument(Product.collectionName, product.id, adminListItem);
   }
 
-  private updateSearchData(product: Product, productDto: AdminAddOrUpdateProductDto): Promise<any> {
+  private async updateSearchData(product: Product, productDto: AdminAddOrUpdateProductDto): Promise<any> {
     const productWithQty = this.transformToProductWithQty(product, productDto);
-    const [ listItem ] = this.transformProductsWithQtyToListItemDtos([productWithQty], true);
-    return this.searchService.updateDocument(Product.collectionName, product.id, listItem);
+
+    const [ adminListItem ] = this.transformToAdminListDto([productWithQty]);
+    await this.searchService.updateDocument(Product.collectionName, product.id, adminListItem);
   }
 
-  private deleteSearchData(productId: number): Promise<any> {
-    return this.searchService.deleteDocument(Product.collectionName, productId);
+  private async deleteSearchData(productId: number): Promise<any> {
+    await this.searchService.deleteDocument(Product.collectionName, productId);
   }
 
-  private async searchByFilters(spf: AdminSortingPaginatingFilterDto, withVariants: boolean) {
+  private async findByFilters(spf: SortingPaginatingFilterDto, sortByMongoId: boolean) {
     return this.searchService.searchByFilters<AdminProductListItemDto>(
       Product.collectionName,
       spf.getNormalizedFilters(),
       spf.skip,
-      spf.limit
-    ).then(result => {
-      if (!withVariants) {
-        result[0] = result[0].map(product => {
-          delete product.variants;
-          return product;
-        });
-      }
-
-      return result;
-    });
-  }
-
-  private transformProductsWithQtyToListItemDtos(products: ProductWithQty[], withVariants: boolean): AdminProductListItemDto[] {
-    return products.map(product => {
-      const skus: string[] = [];
-      const prices: string[] = [];
-      const quantities: number[] = [];
-      const variants: AdminProductVariantListItem[] = [];
-      let mediaUrl: string = null;
-
-      product.variants.forEach(variant => {
-        skus.push(variant.sku);
-        prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
-        quantities.push(variant.qty);
-        variant.medias.forEach(media => {
-          if (!mediaUrl) { mediaUrl = media.variantsUrls.original; }
-        });
-
-        variants.push({
-          id: variant._id.toString(),
-          isEnabled: variant.isEnabled,
-          mediaUrl: variant.medias[0] && variant.medias[0].variantsUrls.original,
-          name: variant.name,
-          sku: variant.sku,
-          price: variant.price,
-          currency: variant.currency,
-          priceInDefaultCurrency: variant.priceInDefaultCurrency,
-          qty: variant.qty
-        });
-      });
-
-      return {
-        id: product._id,
-        name: product.name,
-        isEnabled: product.isEnabled,
-        skus: skus.join(', '),
-        prices: prices.join(', '),
-        quantities: quantities.join(', '),
-        mediaUrl,
-        ...(withVariants ? { variants } : {})
-      };
-    });
+      spf.limit,
+      spf.getSortAsObj(sortByMongoId)
+    );
   }
 
   private transformToProductWithQty(product: Product, productDto: AdminAddOrUpdateProductDto): ProductWithQty {
@@ -583,6 +575,135 @@ export class ProductService implements OnApplicationBootstrap {
           qty: variantInDto.qty
         }
       })
+    }
+  }
+
+  private transformToAdminListDto(products: ProductWithQty[]): AdminProductListItemDto[] {
+    return products.map(product => {
+      const skus: string[] = [];
+      const prices: string[] = [];
+      const quantities: number[] = [];
+      const variants: AdminProductVariantListItem[] = [];
+      let productMediaUrl: string = null;
+
+      product.variants.forEach(variant => {
+        skus.push(variant.sku);
+        prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
+        quantities.push(variant.qty);
+
+        let primaryMediaUrl;
+        let secondaryMediaUrl;
+        let mediaAltText;
+        variant.medias.forEach(media => {
+          if (!productMediaUrl) { productMediaUrl = media.variantsUrls.small; }
+
+          if (!media.isHidden) {
+            if (primaryMediaUrl) {
+              secondaryMediaUrl = media.variantsUrls.small;
+            } else {
+              primaryMediaUrl = media.variantsUrls.small;
+              mediaAltText = media.altText;
+            }
+          }
+        });
+
+        variants.push({
+          id: variant._id.toString(),
+          isEnabled: variant.isEnabled,
+          mediaUrl: primaryMediaUrl,
+          mediaAltText: mediaAltText,
+          mediaHoverUrl: secondaryMediaUrl,
+          name: variant.name,
+          slug: variant.slug,
+          attributes: variant.attributes,
+          sku: variant.sku,
+          price: variant.price,
+          currency: variant.currency,
+          priceInDefaultCurrency: variant.priceInDefaultCurrency,
+          qty: variant.qty
+        });
+      });
+
+      return {
+        id: product._id,
+        categoryIds: product.categoryIds,
+        name: product.name,
+        attributes: product.attributes,
+        isEnabled: product.isEnabled,
+        skus: skus.join(', '),
+        prices: prices.join(', '),
+        quantities: quantities.join(', '),
+        mediaUrl: productMediaUrl,
+        sortOrder: product.sortOrder,
+        variants
+      };
+    });
+  }
+
+  private async transformToClientListDto(adminListItemDtos: AdminProductListItemDto[]): Promise<ClientProductListItemDto[]> {
+    const attributes = await this.attributeService.getAllAttributes();
+
+    return adminListItemDtos.map(product => {
+      const variant = product.variants[0]; // todo add flag in ProductVariant to select here default variant?
+
+      const variantGroups: ClientProductListItemVariantGroupDto[] = [];
+      if (product.variants.length > 1) {
+        product.variants.forEach(variant => {
+          variant.attributes.forEach(selectedAttr => {
+            const attribute = attributes.find(a => a.id === selectedAttr.attributeId);
+            if (attribute!) { return; }
+
+            const attrLabel = attribute.label;
+            const attrValue = attribute.values.find(v => v.id === selectedAttr.valueId);
+            if (!attrValue) { return; }
+
+            const foundIdx = variantGroups.findIndex(group => group.label === attrLabel);
+
+            const itemVariant: ClientProductListItemVariantDto = {
+              label: attrValue.label,
+              isSelected: false,
+              slug: variant.slug
+            };
+
+            if (foundIdx === -1) {
+              variantGroups.push({
+                label: attrLabel,
+                variants: [ itemVariant ]
+              });
+            } else {
+              variantGroups[foundIdx].variants.push(itemVariant);
+            }
+          });
+        });
+      }
+
+      return {
+        productId: product.id,
+        variantId: variant.id,
+        sku: variant.sku,
+        isInStock: variant.qty > 0,
+        name: variant.name,
+        priceInDefaultCurrency: variant.priceInDefaultCurrency,
+        slug: variant.slug,
+        variantGroups,
+        mediaUrl: variant.mediaUrl,
+        mediaHoverUrl: variant.mediaHoverUrl,
+        mediaAltText: variant.mediaAltText
+      }
+    });
+  }
+
+  private async reindexAllSearchData() {
+    await this.searchService.deleteCollection(Product.collectionName);
+    this.logger.log('Deleted Products elastic collection');
+
+    const spf = new AdminSortingPaginatingFilterDto();
+    spf.limit = 10000;
+    const products = await this.getProductsWithQty(spf);
+    const listItems = this.transformToAdminListDto(products);
+    for (let listItem of listItems) {
+      await this.searchService.addDocument(Product.collectionName, listItem.id, listItem);
+      console.log('Added document with id', listItem.id);
     }
   }
 }

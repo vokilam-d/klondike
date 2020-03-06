@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Attribute } from './models/attribute.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { plainToClass } from 'class-transformer';
 import { SearchService } from '../shared/search/search.service';
-import { ElasticAttribute } from './models/elastic-attribute.model';
+import { ElasticAttributeModel } from './models/elastic-attribute.model';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {
@@ -17,7 +17,7 @@ export class AttributeService implements OnApplicationBootstrap {
   }
 
   onApplicationBootstrap(): any {
-    this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttribute());
+    this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttributeModel());
   }
 
   async getAttributesResponse(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminAttributeDto[]>> {
@@ -31,7 +31,7 @@ export class AttributeService implements OnApplicationBootstrap {
     } else {
       attributes = await this.attributeModel
         .find()
-        .sort(spf.sort)
+        .sort(spf.getSortAsObj(true))
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();
@@ -47,6 +47,12 @@ export class AttributeService implements OnApplicationBootstrap {
       itemsFiltered,
       pagesTotal
     };
+  }
+
+  async getAllAttributes(): Promise<Attribute[]> {
+    const attributes = await this.attributeModel.find().exec();
+
+    return attributes.map(attr => attr.toJSON());
   }
 
   async getAttribute(id: string): Promise<DocumentType<Attribute>> {

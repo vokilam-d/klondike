@@ -1,7 +1,7 @@
-import { MetaTagsDto } from './meta-tags.dto';
-import { IsBoolean, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
-import { Expose, Transform, Type } from 'class-transformer';
+import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { Expose, Transform } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
+import { MetaTagsDto } from '../shared/meta-tags.dto';
 
 export class AdminAddOrUpdateCategoryDto {
   @Expose()
@@ -38,21 +38,3 @@ export class AdminResponseCategoryDto extends AdminAddOrUpdateCategoryDto {
   id?: number;
 }
 
-export class AdminCategoryTreeItem {
-  @Expose()
-  id: AdminResponseCategoryDto['id'];
-
-  @Expose()
-  name: AdminResponseCategoryDto['name'];
-
-  @Expose()
-  slug: AdminResponseCategoryDto['slug'];
-
-  @Expose()
-  @Type(() => AdminCategoryTreeItem)
-  children: AdminCategoryTreeItem[];
-
-  constructor(value: Partial<AdminCategoryTreeItem>) {
-    Object.assign(this, value);
-  }
-}

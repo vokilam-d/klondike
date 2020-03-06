@@ -2,15 +2,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { Database } from './mysql-db';
 import { AdminResponseCategoryDto } from '../src/shared/dtos/admin/category.dto';
-import { MetaTagsDto } from '../src/shared/dtos/admin/meta-tags.dto';
 import axios from 'axios';
-import { attach } from 'retry-axios';
 import * as FormData from 'form-data';
 import { AdminProductDto } from '../src/shared/dtos/admin/product.dto';
 import { AdminAttributeDto, AdminAttributeValueDto } from '../src/shared/dtos/admin/attribute.dto';
 import { AdminProductVariantDto } from '../src/shared/dtos/admin/product-variant.dto';
 import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/product-selected-attribute.dto';
-import { MediaDto } from '../src/shared/dtos/admin/media.dto';
+import { AdminMediaDto } from '../src/shared/dtos/admin/media.dto';
 import { AdminCustomerDto, AdminShippingAddressDto } from '../src/shared/dtos/admin/customer.dto';
 import { AdminAddOrUpdateOrderDto } from '../src/shared/dtos/admin/order.dto';
 import { AdminOrderItemDto } from '../src/shared/dtos/admin/order-item.dto';
@@ -19,6 +17,7 @@ import { StoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
 import { ProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
 import { ECurrencyCode } from '../src/shared/enums/currency.enum';
 import { stripHtmlTags } from '../src/shared/helpers/strip-html-tags.function';
+import { MetaTagsDto } from '../src/shared/dtos/shared/meta-tags.dto';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3500';
@@ -344,7 +343,7 @@ export class Migrate {
           const form = new FormData();
           form.append('file', imgResponse.data, { filename: path.parse(tmpMedia.url).base });
 
-          const { data: media } = await axios.post<MediaDto>(`${this.apiHostname}/api/v1/admin/products/media`, form, { headers: form.getHeaders() });
+          const { data: media } = await axios.post<AdminMediaDto>(`${this.apiHostname}/api/v1/admin/products/media`, form, { headers: form.getHeaders() });
           media.altText = tmpMedia.alt || '';
           media.isHidden = tmpMedia.disabled === 0;
 
@@ -372,7 +371,7 @@ export class Migrate {
           const form = new FormData();
           form.append('file', imgResponse.data, { filename: path.parse(urlPart).base });
 
-          const { data: newUrl } = await axios.post<MediaDto>(`${this.apiHostname}/api/v1/admin/wysiwyg/media`, form, { headers: form.getHeaders() });
+          const { data: newUrl } = await axios.post<AdminMediaDto>(`${this.apiHostname}/api/v1/admin/wysiwyg/media`, form, { headers: form.getHeaders() });
 
           variantDto.fullDescription = variantDto.fullDescription.slice(0, exec.index)
             + newUrl

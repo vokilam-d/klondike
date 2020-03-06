@@ -2,15 +2,15 @@ import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { BaseReview, ReviewVote } from './models/base-review.model';
 import { FastifyRequest } from 'fastify';
 import { Media } from '../../shared/models/media.model';
-import { MediaDto } from '../../shared/dtos/admin/media.dto';
+import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 import { ForbiddenException, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
-import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/filter.dto';
+import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/spf.dto';
 import { BaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
 import { ClientSession } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
 import { MediaService } from '../../shared/media-service/media.service';
 import { SearchService } from '../../shared/search/search.service';
-import { ResponseDto } from '../../shared/dtos/admin/response.dto';
+import { ResponseDto } from '../../shared/dtos/shared/response.dto';
 
 export abstract class BaseReviewService<T extends BaseReview, U extends BaseReviewDto> implements OnApplicationBootstrap {
 
@@ -41,7 +41,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
     } else {
       const reviewModels = await this.reviewModel
         .find()
-        .sort(spf.sort)
+        .sort(spf.getSortAsObj(true))
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();
@@ -73,7 +73,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
     session.startTransaction();
 
     try {
-      const tmpMedias: MediaDto[] = [];
+      const tmpMedias: AdminMediaDto[] = [];
       const review = new this.reviewModel(reviewDto);
       if (!migrate) {
         review.id = await this.counterService.getCounter(this.collectionName, session);
@@ -106,7 +106,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends BaseRevi
     }
 
     const mediasToDelete: Media[] = [];
-    const tmpMedias: MediaDto[] = [];
+    const tmpMedias: AdminMediaDto[] = [];
 
     for (const media of review.medias) {
       const isMediaInDto = reviewDto.medias.find(dtoMedia => dtoMedia.variantsUrls.original === media.variantsUrls.original);

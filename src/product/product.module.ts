@@ -8,6 +8,7 @@ import { ClientProductController } from './client-product.controller';
 import { AdminProductController } from './admin-product.controller';
 import { ProductReviewModule } from '../reviews/product-review/product-review.module';
 import { CategoryModule } from '../category/category.module';
+import { AttributeModule } from '../attribute/attribute.module';
 
 const productModel = {
   name: ProductModel.modelName,
@@ -19,6 +20,7 @@ const productModel = {
   imports: [
     MongooseModule.forFeature([productModel]),
     InventoryModule,
+    AttributeModule,
     PageRegistryModule,
     forwardRef(() => ProductReviewModule),
     forwardRef(() => CategoryModule)

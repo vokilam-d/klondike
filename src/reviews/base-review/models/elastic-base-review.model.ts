@@ -1,17 +1,17 @@
 import { BaseReviewDto } from '../../../shared/dtos/admin/base-review.dto';
-import { elasticDateType, elasticTextType } from '../../../shared/constants';
+import { elasticBooleanType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../../shared/constants';
 
-export class ElasticBaseReview implements Record<keyof BaseReviewDto, any>{
+export class ElasticBaseReviewModel implements Record<keyof BaseReviewDto, any>{
   createdAt = elasticDateType;
-  customerId = elasticTextType;
+  customerId = elasticIntegerType;
   email = elasticTextType;
   hasClientVoted = elasticTextType;
-  id = elasticTextType;
-  isEnabled = elasticTextType;
+  id = elasticIntegerType;
+  isEnabled = elasticBooleanType;
   medias: any;
   name = elasticTextType;
-  rating = elasticTextType;
-  sortOrder = elasticTextType;
+  rating = elasticFloatType;
+  sortOrder = elasticIntegerType;
   text = elasticTextType;
-  votesCount = elasticTextType;
+  votesCount = elasticIntegerType;
 }

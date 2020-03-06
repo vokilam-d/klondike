@@ -8,7 +8,7 @@ import { ProductService } from '../../product/product.service';
 import { ClientSession } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
 import { MediaService } from '../../shared/media-service/media.service';
-import { ElasticProductReview } from './models/elastic-product-review.model';
+import { ElasticProductReviewModel } from './models/elastic-product-review.model';
 import { SearchService } from '../../shared/search/search.service';
 import { plainToClass } from 'class-transformer';
 
@@ -16,7 +16,7 @@ import { plainToClass } from 'class-transformer';
 export class ProductReviewService extends BaseReviewService<ProductReview, ProductReviewDto> {
 
   get collectionName(): string { return ProductReview.collectionName; }
-  protected ElasticReview = ElasticProductReview;
+  protected ElasticReview = ElasticProductReviewModel;
 
   constructor(@InjectModel(ProductReview.name) protected readonly reviewModel: ReturnModelType<typeof ProductReview>,
               @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,

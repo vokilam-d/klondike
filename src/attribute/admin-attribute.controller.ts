@@ -6,20 +6,17 @@ import {
   Get,
   Param,
   Post,
-  Put, Query,
+  Put,
+  Query,
   UseInterceptors,
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
 import { AttributeService } from './attribute.service';
-import {
-  AdminAttributeDto,
-  AdminCreateAttributeDto,
-  AdminUpdateAttributeDto
-} from '../shared/dtos/admin/attribute.dto';
+import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
 import { plainToClass } from 'class-transformer';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)

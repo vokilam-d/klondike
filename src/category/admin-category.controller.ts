@@ -6,20 +6,17 @@ import {
   Get,
   Param,
   Post,
-  Put, Query,
+  Put,
+  Query,
   UseInterceptors,
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import {
-  AdminAddOrUpdateCategoryDto,
-  AdminCategoryTreeItem,
-  AdminResponseCategoryDto
-} from '../shared/dtos/admin/category.dto';
+import { AdminAddOrUpdateCategoryDto, AdminResponseCategoryDto } from '../shared/dtos/admin/category.dto';
 import { plainToClass } from 'class-transformer';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
-
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,10 +26,10 @@ export class AdminCategoryController {
   }
 
   @Get('tree')
-  async getCategoriesTree(): Promise<ResponseDto<AdminCategoryTreeItem[]>> {
+  async getCategoriesTree(): Promise<ResponseDto<CategoryTreeItem[]>> {
     const tree = await this.categoryService.getCategoriesTree();
     return {
-      data: plainToClass(AdminCategoryTreeItem, tree, { excludeExtraneousValues: true })
+      data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
     };
   }
 

@@ -9,7 +9,7 @@ import { transliterate } from '../helpers/transliterate.function';
 import { Media } from '../models/media.model';
 import { readableBytes } from '../helpers/readable-bytes.function';
 import { EMediaVariant } from '../enums/media-variant.enum';
-import { MediaDto } from 'shared/dtos/admin/media.dto';
+import { AdminMediaDto } from 'shared/dtos/admin/media.dto';
 
 const pipeline = promisify(pipelineImport);
 
@@ -89,7 +89,7 @@ export class MediaService {
     });
   }
 
-  async checkTmpAndSaveMedias(mediaDtos: MediaDto[], mediaTypeDirName: string): Promise<{ tmpMedias: Media[], savedMedias: Media[] }> {
+  async checkTmpAndSaveMedias(mediaDtos: AdminMediaDto[], mediaTypeDirName: string): Promise<{ tmpMedias: Media[], savedMedias: Media[] }> {
     const tmpMedias = [];
     const savedMedias = [];
 
@@ -106,7 +106,7 @@ export class MediaService {
     return { tmpMedias, savedMedias };
   }
 
-  private async processAndSaveTmp(mediaDto: MediaDto, mediaTypeDirName: string): Promise<Media> {
+  private async processAndSaveTmp(mediaDto: AdminMediaDto, mediaTypeDirName: string): Promise<Media> {
     const media = new Media();
     media.altText = mediaDto.altText;
     media.isHidden = mediaDto.isHidden;
@@ -141,7 +141,7 @@ export class MediaService {
     return media;
   }
 
-  async deleteTmpMedias(mediaDtos: MediaDto[], mediaTypeDirName: string) {
+  async deleteTmpMedias(mediaDtos: AdminMediaDto[], mediaTypeDirName: string) {
     for (const mediaDto of mediaDtos) {
       const { base: tmpFileName } = parse(mediaDto.variantsUrls.original);
       const pathToTmpFile = join(this.uploadDirName, this.tmpDirName, mediaTypeDirName, tmpFileName);

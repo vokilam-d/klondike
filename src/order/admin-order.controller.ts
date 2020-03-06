@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Res, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/filter.dto';
-import { ResponseDto } from '../shared/dtos/admin/response.dto';
+import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../shared/dtos/admin/order-action.dto';

@@ -1,10 +1,10 @@
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { MediaDto } from './media.dto';
-import { MetaTagsDto } from './meta-tags.dto';
+import { AdminMediaDto } from './media.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { transliterate } from '../../helpers/transliterate.function';
 import { ECurrencyCode } from '../../enums/currency.enum';
+import { MetaTagsDto } from '../shared/meta-tags.dto';
 
 export class AdminProductVariantDto {
   @Exclude()
@@ -62,8 +62,8 @@ export class AdminProductVariantDto {
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => MediaDto)
-  medias: MediaDto[];
+  @Type(() => AdminMediaDto)
+  medias: AdminMediaDto[];
 
   @Expose()
   @IsString()

@@ -1,44 +1,51 @@
 import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
-import { ElasticShippingAddress } from '../../shared/models/elastic-shipping-address.model';
-import { elasticAutocompleteType, elasticDateType, elasticTextType } from '../../shared/constants';
+import { ElasticShippingAddressModel } from '../../shared/models/elastic-shipping-address.model';
+import {
+  elasticAutocompleteType,
+  elasticBooleanType,
+  elasticDateType,
+  elasticFloatType,
+  elasticIntegerType,
+  elasticTextType
+} from '../../shared/constants';
 import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
 
-class ElasticOrderItem implements Record<keyof AdminOrderItemDto, any>{
-  cost = elasticTextType;
-  discountValue = elasticTextType;
+class ElasticOrderItemModel implements Record<keyof AdminOrderItemDto, any>{
+  cost = elasticFloatType;
+  discountValue = elasticFloatType;
   imageUrl = elasticTextType;
   name = elasticTextType;
-  originalPrice = elasticTextType;
-  price = elasticTextType;
-  productId = elasticTextType;
-  qty = elasticTextType;
+  originalPrice = elasticFloatType;
+  price = elasticFloatType;
+  productId = elasticIntegerType;
+  qty = elasticIntegerType;
   sku = elasticTextType;
   slug = elasticTextType;
-  totalCost = elasticTextType;
+  totalCost = elasticIntegerType;
   variantId = elasticTextType;
 }
 
-export class ElasticOrder implements Record<keyof AdminOrderDto, any>{
+export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   address = {
-    properties: new ElasticShippingAddress()
+    properties: new ElasticShippingAddressModel()
   };
   adminNote = elasticTextType;
   clientNote = elasticTextType;
   createdAt = elasticDateType;
   customerEmail = elasticTextType;
   customerFirstName = elasticTextType;
-  customerId = elasticTextType;
+  customerId = elasticIntegerType;
   customerLastName = elasticTextType;
   customerPhoneNumber = elasticTextType;
   discountLabel = elasticTextType;
-  discountPercent = elasticTextType;
-  discountValue = elasticTextType;
-  id = elasticTextType;
+  discountPercent = elasticFloatType;
+  discountValue = elasticFloatType;
+  id = elasticIntegerType;
   idForCustomer = elasticTextType;
-  isCallbackNeeded = elasticTextType;
-  isConfirmationEmailSent = elasticTextType;
+  isCallbackNeeded = elasticBooleanType;
+  isConfirmationEmailSent = elasticBooleanType;
   items = {
-    properties: new ElasticOrderItem()
+    properties: new ElasticOrderItemModel()
   };
   logs = elasticTextType;
   novaposhtaTrackingId = elasticTextType;
