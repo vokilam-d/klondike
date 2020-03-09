@@ -111,37 +111,35 @@ export class SearchService {
 
     // console.log({ m: 'searchByFilters', collection, filters, from, size, sortObj });
 
-
-    // const searchBody: any = {};
-    // for (const filter of filters) {
-    //   searchBody[filter.fieldName] = filter.value;
-    // }
-
-    // const multiQueries = filters.map(filter => ({
-    //   match_phrase_prefix: {
-    //     [filter.fieldName]: filter.value
-    //   }
-    // }));
-
+    // build queries
     const queries = filters.map(filter => {
       const fields = [];
       filter.fieldName.split('|').forEach(fieldName => {
         fields.push(...[
           fieldName,
           `${fieldName}._2gram`,
-          `${fieldName}._3gram`
+          `${fieldName}._3gram`,
+          `${fieldName}._index_prefix`
         ]);
       });
 
       return {
         multi_match: {
           query: filter.value,
-          type: "bool_prefix",
+          // type: "bool_prefix",
+          type: "phrase_prefix",
           fields
         }
       };
+
+      // return {
+      //   match_phrase_prefix: {
+      //     [filter.fieldName]: filter.value
+      //   }
+      // }
     });
 
+    // build sort
     const sort = [];
     Object.entries(sortObj).forEach(entry => {
       const [ fieldName, value ] = entry;
@@ -160,7 +158,6 @@ export class SearchService {
             bool: {
               must: queries
             }
-            // match_phrase_prefix: searchBody
           }
         }
       });
