@@ -1,7 +1,8 @@
 import { Expose, Type } from 'class-transformer';
 import { ProductVariant } from '../../../product/models/product-variant.model';
+import { Product } from '../../../product/models/product.model';
 
-export class ClientProductListItemVariantDto {
+export class ClientProductVariantDto {
   @Expose()
   slug: string;
 
@@ -12,18 +13,19 @@ export class ClientProductListItemVariantDto {
   isSelected: boolean;
 }
 
-export class ClientProductListItemVariantGroupDto {
+export class ClientProductVariantGroupDto {
   @Expose()
   label: string;
 
   @Expose()
-  @Type(() => ClientProductListItemVariantDto)
-  variants: ClientProductListItemVariantDto[];
+  @Type(() => ClientProductVariantDto)
+  variants: ClientProductVariantDto[];
 }
 
+type PickedProduct = Pick<Product, 'reviewsCount' | 'reviewsAvgRating'>;
 type PickedVariant = Pick<ProductVariant, 'slug' | 'sku' | 'name' | 'priceInDefaultCurrency'>;
 
-export class ClientProductListItemDto implements PickedVariant {
+export class ClientProductListItemDto implements PickedProduct, PickedVariant {
   @Expose()
   productId: number;
 
@@ -55,6 +57,12 @@ export class ClientProductListItemDto implements PickedVariant {
   slug: string;
 
   @Expose()
-  @Type(() => ClientProductListItemVariantGroupDto)
-  variantGroups: ClientProductListItemVariantGroupDto[];
+  @Type(() => ClientProductVariantGroupDto)
+  variantGroups: ClientProductVariantGroupDto[];
+
+  @Expose()
+  reviewsAvgRating: number;
+
+  @Expose()
+  reviewsCount: number;
 }

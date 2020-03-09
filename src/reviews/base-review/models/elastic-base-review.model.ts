@@ -1,7 +1,7 @@
-import { BaseReviewDto } from '../../../shared/dtos/admin/base-review.dto';
+import { AdminBaseReviewDto } from '../../../shared/dtos/admin/base-review.dto';
 import { elasticBooleanType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../../shared/constants';
 
-export class ElasticBaseReviewModel implements Record<keyof BaseReviewDto, any>{
+export class ElasticBaseReviewModel implements Record<keyof AdminBaseReviewDto, any>{
   createdAt = elasticDateType;
   customerId = elasticIntegerType;
   email = elasticTextType;

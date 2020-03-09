@@ -1,9 +1,9 @@
 import { Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { BaseReviewDto } from './base-review.dto';
+import { AdminBaseReviewDto } from './base-review.dto';
 import { prop } from '@typegoose/typegoose';
 
-export class ProductReviewCommentDto {
+export class AdminProductReviewCommentDto {
   @Expose()
   @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
   id: string;
@@ -36,7 +36,7 @@ export class ProductReviewCommentDto {
   createdAt: Date;
 }
 
-export class ProductReviewDto extends BaseReviewDto {
+export class AdminProductReviewDto extends AdminBaseReviewDto {
   @Expose()
   @IsNumber()
   productId: number;
@@ -52,5 +52,5 @@ export class ProductReviewDto extends BaseReviewDto {
 
   @Expose()
   @ValidateNested({ each: true })
-  comments: ProductReviewCommentDto[];
+  comments: AdminProductReviewCommentDto[];
 }

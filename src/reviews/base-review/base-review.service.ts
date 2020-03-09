@@ -5,14 +5,14 @@ import { Media } from '../../shared/models/media.model';
 import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 import { ForbiddenException, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/spf.dto';
-import { BaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
+import { AdminBaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
 import { ClientSession } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
 import { MediaService } from '../../shared/media-service/media.service';
 import { SearchService } from '../../shared/search/search.service';
 import { ResponseDto } from '../../shared/dtos/shared/response.dto';
 
-export abstract class BaseReviewService<T extends BaseReview, U extends BaseReviewDto> implements OnApplicationBootstrap {
+export abstract class BaseReviewService<T extends BaseReview, U extends AdminBaseReviewDto> implements OnApplicationBootstrap {
 
   protected abstract collectionName: string;
   protected abstract ElasticReview: new () => any;

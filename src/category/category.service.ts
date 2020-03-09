@@ -23,6 +23,12 @@ export class CategoryService {
               @Inject(forwardRef(() => ProductService)) private productService: ProductService) {
   }
 
+  async getAllCategories(): Promise<Category[]> {
+    const categories = await this.categoryModel.find().exec();
+
+    return categories.map(cat => cat.toJSON());
+  }
+
   async getCategoriesTree(): Promise<CategoryTreeItem[]> {
     const treeItems: CategoryTreeItem[] = [];
     const childrenMap: { [parentId: number]: CategoryTreeItem[] } = {};

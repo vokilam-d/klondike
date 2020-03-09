@@ -2,7 +2,7 @@ import { Expose, Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { AdminMediaDto } from './media.dto';
 
-export class BaseReviewDto {
+export class AdminBaseReviewDto {
   @Expose()
   @Transform(((value, obj) => value ? value : obj._id))
   id: number;

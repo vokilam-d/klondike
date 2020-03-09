@@ -1,8 +1,8 @@
-import { ProductReviewCommentDto, ProductReviewDto } from '../../../shared/dtos/admin/product-review.dto';
+import { AdminProductReviewCommentDto, AdminProductReviewDto } from '../../../shared/dtos/admin/product-review.dto';
 import { ElasticBaseReviewModel } from '../../base-review/models/elastic-base-review.model';
 import { elasticBooleanType, elasticIntegerType, elasticTextType } from '../../../shared/constants';
 
-export class ElasticProductReviewCommentModel implements Record<keyof ProductReviewCommentDto, any> {
+export class ElasticProductReviewCommentModel implements Record<keyof AdminProductReviewCommentDto, any> {
   createdAt = elasticTextType;
   customerId = elasticIntegerType;
   email = elasticTextType;
@@ -12,7 +12,7 @@ export class ElasticProductReviewCommentModel implements Record<keyof ProductRev
   text = elasticTextType;
 }
 
-export class ElasticProductReviewModel extends ElasticBaseReviewModel implements Record<keyof ProductReviewDto, any> {
+export class ElasticProductReviewModel extends ElasticBaseReviewModel implements Record<keyof AdminProductReviewDto, any> {
   comments = {
     properties: new ElasticProductReviewCommentModel()
   };

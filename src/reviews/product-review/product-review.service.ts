@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { BaseReviewService } from '../base-review/base-review.service';
-import { ProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
+import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReview } from './models/product-review.model';
 import { ProductService } from '../../product/product.service';
 import { ClientSession } from 'mongoose';
@@ -13,7 +13,7 @@ import { SearchService } from '../../shared/search/search.service';
 import { plainToClass } from 'class-transformer';
 
 @Injectable()
-export class ProductReviewService extends BaseReviewService<ProductReview, ProductReviewDto> {
+export class ProductReviewService extends BaseReviewService<ProductReview, AdminProductReviewDto> {
 
   get collectionName(): string { return ProductReview.collectionName; }
   protected ElasticReview = ElasticProductReviewModel;
@@ -26,16 +26,16 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Produ
     super();
   }
 
-  async findReviewsByProductId(productId: number): Promise<ProductReviewDto[]> {
+  async findReviewsByProductId(productId: number): Promise<AdminProductReviewDto[]> {
     const found = await this.reviewModel.find({ productId }).exec();
     return found.map(review => this.transformReviewToDto(review));
   }
 
-  async createReview(reviewDto: ProductReviewDto, migrate?): Promise<ProductReviewDto> {
+  async createReview(reviewDto: AdminProductReviewDto, migrate?): Promise<AdminProductReviewDto> {
     return super.createReview(reviewDto, (review, session) => this.productService.addReviewToProduct(review, session), migrate);
   }
 
-  async deleteReview(reviewId: string): Promise<ProductReviewDto> {
+  async deleteReview(reviewId: string): Promise<AdminProductReviewDto> {
     return super.deleteReview(reviewId, (review, session) => this.productService.removeReviewFromProduct(review, session));
   }
 
@@ -48,7 +48,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Produ
     ipAddress?: string,
     userId?: string,
     customerId?: number
-  ): ProductReviewDto {
+  ): AdminProductReviewDto {
     review = review.toJSON();
 
     const transformed = {
@@ -57,6 +57,6 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Produ
       hasClientVoted: this.hasVoted(review, ipAddress, userId, customerId)
     } as any;
 
-    return plainToClass(ProductReviewDto, transformed, { excludeExtraneousValues: true });
+    return plainToClass(AdminProductReviewDto, transformed, { excludeExtraneousValues: true });
   }
 }

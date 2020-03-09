@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, Response, UsePipes, ValidationPipe } from '@nestjs/common';
-import { StoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
+import { AdminStoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
 import { ResponseDto } from '../../shared/dtos/shared/response.dto';
 import { StoreReviewService } from './store-review.service';
 import { plainToClass } from 'class-transformer';
@@ -15,15 +15,15 @@ export class AdminStoreReviewController {
   }
 
   @Get()
-  async findAllReviews(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<StoreReviewDto[]>> {
+  async findAllReviews(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminStoreReviewDto[]>> {
     return this.storeReviewService.getReviewsResponse(sortingPaging);
   }
 
   @Get(':id')
-  async findReview(@Param('id') reviewId: string): Promise<ResponseDto<StoreReviewDto>> {
+  async findReview(@Param('id') reviewId: string): Promise<ResponseDto<AdminStoreReviewDto>> {
     const review = await this.storeReviewService.findReview(reviewId);
     return {
-      data: plainToClass(StoreReviewDto, review, { excludeExtraneousValues: true })
+      data: plainToClass(AdminStoreReviewDto, review, { excludeExtraneousValues: true })
     };
   }
 
@@ -40,27 +40,27 @@ export class AdminStoreReviewController {
   }
 
   @Post()
-  async createStoreReview(@Body() storeReviewDto: StoreReviewDto): Promise<ResponseDto<StoreReviewDto>> {
+  async createStoreReview(@Body() storeReviewDto: AdminStoreReviewDto): Promise<ResponseDto<AdminStoreReviewDto>> {
     const review = await this.storeReviewService.createReview(storeReviewDto);
     return {
-      data: plainToClass(StoreReviewDto, review, { excludeExtraneousValues: true })
+      data: plainToClass(AdminStoreReviewDto, review, { excludeExtraneousValues: true })
     }
   }
 
   @Put(':id')
-  async updateStoreReview(@Param('id') reviewId: string, @Body() storeReviewDto: StoreReviewDto): Promise<ResponseDto<StoreReviewDto>> {
+  async updateStoreReview(@Param('id') reviewId: string, @Body() storeReviewDto: AdminStoreReviewDto): Promise<ResponseDto<AdminStoreReviewDto>> {
     const review = await this.storeReviewService.updateReview(reviewId, storeReviewDto);
     return {
-      data: plainToClass(StoreReviewDto, review, { excludeExtraneousValues: true })
+      data: plainToClass(AdminStoreReviewDto, review, { excludeExtraneousValues: true })
     }
   }
 
   @Delete(':id')
-  async deleteStoreReview(@Param('id') reviewId: string): Promise<ResponseDto<StoreReviewDto>> {
+  async deleteStoreReview(@Param('id') reviewId: string): Promise<ResponseDto<AdminStoreReviewDto>> {
     const review = await this.storeReviewService.deleteReview(reviewId);
 
     return {
-      data: plainToClass(StoreReviewDto, review, { excludeExtraneousValues: true })
+      data: plainToClass(AdminStoreReviewDto, review, { excludeExtraneousValues: true })
     }
   }
 }

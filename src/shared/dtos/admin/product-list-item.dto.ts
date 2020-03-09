@@ -12,5 +12,7 @@ export class AdminProductListItemDto {
   prices: string;
   quantities: string;
   sortOrder: number;
+  reviewsCount: number;
+  reviewsAvgRating: number;
   variants?: AdminProductVariantListItem[];
 }

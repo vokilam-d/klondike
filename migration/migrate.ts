@@ -13,8 +13,8 @@ import { AdminCustomerDto, AdminShippingAddressDto } from '../src/shared/dtos/ad
 import { AdminAddOrUpdateOrderDto } from '../src/shared/dtos/admin/order.dto';
 import { AdminOrderItemDto } from '../src/shared/dtos/admin/order-item.dto';
 import { CreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.dto';
-import { StoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
-import { ProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
+import { AdminStoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
+import { AdminProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
 import { ECurrencyCode } from '../src/shared/enums/currency.enum';
 import { stripHtmlTags } from '../src/shared/helpers/strip-html-tags.function';
 import { MetaTagsDto } from '../src/shared/dtos/shared/meta-tags.dto';
@@ -715,7 +715,7 @@ export class Migrate {
     // const addStoreReviews = async (store_review) => {
     for (const store_review of store_reviews) {
 
-      const dto = {} as StoreReviewDto;
+      const dto = {} as AdminStoreReviewDto;
       dto.id = store_review.review_id;
       dto.isEnabled = true;
       dto.votesCount = 0;
@@ -771,7 +771,7 @@ export class Migrate {
     // const addProductReviews = async (store_review) => {
     for (const product_review of product_reviews) {
 
-      const dto = {} as ProductReviewDto;
+      const dto = {} as AdminProductReviewDto;
       dto.id = product_review.review_id;
       dto.isEnabled = true;
       dto.votesCount = 0;

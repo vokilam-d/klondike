@@ -31,11 +31,15 @@ import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
 import { SortingPaginatingFilterDto } from '../shared/dtos/shared/spf.dto';
 import {
   ClientProductListItemDto,
-  ClientProductListItemVariantDto,
-  ClientProductListItemVariantGroupDto
+  ClientProductVariantDto,
+  ClientProductVariantGroupDto
 } from '../shared/dtos/client/product-list-item.dto';
 import { AttributeService } from '../attribute/attribute.service';
 import { ClientSortingPaginatingFilterDto } from '../shared/dtos/client/spf.dto';
+import { ClientProductCategoryDto, ClientProductCharacteristic, ClientProductDto } from '../shared/dtos/client/product.dto';
+import { classToPlain, plainToClass } from 'class-transformer';
+import { ClientMediaDto } from '../shared/dtos/client/media.dto';
+import { MetaTagsDto } from '../shared/dtos/shared/meta-tags.dto';
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
@@ -145,7 +149,7 @@ export class ProductService implements OnApplicationBootstrap {
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');
 
-    const aggregation = await this.productModel.aggregate()
+    const [ found ] = await this.productModel.aggregate()
       .match({ _id: id })
       .unwind(variantsProp)
       .lookup({
@@ -161,7 +165,6 @@ export class ProductService implements OnApplicationBootstrap {
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
       .exec();
 
-    const found = aggregation[0];
     if (!found) {
       throw new NotFoundException(`Product with id '${id}' not found`);
     }
@@ -174,7 +177,7 @@ export class ProductService implements OnApplicationBootstrap {
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qty');
 
-    const aggregation = await this.productModel.aggregate()
+    const [ found ] = await this.productModel.aggregate()
       .match({ [variantsProp + '.' + skuProp]: sku })
       .unwind(variantsProp)
       .lookup({
@@ -190,12 +193,40 @@ export class ProductService implements OnApplicationBootstrap {
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
       .exec();
 
-    const found = aggregation[0];
     if (!found) {
       throw new NotFoundException(`Product with sku '${sku}' not found`);
     }
 
     return found;
+  }
+
+  async getClientProductWithQtyBySlug(slug: string): Promise<ClientProductDto> {
+    const variantsProp = getPropertyOf<Product>('variants');
+    const slugProp = getPropertyOf<ProductVariant>('slug');
+    const skuProp = getPropertyOf<Inventory>('sku');
+    const qtyProp = getPropertyOf<Inventory>('qty');
+
+    const [ found ] = await this.productModel.aggregate()
+      .match({ [variantsProp + '.' + slugProp]: slug })
+      .unwind(variantsProp)
+      .lookup({
+        'from': Inventory.collectionName,
+        'let': { [variantsProp]: `$${variantsProp}` },
+        'pipeline': [
+          { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+        ],
+        'as': variantsProp
+      })
+      .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
+      .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
+      .exec();
+
+    if (!found) {
+      throw new NotFoundException(`Product with slug '${slug}' not found`);
+    }
+
+    return this.transformToClientProductDto(found, slug);
   }
 
   async createProduct(productDto: AdminAddOrUpdateProductDto, migrate?: any): Promise<Product> {
@@ -635,6 +666,8 @@ export class ProductService implements OnApplicationBootstrap {
         quantities: quantities.join(', '),
         mediaUrl: productMediaUrl,
         sortOrder: product.sortOrder,
+        reviewsCount: product.reviewsCount,
+        reviewsAvgRating: product.reviewsAvgRating,
         variants
       };
     });
@@ -646,7 +679,7 @@ export class ProductService implements OnApplicationBootstrap {
     return adminListItemDtos.map(product => {
       const variant = product.variants[0]; // todo add flag in ProductVariant to select here default variant?
 
-      const variantGroups: ClientProductListItemVariantGroupDto[] = [];
+      const variantGroups: ClientProductVariantGroupDto[] = [];
       if (product.variants.length > 1) {
         product.variants.forEach(variant => {
           variant.attributes.forEach(selectedAttr => {
@@ -659,7 +692,7 @@ export class ProductService implements OnApplicationBootstrap {
 
             const foundIdx = variantGroups.findIndex(group => group.label === attrLabel);
 
-            const itemVariant: ClientProductListItemVariantDto = {
+            const itemVariant: ClientProductVariantDto = {
               label: attrValue.label,
               isSelected: false,
               slug: variant.slug
@@ -688,9 +721,87 @@ export class ProductService implements OnApplicationBootstrap {
         variantGroups,
         mediaUrl: variant.mediaUrl,
         mediaHoverUrl: variant.mediaHoverUrl,
-        mediaAltText: variant.mediaAltText
+        mediaAltText: variant.mediaAltText,
+        reviewsCount: product.reviewsCount,
+        reviewsAvgRating: product.reviewsAvgRating,
       }
     });
+  }
+
+  private async transformToClientProductDto(productWithQty: ProductWithQty, slug: string): Promise<ClientProductDto> {
+    const variant = productWithQty.variants.find(v => v.slug === slug);
+
+    const categories: ClientProductCategoryDto[] = [];
+    const categoryModels = await this.categoryService.getAllCategories();
+    for (const categoryId of productWithQty.categoryIds) {
+      const found = categoryModels.find(c => c.id === categoryId);
+      if (!found) { continue; }
+
+      categories.push({ id: found.id, name: found.name, slug: found.slug });
+    }
+
+    const variantGroups: ClientProductVariantGroupDto[] = [];
+    const attributeModels = await this.attributeService.getAllAttributes();
+    if (productWithQty.variants.length > 1) {
+      productWithQty.variants.forEach(variant => {
+        variant.attributes.forEach(selectedAttr => {
+          const attribute = attributeModels.find(a => a.id === selectedAttr.attributeId);
+          if (attribute!) { return; }
+
+          const attrLabel = attribute.label;
+          const attrValue = attribute.values.find(v => v.id === selectedAttr.valueId);
+          if (!attrValue) { return; }
+
+          const foundIdx = variantGroups.findIndex(group => group.label === attrLabel);
+
+          const itemVariant: ClientProductVariantDto = {
+            label: attrValue.label,
+            isSelected: false,
+            slug: variant.slug
+          };
+
+          if (foundIdx === -1) {
+            variantGroups.push({
+              label: attrLabel,
+              variants: [ itemVariant ]
+            });
+          } else {
+            variantGroups[foundIdx].variants.push(itemVariant);
+          }
+        });
+      });
+    }
+
+    const characteristics: ClientProductCharacteristic[] = [];
+    for (const attribute of productWithQty.attributes) {
+      const foundAttr = attributeModels.find(a => a.id === attribute.attributeId);
+      if (!foundAttr) { continue; }
+      const foundAttrValue = foundAttr.values.find(v => v.id === attribute.valueId);
+      if (!foundAttrValue) { continue; }
+
+      characteristics.push({ label: foundAttr.label, value: foundAttrValue.label });
+    }
+
+    return {
+      productId: productWithQty._id,
+      variantId: variant._id.toString(),
+      isInStock: variant.qty > 0,
+      categories,
+      variantGroups,
+      characteristics,
+      breadcrumbs: productWithQty.breadcrumbs,
+      fullDescription: variant.fullDescription,
+      shortDescription: variant.shortDescription,
+      medias: plainToClass(ClientMediaDto, variant.medias, { excludeExtraneousValues: true }),
+      metaTags: plainToClass(MetaTagsDto, variant.metaTags, { excludeExtraneousValues: true }),
+      name: variant.name,
+      slug: variant.slug,
+      sku: variant.sku,
+      vendorCode: variant.vendorCode,
+      priceInDefaultCurrency: variant.priceInDefaultCurrency,
+      reviewsAvgRating: productWithQty.reviewsAvgRating,
+      reviewsCount: productWithQty.reviewsCount
+    }
   }
 
   private async reindexAllSearchData() {

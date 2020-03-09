@@ -5,7 +5,7 @@ import { create } from 'xmlbuilder2/lib';
 import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
 import { ProductBreadcrumb } from '../product/models/product-breadcrumb.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
-import { ProductReviewDto } from '../shared/dtos/admin/product-review.dto';
+import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductWithQty } from '../product/models/product-with-qty.model';
 
 type cdata = { $: string };
@@ -234,7 +234,7 @@ export class GoogleShoppingFeedService {
     return this.productService.getProductsWithQty(spf);
   }
 
-  private async getAllReviews(): Promise<ProductReviewDto[]> {
+  private async getAllReviews(): Promise<AdminProductReviewDto[]> {
     const countReviews = await this.reviewService.countReviews();
     const spf = new AdminSortingPaginatingFilterDto();
     spf.limit = countReviews + 100;

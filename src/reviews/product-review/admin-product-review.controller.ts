@@ -3,7 +3,7 @@ import { ResponseDto } from '../../shared/dtos/shared/response.dto';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
-import { ProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
+import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReviewService } from './product-review.service';
 import { ProductReviewFilterDto } from '../../shared/dtos/admin/product-review-filter.dto';
 
@@ -14,7 +14,7 @@ export class AdminProductReviewController {
   }
 
   @Get()
-  async findAllReviews(@Query() spf: ProductReviewFilterDto): Promise<ResponseDto<ProductReviewDto[]>> {
+  async findAllReviews(@Query() spf: ProductReviewFilterDto): Promise<ResponseDto<AdminProductReviewDto[]>> {
 
     if (spf.productId) {
 
@@ -28,10 +28,10 @@ export class AdminProductReviewController {
   }
 
   @Get(':id')
-  async findReview(@Param('id') reviewId: string): Promise<ResponseDto<ProductReviewDto>> {
+  async findReview(@Param('id') reviewId: string): Promise<ResponseDto<AdminProductReviewDto>> {
     const review = await this.productReviewService.findReview(reviewId);
     return {
-      data: plainToClass(ProductReviewDto, review, { excludeExtraneousValues: true })
+      data: plainToClass(AdminProductReviewDto, review, { excludeExtraneousValues: true })
     };
   }
 
@@ -48,27 +48,27 @@ export class AdminProductReviewController {
   }
 
   @Post()
-  async createProductReview(@Body() productReviewDto: ProductReviewDto, @Query('migrate') migrate: any): Promise<ResponseDto<ProductReviewDto>> {
+  async createProductReview(@Body() productReviewDto: AdminProductReviewDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminProductReviewDto>> {
     const review = await this.productReviewService.createReview(productReviewDto, migrate);
     return {
-      data: plainToClass(ProductReviewDto, review, { excludeExtraneousValues: true })
+      data: plainToClass(AdminProductReviewDto, review, { excludeExtraneousValues: true })
     }
   }
 
   @Put(':id')
-  async updateProductReview(@Param('id') reviewId: string, @Body() productReviewDto: ProductReviewDto): Promise<ResponseDto<ProductReviewDto>> {
+  async updateProductReview(@Param('id') reviewId: string, @Body() productReviewDto: AdminProductReviewDto): Promise<ResponseDto<AdminProductReviewDto>> {
     const review = await this.productReviewService.updateReview(reviewId, productReviewDto);
     return {
-      data: plainToClass(ProductReviewDto, review, { excludeExtraneousValues: true })
+      data: plainToClass(AdminProductReviewDto, review, { excludeExtraneousValues: true })
     }
   }
 
   @Delete(':id')
-  async deleteProductReview(@Param('id') reviewId: string): Promise<ResponseDto<ProductReviewDto>> {
+  async deleteProductReview(@Param('id') reviewId: string): Promise<ResponseDto<AdminProductReviewDto>> {
     const review = await this.productReviewService.deleteReview(reviewId);
 
     return {
-      data: plainToClass(ProductReviewDto, review, { excludeExtraneousValues: true })
+      data: plainToClass(AdminProductReviewDto, review, { excludeExtraneousValues: true })
     }
   }
 }

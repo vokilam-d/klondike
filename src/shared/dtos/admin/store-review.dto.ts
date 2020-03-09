@@ -1,8 +1,8 @@
 import { Expose } from 'class-transformer';
 import { IsString } from 'class-validator';
-import { BaseReviewDto } from './base-review.dto';
+import { AdminBaseReviewDto } from './base-review.dto';
 
-export class StoreReviewDto extends BaseReviewDto {
+export class AdminStoreReviewDto extends AdminBaseReviewDto {
   @Expose()
   @IsString()
   managerComment: string;
