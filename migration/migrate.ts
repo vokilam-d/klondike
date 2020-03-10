@@ -157,7 +157,7 @@ export class Migrate {
       dto.metaTags.title = category.meta_title;
       dto.metaTags.description = category.meta_description;
       dto.metaTags.keywords = category.meta_keywords;
-      dto.slug = category.url_key;
+      dto.slug = category.url_key ? `${category.url_key}.html` : '';
 
       try {
         await axios.post(
@@ -304,7 +304,7 @@ export class Migrate {
       const variantDto = {} as AdminProductVariantDto;
       variantDto.name = product.name || '';
       variantDto.sku = product.sku || '';
-      variantDto.slug = product.url_key || '';
+      variantDto.slug = product.url_key ? `${product.url_key}.html` : '';
       variantDto.attributes = [];
       variantDto.isEnabled = true;
 
