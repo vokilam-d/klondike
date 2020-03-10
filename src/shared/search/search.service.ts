@@ -118,8 +118,7 @@ export class SearchService {
         fields.push(...[
           fieldName,
           `${fieldName}._2gram`,
-          `${fieldName}._3gram`,
-          `${fieldName}._index_prefix`
+          `${fieldName}._3gram`
         ]);
       });
 

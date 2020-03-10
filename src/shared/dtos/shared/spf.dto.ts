@@ -42,10 +42,12 @@ export abstract class SortingPaginatingFilterDto {
     return obj;
   }
 
+  @IsOptional()
   @Transform((value => Number(value)))
   @Min(0)
   limit: number = 20;
 
+  @IsOptional()
   @Transform((value => Number(value)))
   @IsPositive()
   page: number = 1;

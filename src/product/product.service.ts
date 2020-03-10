@@ -60,6 +60,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   onApplicationBootstrap(): any {
     this.searchService.ensureCollection(Product.collectionName, new ElasticProductModel());
+    // this.reindexAllSearchData();
   }
 
   async getAdminProductsList(spf: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto(),
@@ -807,6 +808,7 @@ export class ProductService implements OnApplicationBootstrap {
   private async reindexAllSearchData() {
     await this.searchService.deleteCollection(Product.collectionName);
     this.logger.log('Deleted Products elastic collection');
+    await this.searchService.ensureCollection(Product.collectionName, new ElasticProductModel());
 
     const spf = new AdminSortingPaginatingFilterDto();
     spf.limit = 10000;

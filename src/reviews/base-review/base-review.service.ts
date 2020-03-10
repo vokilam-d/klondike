@@ -12,6 +12,13 @@ import { MediaService } from '../../shared/media-service/media.service';
 import { SearchService } from '../../shared/search/search.service';
 import { ResponseDto } from '../../shared/dtos/shared/response.dto';
 
+type IReviewCallback<T = any> = (review: T, session: ClientSession) => Promise<any>;
+
+interface IUpdateReviewCallbacks<T = any> {
+  onEnable?: IReviewCallback<T>;
+  onDisable?: IReviewCallback<T>;
+}
+
 export abstract class BaseReviewService<T extends BaseReview, U extends AdminBaseReviewDto> implements OnApplicationBootstrap {
 
   protected abstract collectionName: string;
@@ -68,7 +75,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     return this.transformReviewToDto(review, ipAddress, userId, customerId);
   }
 
-  async createReview(reviewDto: U, callback?: (review: T, session: ClientSession) => Promise<any>, migrate?): Promise<U> {
+  async createReview(reviewDto: U, callback?: IReviewCallback<T>, migrate?): Promise<U> {
     const session = await this.reviewModel.db.startSession();
     session.startTransaction();
 
@@ -84,7 +91,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       tmpMedias.push(...checkedTmpMedias);
 
       await review.save({ session });
-      if (callback) { await callback(review, session); }
+      if (review.isEnabled && callback) { await callback(review, session); }
       await session.commitTransaction();
 
       this.addSearchData(review);
@@ -99,37 +106,54 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     }
   }
 
-  async updateReview(reviewId: string, reviewDto: U): Promise<U> {
+  async updateReview(reviewId: string, reviewDto: U, { onEnable, onDisable }: IUpdateReviewCallbacks = {}): Promise<U> {
     const review = await this.reviewModel.findById(reviewId).exec();
     if (!review) {
       throw new NotFoundException(`Review with id '${reviewId}' not found`);
     }
 
-    const mediasToDelete: Media[] = [];
-    const tmpMedias: AdminMediaDto[] = [];
+    const session = await this.reviewModel.db.startSession();
+    session.startTransaction();
 
-    for (const media of review.medias) {
-      const isMediaInDto = reviewDto.medias.find(dtoMedia => dtoMedia.variantsUrls.original === media.variantsUrls.original);
-      if (!isMediaInDto) {
-        mediasToDelete.push(media);
+    try {
+      const mediasToDelete: Media[] = [];
+      const tmpMedias: AdminMediaDto[] = [];
+
+      for (const media of review.medias) {
+        const isMediaInDto = reviewDto.medias.find(dtoMedia => dtoMedia.variantsUrls.original === media.variantsUrls.original);
+        if (!isMediaInDto) {
+          mediasToDelete.push(media);
+        }
       }
+
+      const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(reviewDto.medias, this.collectionName);
+      reviewDto.medias = savedMedias;
+      tmpMedias.push(...checkedTmpMedias);
+
+      if (onEnable && reviewDto.isEnabled === true && review.isEnabled === false) {
+        await onEnable(review, session);
+      } else if (onDisable && reviewDto.isEnabled === false && review.isEnabled === true) {
+        await onDisable(review, session);
+      }
+
+      Object.keys(reviewDto).forEach(key => { review[key] = reviewDto[key]; });
+      await review.save({ session });
+      await session.commitTransaction();
+
+      this.updateSearchData(review);
+      await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
+      await this.mediaService.deleteSavedMedias(mediasToDelete, this.collectionName);
+
+      return this.transformReviewToDto(review);
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      await session.endSession();
     }
-
-    const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(reviewDto.medias, this.collectionName);
-    reviewDto.medias = savedMedias;
-    tmpMedias.push(...checkedTmpMedias);
-
-    Object.keys(reviewDto).forEach(key => { review[key] = reviewDto[key]; });
-    await review.save();
-
-    this.updateSearchData(review);
-    await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
-    await this.mediaService.deleteSavedMedias(mediasToDelete, this.collectionName);
-
-    return this.transformReviewToDto(review);
   }
 
-  async deleteReview(reviewId: string, callback?: (review: T, session: ClientSession) => Promise<any>): Promise<U> {
+  async deleteReview(reviewId: string, callback?: IReviewCallback<T>): Promise<U> {
     const session = await this.reviewModel.db.startSession();
     session.startTransaction();
 
@@ -137,7 +161,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       const deleted = await this.reviewModel.findByIdAndDelete(reviewId).session(session).exec();
       if (!deleted) { throw new NotFoundException(`No review found with id '${reviewId}'`); }
 
-      if (callback) await callback(deleted, session);
+      if (deleted.isEnabled && callback) { await callback(deleted, session) };
       await session.commitTransaction();
 
       await this.mediaService.deleteSavedMedias(deleted.medias, this.collectionName);
@@ -178,6 +202,24 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     this.updateSearchData(foundReview);
   }
 
+  async removeVote(reviewId: number, ipAddress: string, userId: string, customerId: number) {
+    const foundReview = await this.reviewModel.findById(reviewId).exec();
+    if (!foundReview) {
+      throw new NotFoundException(`Review with id '${reviewId}' not found`);
+    }
+
+    const alreadyVoted = this.hasVoted(foundReview, ipAddress, userId, customerId);
+
+    if (alreadyVoted) {
+      throw new ForbiddenException(`You have already voted for this review`);
+    }
+
+    foundReview.votes.pop();
+
+    await foundReview.save();
+    this.updateSearchData(foundReview);
+  }
+
   abstract transformReviewToDto(review: DocumentType<T>, ipAddress?: string, userId?: string, customerId?: number): U;
 
   async countReviews(): Promise<number> {
@@ -185,7 +227,13 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   }
 
   protected hasVoted(review: T, ipAddress: string, userId: string, customerId: number): boolean {
-    return review.votes.some(vote => vote.ip === ipAddress || vote.userId === userId || vote.customerId === customerId);
+    return review.votes.some(vote => {
+      const ipHit = vote.ip && vote.ip === ipAddress;
+      const userIdHit = vote.userId && vote.userId === userId;
+      const customerIdHit = vote.customerId && vote.customerId === customerId;
+
+      return ipHit || userIdHit || customerIdHit;
+    });
   }
 
   async updateCounter() {

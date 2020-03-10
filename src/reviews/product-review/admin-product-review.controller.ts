@@ -5,7 +5,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReviewService } from './product-review.service';
-import { ProductReviewFilterDto } from '../../shared/dtos/admin/product-review-filter.dto';
+import { AdminProductReviewFilterDto } from '../../shared/dtos/admin/product-review-filter.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/product-reviews')
@@ -14,12 +14,12 @@ export class AdminProductReviewController {
   }
 
   @Get()
-  async findAllReviews(@Query() spf: ProductReviewFilterDto): Promise<ResponseDto<AdminProductReviewDto[]>> {
+  async findAllReviews(@Query() spf: AdminProductReviewFilterDto): Promise<ResponseDto<AdminProductReviewDto[]>> {
 
     if (spf.productId) {
 
       return {
-        data: await this.productReviewService.findReviewsByProductId(spf.productId)
+        data: await this.productReviewService.findReviewsByProductId(spf.productId, false)
       };
 
     } else {

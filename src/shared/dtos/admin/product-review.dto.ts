@@ -1,7 +1,6 @@
 import { Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { AdminBaseReviewDto } from './base-review.dto';
-import { prop } from '@typegoose/typegoose';
 
 export class AdminProductReviewCommentDto {
   @Expose()
@@ -52,5 +51,6 @@ export class AdminProductReviewDto extends AdminBaseReviewDto {
 
   @Expose()
   @ValidateNested({ each: true })
+  @Type(() => AdminProductReviewCommentDto)
   comments: AdminProductReviewCommentDto[];
 }

@@ -1,12 +1,12 @@
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
-import { elasticAutocompleteType, elasticBooleanType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
+import { elasticAutocompleteType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
 import { ElasticProductVariantModel } from './elastic-product-variant.model';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
 
 export class ElasticProductModel implements Record<keyof AdminProductListItemDto, any> {
-  id = elasticIntegerType;
-  categoryIds = elasticIntegerType;
-  isEnabled = elasticBooleanType;
+  id = elasticTextType;
+  categoryIds = elasticTextType;
+  isEnabled = elasticTextType;
   attributes = {
     properties: new ElasticProductSelectedAttributeModel()
   };

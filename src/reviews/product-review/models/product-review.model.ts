@@ -37,7 +37,7 @@ export class ProductReview extends BaseReview {
   @prop()
   productVariantId: string;
 
-  @arrayProp({ items: ProductReviewComment, default: [] })
+  @arrayProp({ items: ProductReviewComment, default: [], _id: true })
   comments: ProductReviewComment[];
 
   static collectionName: string = 'product-review';
