@@ -5,7 +5,7 @@ import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientCategoryDto } from '../shared/dtos/client/category.dto';
 import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
-import { ClientSortingPaginatingFilterDto } from '../shared/dtos/client/spf.dto';
+import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -33,7 +33,7 @@ export class ClientCategoryController {
 
   @Get(':slug/items')
   async getCategoryItems(@Param('slug') slug: string,
-                         @Query() spf: ClientSortingPaginatingFilterDto
+                         @Query() spf: ClientProductSortingPaginatingFilterDto
   ): Promise<ResponseDto<ClientProductListItemDto[]>> {
 
     return this.categoryService.getCategoryItems(slug, spf);

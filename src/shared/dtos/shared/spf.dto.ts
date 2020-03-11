@@ -19,7 +19,7 @@ export abstract class SortingPaginatingFilterDto {
   @IsOptional()
   sort: string = '';
 
-  getSortAsObj(isMongoId: boolean): ISorting {
+  getSortAsObj(isSortIdMongoId: boolean): ISorting {
     let obj = { };
 
     this.sort.split(queryParamArrayDelimiter).forEach(field => {
@@ -30,7 +30,7 @@ export abstract class SortingPaginatingFilterDto {
 
       const sortOrder = matches[1] === '-' ? 'desc' : 'asc';
       let sortField = matches[2];
-      if (isMongoId && sortField === 'id') { sortField = '_id'; }
+      if (isSortIdMongoId && sortField === 'id') { sortField = '_id'; }
 
       obj[sortField] = sortOrder;
     });

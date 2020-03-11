@@ -189,7 +189,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     const alreadyVoted = this.hasVoted(foundReview, ipAddress, userId, customerId);
 
     if (alreadyVoted) {
-      throw new ForbiddenException(`You have already voted for this review`);
+      throw new ForbiddenException(`Вы уже голосовали за этот отзыв`);
     }
 
     const vote = new ReviewVote();

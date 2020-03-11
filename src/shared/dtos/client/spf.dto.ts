@@ -1,15 +1,7 @@
 import { IFilter, SortingPaginatingFilterDto } from '../shared/spf.dto';
 import { queryParamArrayDelimiter } from '../../constants';
-import { getPropertyOf } from '../../helpers/get-property-of.function';
-import { Product } from '../../../product/models/product.model';
-import { IsOptional, IsString } from 'class-validator';
-
-const defaultSortField = '-' + getPropertyOf<Product>('sortOrder');
 
 export class ClientSortingPaginatingFilterDto extends SortingPaginatingFilterDto {
-  @IsString()
-  @IsOptional()
-  sort = defaultSortField;
 
   [fieldName: string]: any;
 
@@ -25,6 +17,7 @@ export class ClientSortingPaginatingFilterDto extends SortingPaginatingFilterDto
 
         queryValue.toString()
           .split(queryParamArrayDelimiter)
+          .map(value => decodeURIComponent(value))
           .forEach(value => {
             filters.push({ fieldName, value });
           });

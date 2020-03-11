@@ -31,11 +31,11 @@ import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
 import { SortingPaginatingFilterDto } from '../shared/dtos/shared/spf.dto';
 import { ClientProductListItemDto, ClientProductVariantDto, ClientProductVariantGroupDto } from '../shared/dtos/client/product-list-item.dto';
 import { AttributeService } from '../attribute/attribute.service';
-import { ClientSortingPaginatingFilterDto } from '../shared/dtos/client/spf.dto';
 import { ClientProductCategoryDto, ClientProductCharacteristic, ClientProductDto } from '../shared/dtos/client/product.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../shared/dtos/client/media.dto';
 import { MetaTagsDto } from '../shared/dtos/shared/meta-tags.dto';
+import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
@@ -93,7 +93,7 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async getClientProductListByCategoryId(categoryId: number,
-                                         spf: ClientSortingPaginatingFilterDto
+                                         spf: ClientProductSortingPaginatingFilterDto
   ): Promise<ResponseDto<ClientProductListItemDto[]>> {
 
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
@@ -101,6 +101,25 @@ export class ProductService implements OnApplicationBootstrap {
 
     spf[isEnabledProp] = true;
     spf[categoryProp] = categoryId;
+
+    const searchResponse = await this.findByFilters(spf, false);
+    const adminDtos = searchResponse[0];
+    const itemsTotal = searchResponse[1];
+    const clientDtos = await this.transformToClientListDto(adminDtos);
+
+    return {
+      data: clientDtos,
+      page: spf.page,
+      pagesTotal: Math.ceil(itemsTotal / spf.limit),
+      itemsTotal
+    }
+  }
+
+  async getClientProductListByFilters(spf: ClientProductSortingPaginatingFilterDto): Promise<ResponseDto<ClientProductListItemDto[]>> {
+
+    const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
+
+    spf[isEnabledProp] = true;
 
     const searchResponse = await this.findByFilters(spf, false);
     const adminDtos = searchResponse[0];
@@ -581,13 +600,13 @@ export class ProductService implements OnApplicationBootstrap {
     await this.searchService.deleteDocument(Product.collectionName, productId);
   }
 
-  private async findByFilters(spf: SortingPaginatingFilterDto, sortByMongoId: boolean) {
+  private async findByFilters(spf: SortingPaginatingFilterDto, isSortIdMongoId: boolean) {
     return this.searchService.searchByFilters<AdminProductListItemDto>(
       Product.collectionName,
       spf.getNormalizedFilters(),
       spf.skip,
       spf.limit,
-      spf.getSortAsObj(sortByMongoId)
+      spf.getSortAsObj(isSortIdMongoId)
     );
   }
 
