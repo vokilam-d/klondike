@@ -10,7 +10,7 @@ export class ClientProductController {
 
   @Get(':slug')
   async getProductBySlug(@Param('slug') slug: string): Promise<ResponseDto<ClientProductDto>> {
-    const dto = await this.productService.getClientProductWithQtyBySlug(slug);
+    const dto = await this.productService.getClientProductDtoBySlug(slug);
 
     return {
       data: dto

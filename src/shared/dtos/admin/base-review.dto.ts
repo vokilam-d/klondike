@@ -5,19 +5,19 @@ import { AdminMediaDto } from './media.dto';
 export class AdminBaseReviewDto {
   @Expose()
   @Transform(((value, obj) => value ? value : obj._id))
-  id: number;
+  id?: number;
 
   @Expose()
   @IsBoolean()
-  isEnabled: boolean;
+  isEnabled?: boolean;
 
   @Expose()
   @IsOptional()
-  votesCount: number;
+  votesCount?: number;
 
   @Expose()
   @IsOptional()
-  hasClientVoted: boolean;
+  hasClientVoted?: boolean;
 
   @Expose()
   @IsString()
@@ -35,7 +35,7 @@ export class AdminBaseReviewDto {
   @Expose()
   @IsOptional()
   @IsNumber()
-  customerId: number;
+  customerId?: number;
 
   @Expose()
   @IsNumber()
@@ -47,7 +47,7 @@ export class AdminBaseReviewDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  sortOrder: number;
+  sortOrder?: number;
 
   @Expose()
   @IsArray()
@@ -58,5 +58,5 @@ export class AdminBaseReviewDto {
   @Expose()
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt?: Date;
 }

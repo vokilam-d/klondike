@@ -1,6 +1,6 @@
 import { EMediaVariant } from '../../enums/media-variant.enum';
 import { Expose } from 'class-transformer';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 type VariantsUrls = {
   [k in EMediaVariant]: string;
@@ -16,6 +16,7 @@ export abstract class MediaDto {
   };
 
   @Expose()
+  @IsOptional()
   @IsString()
   altText: string;
 }

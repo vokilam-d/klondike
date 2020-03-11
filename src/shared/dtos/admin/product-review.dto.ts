@@ -52,5 +52,5 @@ export class AdminProductReviewDto extends AdminBaseReviewDto {
   @Expose()
   @ValidateNested({ each: true })
   @Type(() => AdminProductReviewCommentDto)
-  comments: AdminProductReviewCommentDto[];
+  comments?: AdminProductReviewCommentDto[];
 }

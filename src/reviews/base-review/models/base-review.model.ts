@@ -28,7 +28,7 @@ export abstract class BaseReview {
   @prop({ required: true })
   text: string;
 
-  @prop()
+  @prop({ required: true })
   email: string;
 
   @prop({ default: null })

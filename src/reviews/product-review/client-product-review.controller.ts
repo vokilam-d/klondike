@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, Query, Request, Response } from '@nestjs/common';
 import { ProductReviewService } from './product-review.service';
 import { ClientProductReviewFilterDto } from '../../shared/dtos/client/product-review-filter.dto';
 import { ResponseDto } from '../../shared/dtos/shared/response.dto';
@@ -6,6 +6,11 @@ import { ClientProductReviewDto } from '../../shared/dtos/client/product-review.
 import { IpAddress } from '../../shared/decorators/ip-address.decorator';
 import { plainToClass } from 'class-transformer';
 import { ClientAddProductReviewCommentDto } from '../../shared/dtos/client/product-review-comment.dto';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { ServerResponse } from "http";
+import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
+import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
+import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
 
 @Controller('product-reviews')
 export class ClientProductReviewController {
@@ -23,6 +28,25 @@ export class ClientProductReviewController {
 
     return {
       data: plainToClass(ClientProductReviewDto, adminDto, { excludeExtraneousValues: true })
+    }
+  }
+
+  @Post('media')
+  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
+    const media = await this.productReviewService.uploadMedia(request);
+    const mediaDto = plainToClass(ClientMediaDto, media, { excludeExtraneousValues: true });
+
+    reply.status(201).send(mediaDto);
+  }
+
+  @Post()
+  async createProductReview(@Body() productReviewDto: ClientAddProductReviewDto, @Query('migrate') migrate: any, @Headers() headers): Promise<ResponseDto<ClientProductReviewDto>> {
+
+    productReviewDto.customerId = headers.customerId;
+    const review = await this.productReviewService.createReview(productReviewDto, migrate);
+
+    return {
+      data: plainToClass(ClientProductReviewDto, review, { excludeExtraneousValues: true })
     }
   }
 

@@ -5,13 +5,13 @@ import { MediaDto } from '../shared/media.dto';
 export class AdminMediaDto extends MediaDto {
   @Expose()
   @IsBoolean()
-  isHidden: boolean;
+  isHidden?: boolean;
 
   @Expose()
   @IsString()
-  size: string;
+  size?: string;
 
   @Expose()
   @IsString()
-  dimensions: string;
+  dimensions?: string;
 }

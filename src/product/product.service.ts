@@ -29,15 +29,11 @@ import { DEFAULT_CURRENCY } from '../shared/enums/currency.enum';
 import { ElasticProductModel } from './models/elastic-product.model';
 import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
 import { SortingPaginatingFilterDto } from '../shared/dtos/shared/spf.dto';
-import {
-  ClientProductListItemDto,
-  ClientProductVariantDto,
-  ClientProductVariantGroupDto
-} from '../shared/dtos/client/product-list-item.dto';
+import { ClientProductListItemDto, ClientProductVariantDto, ClientProductVariantGroupDto } from '../shared/dtos/client/product-list-item.dto';
 import { AttributeService } from '../attribute/attribute.service';
 import { ClientSortingPaginatingFilterDto } from '../shared/dtos/client/spf.dto';
 import { ClientProductCategoryDto, ClientProductCharacteristic, ClientProductDto } from '../shared/dtos/client/product.dto';
-import { classToPlain, plainToClass } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../shared/dtos/client/media.dto';
 import { MetaTagsDto } from '../shared/dtos/shared/meta-tags.dto';
 
@@ -90,7 +86,7 @@ export class ProductService implements OnApplicationBootstrap {
     return {
       data: products,
       page: spf.page,
-      pagesTotal: Math.ceil(itemsTotal / spf.limit),
+      pagesTotal: Math.ceil((itemsFiltered === undefined ? itemsTotal : itemsFiltered) / spf.limit),
       itemsTotal,
       itemsFiltered
     }
@@ -201,7 +197,7 @@ export class ProductService implements OnApplicationBootstrap {
     return found;
   }
 
-  async getClientProductWithQtyBySlug(slug: string): Promise<ClientProductDto> {
+  async getClientProductDtoBySlug(slug: string): Promise<ClientProductDto> {
     const variantsProp = getPropertyOf<Product>('variants');
     const slugProp = getPropertyOf<ProductVariant>('slug');
     const skuProp = getPropertyOf<Inventory>('sku');
@@ -780,7 +776,7 @@ export class ProductService implements OnApplicationBootstrap {
       const foundAttrValue = foundAttr.values.find(v => v.id === attribute.valueId);
       if (!foundAttrValue) { continue; }
 
-      characteristics.push({ label: foundAttr.label, value: foundAttrValue.label });
+      characteristics.push({ label: foundAttr.label, code: foundAttr._id, value: foundAttrValue.label });
     }
 
     return {
@@ -799,6 +795,7 @@ export class ProductService implements OnApplicationBootstrap {
       slug: variant.slug,
       sku: variant.sku,
       vendorCode: variant.vendorCode,
+      gtin: variant.gtin,
       priceInDefaultCurrency: variant.priceInDefaultCurrency,
       reviewsAvgRating: productWithQty.reviewsAvgRating,
       reviewsCount: productWithQty.reviewsCount

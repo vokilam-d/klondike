@@ -8,6 +8,7 @@ import { ProductBreadcrumbDto } from '../admin/product-breadcrumb.dto';
 
 export class ClientProductCharacteristic {
   label: string;
+  code: string;
   value: string;
 }
 
@@ -76,4 +77,7 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
 
   @Expose()
   vendorCode: string;
+
+  @Expose()
+  gtin: string;
 }
