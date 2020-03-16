@@ -3,7 +3,7 @@ import { ProductService } from '../product/product.service';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
 import { create } from 'xmlbuilder2/lib';
 import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
-import { ProductBreadcrumb } from '../product/models/product-breadcrumb.model';
+import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductWithQty } from '../product/models/product-with-qty.model';
@@ -243,7 +243,7 @@ export class GoogleShoppingFeedService {
     return responseDto.data;
   }
 
-  private buildProductType(breadcrumbs: ProductBreadcrumb[]): string {
+  private buildProductType(breadcrumbs: Breadcrumb[]): string {
     return breadcrumbs.map(breadcrumb => breadcrumb.name).join(' > ');
   }
 }

@@ -13,6 +13,7 @@ import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
 import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
 import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
+import { Breadcrumb } from '../shared/models/breadcrumb.model';
 
 @Injectable()
 export class CategoryService {
@@ -102,6 +103,7 @@ export class CategoryService {
         newCategoryModel.id = await this.counterService.getCounter(Category.collectionName, session);
       }
 
+      newCategoryModel.breadcrumbs = await this.buildBreadcrumbs(newCategoryModel);
       await newCategoryModel.save({ session });
       await this.createCategoryPageRegistry(newCategoryModel.slug, session);
       await session.commitTransaction();
@@ -132,7 +134,9 @@ export class CategoryService {
     session.startTransaction();
 
     try {
-      const saved = await found.save({ session });
+      if (found.parentId !== categoryDto.parentId) {
+        found.breadcrumbs = await this.buildBreadcrumbs(found);
+      }
       if (oldSlug !== categoryDto.slug) {
         await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, session);
       }
@@ -140,6 +144,7 @@ export class CategoryService {
         await this.productService.updateBreadcrumbs({ id: categoryId, name: categoryDto.name, slug: categoryDto.slug}, session);
       }
 
+      const saved = await found.save({ session });
       await session.commitTransaction();
       return saved.toJSON();
 
@@ -201,4 +206,26 @@ export class CategoryService {
     const lastCategory = await this.categoryModel.findOne().sort('-_id').exec();
     return this.counterService.setCounter(Category.collectionName, lastCategory.id);
   }
+
+  private async buildBreadcrumbs(category: Category): Promise<Breadcrumb[]> {
+    if (!category.parentId) { return []; }
+
+    const breadcrumbs: Breadcrumb[] = [];
+    const categories = await this.getAllCategories();
+    let parentId = category.parentId;
+
+    while (parentId) {
+      const parent = categories.find(c => c.id === parentId);
+      breadcrumbs.unshift({
+        id: parent.id,
+        name: parent.name,
+        slug: parent.slug
+      });
+
+      parentId = parent.parentId;
+    }
+
+    return breadcrumbs;
+  }
+
 }

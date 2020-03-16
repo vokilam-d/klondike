@@ -4,7 +4,7 @@ import { ClientProductVariantGroupDto } from './product-list-item.dto';
 import { Expose, Type } from 'class-transformer';
 import { ClientMediaDto } from './media.dto';
 import { MetaTagsDto } from '../shared/meta-tags.dto';
-import { ProductBreadcrumbDto } from '../admin/product-breadcrumb.dto';
+import { BreadcrumbDto } from '../shared/breadcrumb.dto';
 
 export class ClientProductCharacteristic {
   label: string;
@@ -43,7 +43,7 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
   characteristics: ClientProductCharacteristic[];
 
   @Expose()
-  breadcrumbs: ProductBreadcrumbDto[];
+  breadcrumbs: BreadcrumbDto[];
 
   @Expose()
   fullDescription: string;

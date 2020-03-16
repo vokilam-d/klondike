@@ -1,7 +1,7 @@
 import { prop } from '@typegoose/typegoose';
 import { Category } from '../../category/models/category.model';
 
-export class ProductBreadcrumb {
+export class Breadcrumb {
   @prop()
   id: Category['id'];
 

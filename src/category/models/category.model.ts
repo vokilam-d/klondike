@@ -1,7 +1,8 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { MetaTags } from '../../shared/models/meta-tags.model';
 import { CategoryAncestor } from './category-ancestor.model';
-import { Exclude, Expose } from 'class-transformer';
+import { Expose } from 'class-transformer';
+import { Breadcrumb } from '../../shared/models/breadcrumb.model';
 
 export class Category {
   @prop()
@@ -22,6 +23,9 @@ export class Category {
 
   @prop({ default: 0 })
   parentId: number;
+
+  @arrayProp({ items: Breadcrumb, _id: false })
+  breadcrumbs: Breadcrumb[];
 
   @arrayProp({ _id: false, items: CategoryAncestor })
   ancestors: CategoryAncestor[];

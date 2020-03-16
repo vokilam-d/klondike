@@ -2,6 +2,7 @@ import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
 import { MetaTagsDto } from '../shared/meta-tags.dto';
+import { BreadcrumbDto } from '../shared/breadcrumb.dto';
 
 export class AdminAddOrUpdateCategoryDto {
   @Expose()
@@ -27,6 +28,9 @@ export class AdminAddOrUpdateCategoryDto {
   @Expose()
   @IsNumber()
   parentId: number;
+
+  @Expose()
+  breadcrumbs: BreadcrumbDto[];
 
   @Expose()
   @ValidateNested()

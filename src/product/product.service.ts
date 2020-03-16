@@ -19,7 +19,7 @@ import { ProductReviewService } from '../reviews/product-review/product-review.s
 import { ProductVariant } from './models/product-variant.model';
 import { MediaService } from '../shared/media-service/media.service';
 import { CategoryService } from '../category/category.service';
-import { ProductBreadcrumb } from './models/product-breadcrumb.model';
+import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { SearchService } from '../shared/search/search.service';
 import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
@@ -36,6 +36,7 @@ import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../shared/dtos/client/media.dto';
 import { MetaTagsDto } from '../shared/dtos/shared/meta-tags.dto';
 import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
+import { areArraysEqual } from '../shared/helpers/are-arrays-equal.function';
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
@@ -353,8 +354,11 @@ export class ProductService implements OnApplicationBootstrap {
         await this.inventoryService.updateInventory(variant.sku, variantInDto.sku, variantInDto.qty, session);
       }
 
+      if (!areArraysEqual(found.categoryIds, productDto.categoryIds)) {
+        productDto.breadcrumbs = await this.buildBreadcrumbs(productDto.categoryIds);
+      }
+
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
-      found.breadcrumbs = await this.buildBreadcrumbs(found.categoryIds);
       if (found.variants.every(variant => variant.isEnabled === false)) {
         found.isEnabled = false;
       }
@@ -526,7 +530,7 @@ export class ProductService implements OnApplicationBootstrap {
     categoryId = parseInt(categoryId as any);
 
     const conditions: Partial<Product> = { categoryIds: categoryId as any };
-    const breadcrumbToRemove: Partial<ProductBreadcrumb> = { id: categoryId };
+    const breadcrumbToRemove: Partial<Breadcrumb> = { id: categoryId };
     const update: Partial<Product> = { categoryIds: categoryId as any, breadcrumbs: breadcrumbToRemove as any };
 
     return this.productModel
@@ -538,9 +542,9 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  async updateBreadcrumbs(breadcrumb: ProductBreadcrumb, session: ClientSession): Promise<any> {
+  async updateBreadcrumbs(breadcrumb: Breadcrumb, session: ClientSession): Promise<any> {
     const breadcrumbsProp = getPropertyOf<Product>('breadcrumbs');
-    const idProp = getPropertyOf<ProductBreadcrumb>('id');
+    const idProp = getPropertyOf<Breadcrumb>('id');
 
     return this.productModel
       .updateMany(
@@ -551,13 +555,13 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  private async buildBreadcrumbs(categoryIds: number[]): Promise<ProductBreadcrumb[]> {
-    const breadcrumbsVariants: ProductBreadcrumb[][] = [];
+  private async buildBreadcrumbs(categoryIds: number[]): Promise<Breadcrumb[]> {
+    const breadcrumbsVariants: Breadcrumb[][] = [];
 
-    const populate = (treeItems: CategoryTreeItem[], breadcrumbs: ProductBreadcrumb[] = []) => {
+    const populate = (treeItems: CategoryTreeItem[], breadcrumbs: Breadcrumb[] = []) => {
 
       for (const treeItem of treeItems) {
-        const newBreadcrumbs: ProductBreadcrumb[] = JSON.parse(JSON.stringify(breadcrumbs));
+        const newBreadcrumbs: Breadcrumb[] = JSON.parse(JSON.stringify(breadcrumbs));
 
         if (categoryIds.indexOf(treeItem.id) !== -1) {
           newBreadcrumbs.push({
