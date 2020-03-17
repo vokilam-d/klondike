@@ -1,11 +1,9 @@
-import { ClassSerializerInterceptor, Controller, Get, Param, Query, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Get, Param, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { ResponseDto } from '../shared/dtos/shared/response.dto';
 import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientCategoryDto } from '../shared/dtos/client/category.dto';
-import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
-import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,13 +27,5 @@ export class ClientCategoryController {
     return {
       data: plainToClass(ClientCategoryDto, category, { excludeExtraneousValues: true })
     };
-  }
-
-  @Get(':slug/items')
-  async getCategoryItems(@Param('slug') slug: string,
-                         @Query() spf: ClientProductSortingPaginatingFilterDto
-  ): Promise<ResponseDto<ClientProductListItemDto[]>> {
-
-    return this.categoryService.getCategoryItems(slug, spf);
   }
 }

@@ -28,7 +28,6 @@ export class AdminBaseReviewDto {
   text: string;
 
   @Expose()
-  @IsOptional()
   @IsString()
   email: string;
 

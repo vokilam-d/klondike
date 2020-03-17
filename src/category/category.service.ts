@@ -10,9 +10,6 @@ import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
 import { ClientSession } from 'mongoose';
 import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
-import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
-import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
 
 @Injectable()
@@ -177,11 +174,6 @@ export class CategoryService {
     } finally {
       session.endSession();
     }
-  }
-
-  async getCategoryItems(slug: string, spf: ClientProductSortingPaginatingFilterDto): Promise<ResponseDto<ClientProductListItemDto[]>> {
-    const category = await this.getCategoryBySlug(slug);
-    return this.productService.getClientProductListByCategoryId(category.id, spf);
   }
 
   private createCategoryPageRegistry(slug: string, session: ClientSession) {

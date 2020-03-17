@@ -93,29 +93,6 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async getClientProductListByCategoryId(categoryId: number,
-                                         spf: ClientProductSortingPaginatingFilterDto
-  ): Promise<ResponseDto<ClientProductListItemDto[]>> {
-
-    const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
-    const categoryProp: keyof AdminProductListItemDto = 'categoryIds';
-
-    spf[isEnabledProp] = true;
-    spf[categoryProp] = categoryId;
-
-    const searchResponse = await this.findByFilters(spf, false);
-    const adminDtos = searchResponse[0];
-    const itemsTotal = searchResponse[1];
-    const clientDtos = await this.transformToClientListDto(adminDtos);
-
-    return {
-      data: clientDtos,
-      page: spf.page,
-      pagesTotal: Math.ceil(itemsTotal / spf.limit),
-      itemsTotal
-    }
-  }
-
   async getClientProductListByFilters(spf: ClientProductSortingPaginatingFilterDto): Promise<ResponseDto<ClientProductListItemDto[]>> {
 
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';

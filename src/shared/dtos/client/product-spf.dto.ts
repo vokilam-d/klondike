@@ -9,4 +9,6 @@ export class ClientProductSortingPaginatingFilterDto extends ClientSortingPagina
   @IsString()
   @IsOptional()
   sort = defaultSortField;
+
+  categoryId: string | number;
 }
