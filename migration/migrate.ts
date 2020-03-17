@@ -724,7 +724,7 @@ export class Migrate {
       dto.name = store_review_details.nickname;
       dto.text = store_review_details.detail;
       dto.customerId = store_review_details.customer_id;
-      dto.email = null;
+      dto.email = 'info@klondike.com.ua';
       dto.rating = 5;
       dto.sortOrder = 0;
       dto.medias = [];
@@ -780,7 +780,7 @@ export class Migrate {
       dto.name = product_review_details.nickname;
       dto.text = product_review_details.detail;
       dto.customerId = product_review_details.customer_id;
-      dto.email = null;
+      dto.email = 'info@klondike.com.ua';
       dto.rating = 5;
       dto.sortOrder = 0;
       dto.medias = [];
