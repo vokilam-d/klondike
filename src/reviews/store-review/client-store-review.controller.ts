@@ -1,12 +1,21 @@
-import { Controller, Headers, Param, Post } from '@nestjs/common';
+import { Controller, Get, Headers, Param, Post } from '@nestjs/common';
 import { StoreReviewService } from './store-review.service';
 import { IpAddress } from '../../shared/decorators/ip-address.decorator';
 import { ResponseDto } from '../../shared/dtos/shared/response.dto';
 
-@Controller('store-review')
+@Controller('store-reviews')
 export class ClientStoreReviewController {
 
   constructor(private readonly storeReviewService: StoreReviewService) {
+  }
+
+  @Get('count')
+  async getCount(): Promise<ResponseDto<number>> {
+    const count = await this.storeReviewService.countEnabledReviews();
+
+    return {
+      data: count
+    }
   }
 
   @Post(':id/vote')

@@ -226,6 +226,13 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     return this.reviewModel.estimatedDocumentCount().exec();
   }
 
+  async countEnabledReviews(): Promise<number> {
+    const isEnabledProp: keyof T = 'isEnabled';
+    const conditions = { [isEnabledProp]: true };
+
+    return this.reviewModel.countDocuments(conditions).exec();
+  }
+
   protected hasVoted(review: T, ipAddress: string, userId: string, customerId: number): boolean {
     return review.votes.some(vote => {
       const ipHit = vote.ip && vote.ip === ipAddress;
