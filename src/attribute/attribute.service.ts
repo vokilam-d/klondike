@@ -31,7 +31,7 @@ export class AttributeService implements OnApplicationBootstrap {
     } else {
       attributes = await this.attributeModel
         .find()
-        .sort(spf.getSortAsObj(true))
+        .sort(spf.getSortAsObj())
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();

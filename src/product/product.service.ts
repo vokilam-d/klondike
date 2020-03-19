@@ -68,7 +68,7 @@ export class ProductService implements OnApplicationBootstrap {
     let itemsFiltered: number;
 
     if (spf.hasFilters()) {
-      const searchResponse = await this.findByFilters(spf, true);
+      const searchResponse = await this.findByFilters(spf);
       products = searchResponse[0];
       itemsFiltered = searchResponse[1];
     } else {
@@ -99,7 +99,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     spf[isEnabledProp] = true;
 
-    const searchResponse = await this.findByFilters(spf, false);
+    const searchResponse = await this.findByFilters(spf);
     const adminDtos = searchResponse[0];
     const itemsTotal = searchResponse[1];
     const clientDtos = await this.transformToClientListDto(adminDtos);
@@ -132,7 +132,7 @@ export class ProductService implements OnApplicationBootstrap {
       .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
       .project({ [`${variantsProp}.${descProp}`]: false })
-      .sort(sortingPaginating.getSortAsObj(true))
+      .sort(sortingPaginating.getSortAsObj())
       .skip(sortingPaginating.skip)
       .limit(sortingPaginating.limit)
       .exec();
@@ -581,13 +581,13 @@ export class ProductService implements OnApplicationBootstrap {
     await this.searchService.deleteDocument(Product.collectionName, productId);
   }
 
-  private async findByFilters(spf: SortingPaginatingFilterDto, isSortIdMongoId: boolean) {
+  private async findByFilters(spf: SortingPaginatingFilterDto) {
     return this.searchService.searchByFilters<AdminProductListItemDto>(
       Product.collectionName,
       spf.getNormalizedFilters(),
       spf.skip,
       spf.limit,
-      spf.getSortAsObj(isSortIdMongoId)
+      spf.getSortAsObj()
     );
   }
 

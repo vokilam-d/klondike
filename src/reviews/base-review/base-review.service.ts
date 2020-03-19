@@ -48,7 +48,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     } else {
       const reviewModels = await this.reviewModel
         .find()
-        .sort(spf.getSortAsObj(true))
+        .sort(spf.getSortAsObj())
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();

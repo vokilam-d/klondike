@@ -39,7 +39,7 @@ export class CustomerService implements OnApplicationBootstrap {
     } else {
       customers = await this.customerModel
         .find()
-        .sort(spf.getSortAsObj(true))
+        .sort(spf.getSortAsObj())
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();

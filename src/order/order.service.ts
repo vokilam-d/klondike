@@ -55,7 +55,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       orders = await this.orderModel
         .find(conditions)
-        .sort(spf.getSortAsObj(true))
+        .sort(spf.getSortAsObj())
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();
