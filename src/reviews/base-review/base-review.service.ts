@@ -6,7 +6,7 @@ import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 import { ForbiddenException, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/spf.dto';
 import { AdminBaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
-import { ClientSession } from 'mongoose';
+import { ClientSession, FilterQuery } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
 import { MediaService } from '../../shared/media-service/media.service';
 import { SearchService } from '../../shared/search/search.service';
@@ -227,10 +227,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   }
 
   async countEnabledReviews(): Promise<number> {
-    const isEnabledProp: keyof T = 'isEnabled';
-    const conditions = { [isEnabledProp]: true };
-
-    return this.reviewModel.countDocuments(conditions).exec();
+    return this.reviewModel.countDocuments({ isEnabled: true } as any).exec();
   }
 
   protected hasVoted(review: T, ipAddress: string, userId: string, customerId: number): boolean {

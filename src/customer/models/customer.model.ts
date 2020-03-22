@@ -39,7 +39,7 @@ export class Customer {
   @prop({ index: true, unique: true, default: '' })
   email: string;
 
-  @prop({ default: '' })
+  @prop({ index: true, unique: true, default: '' })
   phoneNumber: string;
 
   @prop({ default: null })

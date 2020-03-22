@@ -355,7 +355,7 @@ export class Migrate {
         }
       }
 
-      variantDto.fullDescription = product.description || '';
+      variantDto.fullDescription = product.description.replace(new RegExp(/(\<span\>\<\/span\>)|(\<span\> \<\/span\>)/, 'g'), '') || '';
       variantDto.shortDescription = stripHtmlTags(product.short_description || '');
 
       const regex = new RegExp(/{{media url=&quot;(.+?)&quot;}}/, 'g');

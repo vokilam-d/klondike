@@ -42,7 +42,7 @@ export class AdminCustomerController {
 
   @Post()
   async addCustomer(@Body() customerDto: AdminAddOrUpdateCustomerDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminCustomerDto>> {
-    const created = await this.customerService.createCustomer(customerDto, undefined, migrate);
+    const created = await this.customerService.adminCreateCustomer(customerDto, undefined, migrate);
 
     return {
       data: plainToClass(AdminCustomerDto, created, { excludeExtraneousValues: true })

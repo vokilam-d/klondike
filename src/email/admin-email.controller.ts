@@ -26,21 +26,18 @@ export class AdminEmailController {
     return this.emailService.sendOrderConfirmationEmail(order);
   }
 
-  @Post('email-confirmation')
-  async sendRegisterConfirmEmail(@Param('orderId') orderId: number, @Body() body: any) {
-    if (!body.email) {
-      throw new BadRequestException(`No 'email' in payload`);
-    }
-
-    return this.emailService.sendRegisterConfirmEmail(body.email, 'customer/account/login');
-  }
-
   @Post('registration-success')
   async sendRegisterSuccessEmail(@Param('orderId') orderId: number, @Body() body: any) {
     if (!body.email) {
       throw new BadRequestException(`No 'email' in payload`);
     }
 
-    return this.emailService.sendRegisterSuccessEmail(body.email, this.testFirstName, this.testLastName);
+    const customer: any = {
+      email: body.email,
+      firstName: this.testFirstName,
+      lastName: this.testLastName
+    };
+
+    return this.emailService.sendRegisterSuccessEmail(customer, 'token');
   }
 }

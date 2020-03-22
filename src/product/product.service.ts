@@ -437,13 +437,12 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async addReviewToProduct(review: ProductReview, session?: ClientSession): Promise<any> {
-    const conditions: Partial<Product> = { _id: review.productId };
     const countProp = getPropertyOf<Product>('reviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
 
     return this.productModel
       .updateOne(
-        conditions,
+        { _id: review.productId as any },
         [
           { $set: { [countProp]: { $toInt: { $add: [ `$${countProp}`, 1 ] } } } },
           {
@@ -463,13 +462,12 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async removeReviewFromProduct(review: ProductReview, session?: ClientSession): Promise<any> {
-    const conditions: Partial<Product> = { _id: review.productId };
     const countProp = getPropertyOf<Product>('reviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
 
     return this.productModel
       .updateOne(
-        conditions,
+        { _id: review.productId as any },
         [
           { $set: { [countProp]: { $toInt: { $subtract: [ `$${countProp}`, 1 ] } } } },
           {
@@ -490,13 +488,12 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async incrementSalesCount(productId: number, variantId: string, count: number, session: ClientSession): Promise<any> {
-    const conditions: Partial<Product> = { _id: productId, variants: variantId as any };
     const variantsProp = getPropertyOf<Product>('variants');
     const countProp = getPropertyOf<ProductVariant>('salesCount');
 
     return this.productModel
       .updateOne(
-        conditions,
+        { _id: productId as any, variants: variantId as any },
         { $inc: { [`${variantsProp}.$.${countProp}`]: count } }
       )
       .session(session)
@@ -506,13 +503,12 @@ export class ProductService implements OnApplicationBootstrap {
   async removeCategoryId(categoryId: number, session: ClientSession): Promise<any> {
     categoryId = parseInt(categoryId as any);
 
-    const conditions: Partial<Product> = { categoryIds: categoryId as any };
     const breadcrumbToRemove: Partial<Breadcrumb> = { id: categoryId };
     const update: Partial<Product> = { categoryIds: categoryId as any, breadcrumbs: breadcrumbToRemove as any };
 
     return this.productModel
       .updateMany(
-        conditions,
+        { categoryIds: categoryId },
         { $pull: update }
       )
       .session(session)

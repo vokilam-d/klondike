@@ -5,10 +5,12 @@ import * as fs from 'fs';
 import { Order } from '../order/models/order.model';
 import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { readableDate } from '../shared/helpers/readable-date.function';
+import { Customer } from '../customer/models/customer.model';
 
 enum EEmailType {
   EmailConfirmation = 'email-confirmation',
   RegistrationSuccess = 'registration-success',
+  ResetPassword = 'password-reset',
   OrderConfirmation = 'order-confirmation'
 }
 
@@ -48,18 +50,21 @@ export class EmailService {
     return this.sendEmail(to, subject, html, attachment);
   }
 
-  async sendRegisterConfirmEmail(email: string, confirmationLink: string) {
-    const to = email;
-    const subject = 'Подтвердите email';
-    const html = this.getEmailHtml(EEmailType.EmailConfirmation, { confirmationLink, email });
+  async sendRegisterSuccessEmail(customer: Customer, token) {
+    const to = customer.email;
+    const subject = 'Добро пожаловать';
+    const html = this.getEmailHtml(
+      EEmailType.RegistrationSuccess,
+      { email: customer.email, firstName: customer.firstName, lastName: customer.lastName, token }
+    );
 
     return this.sendEmail(to, subject, html);
   }
 
-  async sendRegisterSuccessEmail(email: string, firstName: string, lastName: string) {
-    const to = email;
-    const subject = 'Добро пожаловать';
-    const html = this.getEmailHtml(EEmailType.RegistrationSuccess, { email, firstName, lastName });
+  sendResetPasswordEmail(customer: Customer, token: string) {
+    const to = customer.email;
+    const subject = 'Восстановление пароля';
+    const html = this.getEmailHtml(EEmailType.ResetPassword, { firstName: customer.firstName, lastName: customer.lastName, token });
 
     return this.sendEmail(to, subject, html);
   }

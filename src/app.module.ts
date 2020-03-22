@@ -21,6 +21,7 @@ import { EmailModule } from './email/email.module';
 import { GoogleModule } from './google/google.module';
 import { CurrencyModule } from './currency/currency.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -55,7 +56,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     WysiwygModule,
     EmailModule,
     GoogleModule,
-    CurrencyModule
+    CurrencyModule,
+    AuthModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []

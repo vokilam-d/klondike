@@ -5,7 +5,7 @@ import { BaseReviewService } from '../base-review/base-review.service';
 import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReview, ProductReviewComment } from './models/product-review.model';
 import { ProductService } from '../../product/product.service';
-import { ClientSession } from 'mongoose';
+import { ClientSession, FilterQuery } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
 import { MediaService } from '../../shared/media-service/media.service';
 import { ElasticProductReviewModel } from './models/elastic-product-review.model';
@@ -36,7 +36,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
                                customerId?: number
   ): Promise<AdminProductReviewDto[]> {
 
-    const conditions: Partial<ProductReview> = { productId };
+    const conditions: FilterQuery<ProductReview> = { productId };
     if (onlyEnabled) { conditions.isEnabled = true; }
 
     const found = await this.reviewModel.find(conditions).exec();

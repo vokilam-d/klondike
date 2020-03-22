@@ -107,7 +107,7 @@ export class OrderService implements OnApplicationBootstrap {
         customerDto.phoneNumber = orderDto.customerPhoneNumber;
         customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
 
-        customer = await this.customerService.createCustomer(customerDto, session, migrate);
+        customer = await this.customerService.adminCreateCustomer(customerDto, session, migrate);
 
         orderDto.customerId = customer.id;
       }
