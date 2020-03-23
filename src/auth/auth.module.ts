@@ -1,11 +1,11 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 import { CustomerModule } from '../customer/customer.module';
-import { CustomerLocalStrategy } from './customer/local.strategy';
+import { CustomerLocalStrategy } from './customer-strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { authConstants } from './auth-constants';
-import { CustomerJwtStrategy } from './customer/jwt.strategy';
+import { CustomerJwtStrategy } from './customer-strategies/jwt.strategy';
 import { ResetPassword, ResetPasswordModel } from './models/reset-password.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ResetPasswordService } from './services/reset-password.service';
