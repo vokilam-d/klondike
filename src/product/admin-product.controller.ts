@@ -21,7 +21,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))

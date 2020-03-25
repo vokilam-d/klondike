@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Headers, Param, Post, Query, Request, Response } from '@nestjs/common';
 import { ProductReviewService } from './product-review.service';
 import { ClientProductReviewFilterDto } from '../../shared/dtos/client/product-review-filter.dto';
-import { ResponseDto } from '../../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { ClientProductReviewDto } from '../../shared/dtos/client/product-review.dto';
 import { IpAddress } from '../../shared/decorators/ip-address.decorator';
 import { plainToClass } from 'class-transformer';

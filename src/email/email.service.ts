@@ -50,11 +50,22 @@ export class EmailService {
     return this.sendEmail(to, subject, html, attachment);
   }
 
-  async sendRegisterSuccessEmail(customer: Customer, token) {
+  sendRegisterSuccessEmail(customer: Customer, token: string) {
     const to = customer.email;
     const subject = 'Добро пожаловать';
     const html = this.getEmailHtml(
       EEmailType.RegistrationSuccess,
+      { email: customer.email, firstName: customer.firstName, lastName: customer.lastName, token }
+    );
+
+    return this.sendEmail(to, subject, html);
+  }
+
+  sendEmailConfirmationEmail(customer: Customer, token: string) {
+    const to = customer.email;
+    const subject = 'Подтвердите email';
+    const html = this.getEmailHtml(
+      EEmailType.EmailConfirmation,
       { email: customer.email, firstName: customer.firstName, lastName: customer.lastName, token }
     );
 

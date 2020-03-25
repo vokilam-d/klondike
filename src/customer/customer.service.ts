@@ -1,23 +1,25 @@
 import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer } from './models/customer.model';
-import { ReturnModelType } from '@typegoose/typegoose';
+import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
-import { AdminAddOrUpdateCustomerDto, AdminCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
+import { AdminAddOrUpdateCustomerDto, AdminCustomerDto} from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { ClientSession } from 'mongoose';
 import { Order } from '../order/models/order.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { SearchService } from '../shared/search/search.service';
 import { ElasticCustomerModel } from './models/elastic-customer.model';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import { hash } from 'bcrypt';
-import { bcryptSaltRounds } from '../shared/constants';
 import { ClientRegisterDto } from '../shared/dtos/client/register.dto';
 import { AuthService } from '../auth/services/auth.service';
 import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
 import { EmailService } from '../email/email.service';
+import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
+import { ClientUpdateCustomerDto } from '../shared/dtos/client/update-customer.dto';
+import { ClientUpdatePasswordDto } from '../shared/dtos/client/update-password.dto';
+import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -27,6 +29,7 @@ export class CustomerService implements OnApplicationBootstrap {
   constructor(@InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
               @Inject(forwardRef(() => AuthService)) private authService: AuthService,
               private readonly searchService: SearchService,
+              private readonly encryptor: EncryptorService,
               private readonly emailService: EmailService,
               private counterService: CounterService) {
   }
@@ -65,13 +68,13 @@ export class CustomerService implements OnApplicationBootstrap {
     };
   }
 
-  async getCustomerById(customerId: number): Promise<Customer> {
+  async getCustomerById(customerId: number, serialized: boolean = true): Promise<Customer | DocumentType<Customer>> {
     const found = await this.customerModel.findById(customerId).exec();
     if (!found) {
       throw new NotFoundException(`Customer with id '${customerId}' not found`);
     }
 
-    return found.toJSON();
+    return serialized ? found.toJSON() : found;
   }
 
   async getCustomerByEmailOrPhoneNumber(emailOrPhone: string): Promise<Customer> {
@@ -117,13 +120,11 @@ export class CustomerService implements OnApplicationBootstrap {
       throw new ConflictException(`Customer with email '${registerDto.email}' already exists`);
     }
 
-    this.validatePassword(registerDto.password);
-
     const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
     adminCustomerDto.firstName = registerDto.firstName;
     adminCustomerDto.lastName = registerDto.lastName;
     adminCustomerDto.email = registerDto.email;
-    adminCustomerDto.password = await hash(registerDto.password, bcryptSaltRounds);
+    adminCustomerDto.password = await this.encryptor.hashPassword(registerDto.password);
     adminCustomerDto.lastLoggedIn = new Date();
 
     const created = await this.createCustomer(adminCustomerDto);
@@ -134,7 +135,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return created;
   }
 
-  async updateCustomer(customerId: number, customerDto: AdminAddOrUpdateCustomerDto): Promise<Customer> {
+  async updateCustomerById(customerId: number, customerDto: AdminAddOrUpdateCustomerDto): Promise<Customer> {
     const found = await this.customerModel.findById(customerId).exec();
     if (!found) {
       throw new NotFoundException(`Customer with id '${customerId}' not found`);
@@ -147,7 +148,27 @@ export class CustomerService implements OnApplicationBootstrap {
     return found;
   }
 
-  async addCustomerAddress(customerId: number, address: AdminShippingAddressDto, session: ClientSession): Promise<Customer> {
+  async updateCustomerByClientDto(customer: DocumentType<Customer>, customerDto: ClientUpdateCustomerDto): Promise<Customer> {
+    Object.keys(customerDto).forEach(key => customer[key] = customerDto[key]);
+    await customer.save();
+    this.updateSearchData(customer);
+
+    return customer;
+  }
+
+  async updatePassword(customer: DocumentType<Customer>, passwordDto: ClientUpdatePasswordDto): Promise<Customer> {
+    const isValidOldPassword = await this.encryptor.validatePassword(passwordDto.currentPassword, customer.password);
+    if (!isValidOldPassword) {
+      throw new BadRequestException(`Current password is not valid`); // "Неверный текущий пароль"
+    }
+
+    customer.password = await this.encryptor.hashPassword(passwordDto.newPassword);
+    await customer.save();
+
+    return customer;
+  }
+
+  async addCustomerAddress(customerId: number, address: ShippingAddressDto, session: ClientSession): Promise<Customer> {
     const found = await this.customerModel.findById(customerId).session(session).exec();
     if (!found) {
       throw new NotFoundException(`Customer with id '${customerId}' not found`);
@@ -198,11 +219,12 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async incrementTotalOrdersCost(customerId: number, order: Order, session: ClientSession): Promise<Customer> {
-    const totalProp = getPropertyOf<Customer>('totalOrdersCost');
+    const totalCostProp: keyof Customer = 'totalOrdersCost';
+    const totalCountProp: keyof Customer = 'totalOrdersCount';
 
     const customer = await this.customerModel.findByIdAndUpdate(
       customerId,
-      { $inc: { [totalProp]: order.totalItemsCost } },
+      { $inc: { [totalCostProp]: order.totalItemsCost, [totalCountProp]: 1 } },
       { new: true }
     ).session(session).exec();
 
@@ -237,28 +259,6 @@ export class CustomerService implements OnApplicationBootstrap {
     );
   }
 
-  /**
-   * @param password
-   * @throws BadRequestException
-   */
-  private validatePassword(password: string): void {
-    let errorMessage;
-
-    if (password.length < 8) {
-      errorMessage = `Password should be more than 8 symbols`;
-    } else if (!password.match(/[A-Z]/g)) {
-      errorMessage = `Password should contain at least one uppercase letter`;
-    } else if (!password.match(/[a-z]/g)) {
-      errorMessage = `Password should contain at least one lowercase letter`;
-    } else if (!password.match(/[0-9]/g)) {
-      errorMessage = `Password should contain at least one digit`;
-    }
-
-    if (errorMessage) {
-      throw new BadRequestException(errorMessage);
-    }
-  }
-
   updateLastLoggedIn(id: number): void {
     const lastLoggedInProp: keyof Customer = 'lastLoggedIn';
 
@@ -272,5 +272,14 @@ export class CustomerService implements OnApplicationBootstrap {
     }
 
     return this.authService.initResetCustomerPassword(customer);
+  }
+
+  async sendEmailConfirmationEmail(customer: Customer) {
+    if (customer.isEmailConfirmed) {
+      throw new BadRequestException(`Your email has been already confirmed`);
+    }
+
+    const token = await this.authService.createCustomerEmailConfirmToken(customer);
+    this.emailService.sendEmailConfirmationEmail(customer, token);
   }
 }

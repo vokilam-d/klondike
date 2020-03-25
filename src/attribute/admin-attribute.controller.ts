@@ -15,7 +15,7 @@ import {
 import { AttributeService } from './attribute.service';
 import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
 import { plainToClass } from 'class-transformer';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))

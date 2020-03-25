@@ -1,7 +1,7 @@
 import { ClassSerializerInterceptor, Controller, Get, Param, Query, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { ClientProductDto } from '../shared/dtos/client/product.dto';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
 import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
 

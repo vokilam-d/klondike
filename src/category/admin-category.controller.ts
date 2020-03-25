@@ -15,8 +15,8 @@ import {
 import { CategoryService } from './category.service';
 import { AdminAddOrUpdateCategoryDto, AdminResponseCategoryDto } from '../shared/dtos/admin/category.dto';
 import { plainToClass } from 'class-transformer';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
-import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
+import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)

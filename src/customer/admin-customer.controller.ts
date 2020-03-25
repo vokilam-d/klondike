@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../shared/dtos/admin/customer.dto';
 
@@ -51,7 +51,7 @@ export class AdminCustomerController {
 
   @Put(':id')
   async updateCustomer(@Param('id') customerId: number, @Body() customerDto: AdminAddOrUpdateCustomerDto): Promise<ResponseDto<AdminCustomerDto>> {
-    const updated = await this.customerService.updateCustomer(customerId, customerDto);
+    const updated = await this.customerService.updateCustomerById(customerId, customerDto);
 
     return {
       data: plainToClass(AdminCustomerDto, updated, { excludeExtraneousValues: true })

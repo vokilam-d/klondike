@@ -26,6 +26,15 @@ export class AdminEmailController {
     return this.emailService.sendOrderConfirmationEmail(order);
   }
 
+  @Post('email-confirmation')
+  async sendEmailConfirmationEmail(@Param('orderId') orderId: number, @Body() body: any) {
+    if (!body.email) {
+      throw new BadRequestException(`No 'email' in payload`);
+    }
+
+    return this.emailService.sendEmailConfirmationEmail(body.email, 'login');
+  }
+
   @Post('registration-success')
   async sendRegisterSuccessEmail(@Param('orderId') orderId: number, @Body() body: any) {
     if (!body.email) {

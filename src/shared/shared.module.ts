@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Counter, CounterModel } from './counter/counter.model';
 import { MediaService } from './media-service/media.service';
 import { SearchService } from './search/search.service';
+import { EncryptorService } from './services/encryptor/encryptor.service';
 
 const counterModel = {
   name: CounterModel.modelName,
@@ -15,7 +16,7 @@ const counterModel = {
 @Global()
 @Module({
   imports: [MongooseModule.forFeature([counterModel])],
-  providers: [ConfigService, CounterService, MediaService, SearchService],
-  exports: [ConfigService, CounterService, MediaService, SearchService]
+  providers: [ConfigService, CounterService, MediaService, SearchService, EncryptorService],
+  exports: [ConfigService, CounterService, MediaService, SearchService, EncryptorService]
 })
 export class SharedModule {}

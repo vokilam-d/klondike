@@ -1,5 +1,5 @@
 import { Customer } from '../customer/models/customer.model';
-import { LoginDto } from '../shared/dtos/shared/login.dto';
+import { LoginDto } from '../shared/dtos/shared-dtos/login.dto';
 
 const userNameField: keyof LoginDto = 'login';
 

@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AdminOrderItemDto } from '../shared/dtos/admin/order-item.dto';
 import { OrderItemService } from './order-item.service';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { CreateOrderItemDto } from '../shared/dtos/admin/create-order-item.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))

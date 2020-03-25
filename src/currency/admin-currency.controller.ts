@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CurrencyService } from './currency.service';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { plainToClass } from 'class-transformer';
 import { ECurrencyCode } from '../shared/enums/currency.enum';

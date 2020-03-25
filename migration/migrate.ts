@@ -9,7 +9,7 @@ import { AdminAttributeDto, AdminAttributeValueDto } from '../src/shared/dtos/ad
 import { AdminProductVariantDto } from '../src/shared/dtos/admin/product-variant.dto';
 import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/product-selected-attribute.dto';
 import { AdminMediaDto } from '../src/shared/dtos/admin/media.dto';
-import { AdminCustomerDto, AdminShippingAddressDto } from '../src/shared/dtos/admin/customer.dto';
+import { AdminCustomerDto } from '../src/shared/dtos/admin/customer.dto';
 import { AdminAddOrUpdateOrderDto } from '../src/shared/dtos/admin/order.dto';
 import { AdminOrderItemDto } from '../src/shared/dtos/admin/order-item.dto';
 import { CreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.dto';
@@ -17,7 +17,8 @@ import { AdminStoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
 import { AdminProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
 import { ECurrencyCode } from '../src/shared/enums/currency.enum';
 import { stripHtmlTags } from '../src/shared/helpers/strip-html-tags.function';
-import { MetaTagsDto } from '../src/shared/dtos/shared/meta-tags.dto';
+import { MetaTagsDto } from '../src/shared/dtos/shared-dtos/meta-tags.dto';
+import { ShippingAddressDto } from '../src/shared/dtos/shared-dtos/shipping-address.dto';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3500';
@@ -483,7 +484,7 @@ export class Migrate {
       dto.addresses = [];
       for (const address of addresses) {
         if (address.parent_id === customer.entity_id) {
-          const addressDto = {} as AdminShippingAddressDto;
+          const addressDto = {} as ShippingAddressDto;
           addressDto.firstName = address.firstname || '';
           addressDto.lastName = address.lastname || '';
           addressDto.phoneNumber = address.telephone || '';
@@ -567,7 +568,7 @@ export class Migrate {
       dto.customerLastName = order.customer_lastname || '';
       dto.customerEmail = order.customer_email;
 
-      dto.address = {} as AdminShippingAddressDto;
+      dto.address = {} as ShippingAddressDto;
       const foundAddress = addresses.find(address => address.entity_id === order.shipping_address_id);
       dto.address.firstName = foundAddress.firstname;
       dto.address.lastName = foundAddress.lastname;

@@ -4,7 +4,7 @@ import { AdminMediaDto } from './media.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { transliterate } from '../../helpers/transliterate.function';
 import { ECurrencyCode } from '../../enums/currency.enum';
-import { MetaTagsDto } from '../shared/meta-tags.dto';
+import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 
 export class AdminProductVariantDto {
   @Exclude()

@@ -79,6 +79,9 @@ export class Customer {
   discountPercent: number;
 
   @prop({ default: 0 })
+  totalOrdersCount: number;
+
+  @prop({ default: 0 })
   totalOrdersCost: number;
 
 

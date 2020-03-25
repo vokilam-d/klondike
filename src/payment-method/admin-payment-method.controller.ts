@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { PaymentMethodService } from './payment-method.service';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { PaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { plainToClass } from 'class-transformer';
 

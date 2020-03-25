@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
-import { IFilter, ISorting } from '../dtos/shared/spf.dto';
+import { IFilter, ISorting } from '../dtos/shared-dtos/spf.dto';
 
 @Injectable()
 export class SearchService {

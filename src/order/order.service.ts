@@ -5,7 +5,7 @@ import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { CustomerService } from '../customer/customer.service';
-import { AdminAddOrUpdateCustomerDto, AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
+import { AdminAddOrUpdateCustomerDto} from '../shared/dtos/admin/customer.dto';
 import { InventoryService } from '../inventory/inventory.service';
 import { EOrderStatus } from '../shared/enums/order-status.enum';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
@@ -13,11 +13,12 @@ import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
 import { Customer } from '../customer/models/customer.model';
 import { ProductService } from '../product/product.service';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { SearchService } from '../shared/search/search.service';
 import { ElasticOrderModel } from './models/elastic-order.model';
 import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
+import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -180,7 +181,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async editOrderAddress(orderId: number, addressDto: AdminShippingAddressDto): Promise<Order> {
+  async editOrderAddress(orderId: number, addressDto: ShippingAddressDto): Promise<Order> {
     const addressProp = getPropertyOf<Order>('address');
 
     const updated = await this.orderModel.findByIdAndUpdate(

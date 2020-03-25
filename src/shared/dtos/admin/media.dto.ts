@@ -1,6 +1,6 @@
 import { IsBoolean, IsString } from 'class-validator';
 import { Expose } from 'class-transformer';
-import { MediaDto } from '../shared/media.dto';
+import { MediaDto } from '../shared-dtos/media.dto';
 
 export class AdminMediaDto extends MediaDto {
   @Expose()

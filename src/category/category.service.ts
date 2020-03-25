@@ -9,7 +9,7 @@ import { CounterService } from '../shared/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
 import { ClientSession } from 'mongoose';
-import { CategoryTreeItem } from '../shared/dtos/shared/category.dto';
+import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
 
 @Injectable()

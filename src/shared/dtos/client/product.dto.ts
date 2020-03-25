@@ -3,8 +3,8 @@ import { Product } from '../../../product/models/product.model';
 import { ClientProductVariantGroupDto } from './product-list-item.dto';
 import { Expose, Type } from 'class-transformer';
 import { ClientMediaDto } from './media.dto';
-import { MetaTagsDto } from '../shared/meta-tags.dto';
-import { BreadcrumbDto } from '../shared/breadcrumb.dto';
+import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
+import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 
 export class ClientProductCharacteristic {
   label: string;

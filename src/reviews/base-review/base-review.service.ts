@@ -10,7 +10,7 @@ import { ClientSession, FilterQuery } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
 import { MediaService } from '../../shared/media-service/media.service';
 import { SearchService } from '../../shared/search/search.service';
-import { ResponseDto } from '../../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 
 type IReviewCallback<T = any> = (review: T, session: ClientSession) => Promise<any>;
 

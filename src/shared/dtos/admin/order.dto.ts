@@ -9,8 +9,8 @@ import {
   IsString,
   ValidateNested
 } from 'class-validator';
-import { AdminShippingAddressDto } from './customer.dto';
 import { AdminOrderItemDto } from './order-item.dto';
+import { ShippingAddressDto } from '../shared-dtos/shipping-address.dto';
 
 export class AdminAddOrUpdateOrderDto {
   @Expose()
@@ -47,8 +47,8 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @ValidateNested()
-  @Type(() => AdminShippingAddressDto)
-  address: AdminShippingAddressDto;
+  @Type(() => ShippingAddressDto)
+  address: ShippingAddressDto;
 
   @Expose()
   @IsBoolean()

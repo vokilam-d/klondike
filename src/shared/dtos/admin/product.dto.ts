@@ -3,7 +3,7 @@ import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductVariantDto } from './product-variant.dto';
 import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
-import { BreadcrumbDto } from '../shared/breadcrumb.dto';
+import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 
 export class AdminAddOrUpdateProductDto {
   @Expose()

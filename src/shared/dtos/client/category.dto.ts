@@ -1,7 +1,7 @@
 import { AdminResponseCategoryDto } from '../admin/category.dto';
-import { MetaTagsDto } from '../shared/meta-tags.dto';
+import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { Expose } from 'class-transformer';
-import { BreadcrumbDto } from '../shared/breadcrumb.dto';
+import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 
 export class ClientCategoryDto implements Omit<AdminResponseCategoryDto, 'isEnabled'> {
   @Expose()

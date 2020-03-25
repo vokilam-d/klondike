@@ -2,7 +2,7 @@ import { ClientSortingPaginatingFilterDto } from './spf.dto';
 import { IsEnum, IsOptional } from 'class-validator';
 import { getPropertyOf } from '../../helpers/get-property-of.function';
 import { Product } from '../../../product/models/product.model';
-import { ISorting } from '../shared/spf.dto';
+import { ISorting } from '../shared-dtos/spf.dto';
 import { AdminProductListItemDto } from '../admin/product-list-item.dto';
 import { AdminProductVariantListItem } from '../admin/product-variant-list-item.dto';
 

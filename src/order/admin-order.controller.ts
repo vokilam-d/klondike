@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Res, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../shared/dtos/admin/order-action.dto';
 import { EOrderAction } from '../shared/enums/order-action.enum';
-import { AdminShippingAddressDto } from '../shared/dtos/admin/customer.dto';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
+import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/orders')
@@ -60,7 +60,7 @@ export class AdminOrderController {
   }
 
   @Put(':id/address')
-  async editOrderAddress(@Param('id') orderId: number, @Body() addressDto: AdminShippingAddressDto): Promise<ResponseDto<AdminOrderDto>> {
+  async editOrderAddress(@Param('id') orderId: number, @Body() addressDto: ShippingAddressDto): Promise<ResponseDto<AdminOrderDto>> {
     const updated = await this.orderService.editOrderAddress(orderId, addressDto);
 
     return {

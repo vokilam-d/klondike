@@ -4,7 +4,7 @@ import { Attribute } from './models/attribute.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
-import { ResponseDto } from '../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { SearchService } from '../shared/search/search.service';
 import { ElasticAttributeModel } from './models/elastic-attribute.model';

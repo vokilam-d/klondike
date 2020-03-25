@@ -1,8 +1,8 @@
 import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
-import { MetaTagsDto } from '../shared/meta-tags.dto';
-import { BreadcrumbDto } from '../shared/breadcrumb.dto';
+import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
+import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 
 export class AdminAddOrUpdateCategoryDto {
   @Expose()

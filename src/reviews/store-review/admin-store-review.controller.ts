@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, Response, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AdminStoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
-import { ResponseDto } from '../../shared/dtos/shared/response.dto';
+import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { StoreReviewService } from './store-review.service';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';

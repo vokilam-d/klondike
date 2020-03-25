@@ -24,7 +24,7 @@ export class CustomerJwtStrategy extends PassportStrategy(Strategy, authConstant
   }
 
   async validate(payload: any): Promise<Customer> {
-    const customer = await this.customerService.getCustomerById(payload.sub);
+    const customer = await this.customerService.getCustomerById(payload.sub, false);
     return customer;
   }
 }
