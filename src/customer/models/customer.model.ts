@@ -1,6 +1,9 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
+import { Types } from 'mongoose';
 
 export class ShippingAddress {
+  _id?: Types.ObjectId;
+
   @prop({ required: true })
   firstName: string;
 

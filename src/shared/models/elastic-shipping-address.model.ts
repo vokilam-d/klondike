@@ -9,4 +9,6 @@ export class ElasticShippingAddressModel implements Record<keyof ShippingAddress
   novaposhtaOffice = elasticTextType;
   phoneNumber = elasticAutocompleteType;
   streetName = elasticTextType;
+  id = elasticTextType;
+  _id = elasticTextType;
 }

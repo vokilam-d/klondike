@@ -809,7 +809,7 @@ export class ProductService implements OnApplicationBootstrap {
     const listItems = this.transformToAdminListDto(products);
     for (let listItem of listItems) {
       await this.searchService.addDocument(Product.collectionName, listItem.id, listItem);
-      console.log('Added document with id', listItem.id);
+      console.log('Reindexed document with id', listItem.id);
     }
   }
 }

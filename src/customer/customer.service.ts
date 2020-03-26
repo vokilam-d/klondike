@@ -48,14 +48,14 @@ export class CustomerService implements OnApplicationBootstrap {
       itemsFiltered = searchResponse[1];
 
     } else {
-      customers = await this.customerModel
+      const customerModels = await this.customerModel
         .find()
         .sort(spf.getSortAsObj())
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();
 
-      customers = plainToClass(AdminCustomerDto, customers, { excludeExtraneousValues: true });
+      customers = plainToClass(AdminCustomerDto, customerModels, { excludeExtraneousValues: true });
     }
 
     const itemsTotal = await this.countCustomers();
@@ -281,5 +281,28 @@ export class CustomerService implements OnApplicationBootstrap {
 
     const token = await this.authService.createCustomerEmailConfirmToken(customer);
     this.emailService.sendEmailConfirmationEmail(customer, token);
+  }
+
+  async addShippingAddress(customer: DocumentType<Customer>, addressDto: ShippingAddressDto): Promise<Customer> {
+    if (addressDto.isDefault) {
+      customer.addresses.forEach(address => address.isDefault = false);
+    }
+    customer.addresses.push(addressDto);
+    await customer.save();
+    return customer.toJSON();
+  }
+
+  async editShippingAddress(customer: DocumentType<Customer>, addressId: string, addressDto: ShippingAddressDto): Promise<Customer> {
+    const foundAddressIdx = customer.addresses.findIndex(address => address._id.equals(addressId));
+    if (foundAddressIdx === -1) {
+      throw new BadRequestException(`No address with id ${addressId}`);
+    }
+
+    if (addressDto.isDefault) {
+      customer.addresses.forEach(address => address.isDefault = false);
+    }
+    Object.keys(addressDto).forEach(key => customer.addresses[foundAddressIdx][key] = addressDto[key]);
+    await customer.save();
+    return customer.toJSON();
   }
 }

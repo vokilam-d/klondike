@@ -2,8 +2,8 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
-  Get, Patch,
-  Post,
+  Get, Param, Patch,
+  Post, Put,
   Req,
   Res,
   UseGuards,
@@ -24,10 +24,11 @@ import { ClientCustomerDto } from '../shared/dtos/client/customer.dto';
 import { AuthService } from '../auth/services/auth.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
-import { ClientAccountDto } from '../shared/dtos/client/account.dto';
+import { ClientDetailedCustomerDto } from '../shared/dtos/client/detailed-customer.dto';
 import { ClientUpdateCustomerDto } from '../shared/dtos/client/update-customer.dto';
 import { DocumentType } from '@typegoose/typegoose';
 import { ClientUpdatePasswordDto } from '../shared/dtos/client/update-password.dto';
+import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -49,12 +50,12 @@ export class ClientCustomerController {
   }
 
   @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))
-  @Get('account')
-  async getAccount(@Req() req): Promise<ResponseDto<ClientAccountDto>> {
+  @Get('details')
+  async getAccount(@Req() req): Promise<ResponseDto<ClientDetailedCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
 
     return {
-      data: plainToClass(ClientAccountDto, customer, { excludeExtraneousValues: true })
+      data: plainToClass(ClientDetailedCustomerDto, customer, { excludeExtraneousValues: true })
     };
   }
 
@@ -112,6 +113,28 @@ export class ClientCustomerController {
     await this.customerService.sendEmailConfirmationEmail(customer);
 
     return { data: true };
+  }
+
+  @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))
+  @Post('address')
+  async addShippingAddress(@Req() req, @Body() addressDto: ShippingAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
+    const customer: DocumentType<Customer> = req.user;
+    const updated = await this.customerService.addShippingAddress(customer, addressDto);
+
+    return {
+      data: plainToClass(ClientDetailedCustomerDto, updated, { excludeExtraneousValues: true })
+    };
+  }
+
+  @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))
+  @Put('address/:id')
+  async editShippingAddress(@Req() req, @Param('id') addressId: string, @Body() addressDto: ShippingAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
+    const customer: DocumentType<Customer> = req.user;
+    const updated = await this.customerService.editShippingAddress(customer, addressId, addressDto);
+
+    return {
+      data: plainToClass(ClientDetailedCustomerDto, updated, { excludeExtraneousValues: true })
+    };
   }
 
   @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))

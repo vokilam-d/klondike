@@ -1,7 +1,14 @@
-import { Expose } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class ShippingAddressDto {
+  @Exclude()
+  _id?: any;
+
+  @Expose()
+  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
+  id?: string;
+
   @Expose()
   @IsString()
   firstName: string;
