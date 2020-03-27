@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Customer } from './models/customer.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
-import { AdminAddOrUpdateCustomerDto, AdminCustomerDto} from '../shared/dtos/admin/customer.dto';
+import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { ClientSession } from 'mongoose';
 import { Order } from '../order/models/order.model';
@@ -20,6 +20,7 @@ import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.
 import { ClientUpdateCustomerDto } from '../shared/dtos/client/update-customer.dto';
 import { ClientUpdatePasswordDto } from '../shared/dtos/client/update-password.dto';
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
+import { OrderItem } from '../order/models/order-item.model';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -304,5 +305,28 @@ export class CustomerService implements OnApplicationBootstrap {
     Object.keys(addressDto).forEach(key => customer.addresses[foundAddressIdx][key] = addressDto[key]);
     await customer.save();
     return customer.toJSON();
+  }
+
+  async upsertToCart(customer: DocumentType<Customer>, orderItem: OrderItem): Promise<DocumentType<Customer>> {
+    const alreadyAddedIdx = customer.cart.findIndex(cartItem => cartItem.sku === orderItem.sku);
+    if (alreadyAddedIdx === -1) {
+      customer.cart.push(orderItem);
+    } else {
+      customer.cart[alreadyAddedIdx] = {
+        ...customer.cart[alreadyAddedIdx],
+        ...orderItem
+      };
+    }
+
+    await customer.save();
+    return customer;
+  }
+
+  async deleteFromCart(customer: DocumentType<Customer>, sku: string) {
+    const foundIdx = customer.cart.findIndex(item => item.sku === sku);
+    if (foundIdx !== -1) {
+      customer.cart.splice(foundIdx, 1);
+      await customer.save();
+    }
   }
 }

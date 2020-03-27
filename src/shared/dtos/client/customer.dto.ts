@@ -1,7 +1,8 @@
 import { Expose } from 'class-transformer';
 import { Customer } from '../../../customer/models/customer.model';
+import { OrderItemDto } from '../shared-dtos/order-item.dto';
 
-export class ClientCustomerDto implements Pick<Customer, 'id' | 'firstName' | 'lastName' | 'email' | 'phoneNumber'> {
+export class ClientCustomerDto implements Pick<Customer, 'id' | 'firstName' | 'lastName' | 'email' | 'phoneNumber' | 'cart'> {
   @Expose()
   id: number;
 
@@ -16,4 +17,7 @@ export class ClientCustomerDto implements Pick<Customer, 'id' | 'firstName' | 'l
 
   @Expose()
   phoneNumber: string;
+
+  @Expose()
+  cart: OrderItemDto[];
 }

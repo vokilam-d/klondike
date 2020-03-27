@@ -11,8 +11,8 @@ import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/produ
 import { AdminMediaDto } from '../src/shared/dtos/admin/media.dto';
 import { AdminCustomerDto } from '../src/shared/dtos/admin/customer.dto';
 import { AdminAddOrUpdateOrderDto } from '../src/shared/dtos/admin/order.dto';
-import { AdminOrderItemDto } from '../src/shared/dtos/admin/order-item.dto';
-import { CreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.dto';
+import { OrderItemDto } from '../src/shared/dtos/shared-dtos/order-item.dto';
+import { AdminCreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.dto';
 import { AdminStoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
 import { AdminProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
 import { ECurrencyCode } from '../src/shared/enums/currency.enum';
@@ -614,7 +614,7 @@ export class Migrate {
       dto.items = [];
       for (const magOrderItem of magOrderItems) {
         if (magOrderItem.order_id === order.entity_id) {
-          const orderItem = {} as AdminOrderItemDto;
+          const orderItem = {} as OrderItemDto;
           orderItem.name = magOrderItem.name;
           orderItem.productId = magOrderItem.product_id;
           orderItem.variantId = '';
@@ -627,11 +627,11 @@ export class Migrate {
           orderItem.totalCost = orderItem.cost - orderItem.discountValue;
 
           try {
-            const orderItemDto = {} as CreateOrderItemDto;
+            const orderItemDto = {} as AdminCreateOrderItemDto;
             orderItemDto.sku = magOrderItem.sku;
             orderItemDto.qty = magOrderItem.qty_ordered;
             orderItemDto.customerId = magOrderItem.customer_id;
-            const response = await axios.post<{ data: AdminOrderItemDto }>(
+            const response = await axios.post<{ data: OrderItemDto }>(
               `${this.apiHostname}/api/v1/admin/order-items`,
               orderItemDto,
               {

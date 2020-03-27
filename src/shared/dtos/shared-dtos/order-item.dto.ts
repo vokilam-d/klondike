@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class AdminOrderItemDto {
+export class OrderItemDto {
   @Expose()
   @IsString()
   name: string;

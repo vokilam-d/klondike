@@ -3,12 +3,15 @@ import { AdminOrderController } from './admin-order.controller';
 import { OrderService } from './order.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Order, OrderModel } from './models/order.model';
-import { AdminOrderItemController } from './admin-order-item.controller';
+import { AdminOrderItemController } from './order-item/admin-order-item.controller';
 import { OrderItemService } from './order-item.service';
 import { ProductModule } from '../product/product.module';
 import { CustomerModule } from '../customer/customer.module';
 import { InventoryModule } from '../inventory/inventory.module';
 import { PdfGeneratorModule } from '../pdf-generator/pdf-generator.module';
+import { ShippingMethodModule } from '../shipping-method/shipping-method.module';
+import { PaymentMethodModule } from '../payment-method/payment-method.module';
+import { AuthModule } from '../auth/auth.module';
 
 const orderModel = {
   name: OrderModel.modelName,
@@ -19,13 +22,16 @@ const orderModel = {
 @Module({
   imports: [
     MongooseModule.forFeature([orderModel]),
-    ProductModule,
     forwardRef(() => CustomerModule),
+    forwardRef(() => AuthModule),
+    ProductModule,
+    ShippingMethodModule,
+    PaymentMethodModule,
     PdfGeneratorModule,
     InventoryModule
   ],
   controllers: [AdminOrderController, AdminOrderItemController],
   providers: [OrderService, OrderItemService],
-  exports: [OrderService]
+  exports: [OrderService, OrderItemService]
 })
 export class OrderModule {}

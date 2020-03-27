@@ -82,19 +82,19 @@ export class Order {
   @arrayProp({ items: String })
   logs: string[];
 
-  @prop()
+  @prop({ default: 0 })
   totalItemsCost: number;
 
-  @prop()
+  @prop({ default: 0 })
   discountPercent: number;
 
-  @prop()
+  @prop({ default: 0 })
   discountValue: number;
 
   @prop()
   discountLabel: string;
 
-  @prop()
+  @prop({ default: 0 })
   totalCost: number;
 
 

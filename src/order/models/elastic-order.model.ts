@@ -8,9 +8,9 @@ import {
   elasticIntegerType,
   elasticTextType
 } from '../../shared/constants';
-import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
+import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
 
-class ElasticOrderItemModel implements Record<keyof AdminOrderItemDto, any>{
+class ElasticOrderItemModel implements Record<keyof OrderItemDto, any>{
   cost = elasticFloatType;
   discountValue = elasticFloatType;
   imageUrl = elasticTextType;

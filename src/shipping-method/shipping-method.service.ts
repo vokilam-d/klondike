@@ -14,6 +14,10 @@ export class ShippingMethodService {
     return methods;
   }
 
+  async getShippingMethodById(id: string): Promise<ShippingMethod> {
+    return this.shippingMethodModel.findById(id).exec();
+  }
+
   async createShippingMethod(methodDto: ShippingMethodDto): Promise<ShippingMethod> {
     const method = new this.shippingMethodModel(methodDto);
     await method.save();

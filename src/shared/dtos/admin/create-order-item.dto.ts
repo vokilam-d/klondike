@@ -1,6 +1,6 @@
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
-export class CreateOrderItemDto {
+export class AdminCreateOrderItemDto {
   @IsString()
   sku: string;
 

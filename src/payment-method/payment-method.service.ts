@@ -14,6 +14,10 @@ export class PaymentMethodService {
     return methods;
   }
 
+  getPaymentMethodById(paymentMethodId: string): Promise<PaymentMethod> {
+    return this.paymentMethodModel.findById(paymentMethodId).exec();
+  }
+
   async createPaymentMethod(methodDto: PaymentMethodDto): Promise<PaymentMethod> {
     const method = new this.paymentMethodModel(methodDto);
     await method.save();

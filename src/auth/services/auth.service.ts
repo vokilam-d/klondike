@@ -11,6 +11,7 @@ import { EmailService } from '../../email/email.service';
 import { ResetPasswordService } from './reset-password.service';
 import { ConfirmEmailService } from './confirm-email.service';
 import { EncryptorService } from '../../shared/services/encryptor/encryptor.service';
+import { DocumentType } from '@typegoose/typegoose';
 
 @Injectable()
 export class AuthService {
@@ -23,14 +24,15 @@ export class AuthService {
               private readonly jwtService: JwtService) {
   }
 
-  async getCustomerFromReq(req: FastifyRequest): Promise<Customer | undefined> {
+  async getCustomerFromReq(req: FastifyRequest): Promise<DocumentType<Customer> | undefined> {
     const jwt = req.cookies[authConstants.JWT_COOKIE_NAME];
     if (!jwt) { return; }
 
     const payload = await this.jwtService.verifyAsync(jwt);
     if (!payload || !payload.sub) { return; }
 
-    return this.customerService.getCustomerById(payload.sub);
+    const customer = await this.customerService.getCustomerById(payload.sub, false);
+    return customer as DocumentType<Customer>;
   }
 
   async createCustomerEmailConfirmToken(customer: Customer): Promise<string> {

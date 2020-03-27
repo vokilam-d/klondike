@@ -15,6 +15,7 @@ const paymentMethodModel = {
     MongooseModule.forFeature([paymentMethodModel])
   ],
   controllers: [AdminPaymentMethodController],
-  providers: [PaymentMethodService]
+  providers: [PaymentMethodService],
+  exports: [PaymentMethodService]
 })
 export class PaymentMethodModule {}

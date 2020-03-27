@@ -15,6 +15,7 @@ const shippingMethodModel = {
     MongooseModule.forFeature([shippingMethodModel])
   ],
   controllers: [AdminShippingMethodController],
-  providers: [ShippingMethodService]
+  providers: [ShippingMethodService],
+  exports: [ShippingMethodService]
 })
 export class ShippingMethodModule {}

@@ -9,7 +9,7 @@ import {
   IsString,
   ValidateNested
 } from 'class-validator';
-import { AdminOrderItemDto } from './order-item.dto';
+import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { ShippingAddressDto } from '../shared-dtos/shipping-address.dto';
 
 export class AdminAddOrUpdateOrderDto {
@@ -28,10 +28,12 @@ export class AdminAddOrUpdateOrderDto {
   customerId: number;
 
   @Expose()
+  @IsOptional()
   @IsString()
   customerFirstName: string;
 
   @Expose()
+  @IsOptional()
   @IsString()
   customerLastName: string;
 
@@ -71,11 +73,11 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsString()
-  paymentMethodClientName: string;
+  paymentMethodClientName: string; // todo remove after migration
 
   @Expose()
   @IsString()
-  paymentMethodAdminName: string;
+  paymentMethodAdminName: string; // todo remove after migration
 
   @Expose()
   @IsString()
@@ -83,11 +85,11 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsString()
-  shippingMethodClientName: string;
+  shippingMethodClientName: string; // todo remove after migration
 
   @Expose()
   @IsString()
-  shippingMethodAdminName: string;
+  shippingMethodAdminName: string; // todo remove after migration
 
   @Expose()
   @IsBoolean()
@@ -101,8 +103,8 @@ export class AdminAddOrUpdateOrderDto {
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
-  @Type(() => AdminOrderItemDto)
-  items: AdminOrderItemDto[];
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
 
   @Expose()
   state: any;
@@ -157,4 +159,16 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   @IsOptional()
   @IsString()
   idForCustomer: string;
+
+  @Expose()
+  shippingMethodClientName: string;
+
+  @Expose()
+  shippingMethodAdminName: string;
+
+  @Expose()
+  paymentMethodClientName: string;
+
+  @Expose()
+  paymentMethodAdminName: string;
 }

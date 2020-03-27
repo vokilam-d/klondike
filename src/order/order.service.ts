@@ -1,11 +1,11 @@
-import { ForbiddenException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { CustomerService } from '../customer/customer.service';
-import { AdminAddOrUpdateCustomerDto} from '../shared/dtos/admin/customer.dto';
+import { AdminAddOrUpdateCustomerDto } from '../shared/dtos/admin/customer.dto';
 import { InventoryService } from '../inventory/inventory.service';
 import { EOrderStatus } from '../shared/enums/order-status.enum';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
@@ -19,6 +19,9 @@ import { SearchService } from '../shared/search/search.service';
 import { ElasticOrderModel } from './models/elastic-order.model';
 import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
 import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
+import { FilterQuery } from 'mongoose';
+import { ShippingMethodService } from '../shipping-method/shipping-method.service';
+import { PaymentMethodService } from '../payment-method/payment-method.service';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -27,6 +30,8 @@ export class OrderService implements OnApplicationBootstrap {
 
   constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
               private counterService: CounterService,
+              private readonly shippingMethodService: ShippingMethodService,
+              private readonly paymentMethodService: PaymentMethodService,
               private pdfGeneratorService: PdfGeneratorService,
               private inventoryService: InventoryService,
               private productService: ProductService,
@@ -48,10 +53,9 @@ export class OrderService implements OnApplicationBootstrap {
       itemsFiltered = searchResponse[1];
 
     } else {
-      let conditions: any = {};
+      let conditions: FilterQuery<Order> = { };
       if (spf.customerId) {
-        const customerIdProp = getPropertyOf<AdminOrderDto>('customerId');
-        conditions[customerIdProp] = spf.customerId;
+        conditions.customerId = spf.customerId;
       }
 
       orders = await this.orderModel
@@ -97,18 +101,22 @@ export class OrderService implements OnApplicationBootstrap {
         }
 
       } else {
-        if (!orderDto.customerFirstName) { orderDto.customerFirstName = orderDto.address.firstName; }
-        if (!orderDto.customerLastName) { orderDto.customerLastName = orderDto.address.lastName; }
-        if (!orderDto.customerPhoneNumber) { orderDto.customerPhoneNumber = orderDto.address.phoneNumber; }
+        customer = await this.customerService.getCustomerByEmailOrPhoneNumber(orderDto.customerEmail);
 
-        const customerDto = new AdminAddOrUpdateCustomerDto();
-        customerDto.firstName = orderDto.customerFirstName;
-        customerDto.lastName = orderDto.customerLastName;
-        customerDto.email = orderDto.customerEmail;
-        customerDto.phoneNumber = orderDto.customerPhoneNumber;
-        customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
+        if (!customer) {
+          if (!orderDto.customerFirstName) { orderDto.customerFirstName = orderDto.address.firstName; }
+          if (!orderDto.customerLastName) { orderDto.customerLastName = orderDto.address.lastName; }
+          if (!orderDto.customerPhoneNumber) { orderDto.customerPhoneNumber = orderDto.address.phoneNumber; }
 
-        customer = await this.customerService.adminCreateCustomer(customerDto, session, migrate);
+          const customerDto = new AdminAddOrUpdateCustomerDto();
+          customerDto.firstName = orderDto.customerFirstName;
+          customerDto.lastName = orderDto.customerLastName;
+          customerDto.email = orderDto.customerEmail;
+          customerDto.phoneNumber = orderDto.customerPhoneNumber;
+          customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
+
+          customer = await this.customerService.adminCreateCustomer(customerDto, session, migrate);
+        }
 
         orderDto.customerId = customer.id;
       }
@@ -123,10 +131,30 @@ export class OrderService implements OnApplicationBootstrap {
         newOrder.discountPercent = customer.discountPercent;
         this.setOrderPrices(newOrder);
 
+        const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
         for (const item of orderDto.items) {
+          const product = products.find(product => product._id === item.productId);
+          const variant = product && product.variants.find(variant => variant._id.equals(item.variantId));
+          if (!product || !variant) {
+            throw new BadRequestException(`Product with sku '${item.sku}' not found`);
+          }
+
+          if (variant.qty < item.qty) {
+            throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${item.qty}. In stock: ${variant.qty}`);
+          }
+
           await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
         }
+
         await this.customerService.addOrderToCustomer(customer.id, newOrder, session);
+
+        const shippingMethod = await this.shippingMethodService.getShippingMethodById(orderDto.shippingMethodId);
+        newOrder.shippingMethodAdminName = shippingMethod.adminName;
+        newOrder.shippingMethodClientName = shippingMethod.clientName;
+
+        const paymentMethod = await this.paymentMethodService.getPaymentMethodById(orderDto.paymentMethodId);
+        newOrder.paymentMethodAdminName = paymentMethod.adminName;
+        newOrder.paymentMethodClientName = paymentMethod.clientName;
       }
 
       await newOrder.save({ session });
@@ -182,7 +210,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async editOrderAddress(orderId: number, addressDto: ShippingAddressDto): Promise<Order> {
-    const addressProp = getPropertyOf<Order>('address');
+    const addressProp: keyof Order = 'address';
 
     const updated = await this.orderModel.findByIdAndUpdate(
       orderId,

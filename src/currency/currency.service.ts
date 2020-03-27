@@ -35,21 +35,28 @@ export class CurrencyService {
     return currencies.map(currency => currency.toJSON());
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async updateExchangeRates(): Promise<Currency[]> {
     const currencies = await this.currencyModel.find().exec();
 
-    const response = await this.http.get(this.auctionExchangeRateUrl).toPromise();
-    const exchangeRates: ExchangeRates = response.data;
+    try {
+      const response = await this.http.get(this.auctionExchangeRateUrl).toPromise();
+      const exchangeRates: ExchangeRates = response.data;
 
-    for (const currency of currencies) {
-      const rate: ExchangeRate = exchangeRates[currency.id];
-      if (!rate || currency.id === ECurrencyCode.UAH) { continue; }
+      for (const currency of currencies) {
+        const rate: ExchangeRate = exchangeRates[currency.id];
+        if (!rate || currency.id === ECurrencyCode.UAH) {
+          continue;
+        }
 
-      currency.exchangeRate = rate.bid;
+        currency.exchangeRate = rate.bid;
 
-      await currency.save();
-      this.logger.log(`Updated currency '${currency.id}' exchange rate to ${currency.exchangeRate}`);
+        await currency.save();
+        this.logger.log(`Updated currency '${currency.id}' exchange rate to ${currency.exchangeRate}`);
+      }
+    } catch (ex) {
+      this.logger.error('Could not update exchange rates:');
+      this.logger.error(ex);
     }
 
     return currencies.map(currency => currency.toJSON());

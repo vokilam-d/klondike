@@ -1,5 +1,6 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
+import { OrderItem } from '../../order/models/order-item.model';
 
 export class ShippingAddress {
   _id?: Types.ObjectId;
@@ -86,6 +87,9 @@ export class Customer {
 
   @prop({ default: 0 })
   totalOrdersCost: number;
+
+  @prop({ default: [] })
+  cart: OrderItem[];
 
 
   static collectionName: string = 'customer';

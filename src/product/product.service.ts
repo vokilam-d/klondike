@@ -194,6 +194,30 @@ export class ProductService implements OnApplicationBootstrap {
     return found;
   }
 
+  async getProductsWithQtyBySkus(skus: string[]): Promise<ProductWithQty[]> {
+    const variantsProp = getPropertyOf<Product>('variants');
+    const skuProp = getPropertyOf<Inventory>('sku');
+    const qtyProp = getPropertyOf<Inventory>('qty');
+
+    const found = await this.productModel.aggregate()
+      .match({ [variantsProp + '.' + skuProp]: skus })
+      .unwind(variantsProp)
+      .lookup({
+        'from': Inventory.collectionName,
+        'let': { [variantsProp]: `$${variantsProp}` },
+        'pipeline': [
+          { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+        ],
+        'as': variantsProp
+      })
+      .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
+      .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
+      .exec();
+
+    return found;
+  }
+
   async getClientProductDtoBySlug(slug: string): Promise<ClientProductDto> {
     const variantsProp = getPropertyOf<Product>('variants');
     const slugProp = getPropertyOf<ProductVariant>('slug');

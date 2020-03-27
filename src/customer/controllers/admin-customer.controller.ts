@@ -12,11 +12,11 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
-import { CustomerService } from './customer.service';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
-import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
+import { CustomerService } from '../customer.service';
+import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/spf.dto';
+import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../shared/dtos/admin/customer.dto';
+import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../../shared/dtos/admin/customer.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
