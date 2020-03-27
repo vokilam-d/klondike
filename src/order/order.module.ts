@@ -11,7 +11,6 @@ import { InventoryModule } from '../inventory/inventory.module';
 import { PdfGeneratorModule } from '../pdf-generator/pdf-generator.module';
 import { ShippingMethodModule } from '../shipping-method/shipping-method.module';
 import { PaymentMethodModule } from '../payment-method/payment-method.module';
-import { AuthModule } from '../auth/auth.module';
 
 const orderModel = {
   name: OrderModel.modelName,
@@ -23,7 +22,6 @@ const orderModel = {
   imports: [
     MongooseModule.forFeature([orderModel]),
     forwardRef(() => CustomerModule),
-    forwardRef(() => AuthModule),
     ProductModule,
     ShippingMethodModule,
     PaymentMethodModule,
