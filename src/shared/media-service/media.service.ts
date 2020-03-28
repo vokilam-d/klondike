@@ -9,7 +9,7 @@ import { transliterate } from '../helpers/transliterate.function';
 import { Media } from '../models/media.model';
 import { readableBytes } from '../helpers/readable-bytes.function';
 import { EMediaVariant } from '../enums/media-variant.enum';
-import { AdminMediaDto } from 'shared/dtos/admin/media.dto';
+import { AdminMediaDto } from '../dtos/admin/media.dto';
 
 const pipeline = promisify(pipelineImport);
 
