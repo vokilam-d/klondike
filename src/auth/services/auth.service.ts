@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { CustomerService } from '../../customer/customer.service';
 import { Customer } from '../../customer/models/customer.model';
 import { JwtService } from '@nestjs/jwt';
@@ -16,6 +16,8 @@ import { DocumentType } from '@typegoose/typegoose';
 @Injectable()
 export class AuthService {
 
+  private logger = new Logger(AuthService.name);
+
   constructor(@Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
               private readonly resetPasswordService: ResetPasswordService,
               private readonly confirmEmailService: ConfirmEmailService,
@@ -28,7 +30,13 @@ export class AuthService {
     const jwt = req.cookies[authConstants.JWT_COOKIE_NAME];
     if (!jwt) { return; }
 
-    const payload = await this.jwtService.verifyAsync(jwt);
+    let payload;
+    try {
+      payload = await this.jwtService.verifyAsync(jwt);
+    } catch (e) {
+      this.logger.error(e);
+    }
+
     if (!payload || !payload.sub) { return; }
 
     const customer = await this.customerService.getCustomerById(payload.sub, false);

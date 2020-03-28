@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as handlebars from 'handlebars';
 import * as puppeteer from 'puppeteer';
 import { Order } from '../order/models/order.model';
-import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
 import { readableDate } from '../shared/helpers/readable-date.function';
 
 @Injectable()
@@ -21,7 +20,7 @@ export class PdfGeneratorService {
     const browser = await puppeteer.launch({
       headless: true,
       executablePath: '/usr/bin/chromium-browser',
-      args: ['--disable-dev-shm-usage']
+      args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox']
     });
     const [page] = await browser.pages();
 

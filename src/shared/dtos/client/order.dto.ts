@@ -44,7 +44,7 @@ export class ClientAddOrderDto {
 
 export class ClientOrderDto extends ClientAddOrderDto {
   @Expose()
-  @Transform(((value, obj: Order) => value ? value : obj.idForCustomer))
+  @Transform(((value, obj: Order) => obj.idForCustomer))
   id: string;
 
   @Expose()

@@ -22,13 +22,6 @@ COPY package-lock.json ./
 
 RUN npm install --verbose
 
-RUN addgroup -S pptruser && adduser -S -g pptruser pptruser \
-    && mkdir -p /home/pptruser/Downloads /app \
-    && chown -R pptruser:pptruser /home/pptruser \
-    && chown -R pptruser:pptruser /app
-
-USER pptruser
-
 COPY . .
 
 RUN npm run build:prod
