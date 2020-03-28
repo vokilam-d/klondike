@@ -32,7 +32,13 @@ export class AdminEmailController {
       throw new BadRequestException(`No 'email' in payload`);
     }
 
-    return this.emailService.sendEmailConfirmationEmail(body.email, 'login');
+    const customer: any = {
+      email: body.email,
+      firstName: this.testFirstName,
+      lastName: this.testLastName
+    };
+
+    return this.emailService.sendEmailConfirmationEmail(customer, 'token');
   }
 
   @Post('registration-success')

@@ -1,0 +1,4 @@
+dist/
+migration/
+node_modules/
+upload/

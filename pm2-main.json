@@ -1,0 +1,14 @@
+{
+  "apps": [
+    {
+      "name": "tCommerce-backend",
+      "script": "./dist/src/main.js",
+      "merge_logs": true,
+      "max_restarts": 15,
+      "instance_var": "INSTANCE_ID",
+      "instances": "max",
+      "exec_mode": "cluster",
+      "max_memory_restart": "8G"
+    }
+  ]
+}
