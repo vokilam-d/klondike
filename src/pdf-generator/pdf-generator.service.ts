@@ -18,7 +18,11 @@ export class PdfGeneratorService {
     const htmlFile = fs.readFileSync(this.orderHtmlPath, 'utf8');
     const html = handlebars.compile(htmlFile)(this.buildTemplateContextForOrder(order));
 
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      headless: true,
+      executablePath: '/usr/bin/chromium-browser',
+      args: ['--disable-dev-shm-usage']
+    });
     const [page] = await browser.pages();
 
     await page.setContent(html);

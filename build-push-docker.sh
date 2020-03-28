@@ -1,1 +1,1 @@
-docker build -t vokilamd/tCommerce-backend:latest .
+docker build -t vokilamd/tcommerce-backend:latest .

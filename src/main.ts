@@ -29,7 +29,7 @@ async function bootstrap() {
   app.use(compression());
   app.use(requestIp.mw());
 
-  await app.listen(AppModule.port, () => console.log(`It's rolling on ${AppModule.port}!`));
+  await app.listen(AppModule.port, '0.0.0.0', () => console.log(`It's rolling on ${AppModule.port}!`));
 
   if (module.hot) {
     module.hot.accept();
