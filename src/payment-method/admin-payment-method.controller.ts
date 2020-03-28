@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { PaymentMethodService } from './payment-method.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
-import { PaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
+import { AdminPaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { plainToClass } from 'class-transformer';
 
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -11,38 +11,38 @@ export class AdminPaymentMethodController {
   }
 
   @Get()
-  async getAllPaymentMethods(): Promise<ResponseDto<PaymentMethodDto[]>> {
+  async getAllPaymentMethods(): Promise<ResponseDto<AdminPaymentMethodDto[]>> {
     const methods = await this.paymentMethodService.getAllPaymentMethods();
 
     return {
-      data: plainToClass(PaymentMethodDto, methods, { excludeExtraneousValues: true })
+      data: plainToClass(AdminPaymentMethodDto, methods, { excludeExtraneousValues: true })
     }
   }
 
   @Post()
-  async createPaymentMethod(@Body() methodDto: PaymentMethodDto): Promise<ResponseDto<PaymentMethodDto>> {
+  async createPaymentMethod(@Body() methodDto: AdminPaymentMethodDto): Promise<ResponseDto<AdminPaymentMethodDto>> {
     const created = await this.paymentMethodService.createPaymentMethod(methodDto);
 
     return {
-      data: plainToClass(PaymentMethodDto, created, { excludeExtraneousValues: true })
+      data: plainToClass(AdminPaymentMethodDto, created, { excludeExtraneousValues: true })
     }
   }
 
   @Put(':id')
-  async updatePaymentMethod(@Param('id') id: string, @Body() methodDto: PaymentMethodDto): Promise<ResponseDto<PaymentMethodDto>> {
+  async updatePaymentMethod(@Param('id') id: string, @Body() methodDto: AdminPaymentMethodDto): Promise<ResponseDto<AdminPaymentMethodDto>> {
     const updated = await this.paymentMethodService.updatePaymentMethod(id, methodDto);
 
     return {
-      data: plainToClass(PaymentMethodDto, updated, { excludeExtraneousValues: true })
+      data: plainToClass(AdminPaymentMethodDto, updated, { excludeExtraneousValues: true })
     }
   }
 
   @Delete(':id')
-  async deletePaymentMethod(@Param('id') id: string): Promise<ResponseDto<PaymentMethodDto>> {
+  async deletePaymentMethod(@Param('id') id: string): Promise<ResponseDto<AdminPaymentMethodDto>> {
     const deleted = await this.paymentMethodService.deletePaymentMethod(id);
 
     return {
-      data: plainToClass(PaymentMethodDto, deleted, { excludeExtraneousValues: true })
+      data: plainToClass(AdminPaymentMethodDto, deleted, { excludeExtraneousValues: true })
     }
   }
 }

@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Res, UsePipes, ValidationPipe } from '@nestjs/common';
-import { OrderService } from './order.service';
-import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
+import { OrderService } from '../order.service';
+import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
-import { OrderActionDto } from '../shared/dtos/admin/order-action.dto';
-import { EOrderAction } from '../shared/enums/order-action.enum';
+import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../../shared/dtos/admin/order.dto';
+import { OrderActionDto } from '../../shared/dtos/admin/order-action.dto';
+import { EOrderAction } from '../../shared/enums/order-action.enum';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
-import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
-import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
+import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
+import { ShippingAddressDto } from '../../shared/dtos/shared-dtos/shipping-address.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/orders')
@@ -33,7 +33,7 @@ export class AdminOrderController {
 
   @Post()
   async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminOrderDto>> {
-    const created = await this.orderService.createOrder(orderDto, migrate);
+    const created = await this.orderService.createOrderAdmin(orderDto, migrate);
 
     return {
       data: plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true })

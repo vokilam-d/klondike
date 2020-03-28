@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
-import { PaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
+import { AdminPaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { PaymentMethod } from './models/payment-method.model';
 
 @Injectable()
@@ -10,22 +10,30 @@ export class PaymentMethodService {
   }
 
   async getAllPaymentMethods(): Promise<PaymentMethod[]> {
-    const methods = await this.paymentMethodModel.find().exec();
-    return methods;
+    return this.paymentMethodModel.find().exec();
+  }
+
+  async getAllPaymentMethodsForClient(): Promise<PaymentMethod[]> {
+    const sortProp: keyof PaymentMethod = 'sortOrder';
+
+    return this.paymentMethodModel
+      .find({ isEnabled: true })
+      .sort(`-${sortProp}`)
+      .exec();
   }
 
   getPaymentMethodById(paymentMethodId: string): Promise<PaymentMethod> {
     return this.paymentMethodModel.findById(paymentMethodId).exec();
   }
 
-  async createPaymentMethod(methodDto: PaymentMethodDto): Promise<PaymentMethod> {
+  async createPaymentMethod(methodDto: AdminPaymentMethodDto): Promise<PaymentMethod> {
     const method = new this.paymentMethodModel(methodDto);
     await method.save();
 
     return method;
   }
 
-  async updatePaymentMethod(methodId: string, methodDto: PaymentMethodDto): Promise<PaymentMethod> {
+  async updatePaymentMethod(methodId: string, methodDto: AdminPaymentMethodDto): Promise<PaymentMethod> {
     const found = await this.paymentMethodModel.findById(methodId);
     if (!found) {
       throw new NotFoundException(`Payment method with id '${methodId}' not found`);

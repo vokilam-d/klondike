@@ -78,7 +78,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return serialized ? found.toJSON() : found;
   }
 
-  async getCustomerByEmailOrPhoneNumber(emailOrPhone: string): Promise<Customer> {
+  async getCustomerByEmailOrPhoneNumber(emailOrPhone: string): Promise<DocumentType<Customer>> {
     return this.customerModel
       .findOne({
         $or: [
@@ -115,7 +115,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return this.createCustomer(customerDto, session, migrate);
   }
 
-  async clientCreateCustomer(registerDto: ClientRegisterDto): Promise<Customer> {
+  async clientRegisterCustomer(registerDto: ClientRegisterDto): Promise<Customer> {
     const foundByEmail = await this.customerModel.findOne({ email: registerDto.email }).exec();
     if (foundByEmail) {
       throw new ConflictException(`Customer with email '${registerDto.email}' already exists`);
@@ -169,17 +169,21 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async addCustomerAddress(customerId: number, address: ShippingAddressDto, session: ClientSession): Promise<Customer> {
+  async addCustomerAddressById(customerId: number, address: ShippingAddressDto, session: ClientSession): Promise<Customer> {
     const found = await this.customerModel.findById(customerId).session(session).exec();
     if (!found) {
       throw new NotFoundException(`Customer with id '${customerId}' not found`);
     }
 
-    found.addresses.push(address);
-    await found.save({ session });
-    this.updateSearchData(found);
+    return this.addCustomerAddress(found, address, session);
+  }
 
-    return found;
+  async addCustomerAddress(customer: DocumentType<Customer>, address: ShippingAddressDto, session: ClientSession): Promise<Customer> {
+    customer.addresses.push(address);
+    await customer.save({ session });
+    this.updateSearchData(customer);
+
+    return customer;
   }
 
   async deleteCustomer(customerId: number): Promise<Customer> {

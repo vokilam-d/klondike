@@ -200,7 +200,7 @@ export class ProductService implements OnApplicationBootstrap {
     const qtyProp = getPropertyOf<Inventory>('qty');
 
     const found = await this.productModel.aggregate()
-      .match({ [variantsProp + '.' + skuProp]: skus })
+      .match({ [variantsProp + '.' + skuProp]: { $in: skus } })
       .unwind(variantsProp)
       .lookup({
         'from': Inventory.collectionName,
@@ -733,7 +733,7 @@ export class ProductService implements OnApplicationBootstrap {
         sku: variant.sku,
         isInStock: variant.qty > 0,
         name: variant.name,
-        priceInDefaultCurrency: variant.priceInDefaultCurrency,
+        price: variant.priceInDefaultCurrency,
         slug: variant.slug,
         variantGroups,
         mediaUrl: variant.mediaUrl,
@@ -816,7 +816,7 @@ export class ProductService implements OnApplicationBootstrap {
       sku: variant.sku,
       vendorCode: variant.vendorCode,
       gtin: variant.gtin,
-      priceInDefaultCurrency: variant.priceInDefaultCurrency,
+      price: variant.priceInDefaultCurrency,
       reviewsAvgRating: productWithQty.reviewsAvgRating,
       reviewsCount: productWithQty.reviewsCount
     }

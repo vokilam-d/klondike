@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { ShippingMethod } from './models/shipping-method.model';
-import { ShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
+import { AdminShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
 
 @Injectable()
 export class ShippingMethodService {
@@ -10,22 +10,30 @@ export class ShippingMethodService {
   }
 
   async getAllShippingMethods(): Promise<ShippingMethod[]> {
-    const methods = await this.shippingMethodModel.find().exec();
-    return methods;
+    return this.shippingMethodModel.find().exec();
+  }
+
+  async getAllShippingMethodsForClient(): Promise<ShippingMethod[]> {
+    const sortProp: keyof ShippingMethod = 'sortOrder';
+
+    return this.shippingMethodModel
+      .find({ isEnabled: true })
+      .sort(`-${sortProp}`)
+      .exec();
   }
 
   async getShippingMethodById(id: string): Promise<ShippingMethod> {
     return this.shippingMethodModel.findById(id).exec();
   }
 
-  async createShippingMethod(methodDto: ShippingMethodDto): Promise<ShippingMethod> {
+  async createShippingMethod(methodDto: AdminShippingMethodDto): Promise<ShippingMethod> {
     const method = new this.shippingMethodModel(methodDto);
     await method.save();
 
     return method;
   }
 
-  async updateShippingMethod(methodId: string, methodDto: ShippingMethodDto): Promise<ShippingMethod> {
+  async updateShippingMethod(methodId: string, methodDto: AdminShippingMethodDto): Promise<ShippingMethod> {
 
     const found = await this.shippingMethodModel.findById(methodId).exec();
     if (!found) {

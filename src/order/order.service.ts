@@ -19,9 +19,10 @@ import { SearchService } from '../shared/search/search.service';
 import { ElasticOrderModel } from './models/elastic-order.model';
 import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
 import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
-import { FilterQuery } from 'mongoose';
+import { ClientSession, FilterQuery } from 'mongoose';
 import { ShippingMethodService } from '../shipping-method/shipping-method.service';
 import { PaymentMethodService } from '../payment-method/payment-method.service';
+import { ClientAddOrderDto } from '../shared/dtos/client/order.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -87,7 +88,7 @@ export class OrderService implements OnApplicationBootstrap {
     return found;
   }
 
-  async createOrder(orderDto: AdminAddOrUpdateOrderDto, migrate: any): Promise<Order> {
+  async createOrderAdmin(orderDto: AdminAddOrUpdateOrderDto, migrate: any): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
@@ -95,7 +96,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       if (orderDto.customerId) {
         if (orderDto.shouldSaveAddress) {
-          customer = await this.customerService.addCustomerAddress(orderDto.customerId, orderDto.address, session);
+          customer = await this.customerService.addCustomerAddressById(orderDto.customerId, orderDto.address, session);
         } else {
           customer = await this.customerService.getCustomerById(orderDto.customerId);
         }
@@ -121,46 +122,10 @@ export class OrderService implements OnApplicationBootstrap {
         orderDto.customerId = customer.id;
       }
 
-      const newOrder = new this.orderModel(orderDto);
-
-      if (!migrate) {
-        newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
-        newOrder.idForCustomer = addLeadingZeros(newOrder.id);
-        newOrder.createdAt = new Date();
-        newOrder.status = EOrderStatus.NEW;
-        newOrder.discountPercent = customer.discountPercent;
-        this.setOrderPrices(newOrder);
-
-        const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
-        for (const item of orderDto.items) {
-          const product = products.find(product => product._id === item.productId);
-          const variant = product && product.variants.find(variant => variant._id.equals(item.variantId));
-          if (!product || !variant) {
-            throw new BadRequestException(`Product with sku '${item.sku}' not found`);
-          }
-
-          if (variant.qty < item.qty) {
-            throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${item.qty}. In stock: ${variant.qty}`);
-          }
-
-          await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
-        }
-
-        await this.customerService.addOrderToCustomer(customer.id, newOrder, session);
-
-        const shippingMethod = await this.shippingMethodService.getShippingMethodById(orderDto.shippingMethodId);
-        newOrder.shippingMethodAdminName = shippingMethod.adminName;
-        newOrder.shippingMethodClientName = shippingMethod.clientName;
-
-        const paymentMethod = await this.paymentMethodService.getPaymentMethodById(orderDto.paymentMethodId);
-        newOrder.paymentMethodAdminName = paymentMethod.adminName;
-        newOrder.paymentMethodClientName = paymentMethod.clientName;
-      }
-
-      await newOrder.save({ session });
-      await this.addSearchData(newOrder);
+      const newOrder = await this.createOrder(orderDto, customer, session, migrate);
       await session.commitTransaction();
 
+      await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
       return newOrder;
 
@@ -171,6 +136,97 @@ export class OrderService implements OnApplicationBootstrap {
       session.endSession();
     }
   }
+
+  async createOrderClient(orderDto: ClientAddOrderDto, customer: DocumentType<Customer>): Promise<Order> {
+    const session = await this.orderModel.db.startSession();
+    session.startTransaction();
+    try {
+
+      if (!customer) {
+        customer = await this.customerService.getCustomerByEmailOrPhoneNumber(orderDto.email);
+
+        if (customer) {
+          const hasSameAddress = customer.addresses.find(address => (address.firstName === orderDto.address.firstName
+            && address.lastName === orderDto.address.lastName
+            && address.phoneNumber === orderDto.address.phoneNumber
+            && address.city === orderDto.address.city
+            && (address.streetName === orderDto.address.streetName || address.novaposhtaOffice === orderDto.address.novaposhtaOffice)
+          ));
+
+          if (!hasSameAddress) {
+            await this.customerService.addCustomerAddress(customer, orderDto.address, session);
+          }
+
+        } else {
+          const customerDto = new AdminAddOrUpdateCustomerDto();
+          customerDto.firstName = orderDto.address.firstName;
+          customerDto.lastName = orderDto.address.lastName;
+          customerDto.email = orderDto.email;
+          customerDto.phoneNumber = orderDto.address.phoneNumber;
+          customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
+
+          customer = await this.customerService.adminCreateCustomer(customerDto, session, false) as any;
+        }
+      }
+
+      const newOrder = await this.createOrder(orderDto, customer, session);
+      await session.commitTransaction();
+
+      await this.addSearchData(newOrder);
+      this.updateCachedOrderCount();
+      return newOrder;
+
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  private async createOrder(orderDto: AdminAddOrUpdateOrderDto | ClientAddOrderDto, customer: Customer, session: ClientSession, migrate?: any) {
+    const newOrder = new this.orderModel(orderDto);
+
+    if (!migrate) {
+      newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
+      newOrder.idForCustomer = addLeadingZeros(newOrder.id);
+      newOrder.customerId = customer.id;
+      newOrder.createdAt = new Date();
+      newOrder.status = EOrderStatus.NEW;
+      newOrder.discountPercent = customer.discountPercent;
+      this.setOrderPrices(newOrder);
+
+      const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
+      for (const item of orderDto.items) {
+        const product = products.find(product => product._id === item.productId);
+        const variant = product && product.variants.find(variant => variant._id.equals(item.variantId));
+
+        if (!product || !variant) {
+          throw new BadRequestException(`Product with sku '${item.sku}' not found`);
+        }
+
+        if (variant.qty < item.qty) {
+          throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${item.qty}. In stock: ${variant.qty}`);
+        }
+
+        await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
+      }
+
+      await this.customerService.addOrderToCustomer(customer.id, newOrder, session);
+
+      const shippingMethod = await this.shippingMethodService.getShippingMethodById(orderDto.shippingMethodId);
+      newOrder.shippingMethodAdminName = shippingMethod.adminName;
+      newOrder.shippingMethodClientName = shippingMethod.clientName;
+
+      const paymentMethod = await this.paymentMethodService.getPaymentMethodById(orderDto.paymentMethodId);
+      newOrder.paymentMethodAdminName = paymentMethod.adminName;
+      newOrder.paymentMethodClientName = paymentMethod.clientName;
+    }
+
+    await newOrder.save({ session });
+    return newOrder;
+  }
+
 
   async editOrder(orderId: number, orderDto: AdminAddOrUpdateOrderDto): Promise<Order> {
     const session = await this.orderModel.db.startSession();

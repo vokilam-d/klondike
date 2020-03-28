@@ -2,7 +2,7 @@ import { Expose, Transform } from 'class-transformer';
 import { IsBoolean, IsNumber, IsString, Matches } from 'class-validator';
 import { notEmptyStringRegex } from '../../constants';
 
-export class PaymentMethodDto {
+export class AdminPaymentMethodDto {
   @Expose()
   @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
   id: string;

@@ -77,7 +77,7 @@ export class ClientCustomerController {
    */
   @Post('register')
   async register(@Body() registerDto: ClientRegisterDto, @Res() res: FastifyReply<ServerResponse>) {
-    const customer = await this.customerService.clientCreateCustomer(registerDto);
+    const customer = await this.customerService.clientRegisterCustomer(registerDto);
     const customerDto = plainToClass(ClientCustomerDto, customer, { excludeExtraneousValues: true });
 
     return this.authService.loginCustomer(customerDto, res);

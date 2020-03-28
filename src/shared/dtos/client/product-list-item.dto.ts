@@ -1,4 +1,4 @@
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { ProductVariant } from '../../../product/models/product-variant.model';
 import { Product } from '../../../product/models/product.model';
 
@@ -23,7 +23,7 @@ export class ClientProductVariantGroupDto {
 }
 
 type PickedProduct = Pick<Product, 'reviewsCount' | 'reviewsAvgRating'>;
-type PickedVariant = Pick<ProductVariant, 'slug' | 'sku' | 'name' | 'priceInDefaultCurrency'>;
+type PickedVariant = Pick<ProductVariant, 'slug' | 'sku' | 'name' | 'price'>;
 
 export class ClientProductListItemDto implements PickedProduct, PickedVariant {
   @Expose()
@@ -45,7 +45,7 @@ export class ClientProductListItemDto implements PickedProduct, PickedVariant {
   mediaAltText: string;
 
   @Expose()
-  priceInDefaultCurrency: number;
+  price: number;
 
   @Expose()
   isInStock: boolean;

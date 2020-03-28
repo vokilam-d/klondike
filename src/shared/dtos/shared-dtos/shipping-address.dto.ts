@@ -1,5 +1,6 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
 
 export class ShippingAddressDto {
   @Exclude()
@@ -20,6 +21,7 @@ export class ShippingAddressDto {
   @Expose()
   @IsOptional()
   @IsString()
+  @Transform(value => normalizePhoneNumber(value))
   phoneNumber: string;
 
   @Expose()

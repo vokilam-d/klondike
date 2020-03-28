@@ -3,6 +3,7 @@ import { AdminPaymentMethodController } from './admin-payment-method.controller'
 import { PaymentMethodService } from './payment-method.service';
 import { PaymentMethod, PaymentMethodModel } from './models/payment-method.model';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ClientPaymentMethodController } from './client-payment-method.controller';
 
 const paymentMethodModel = {
   name: PaymentMethodModel.modelName,
@@ -14,7 +15,7 @@ const paymentMethodModel = {
   imports: [
     MongooseModule.forFeature([paymentMethodModel])
   ],
-  controllers: [AdminPaymentMethodController],
+  controllers: [AdminPaymentMethodController, ClientPaymentMethodController],
   providers: [PaymentMethodService],
   exports: [PaymentMethodService]
 })

@@ -3,6 +3,7 @@ import { AdminShippingMethodController } from './admin-shipping-method.controlle
 import { ShippingMethodService } from './shipping-method.service';
 import { ShippingMethod, ShippingMethodModel } from './models/shipping-method.model';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ClientShippingMethodController } from './client-shipping-method.controller';
 
 const shippingMethodModel = {
   name: ShippingMethodModel.modelName,
@@ -14,7 +15,7 @@ const shippingMethodModel = {
   imports: [
     MongooseModule.forFeature([shippingMethodModel])
   ],
-  controllers: [AdminShippingMethodController],
+  controllers: [AdminShippingMethodController, ClientShippingMethodController],
   providers: [ShippingMethodService],
   exports: [ShippingMethodService]
 })

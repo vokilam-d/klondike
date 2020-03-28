@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ShippingMethodService } from './shipping-method.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
-import { ShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
+import { AdminShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
 import { plainToClass } from 'class-transformer';
 
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -11,37 +11,37 @@ export class AdminShippingMethodController {
   }
 
   @Get()
-  async getAllShippingMethods(): Promise<ResponseDto<ShippingMethodDto[]>> {
+  async getAllShippingMethods(): Promise<ResponseDto<AdminShippingMethodDto[]>> {
     const methods = await this.shippingMethodService.getAllShippingMethods();
     return {
-      data: plainToClass(ShippingMethodDto, methods, { excludeExtraneousValues: true })
+      data: plainToClass(AdminShippingMethodDto, methods, { excludeExtraneousValues: true })
     }
   }
 
   @Post()
-  async createShippingMethod(@Body() methodDto: ShippingMethodDto): Promise<ResponseDto<ShippingMethodDto>> {
+  async createShippingMethod(@Body() methodDto: AdminShippingMethodDto): Promise<ResponseDto<AdminShippingMethodDto>> {
     const created = await this.shippingMethodService.createShippingMethod(methodDto);
 
     return {
-      data: plainToClass(ShippingMethodDto, created, { excludeExtraneousValues: true })
+      data: plainToClass(AdminShippingMethodDto, created, { excludeExtraneousValues: true })
     }
   }
 
   @Put(':id')
-  async updateShippingMethod(@Param('id') id: string, @Body() methodDto: ShippingMethodDto): Promise<ResponseDto<ShippingMethodDto>> {
+  async updateShippingMethod(@Param('id') id: string, @Body() methodDto: AdminShippingMethodDto): Promise<ResponseDto<AdminShippingMethodDto>> {
     const updated = await this.shippingMethodService.updateShippingMethod(id, methodDto);
 
     return {
-      data: plainToClass(ShippingMethodDto, updated, { excludeExtraneousValues: true })
+      data: plainToClass(AdminShippingMethodDto, updated, { excludeExtraneousValues: true })
     }
   }
 
   @Delete(':id')
-  async deleteShippingMethod(@Param('id') id: string): Promise<ResponseDto<ShippingMethodDto>> {
+  async deleteShippingMethod(@Param('id') id: string): Promise<ResponseDto<AdminShippingMethodDto>> {
     const deleted = await this.shippingMethodService.deleteShippingMethod(id);
 
     return {
-      data: plainToClass(ShippingMethodDto, deleted, { excludeExtraneousValues: true })
+      data: plainToClass(AdminShippingMethodDto, deleted, { excludeExtraneousValues: true })
     }
   }
 }
