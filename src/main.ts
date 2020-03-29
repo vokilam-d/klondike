@@ -13,7 +13,7 @@ import * as requestIp from 'request-ip';
 declare const module: any;
 
 async function bootstrap() {
-  const fastifyAdapter = new FastifyAdapter({ ignoreTrailingSlash: true });
+  const fastifyAdapter = new FastifyAdapter({ ignoreTrailingSlash: true, maxParamLength: 200 });
   fastifyAdapter.register(fastifyMultipart);
   fastifyAdapter.register(fastifyCookie);
   fastifyAdapter.register(fastifyStatic, { root: join(__dirname, '..') }); // todo remove this
