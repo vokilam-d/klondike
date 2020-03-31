@@ -4,7 +4,8 @@ import { ReturnModelType } from '@typegoose/typegoose';
 import { ECurrencyCode } from '../shared/enums/currency.enum';
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { CronExpression } from '@nestjs/schedule';
+import { PrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
 
 type ExchangeRate = {
   bid: number;
@@ -35,7 +36,7 @@ export class CurrencyService {
     return currencies.map(currency => currency.toJSON());
   }
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
+  @PrimaryInstanceCron(CronExpression.EVERY_5_SECONDS)
   async updateExchangeRates(): Promise<Currency[]> {
     const currencies = await this.currencyModel.find().exec();
 
