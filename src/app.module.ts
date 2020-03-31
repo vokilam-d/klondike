@@ -61,7 +61,7 @@ import { AuthModule } from './auth/auth.module';
   controllers: []
 })
 export class AppModule {
-  static port: number = 3500;
+  static port: number = +process.env.PORT || 3000;
 
   constructor() {
   }
