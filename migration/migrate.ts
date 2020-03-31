@@ -172,8 +172,8 @@ export class Migrate {
         console.log(`[Categories]: Migrated id`, dto.id, `- '${dto.name}'`);
         count++;
       } catch (ex) {
-        console.error(`[Categories ERROR]: '${dto.id}' '${dto.name}': `, ex.response.status);
-        console.error(this.buildErrorMessage(ex.response.data));
+        console.error(`[Categories ERROR]: '${dto.id}' '${dto.name}': `, ex.response ? ex.response.status : ex);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
       }
@@ -236,8 +236,8 @@ export class Migrate {
         console.log(`[ProductAttributes]: Migrated id`, dto.id, `- '${dto.label}'`);
         count++;
       } catch (ex) {
-        console.error(`[ProductAttributes ERROR]: '${dto.id}': `, ex.response.status);
-        console.error(this.buildErrorMessage(ex.response.data));
+        console.error(`[ProductAttributes ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
       }
@@ -265,7 +265,7 @@ export class Migrate {
 
     // for (const product of products) {
     const addProduct = async (product) => {
-      // if (product.parent_id < 2) { continue; }
+      // if (product.entity_id >= 400 && product.entity_id <= 457 ) { return; }
       if (product.parent_id < 2) { return; }
 
       const dto = {} as AdminProductDto;
@@ -351,12 +351,12 @@ export class Migrate {
           variantDto.medias.push(media);
 
         } catch (ex) {
-          console.error(`[Products Media]: '${tmpMedia.url}' for product '${product.name}' id '${dto.id}' error: `, ex.response.status);
-          console.error(this.buildErrorMessage(ex.response.data));
+          console.error(`[Products Media]: '${tmpMedia.url}' for product '${product.name}' id '${dto.id}' error: `, ex.response ? ex.response.status : ex);
+          console.error(this.buildErrorMessage(ex.response && ex.response.data));
         }
       }
 
-      variantDto.fullDescription = product.description.replace(new RegExp(/(\<span\>\<\/span\>)|(\<span\> \<\/span\>)/, 'g'), '') || '';
+      variantDto.fullDescription = product.description && product.description.replace(new RegExp(/(\<span\>\<\/span\>)|(\<span\> \<\/span\>)/, 'g'), '') || '';
       variantDto.shortDescription = stripHtmlTags(product.short_description || '');
 
       const regex = new RegExp(/{{media url=&quot;(.+?)&quot;}}/, 'g');
@@ -380,8 +380,8 @@ export class Migrate {
 
         } catch (ex) {
           console.dir({ urlPart, str });
-          console.error(`[WYSIWYG Media]: '${urlPart}' for product '${product.name}' id '${dto.id}' error: `, ex.response.status);
-          console.error(this.buildErrorMessage(ex.response.data));
+          console.error(`[WYSIWYG Media]: '${urlPart}' for product '${product.name}' id '${dto.id}' error: `, ex.response ? ex.response.status : ex);
+          console.error(this.buildErrorMessage(ex.response && ex.response.data));
         }
       } while (regex.lastIndex !== 0);
 
@@ -421,15 +421,15 @@ export class Migrate {
           dto,
           {
             params: { migrate: true },
-            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); } }
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
           }
         );
         console.log(`[Products]: Migrated id`, dto.id, `- '${dto.name}'`);
 
         count++;
       } catch (ex) {
-        console.error(`[Products ERROR]: '${dto.id}': `, ex.response.status);
-        console.error(this.buildErrorMessage(ex.response.data));
+        console.error(`[Products ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
         console.log(dto.variants[0].medias);
@@ -537,8 +537,8 @@ export class Migrate {
 
         count++;
       } catch (ex) {
-        console.error(`[Customers ERROR]: '${dto.id}': `, ex.response.status);
-        console.error(this.buildErrorMessage(ex.response.data));
+        console.error(`[Customers ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
       }
@@ -650,8 +650,8 @@ export class Migrate {
               dto.items.push(orderItem);
 
             } else {
-              console.error(`[Order Items ERROR]: '${dto.id}': `, ex.response.status);
-              console.error(this.buildErrorMessage(ex.response.data));
+              console.error(`[Order Items ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
+              console.error(this.buildErrorMessage(ex.response && ex.response.data));
             }
           }
         }
@@ -691,8 +691,8 @@ export class Migrate {
 
         count++;
       } catch (ex) {
-        console.error(`[Orders ERROR]: '${dto.id}': `, ex.response.status);
-        console.error(this.buildErrorMessage(ex.response.data));
+        console.error(`[Orders ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
       }
@@ -747,8 +747,8 @@ export class Migrate {
 
         count++;
       } catch (ex) {
-        console.error(`[Store Reviews ERROR]: '${dto.id}': `, ex.response.status);
-        console.error(this.buildErrorMessage(ex.response.data));
+        console.error(`[Store Reviews ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
       }
@@ -805,8 +805,8 @@ export class Migrate {
 
         count++;
       } catch (ex) {
-        console.error(`[Product Reviews ERROR]: '${dto.id}': `, ex.response.status);
-        console.error(this.buildErrorMessage(ex.response.data));
+        console.error(`[Product Reviews ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
         console.log(dto);
       }
@@ -858,6 +858,7 @@ export class Migrate {
   private buildErrorMessage(response: any): string {
     const errors: string[] = [];
 
+    if (!response) { return 'Cannot build error'; }
     if (typeof response.message === 'string') {
       errors.push(`${response.error}: ${response.message}`);
 

@@ -43,7 +43,7 @@ export class Customer {
   @prop({ index: true, unique: true, default: '' })
   email: string;
 
-  @prop({ index: true, unique: true, default: '' })
+  @prop({ index: true, default: '' })
   phoneNumber: string;
 
   @prop({ default: null })

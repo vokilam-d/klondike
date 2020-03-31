@@ -1,6 +1,5 @@
 ### Build stage
 FROM node:12-alpine
-ENV TZ 'Europe/Kiev'
 
 RUN apk add --no-cache \
       chromium \
@@ -11,8 +10,8 @@ RUN apk add --no-cache \
       ca-certificates \
       ttf-freefont
 
-RUN apk add --no-cache curl
 
+ENV TZ 'Europe/Kiev'
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 WORKDIR /app
