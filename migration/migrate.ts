@@ -31,6 +31,16 @@ export class Migrate {
    */
   private models: string | any[];
 
+  failedReqs = {
+    categories: [],
+    attributes: [],
+    products: [],
+    customers: [],
+    orders: [],
+    storeReviews: [],
+    productReviews: []
+  };
+
   /**
    * Directory where data is saved in json format. File names correspond to MySQL table names
    *
@@ -172,6 +182,7 @@ export class Migrate {
         console.log(`[Categories]: Migrated id`, dto.id, `- '${dto.name}'`);
         count++;
       } catch (ex) {
+        this.failedReqs.categories.push(dto.id);
         console.error(`[Categories ERROR]: '${dto.id}' '${dto.name}': `, ex.response ? ex.response.status : ex);
         console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
@@ -236,6 +247,7 @@ export class Migrate {
         console.log(`[ProductAttributes]: Migrated id`, dto.id, `- '${dto.label}'`);
         count++;
       } catch (ex) {
+        this.failedReqs.attributes.push(dto.id);
         console.error(`[ProductAttributes ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
         console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
@@ -428,6 +440,7 @@ export class Migrate {
 
         count++;
       } catch (ex) {
+        this.failedReqs.products.push(dto.id);
         console.error(`[Products ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
         console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
@@ -537,6 +550,7 @@ export class Migrate {
 
         count++;
       } catch (ex) {
+        this.failedReqs.customers.push(dto.id);
         console.error(`[Customers ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
         console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
@@ -691,6 +705,7 @@ export class Migrate {
 
         count++;
       } catch (ex) {
+        this.failedReqs.orders.push(dto.id);
         console.error(`[Orders ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
         console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
@@ -747,6 +762,7 @@ export class Migrate {
 
         count++;
       } catch (ex) {
+        this.failedReqs.storeReviews.push(dto.id);
         console.error(`[Store Reviews ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
         console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);
@@ -805,6 +821,7 @@ export class Migrate {
 
         count++;
       } catch (ex) {
+        this.failedReqs.productReviews.push(dto.id);
         console.error(`[Product Reviews ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
         console.error(this.buildErrorMessage(ex.response && ex.response.data));
         console.log(`'${dto.id}' dto: `);

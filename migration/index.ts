@@ -27,6 +27,14 @@ async function migrate() {
   await migrate.updateCounter('product-reviews');
 
   console.log(`.\n.\n***     Finish migrating from Magento MySQL to MongoDB. It took: ${Math.floor(process.uptime() / 60)}m ${Math.floor(process.uptime() % 60)}s.    ***\n.\n.\n.`);
+
+  Object.keys(migrate.failedReqs).forEach(entity => {
+    const failedArr = migrate.failedReqs[entity];
+    if (!failedArr.length) { return; }
+
+    console.log(`Failed '${entity}' ids: ${failedArr.join(', ')}`);
+  });
+
   process.exit();
 }
 
