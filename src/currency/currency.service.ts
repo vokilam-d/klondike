@@ -36,7 +36,7 @@ export class CurrencyService {
     return currencies.map(currency => currency.toJSON());
   }
 
-  @PrimaryInstanceCron(CronExpression.EVERY_5_SECONDS)
+  @PrimaryInstanceCron(CronExpression.EVERY_30_MINUTES)
   async updateExchangeRates(): Promise<Currency[]> {
     const currencies = await this.currencyModel.find().exec();
 
