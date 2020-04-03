@@ -97,7 +97,7 @@ export class MediaService {
       const isTmp = media.variantsUrls.original.includes('/tmp/');
       if (isTmp) {
         tmpMedias.push(media);
-        savedMedias.push(await this.processAndSaveTmp(media, mediaTypeDirName));
+        savedMedias.push(await this.processAndSave(media, mediaTypeDirName, true));
       } else {
         savedMedias.push(media);
       }
@@ -106,7 +106,7 @@ export class MediaService {
     return { tmpMedias, savedMedias };
   }
 
-  private async processAndSaveTmp(mediaDto: AdminMediaDto, mediaTypeDirName: string): Promise<Media> {
+  private async processAndSave(mediaDto: AdminMediaDto, mediaTypeDirName: string, isTmp: boolean): Promise<Media> {
     const media = new Media();
     media.altText = mediaDto.altText;
     media.isHidden = mediaDto.isHidden;
@@ -114,7 +114,9 @@ export class MediaService {
     media.dimensions = mediaDto.dimensions;
 
     const { base: tmpFileName } = parse(mediaDto.variantsUrls.original);
-    const pathToTmpFile = join(this.uploadDirName, this.tmpDirName, mediaTypeDirName, tmpFileName);
+    const pathToOldFile = isTmp
+      ? join(this.uploadDirName, this.tmpDirName, mediaTypeDirName, tmpFileName)
+      : join(this.uploadDirName, mediaTypeDirName, tmpFileName);
 
     const dir = join(this.uploadDirName, mediaTypeDirName);
     const fileNameToSave = await this.getUniqueFileName(dir, tmpFileName);
@@ -124,21 +126,29 @@ export class MediaService {
 
     for (const option of this.resizeOptions) {
       const fileName = option.variant === EMediaVariant.Original ? fileNameToSave : `${name}_${option.variant}${ext}`;
-      const pathToFile = join(dir, fileName);
-      const writeStream = fs.createWriteStream(pathToFile);
+      const pathToNewFile = join(dir, fileName);
+      const writeStream = fs.createWriteStream(pathToNewFile);
       const resizeStream = sharp()
         .resize(option.maxDimension, option.maxDimension, { fit: 'inside' })
         .jpeg({ progressive: true });
-      const readStream = fs.createReadStream(pathToTmpFile, { autoClose: false });
+      const readStream = fs.createReadStream(pathToOldFile, { autoClose: false });
 
       await pipeline(readStream, resizeStream, writeStream);
 
-      media.variantsUrls[option.variant] = `/${pathToFile}`;
+      media.variantsUrls[option.variant] = `/${pathToNewFile}`;
     }
 
     this.logger.log(`Saved image '${fileNameToSave}' in directory '${dir}'.`);
 
     return media;
+  }
+
+  async duplicateSavedMedias(medias: Media[], mediaTypeDirName: string): Promise<Media[]> {
+    const duplicated: Media[] = [];
+    for (const media of medias) {
+      duplicated.push(await this.processAndSave(media, mediaTypeDirName, false));
+    }
+    return duplicated;
   }
 
   async deleteTmpMedias(mediaDtos: AdminMediaDto[], mediaTypeDirName: string) {
@@ -181,13 +191,20 @@ export class MediaService {
       fileName = `${name}_${iteration}${ext}`;
     }
 
-    const pathToFile = join(dir, fileName);
-    try {
-      await fs.promises.access(pathToFile, fs.constants.F_OK); // throws if file doesn't exist
-    } catch (e) {
+    const exists = await this.doesFileExist(join(dir, fileName));
+    if (exists) {
+      return await this.getUniqueFileName(dir, originalFileName, ++iteration);
+    } else {
       return fileName;
     }
+  }
 
-    return await this.getUniqueFileName(dir, originalFileName, ++iteration);
+  private async doesFileExist(pathToFile): Promise<boolean> {
+    try {
+      await fs.promises.access(pathToFile, fs.constants.F_OK); // throws if file doesn't exist
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

@@ -252,7 +252,7 @@ export class ProductService implements OnApplicationBootstrap {
     session.startTransaction();
 
     try {
-      const tmpMedias: AdminMediaDto[] = [];
+      const tmpMediasToDelete: AdminMediaDto[] = [];
 
       const newProductModel = new this.productModel(productDto);
       if (!migrate) {
@@ -262,10 +262,10 @@ export class ProductService implements OnApplicationBootstrap {
 
       for (const dtoVariant of productDto.variants) {
         const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
-        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(dtoVariant.medias, Product.collectionName);
+        const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(dtoVariant.medias, Product.collectionName);
 
-        savedVariant.medias = savedMedias;
-        tmpMedias.push(...checkedTmpMedias);
+        tmpMediasToDelete.push(...tmpMedias);
+        savedVariant.medias = await this.mediaService.duplicateSavedMedias(savedMedias, Product.collectionName);
 
         await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qty, session);
         await this.createProductPageRegistry(dtoVariant.slug, session);
@@ -280,7 +280,7 @@ export class ProductService implements OnApplicationBootstrap {
       await session.commitTransaction();
 
       this.updateCachedProductCount();
-      await this.mediaService.deleteTmpMedias(tmpMedias, Product.collectionName);
+      await this.mediaService.deleteTmpMedias(tmpMediasToDelete, Product.collectionName);
 
       const converted = newProductModel.toJSON();
       converted.variants.forEach(variant => {
@@ -308,7 +308,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     try {
       const mediasToDelete: Media[] = [];
-      const tmpMedias: AdminMediaDto[] = [];
+      const tmpMediasToDelete: AdminMediaDto[] = [];
 
       const variantsToUpdate: AdminProductVariantDto[] = [];
       const variantsToAdd: AdminProductVariantDto[] = [];
@@ -321,9 +321,9 @@ export class ProductService implements OnApplicationBootstrap {
       });
 
       for (const variantDto of variantsToAdd) {
-        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(variantDto.medias, Product.collectionName);
+        const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(variantDto.medias, Product.collectionName);
         variantDto.medias = savedMedias;
-        tmpMedias.push(...checkedTmpMedias);
+        tmpMediasToDelete.push(...tmpMedias);
 
         await this.inventoryService.createInventory(variantDto.sku, found.id, variantDto.qty, session);
         await this.createProductPageRegistry(variantDto.slug, session);
@@ -347,7 +347,7 @@ export class ProductService implements OnApplicationBootstrap {
 
         const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(variantInDto.medias, Product.collectionName);
         variantInDto.medias = savedMedias;
-        tmpMedias.push(...checkedTmpMedias);
+        tmpMediasToDelete.push(...checkedTmpMedias);
 
         if (variant.slug !== variantInDto.slug) {
           await this.updateProductPageRegistry(variant.slug, variantInDto.slug, session);
@@ -369,7 +369,7 @@ export class ProductService implements OnApplicationBootstrap {
       await session.commitTransaction();
 
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
-      await this.mediaService.deleteTmpMedias(tmpMedias, Product.collectionName);
+      await this.mediaService.deleteTmpMedias(tmpMediasToDelete, Product.collectionName);
 
       const converted = found.toJSON();
       converted.variants.forEach(variant => {
