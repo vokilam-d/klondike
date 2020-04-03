@@ -18,11 +18,15 @@ export class PdfGeneratorService {
     const htmlFile = fs.readFileSync(this.orderHtmlPath, 'utf8');
     const html = handlebars.compile(htmlFile)(this.buildTemplateContextForOrder(order));
 
-    const browser = await puppeteer.launch({
+    const launchOptions: puppeteer.LaunchOptions = {
       headless: true,
-      ...(isInDocker() ? { executablePath: '/usr/bin/chromium-browser' } : {}),
       args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox']
-    });
+    };
+    if (isInDocker()) {
+      launchOptions.executablePath = '/usr/bin/chromium-browser';
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
     const [page] = await browser.pages();
 
     await page.setContent(html);
