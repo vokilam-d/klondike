@@ -7,7 +7,7 @@ import {
   Param,
   Post,
   Put,
-  Query,
+  Query, UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe
@@ -17,7 +17,9 @@ import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } f
 import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
+import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 
+@UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('admin/attributes')

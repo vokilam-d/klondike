@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ShippingMethodService } from './shipping-method.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
 import { plainToClass } from 'class-transformer';
+import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 
+@UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/shipping-method')
 export class AdminShippingMethodController {

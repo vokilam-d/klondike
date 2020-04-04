@@ -1,8 +1,10 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Res, UseGuards } from '@nestjs/common';
 import { GoogleShoppingFeedService } from './google-shopping-feed.service';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
+import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 
+@UseGuards(UserJwtGuard)
 @Controller('admin/google')
 export class AdminGoogleController {
 

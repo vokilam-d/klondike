@@ -1,9 +1,11 @@
-import { Body, Controller, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
 import { OrderItemService } from '../order-item.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminCreateOrderItemDto } from '../../shared/dtos/admin/create-order-item.dto';
+import { UserJwtGuard } from '../../auth/services/guards/user-jwt.guard';
 
+@UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/order-items')
 export class AdminOrderItemController {

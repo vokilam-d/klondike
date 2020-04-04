@@ -1,8 +1,10 @@
-import { Controller, Post, Request, Response } from '@nestjs/common';
+import { Controller, Post, Request, Response, UseGuards } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { WysiwygService } from './wysiwyg.service';
+import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 
+@UseGuards(UserJwtGuard)
 @Controller('admin/wysiwyg')
 export class WysiwygController {
 

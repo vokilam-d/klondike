@@ -7,7 +7,7 @@ import {
   Param,
   Post,
   Put,
-  Query,
+  Query, UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe
@@ -17,7 +17,9 @@ import { AdminAddOrUpdateCategoryDto, AdminResponseCategoryDto } from '../shared
 import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
+import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 
+@UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('admin/categories')

@@ -9,7 +9,7 @@ import {
   Put,
   Query,
   Request,
-  Response,
+  Response, UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe
@@ -23,7 +23,9 @@ import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
+import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 
+@UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('admin/products')

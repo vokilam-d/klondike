@@ -53,7 +53,7 @@ export class UserController {
     };
   }
 
-  // @UseGuards(UserJwtGuard)
+  @UseGuards(UserJwtGuard)
   @Post()
   async addNewUser(@Body() addUserDto: AddOrUpdateUserDto): Promise<ResponseDto<UserDto>> {
     const newUser = await this.userService.addNewUser(addUserDto);
@@ -80,7 +80,7 @@ export class UserController {
     return this.authService.logoutUser(res);
   }
 
-  // @UseGuards(UserJwtGuard)
+  @UseGuards(UserJwtGuard)
   @Put(':id')
   async updateUser(@Param('id') id: string, @Body() updateUserDto: AddOrUpdateUserDto): Promise<ResponseDto<UserDto>> {
     const updated = await this.userService.updateUser(id, updateUserDto);
@@ -90,7 +90,7 @@ export class UserController {
     };
   }
 
-  // @UseGuards(UserJwtGuard)
+  @UseGuards(UserJwtGuard)
   @Delete(':id')
   async deleteUser(@Param('id') id: string): Promise<ResponseDto<UserDto>> {
     const updated = await this.userService.deleteUser(id);

@@ -1,7 +1,9 @@
-import { BadRequestException, Body, Controller, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { OrderService } from '../order/order.service';
+import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 
+@UseGuards(UserJwtGuard)
 @Controller('admin/email-test')
 export class AdminEmailController {
 
