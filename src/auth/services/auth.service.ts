@@ -114,9 +114,17 @@ export class AuthService {
     return;
   }
 
-  logout(res: FastifyReply<ServerResponse>) {
+  logoutCustomer(res: FastifyReply<ServerResponse>) {
+    this.logout(res, authConstants.JWT_COOKIE_NAME);
+  }
+
+  logoutUser(res: FastifyReply<ServerResponse>) {
+    this.logout(res, authConstants.JWT_ADMIN_COOKIE_NAME);
+  }
+
+  private logout(res: FastifyReply<ServerResponse>, cookieName) {
     res
-      .clearCookie(authConstants.JWT_COOKIE_NAME)
+      .clearCookie(cookieName)
       .send();
   }
 

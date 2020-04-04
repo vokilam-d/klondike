@@ -106,7 +106,7 @@ export class ClientCustomerController {
 
   @Post('logout')
   async logout(@Res() res: FastifyReply<ServerResponse>) {
-    return this.authService.logout(res);
+    return this.authService.logoutCustomer(res);
   }
 
   @UseGuards(CustomerJwtGuard)

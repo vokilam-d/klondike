@@ -32,7 +32,7 @@ export class UserController {
               private readonly authService: AuthService) {
   }
 
-  // @UseGuards(UserJwtGuard)
+  @UseGuards(UserJwtGuard)
   @Get()
   async getUser(@Req() req): Promise<ResponseDto<UserDto>> {
     const user: DocumentType<User> = await this.authService.getUserFromReq(req);
@@ -66,7 +66,7 @@ export class UserController {
   /**
    * @returns ResponseDto<UserDto>
    */
-  // @UseGuards(UserLocalGuard)
+  @UseGuards(UserLocalGuard)
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Req() req, @Res() res: FastifyReply<ServerResponse>) {
     const user: DocumentType<User> = req.user;
@@ -77,7 +77,7 @@ export class UserController {
 
   @Post('logout')
   async logout(@Res() res: FastifyReply<ServerResponse>) {
-    return this.authService.logout(res);
+    return this.authService.logoutUser(res);
   }
 
   // @UseGuards(UserJwtGuard)
