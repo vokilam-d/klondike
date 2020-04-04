@@ -12,6 +12,9 @@ import { ResetPasswordService } from './reset-password.service';
 import { ConfirmEmailService } from './confirm-email.service';
 import { EncryptorService } from '../../shared/services/encryptor/encryptor.service';
 import { DocumentType } from '@typegoose/typegoose';
+import { User } from '../../user/models/user.model';
+import { UserService } from '../../user/user.service';
+import { UserDto } from '../../shared/dtos/admin/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +22,7 @@ export class AuthService {
   private logger = new Logger(AuthService.name);
 
   constructor(@Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
+              private readonly userService: UserService,
               private readonly resetPasswordService: ResetPasswordService,
               private readonly confirmEmailService: ConfirmEmailService,
               private readonly encryptor: EncryptorService,
@@ -27,7 +31,18 @@ export class AuthService {
   }
 
   async getCustomerFromReq(req: FastifyRequest): Promise<DocumentType<Customer> | undefined> {
-    const jwt = req.cookies[authConstants.JWT_COOKIE_NAME];
+    const id = await this.getEntityIdFromReq(req, authConstants.JWT_COOKIE_NAME);
+    const customer = await this.customerService.getCustomerById(+id, false);
+    return customer as DocumentType<Customer>;
+  }
+
+  async getUserFromReq(req: FastifyRequest): Promise<DocumentType<User> | undefined> {
+    const id = await this.getEntityIdFromReq(req, authConstants.JWT_ADMIN_COOKIE_NAME);
+    return this.userService.getUserById(id);
+  }
+
+  private async getEntityIdFromReq(req: FastifyRequest, cookieName: string): Promise<string | undefined> {
+    const jwt = req.cookies[cookieName];
     if (!jwt) { return; }
 
     let payload;
@@ -39,8 +54,7 @@ export class AuthService {
 
     if (!payload || !payload.sub) { return; }
 
-    const customer = await this.customerService.getCustomerById(payload.sub, false);
-    return customer as DocumentType<Customer>;
+    return payload.sub
   }
 
   async createCustomerEmailConfirmToken(customer: Customer): Promise<string> {
@@ -49,14 +63,22 @@ export class AuthService {
   }
 
   async loginCustomer(customerDto: ClientCustomerDto, res: FastifyReply<ServerResponse>) {
-    const payload = { sub: customerDto.id };
+    return this.login(customerDto, res, authConstants.JWT_COOKIE_NAME);
+  }
+
+  async loginUser(userDto: UserDto, res: FastifyReply<ServerResponse>) {
+    return this.login(userDto, res, authConstants.JWT_ADMIN_COOKIE_NAME);
+  }
+
+  async login<T>(entity: T & { id: any; }, res: FastifyReply<ServerResponse>, cookieName: string) {
+    const payload = { sub: entity.id };
     const jwt = await this.jwtService.signAsync(payload);
-    const returnValue: ResponseDto<ClientCustomerDto> = {
-      data: customerDto
+    const returnValue: ResponseDto<T> = {
+      data: entity
     };
 
     res
-      .setCookie(authConstants.JWT_COOKIE_NAME, jwt, this.getCookieOptions() as any)
+      .setCookie(cookieName, jwt, this.getCookieOptions() as any)
       .send(returnValue);
   }
 
@@ -73,6 +95,16 @@ export class AuthService {
     if (!isValidPassword) { return null; }
 
     return customer;
+  }
+
+  async validateUser(login: string, password: string): Promise<User | null> {
+    const user = await this.userService.getUserByLogin(login);
+    if (!user) { return null; }
+
+    const isValidPassword = await this.encryptor.validatePassword(password, user.password);
+    if (!isValidPassword) { return null; }
+
+    return user;
   }
 
   async initResetCustomerPassword(customer: Customer) {

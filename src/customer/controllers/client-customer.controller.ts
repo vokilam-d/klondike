@@ -2,8 +2,11 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
-  Get, Param, Patch,
-  Post, Put,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
   Req,
   Res,
   UseGuards,
@@ -16,8 +19,6 @@ import { ClientRegisterDto } from '../../shared/dtos/client/register.dto';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { LoginDto } from '../../shared/dtos/shared-dtos/login.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { authConstants } from '../../auth/auth-constants';
 import { Customer } from '../models/customer.model';
 import { plainToClass } from 'class-transformer';
 import { ClientCustomerDto } from '../../shared/dtos/client/customer.dto';
@@ -29,6 +30,8 @@ import { ClientUpdateCustomerDto } from '../../shared/dtos/client/update-custome
 import { DocumentType } from '@typegoose/typegoose';
 import { ClientUpdatePasswordDto } from '../../shared/dtos/client/update-password.dto';
 import { ShippingAddressDto } from '../../shared/dtos/shared-dtos/shipping-address.dto';
+import { CustomerJwtGuard } from '../../auth/services/guards/customer-jwt.guard';
+import { CustomerLocalGuard } from '../../auth/services/guards/customer-local.guard';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -40,7 +43,7 @@ export class ClientCustomerController {
   }
 
   @Get()
-  async getInfo(@Req() req): Promise<ResponseDto<ClientCustomerDto | undefined>> {
+  async getInfo(@Req() req): Promise<ResponseDto<ClientCustomerDto | null>> {
     const customer: Customer = await this.authService.getCustomerFromReq(req);
     const dto = customer ? plainToClass(ClientCustomerDto, customer, { excludeExtraneousValues: true }) : null;
 
@@ -49,7 +52,7 @@ export class ClientCustomerController {
     };
   }
 
-  @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))
+  @UseGuards(CustomerJwtGuard)
   @Get('details')
   async getAccount(@Req() req): Promise<ResponseDto<ClientDetailedCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
@@ -62,7 +65,7 @@ export class ClientCustomerController {
   /**
    * @returns ResponseDto<ClientCustomerDto>
    */
-  @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))
+  @UseGuards(CustomerJwtGuard)
   @Post('password')
   async updatePassword(@Req() req, @Body() dto: ClientUpdatePasswordDto, @Res() res: FastifyReply<ServerResponse>) {
     const customer: DocumentType<Customer> = req.user;
@@ -86,7 +89,7 @@ export class ClientCustomerController {
   /**
    * @returns ResponseDto<ClientCustomerDto>
    */
-  @UseGuards(AuthGuard(authConstants.CUSTOMER_LOCAL_STRATEGY_NAME))
+  @UseGuards(CustomerLocalGuard)
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Req() req, @Res() res: FastifyReply<ServerResponse>) {
     const customer: DocumentType<Customer> = req.user;
@@ -106,7 +109,7 @@ export class ClientCustomerController {
     return this.authService.logout(res);
   }
 
-  @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))
+  @UseGuards(CustomerJwtGuard)
   @Post('send-confirm-email')
   async sendEmailConfirmationEmail(@Req() req): Promise<ResponseDto<boolean>> {
     const customer: DocumentType<Customer> = req.user;
@@ -115,7 +118,7 @@ export class ClientCustomerController {
     return { data: true };
   }
 
-  @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))
+  @UseGuards(CustomerJwtGuard)
   @Post('address')
   async addShippingAddress(@Req() req, @Body() addressDto: ShippingAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
@@ -126,7 +129,7 @@ export class ClientCustomerController {
     };
   }
 
-  @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))
+  @UseGuards(CustomerJwtGuard)
   @Put('address/:id')
   async editShippingAddress(@Req() req, @Param('id') addressId: string, @Body() addressDto: ShippingAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
@@ -137,7 +140,7 @@ export class ClientCustomerController {
     };
   }
 
-  @UseGuards(AuthGuard(authConstants.CUSTOMER_JWT_STRATEGY_NAME))
+  @UseGuards(CustomerJwtGuard)
   @Patch()
   async updateCustomer(@Req() req, @Body() dto: ClientUpdateCustomerDto): Promise<ResponseDto<ClientCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;

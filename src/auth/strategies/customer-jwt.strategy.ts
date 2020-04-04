@@ -18,7 +18,7 @@ export class CustomerJwtStrategy extends PassportStrategy(Strategy, authConstant
         }
         return token;
       },
-      ignignoreExpiration: false,
+      ignoreExpiration: false,
       secretOrKey: authConstants.JWT_SECRET
     });
   }
