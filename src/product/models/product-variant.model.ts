@@ -36,11 +36,17 @@ export class ProductVariant {
   @prop({ default: 0 })
   price: number;
 
+  @prop({ default: null })
+  oldPrice: number;
+
   @prop({ default: ECurrencyCode.UAH })
   currency: ECurrencyCode;
 
   @prop({ default: 0 })
   priceInDefaultCurrency: number;
+
+  @prop({ default: null })
+  oldPriceInDefaultCurrency: number;
 
   @arrayProp({ items: Media, default: [] })
   medias: Media[];

@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { Product } from './models/product.model';
-import { ReturnModelType } from '@typegoose/typegoose';
+import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { InventoryService } from '../inventory/inventory.service';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { InjectModel } from '@nestjs/mongoose';
@@ -45,6 +45,7 @@ import { ClientMediaDto } from '../shared/dtos/client/media.dto';
 import { MetaTagsDto } from '../shared/dtos/shared-dtos/meta-tags.dto';
 import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
 import { areArraysEqual } from '../shared/helpers/are-arrays-equal.function';
+import { CurrencyService } from '../currency/currency.service';
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
@@ -53,17 +54,19 @@ export class ProductService implements OnApplicationBootstrap {
   private cachedProductCount: number;
 
   constructor(@InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
+              @Inject(forwardRef(() => ProductReviewService)) private readonly productReviewService: ProductReviewService,
+              @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
               private readonly inventoryService: InventoryService,
               private readonly counterService: CounterService,
               private readonly mediaService: MediaService,
+              private readonly currencyService: CurrencyService,
               private readonly attributeService: AttributeService,
               private readonly searchService: SearchService,
-              @Inject(forwardRef(() => ProductReviewService)) private readonly productReviewService: ProductReviewService,
-              @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
               private readonly pageRegistryService: PageRegistryService) {
   }
 
   onApplicationBootstrap(): any {
+    this.handleCurrencyUpdates();
     this.searchService.ensureCollection(Product.collectionName, new ElasticProductModel());
     // this.reindexAllSearchData();
   }
@@ -290,6 +293,7 @@ export class ProductService implements OnApplicationBootstrap {
         newProductModel.isEnabled = false;
       }
 
+      await this.setProductPrices(newProductModel);
       await newProductModel.save({ session });
       const productWithQty = this.transformToProductWithQty(newProductModel.toJSON(), inventories);
       await this.addSearchData(productWithQty);
@@ -378,6 +382,7 @@ export class ProductService implements OnApplicationBootstrap {
         found.isEnabled = false;
       }
 
+      await this.setProductPrices(found);
       await found.save({ session });
       const productWithQty = this.transformToProductWithQty(found.toJSON(), inventories);
       await this.updateSearchData(productWithQty);
@@ -675,8 +680,10 @@ export class ProductService implements OnApplicationBootstrap {
           attributes: variant.attributes,
           sku: variant.sku,
           price: variant.price,
+          oldPrice: variant.oldPrice,
           currency: variant.currency,
           priceInDefaultCurrency: variant.priceInDefaultCurrency,
+          oldPriceInDefaultCurrency: variant.oldPriceInDefaultCurrency,
           qtyInStock: variant.qtyInStock,
           sellableQty: variant.qtyInStock - variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)
         });
@@ -745,6 +752,7 @@ export class ProductService implements OnApplicationBootstrap {
         isInStock: variant.sellableQty > 0,
         name: variant.name,
         price: variant.priceInDefaultCurrency,
+        oldPrice: variant.oldPriceInDefaultCurrency,
         slug: variant.slug,
         variantGroups,
         mediaUrl: variant.mediaUrl,
@@ -846,5 +854,61 @@ export class ProductService implements OnApplicationBootstrap {
       await this.searchService.addDocument(Product.collectionName, listItem.id, listItem);
       console.log('Reindexed document with id', listItem.id);
     }
+  }
+
+  private async setProductPrices(product: DocumentType<Product>): Promise<DocumentType<Product>> {
+    const exchangeRate = await this.currencyService.getExchangeRate(product.variants[0].currency);
+
+    for (const variant of product.variants) {
+      variant.priceInDefaultCurrency = Math.ceil(variant.price * exchangeRate);
+      if (variant.oldPrice) {
+        variant.oldPriceInDefaultCurrency = Math.ceil(variant.oldPrice * exchangeRate);
+      }
+    }
+
+    return product;
+  }
+
+  private handleCurrencyUpdates() {
+    const variantsProp: keyof Product = 'variants';
+    const currencyProp: keyof ProductVariant = 'currency';
+    const priceProp: keyof ProductVariant = 'price';
+    const defaultPriceProp: keyof ProductVariant = 'priceInDefaultCurrency';
+    const oldPriceProp: keyof ProductVariant = 'oldPrice';
+    const defaultOldPriceProp: keyof ProductVariant = 'oldPriceInDefaultCurrency';
+
+    this.currencyService.echangeRatesUpdated$.subscribe(currencies => {
+      for (const currency of currencies) {
+        this.productModel.updateMany(
+          { [`${variantsProp}.${currencyProp}`]: currency._id },
+          [
+            {
+              $addFields: {
+                [variantsProp]: {
+                  $map: {
+                    input: `$${variantsProp}`,
+                    in: {
+                      $mergeObjects: [
+                        '$$this',
+                        {
+                          [defaultPriceProp]: {
+                            $ceil: { $multiply: [`$$this.${priceProp}`, currency.exchangeRate] }
+                          }
+                        },
+                        {
+                          [defaultOldPriceProp]: {
+                            $ceil: { $multiply: [`$$this.${oldPriceProp}`, currency.exchangeRate] }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+          ]
+        ).exec();
+      }
+    });
   }
 }

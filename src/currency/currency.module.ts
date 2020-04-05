@@ -16,6 +16,7 @@ const currencyModel = {
     HttpModule
   ],
   controllers: [AdminCurrencyController],
-  providers: [CurrencyService]
+  providers: [CurrencyService],
+  exports: [CurrencyService]
 })
 export class CurrencyModule {}

@@ -9,6 +9,7 @@ import { AdminProductController } from './admin-product.controller';
 import { ProductReviewModule } from '../reviews/product-review/product-review.module';
 import { CategoryModule } from '../category/category.module';
 import { AttributeModule } from '../attribute/attribute.module';
+import { CurrencyModule } from '../currency/currency.module';
 
 const productModel = {
   name: ProductModel.modelName,
@@ -22,6 +23,7 @@ const productModel = {
     InventoryModule,
     AttributeModule,
     PageRegistryModule,
+    CurrencyModule,
     forwardRef(() => ProductReviewModule),
     forwardRef(() => CategoryModule)
   ],

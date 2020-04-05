@@ -53,6 +53,12 @@ export class AdminProductVariantDto {
   price: number;
 
   @Expose()
+  @IsOptional()
+  @Transform(oldPrice => parseFloat(oldPrice))
+  @IsNumber()
+  oldPrice: number;
+
+  @Expose()
   @IsEnum(ECurrencyCode)
   currency: ECurrencyCode;
 
@@ -60,6 +66,11 @@ export class AdminProductVariantDto {
   @IsOptional()
   @IsNumber()
   priceInDefaultCurrency: number;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  oldPriceInDefaultCurrency: number;
 
   @Expose()
   @ValidateNested({ each: true })

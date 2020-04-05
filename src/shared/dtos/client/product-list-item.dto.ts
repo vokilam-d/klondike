@@ -48,6 +48,9 @@ export class ClientProductListItemDto implements PickedProduct, PickedVariant {
   price: number;
 
   @Expose()
+  oldPrice: number;
+
+  @Expose()
   isInStock: boolean;
 
   @Expose()
