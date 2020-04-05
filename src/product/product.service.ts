@@ -813,7 +813,7 @@ export class ProductService implements OnApplicationBootstrap {
     return {
       productId: productWithQty._id,
       variantId: variant._id.toString(),
-      isInStock: variant.qtyInStock > 0,
+      isInStock: variant.qtyInStock > variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0),
       categories,
       variantGroups,
       characteristics,
