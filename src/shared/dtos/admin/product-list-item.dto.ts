@@ -10,7 +10,8 @@ export class AdminProductListItemDto {
   name: string;
   skus: string;
   prices: string;
-  quantities: string;
+  quantitiesInStock: string;
+  sellableQuantities: string;
   sortOrder: number;
   reviewsCount: number;
   reviewsAvgRating: number;

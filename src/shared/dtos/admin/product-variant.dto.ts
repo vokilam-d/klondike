@@ -5,6 +5,7 @@ import { AdminProductSelectedAttributeDto } from './product-selected-attribute.d
 import { transliterate } from '../../helpers/transliterate.function';
 import { ECurrencyCode } from '../../enums/currency.enum';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
+import { ProductVariantWithQty } from '../../../product/models/product-with-qty.model';
 
 export class AdminProductVariantDto {
   @Exclude()
@@ -78,9 +79,13 @@ export class AdminProductVariantDto {
   metaTags: MetaTagsDto;
 
   @Expose()
-  @Transform(price => parseFloat(price))
+  @Transform((price, obj: ProductVariantWithQty) => price ? parseFloat(price) : obj.qtyInStock)
   @IsNumber()
-  qty: number;
+  qtyInStock: number;
+
+  @Expose()
+  @Transform((price, obj: ProductVariantWithQty) => obj?.qtyInStock - obj?.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0))
+  sellableQty: number;
 
   @Expose()
   @IsBoolean()

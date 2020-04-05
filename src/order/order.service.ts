@@ -205,8 +205,8 @@ export class OrderService implements OnApplicationBootstrap {
           throw new BadRequestException(`Product with sku '${item.sku}' not found`);
         }
 
-        if (variant.qty < item.qty) {
-          throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${item.qty}. In stock: ${variant.qty}`);
+        if (variant.qtyInStock < item.qty) {
+          throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${item.qty}. In stock: ${variant.qtyInStock}`);
         }
 
         await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);

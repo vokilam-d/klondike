@@ -13,7 +13,8 @@ export class ElasticProductVariantModel implements Record<keyof AdminProductVari
   slug = elasticTextType;
   price = elasticFloatType;
   priceInDefaultCurrency = elasticFloatType;
-  qty = elasticIntegerType;
+  qtyInStock = elasticIntegerType;
+  sellableQty = elasticIntegerType;
   sku = elasticAutocompleteType;
   attributes = {
     properties: new ElasticProductSelectedAttributeModel()

@@ -29,9 +29,17 @@ import { DEFAULT_CURRENCY } from '../shared/enums/currency.enum';
 import { ElasticProductModel } from './models/elastic-product.model';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { SortingPaginatingFilterDto } from '../shared/dtos/shared-dtos/spf.dto';
-import { ClientProductListItemDto, ClientProductVariantDto, ClientProductVariantGroupDto } from '../shared/dtos/client/product-list-item.dto';
+import {
+  ClientProductListItemDto,
+  ClientProductVariantDto,
+  ClientProductVariantGroupDto
+} from '../shared/dtos/client/product-list-item.dto';
 import { AttributeService } from '../attribute/attribute.service';
-import { ClientProductCategoryDto, ClientProductCharacteristic, ClientProductDto } from '../shared/dtos/client/product.dto';
+import {
+  ClientProductCategoryDto,
+  ClientProductCharacteristic,
+  ClientProductDto
+} from '../shared/dtos/client/product.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../shared/dtos/client/media.dto';
 import { MetaTagsDto } from '../shared/dtos/shared-dtos/meta-tags.dto';
@@ -116,7 +124,8 @@ export class ProductService implements OnApplicationBootstrap {
     const variantsProp = getPropertyOf<Product>('variants');
     const descProp = getPropertyOf<ProductVariant>('fullDescription');
     const skuProp = getPropertyOf<Inventory>('sku');
-    const qtyProp = getPropertyOf<Inventory>('qty');
+    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
+    const reservedProp: keyof Inventory = 'reserved';
 
     return this.productModel.aggregate()
       .unwind(variantsProp)
@@ -125,7 +134,7 @@ export class ProductService implements OnApplicationBootstrap {
         'let': { [variantsProp]: `$${variantsProp}` },
         'pipeline': [
           { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
-          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, { [reservedProp]: `$${reservedProp}` }, `$$${variantsProp}`] } }}
         ],
         'as': variantsProp
       })
@@ -141,7 +150,8 @@ export class ProductService implements OnApplicationBootstrap {
   async getProductWithQtyById(id: number): Promise<ProductWithQty> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
-    const qtyProp = getPropertyOf<Inventory>('qty');
+    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
+    const reservedProp: keyof Inventory = 'reserved';
 
     const [ found ] = await this.productModel.aggregate()
       .match({ _id: id })
@@ -151,7 +161,7 @@ export class ProductService implements OnApplicationBootstrap {
         'let': { [variantsProp]: `$${variantsProp}` },
         'pipeline': [
           { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
-          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, { [reservedProp]: `$${reservedProp}` }, `$$${variantsProp}`] } }}
         ],
         'as': variantsProp
       })
@@ -169,7 +179,8 @@ export class ProductService implements OnApplicationBootstrap {
   async getProductWithQtyBySku(sku: string): Promise<ProductWithQty> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
-    const qtyProp = getPropertyOf<Inventory>('qty');
+    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
+    const reservedProp: keyof Inventory = 'reserved';
 
     const [ found ] = await this.productModel.aggregate()
       .match({ [variantsProp + '.' + skuProp]: sku })
@@ -179,7 +190,7 @@ export class ProductService implements OnApplicationBootstrap {
         'let': { [variantsProp]: `$${variantsProp}` },
         'pipeline': [
           { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
-          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, { [reservedProp]: `$${reservedProp}` }, `$$${variantsProp}`] } }}
         ],
         'as': variantsProp
       })
@@ -197,7 +208,8 @@ export class ProductService implements OnApplicationBootstrap {
   async getProductsWithQtyBySkus(skus: string[]): Promise<ProductWithQty[]> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
-    const qtyProp = getPropertyOf<Inventory>('qty');
+    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
+    const reservedProp: keyof Inventory = 'reserved';
 
     const found = await this.productModel.aggregate()
       .match({ [variantsProp + '.' + skuProp]: { $in: skus } })
@@ -207,7 +219,7 @@ export class ProductService implements OnApplicationBootstrap {
         'let': { [variantsProp]: `$${variantsProp}` },
         'pipeline': [
           { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
-          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, { [reservedProp]: `$${reservedProp}` }, `$$${variantsProp}`] } }}
         ],
         'as': variantsProp
       })
@@ -222,7 +234,8 @@ export class ProductService implements OnApplicationBootstrap {
     const variantsProp = getPropertyOf<Product>('variants');
     const slugProp = getPropertyOf<ProductVariant>('slug');
     const skuProp = getPropertyOf<Inventory>('sku');
-    const qtyProp = getPropertyOf<Inventory>('qty');
+    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
+    const reservedProp: keyof Inventory = 'reserved';
 
     const [ found ] = await this.productModel.aggregate()
       .match({ [variantsProp + '.' + slugProp]: slug })
@@ -232,7 +245,7 @@ export class ProductService implements OnApplicationBootstrap {
         'let': { [variantsProp]: `$${variantsProp}` },
         'pipeline': [
           { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
-          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, `$$${variantsProp}`] } }}
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, { [reservedProp]: `$${reservedProp}` }, `$$${variantsProp}`] } }}
         ],
         'as': variantsProp
       })
@@ -253,6 +266,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     try {
       const tmpMediasToDelete: AdminMediaDto[] = [];
+      const inventories: Inventory[] = [];
 
       const newProductModel = new this.productModel(productDto);
       if (!migrate) {
@@ -267,7 +281,8 @@ export class ProductService implements OnApplicationBootstrap {
         tmpMediasToDelete.push(...tmpMedias);
         savedVariant.medias = await this.mediaService.duplicateSavedMedias(savedMedias, Product.collectionName);
 
-        await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qty, session);
+        const inventory = await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qtyInStock, session);
+        inventories.push(inventory.toJSON());
         await this.createProductPageRegistry(dtoVariant.slug, session);
       }
 
@@ -276,18 +291,14 @@ export class ProductService implements OnApplicationBootstrap {
       }
 
       await newProductModel.save({ session });
-      await this.addSearchData(newProductModel.toJSON(), productDto);
+      const productWithQty = this.transformToProductWithQty(newProductModel.toJSON(), inventories);
+      await this.addSearchData(productWithQty);
       await session.commitTransaction();
 
       this.updateCachedProductCount();
       await this.mediaService.deleteTmpMedias(tmpMediasToDelete, Product.collectionName);
 
-      const converted = newProductModel.toJSON();
-      converted.variants.forEach(variant => {
-        const variantDto = productDto.variants.find(variantDto => variantDto.sku === variantDto.sku);
-        variant.qty = variantDto.qty;
-      });
-      return converted;
+      return productWithQty;
 
     } catch (ex) {
       await session.abortTransaction();
@@ -309,6 +320,7 @@ export class ProductService implements OnApplicationBootstrap {
     try {
       const mediasToDelete: Media[] = [];
       const tmpMediasToDelete: AdminMediaDto[] = [];
+      const inventories: Inventory[] = [];
 
       const variantsToUpdate: AdminProductVariantDto[] = [];
       const variantsToAdd: AdminProductVariantDto[] = [];
@@ -325,8 +337,9 @@ export class ProductService implements OnApplicationBootstrap {
         variantDto.medias = savedMedias;
         tmpMediasToDelete.push(...tmpMedias);
 
-        await this.inventoryService.createInventory(variantDto.sku, found.id, variantDto.qty, session);
         await this.createProductPageRegistry(variantDto.slug, session);
+        const inventory = await this.inventoryService.createInventory(variantDto.sku, found.id, variantDto.qtyInStock, session);
+        inventories.push(inventory.toJSON());
       }
 
       for (const variant of found.variants) {
@@ -352,7 +365,8 @@ export class ProductService implements OnApplicationBootstrap {
         if (variant.slug !== variantInDto.slug) {
           await this.updateProductPageRegistry(variant.slug, variantInDto.slug, session);
         }
-        await this.inventoryService.updateInventory(variant.sku, variantInDto.sku, variantInDto.qty, session);
+        const inventory = await this.inventoryService.updateInventory(variant.sku, variantInDto.sku, variantInDto.qtyInStock, session);
+        inventories.push(inventory.toJSON());
       }
 
       if (!areArraysEqual(found.categoryIds, productDto.categoryIds)) {
@@ -365,18 +379,14 @@ export class ProductService implements OnApplicationBootstrap {
       }
 
       await found.save({ session });
-      await this.updateSearchData(found.toJSON(), productDto);
+      const productWithQty = this.transformToProductWithQty(found.toJSON(), inventories);
+      await this.updateSearchData(productWithQty);
       await session.commitTransaction();
 
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
       await this.mediaService.deleteTmpMedias(tmpMediasToDelete, Product.collectionName);
 
-      const converted = found.toJSON();
-      converted.variants.forEach(variant => {
-        const variantDto = productDto.variants.find(variantDto => variantDto.sku === variant.sku);
-        variant.qty = variantDto.qty;
-      });
-      return converted;
+      return productWithQty;
 
     } catch (ex) {
       await session.abortTransaction();
@@ -583,18 +593,14 @@ export class ProductService implements OnApplicationBootstrap {
     return breadcrumbsVariants[0] || [];
   }
 
-  private async addSearchData(product: Product, productDto: AdminAddOrUpdateProductDto) {
-    const productWithQty = this.transformToProductWithQty(product, productDto);
-
+  private async addSearchData(productWithQty: ProductWithQty) {
     const [ adminListItem ] = this.transformToAdminListDto([productWithQty]);
-    await this.searchService.addDocument(Product.collectionName, product.id, adminListItem);
+    await this.searchService.addDocument(Product.collectionName, productWithQty.id, adminListItem);
   }
 
-  private async updateSearchData(product: Product, productDto: AdminAddOrUpdateProductDto): Promise<any> {
-    const productWithQty = this.transformToProductWithQty(product, productDto);
-
+  private async updateSearchData(productWithQty: ProductWithQty): Promise<any> {
     const [ adminListItem ] = this.transformToAdminListDto([productWithQty]);
-    await this.searchService.updateDocument(Product.collectionName, product.id, adminListItem);
+    await this.searchService.updateDocument(Product.collectionName, productWithQty.id, adminListItem);
   }
 
   private async deleteSearchData(productId: number): Promise<any> {
@@ -611,17 +617,18 @@ export class ProductService implements OnApplicationBootstrap {
     );
   }
 
-  private transformToProductWithQty(product: Product, productDto: AdminAddOrUpdateProductDto): ProductWithQty {
+  private transformToProductWithQty(product: Product, inventories: Inventory[]): ProductWithQty {
     return {
       ...product,
       id: product._id,
       variants: product.variants.map(variant => {
-        const variantInDto = productDto.variants.find(v => variant.sku === v.sku);
+        const foundInventory = inventories.find(inventory => inventory.sku === variant.sku);
         return {
           ...variant,
           id: variant._id,
-          qty: variantInDto.qty
-        }
+          qtyInStock: foundInventory.qtyInStock,
+          reserved: foundInventory.reserved
+        };
       })
     }
   }
@@ -630,14 +637,16 @@ export class ProductService implements OnApplicationBootstrap {
     return products.map(product => {
       const skus: string[] = [];
       const prices: string[] = [];
-      const quantities: number[] = [];
+      const quantitiesInStock: number[] = [];
+      const sellableQuantities: number[] = [];
       const variants: AdminProductVariantListItem[] = [];
       let productMediaUrl: string = null;
 
       product.variants.forEach(variant => {
         skus.push(variant.sku);
         prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
-        quantities.push(variant.qty);
+        quantitiesInStock.push(variant.qtyInStock);
+        sellableQuantities.push(variant.qtyInStock - variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0));
 
         let primaryMediaUrl;
         let secondaryMediaUrl;
@@ -668,7 +677,8 @@ export class ProductService implements OnApplicationBootstrap {
           price: variant.price,
           currency: variant.currency,
           priceInDefaultCurrency: variant.priceInDefaultCurrency,
-          qty: variant.qty
+          qtyInStock: variant.qtyInStock,
+          sellableQty: variant.qtyInStock - variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)
         });
       });
 
@@ -680,7 +690,8 @@ export class ProductService implements OnApplicationBootstrap {
         isEnabled: product.isEnabled,
         skus: skus.join(', '),
         prices: prices.join(', '),
-        quantities: quantities.join(', '),
+        quantitiesInStock: quantitiesInStock.join(', '),
+        sellableQuantities: sellableQuantities.join(', '),
         mediaUrl: productMediaUrl,
         sortOrder: product.sortOrder,
         reviewsCount: product.reviewsCount,
@@ -731,7 +742,7 @@ export class ProductService implements OnApplicationBootstrap {
         productId: product.id,
         variantId: variant.id,
         sku: variant.sku,
-        isInStock: variant.qty > 0,
+        isInStock: variant.sellableQty > 0,
         name: variant.name,
         price: variant.priceInDefaultCurrency,
         slug: variant.slug,
@@ -802,7 +813,7 @@ export class ProductService implements OnApplicationBootstrap {
     return {
       productId: productWithQty._id,
       variantId: variant._id.toString(),
-      isInStock: variant.qty > 0,
+      isInStock: variant.qtyInStock > 0,
       categories,
       variantGroups,
       characteristics,

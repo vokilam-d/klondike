@@ -17,11 +17,8 @@ export class Product {
   @prop({ required: true })
   name: string;
 
-  /**
-   * @type Category.id
-   */
   @arrayProp({ items: Number })
-  categoryIds: number[];
+  categoryIds: Category['_id'][];
 
   @arrayProp({ items: Breadcrumb, _id: false })
   breadcrumbs: Breadcrumb[];

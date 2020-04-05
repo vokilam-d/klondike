@@ -13,7 +13,8 @@ export class ElasticProductModel implements Record<keyof AdminProductListItemDto
   mediaUrl = elasticTextType;
   name = elasticAutocompleteType;
   prices = elasticTextType;
-  quantities = elasticTextType;
+  quantitiesInStock = elasticTextType;
+  sellableQuantities = elasticTextType;
   skus = elasticTextType;
   sortOrder = elasticIntegerType;
   variants = {

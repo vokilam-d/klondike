@@ -4,7 +4,7 @@ import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { ClientSession } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
-import { OrderedInventory } from './models/ordered-inventory.model';
+import { ReservedInventory } from './models/reserved-inventory.model';
 
 @Injectable()
 export class InventoryService {
@@ -32,12 +32,12 @@ export class InventoryService {
 
     const found = await this.getInventory(oldSku, session);
 
-    const qtyInOrders = found.ordered.reduce((sum, ordered) => sum + ordered.qty, 0);
+    const qtyInOrders = found.reserved.reduce((sum, ordered) => sum + ordered.qty, 0);
     if (qtyInOrders > qty) {
       throw new ForbiddenException(`Cannot set quantity: more than '${qty}' items are ordered`);
     }
 
-    found.qty = qty - qtyInOrders;
+    found.qtyInStock = qty - qtyInOrders;
     found.sku = newSku;
 
     await found.save({ session });
@@ -47,9 +47,9 @@ export class InventoryService {
 
   addToOrdered(sku: string, qty: number, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
     const skuProp = getPropertyOf<Inventory>('sku');
-    const qtyProp = getPropertyOf<Inventory>('qty');
-    const orderedProp = getPropertyOf<Inventory>('ordered');
-    const orderedInventory = new OrderedInventory();
+    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
+    const reservedProp = getPropertyOf<Inventory>('reserved');
+    const orderedInventory = new ReservedInventory();
     orderedInventory.qty = qty;
     orderedInventory.orderId = orderId;
     orderedInventory.timestamp = new Date();
@@ -60,7 +60,7 @@ export class InventoryService {
     };
     const update = {
       '$inc': { [qtyProp]: -qty },
-      '$push': { [orderedProp]: orderedInventory }
+      '$push': { [reservedProp]: orderedInventory }
     };
     const options = { 'new': true };
 
@@ -69,25 +69,25 @@ export class InventoryService {
 
   async retrieveFromOrderedBackToStock(sku: string, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
     const skuProp = getPropertyOf<Inventory>('sku');
-    const qtyProp = getPropertyOf<Inventory>('qty');
-    const orderedProp = getPropertyOf<Inventory>('ordered');
-    const orderIdProp = getPropertyOf<OrderedInventory>('orderId');
+    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
+    const reservedProp = getPropertyOf<Inventory>('reserved');
+    const orderIdProp = getPropertyOf<ReservedInventory>('orderId');
     const query = {
       [skuProp]: sku,
-      [orderedProp + '.' + orderIdProp]: orderId
+      [reservedProp + '.' + orderIdProp]: orderId
     };
 
     const found = await this.inventoryModel.findOne(query).exec();
     if (!found) {
       // what is better? return or throw
-      throw new BadRequestException(`Ordered inventory for sku '${sku}' and order id '${orderId}' not found`);
+      throw new BadRequestException(`Reserved inventory for sku '${sku}' and order id '${orderId}' not found`);
     }
 
-    const orderedQty = found.ordered.find(ordered => ordered.orderId === orderId).qty;
+    const orderedQty = found.reserved.find(ordered => ordered.orderId === orderId).qty;
 
     const update = {
       '$inc': { [qtyProp]: orderedQty },
-      '$pull': { [orderedProp]: { [orderIdProp]: orderId } }
+      '$pull': { [reservedProp]: { [orderIdProp]: orderId } }
     };
     const options = { 'new': true };
 
@@ -96,15 +96,15 @@ export class InventoryService {
 
   async removeFromOrdered(sku: string, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
     const skuProp = getPropertyOf<Inventory>('sku');
-    const orderedProp = getPropertyOf<Inventory>('ordered');
-    const orderIdProp = getPropertyOf<OrderedInventory>('orderId');
+    const reservedProp = getPropertyOf<Inventory>('reserved');
+    const orderIdProp = getPropertyOf<ReservedInventory>('orderId');
 
     const query = {
       [skuProp]: sku,
-      [orderedProp + '.' + orderIdProp]: orderId
+      [reservedProp + '.' + orderIdProp]: orderId
     };
     const update = {
-      '$pull': { [orderedProp]: { [orderIdProp]: orderId } }
+      '$pull': { [reservedProp]: { [orderIdProp]: orderId } }
     };
     const options = { 'new': true };
 

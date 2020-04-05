@@ -14,5 +14,6 @@ export class AdminProductVariantListItem {
   price: number;
   currency: ECurrencyCode;
   priceInDefaultCurrency: number;
-  qty: number;
+  qtyInStock: number;
+  sellableQty: number;
 }
