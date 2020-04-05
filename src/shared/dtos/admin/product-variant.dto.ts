@@ -54,7 +54,7 @@ export class AdminProductVariantDto {
 
   @Expose()
   @IsOptional()
-  @Transform(oldPrice => parseFloat(oldPrice))
+  @Transform(oldPrice => oldPrice ? parseFloat(oldPrice) : oldPrice)
   @IsNumber()
   oldPrice: number;
 
