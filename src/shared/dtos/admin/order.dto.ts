@@ -14,7 +14,7 @@ import { ShippingAddressDto } from '../shared-dtos/shipping-address.dto';
 
 export class AdminAddOrUpdateOrderDto {
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id))
+  @Transform(((value, obj) => obj._id || value))
   id: number; // todo remove after migration
 
   @Expose()
@@ -152,7 +152,7 @@ export class AdminAddOrUpdateOrderDto {
 
 export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id))
+  @Transform(((value, obj) => obj._id || value))
   id: number;
 
   @Expose()

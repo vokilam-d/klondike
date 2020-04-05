@@ -4,7 +4,7 @@ import { notEmptyStringRegex } from '../../constants';
 
 export class AdminShippingMethodDto {
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
+  @Transform(((value, obj) => obj._id || value))
   id: string;
 
   @Expose()

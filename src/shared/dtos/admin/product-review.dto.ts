@@ -4,7 +4,7 @@ import { AdminBaseReviewDto } from './base-review.dto';
 
 export class AdminProductReviewCommentDto {
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id && obj._id.toString()))
+  @Transform(((value, obj) => obj._id || value))
   id: string;
 
   @Expose()

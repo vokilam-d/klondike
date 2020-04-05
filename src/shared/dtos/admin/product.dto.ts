@@ -7,7 +7,7 @@ import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 
 export class AdminAddOrUpdateProductDto {
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id))
+  @Transform(((value, obj) => obj._id || value))
   id: number; // todo remove after migrate
 
   @Expose()
@@ -57,7 +57,7 @@ export class AdminProductDto extends AdminAddOrUpdateProductDto {
   _id: number;
 
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id))
+  @Transform(((value, obj) => obj._id || value))
   id: number;
 
   @Expose()

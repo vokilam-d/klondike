@@ -4,7 +4,7 @@ import { AdminMediaDto } from './media.dto';
 
 export class AdminBaseReviewDto {
   @Expose()
-  @Transform(((value, obj) => value ? value : obj._id))
+  @Transform(((value, obj) => obj._id || value))
   id?: number;
 
   @Expose()

@@ -62,7 +62,8 @@ export class AdminProductController {
   @Put(':id')
   async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<ResponseDto<AdminProductDto>> {
     const updated = await this.productsService.updateProduct(productId, productDto);
-
+    console.log(updated.variants[0].id);
+    console.log(plainToClass(AdminProductDto, updated, { excludeExtraneousValues: true }).variants[0].id);
     return {
       data: plainToClass(AdminProductDto, updated, { excludeExtraneousValues: true })
     };

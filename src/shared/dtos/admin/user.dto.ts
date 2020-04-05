@@ -4,7 +4,7 @@ import { validPasswordRegex } from '../../constants';
 
 export class UserDto {
   @Expose()
-  @Transform(((value, obj) => obj._id?.toString()))
+  @Transform(((value, obj) => obj._id || value))
   id: string;
 
   @Expose()
