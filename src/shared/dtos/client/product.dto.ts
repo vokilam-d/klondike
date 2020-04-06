@@ -19,7 +19,7 @@ export class ClientProductCategoryDto {
 }
 
 type PickedProduct = Pick<Product, 'breadcrumbs' | 'reviewsCount' | 'reviewsAvgRating'>;
-type PickedVariant = Pick<ProductVariant, 'name' | 'sku' | 'vendorCode' | 'slug' | 'price' | 'fullDescription' | 'shortDescription'>;
+type PickedVariant = Pick<ProductVariant, 'name' | 'sku' | 'vendorCode' | 'slug' | 'price' | 'oldPrice' | 'fullDescription' | 'shortDescription'>;
 
 export class ClientProductDto implements PickedProduct, PickedVariant {
   @Expose()
@@ -62,6 +62,9 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
 
   @Expose()
   price: number;
+
+  @Expose()
+  oldPrice: number;
 
   @Expose()
   reviewsAvgRating: number;

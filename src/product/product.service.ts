@@ -836,6 +836,7 @@ export class ProductService implements OnApplicationBootstrap {
       vendorCode: variant.vendorCode,
       gtin: variant.gtin,
       price: variant.priceInDefaultCurrency,
+      oldPrice: variant.oldPriceInDefaultCurrency,
       reviewsAvgRating: productWithQty.reviewsAvgRating,
       reviewsCount: productWithQty.reviewsCount
     }
@@ -869,7 +870,7 @@ export class ProductService implements OnApplicationBootstrap {
     return product;
   }
 
-  private handleCurrencyUpdates() {
+  private handleCurrencyUpdates() { // todo this method is ugly, do separation
     const variantsProp: keyof Product = 'variants';
     const currencyProp: keyof ProductVariant = 'currency';
     const priceProp: keyof ProductVariant = 'price';
@@ -879,8 +880,10 @@ export class ProductService implements OnApplicationBootstrap {
 
     this.currencyService.echangeRatesUpdated$.subscribe(currencies => {
       for (const currency of currencies) {
+        const query = { [`${variantsProp}.${currencyProp}`]: currency._id };
+
         this.productModel.updateMany(
-          { [`${variantsProp}.${currencyProp}`]: currency._id },
+          query,
           [
             {
               $addFields: {
@@ -908,6 +911,16 @@ export class ProductService implements OnApplicationBootstrap {
             },
           ]
         ).exec();
+
+        const elasticUpdateScript = `
+          ctx._source.${variantsProp}.forEach(variant -> {
+            if (variant.${oldPriceProp} != null) {
+              variant.${defaultOldPriceProp} = Math.ceil(variant.${oldPriceProp} * ${currency.exchangeRate});
+            }
+            variant.${defaultPriceProp} = Math.ceil(variant.${priceProp} * ${currency.exchangeRate});
+          })
+        `;
+        this.searchService.updateByQuery(Product.collectionName, query, elasticUpdateScript);
       }
     });
   }

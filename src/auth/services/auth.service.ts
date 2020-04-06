@@ -32,6 +32,8 @@ export class AuthService {
 
   async getCustomerFromReq(req: FastifyRequest): Promise<DocumentType<Customer> | undefined> {
     const id = await this.getEntityIdFromReq(req, authConstants.JWT_COOKIE_NAME);
+    if (!id) { return; }
+
     const customer = await this.customerService.getCustomerById(+id, false);
     return customer as DocumentType<Customer>;
   }
@@ -45,16 +47,12 @@ export class AuthService {
     const jwt = req.cookies[cookieName];
     if (!jwt) { return; }
 
-    let payload;
     try {
-      payload = await this.jwtService.verifyAsync(jwt);
+      const payload = await this.jwtService.verifyAsync(jwt);
+      return payload?.sub;
     } catch (e) {
       this.logger.error(e);
     }
-
-    if (!payload || !payload.sub) { return; }
-
-    return payload.sub
   }
 
   async createCustomerEmailConfirmToken(customer: Customer): Promise<string> {

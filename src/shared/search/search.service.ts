@@ -170,4 +170,19 @@ export class SearchService {
       throw new Error();
     }
   }
+
+  updateByQuery(collection: string, queryTerm: any, updateScript: string) {
+    return this.client.update_by_query({
+      index: collection,
+      body: {
+        query: {
+          term: queryTerm
+        },
+        script: {
+          source: updateScript,
+          lang: 'painless'
+        }
+      }
+    });
+  }
 }
