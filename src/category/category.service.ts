@@ -22,9 +22,12 @@ export class CategoryService {
   }
 
   async getAllCategories(): Promise<Category[]> {
-    const categories = await this.categoryModel.find().exec();
+    let categories = await this.categoryModel.find().exec();
+    categories = categories
+      .sort((a, b) => b.sortOrder - a.sortOrder)
+      .map(cat => cat.toJSON())
 
-    return categories.map(cat => cat.toJSON());
+    return categories;
   }
 
   async getCategoriesTree(): Promise<CategoryTreeItem[]> {
@@ -37,6 +40,7 @@ export class CategoryService {
         id: category.id,
         name: category.name,
         slug: category.slug,
+        sortOrder: category.sortOrder,
         children: []
       };
 
@@ -56,6 +60,8 @@ export class CategoryService {
 
         populateChildrenArray(arrayItem.children);
       });
+
+      array.sort((a, b) => b.sortOrder - a.sortOrder);
     };
 
     populateChildrenArray(treeItems);

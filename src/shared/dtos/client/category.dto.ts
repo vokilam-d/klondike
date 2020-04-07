@@ -23,5 +23,8 @@ export class ClientCategoryDto implements Omit<AdminResponseCategoryDto, 'isEnab
   slug: string;
 
   @Expose()
+  sortOrder: number;
+
+  @Expose()
   breadcrumbs: BreadcrumbDto[];
 }

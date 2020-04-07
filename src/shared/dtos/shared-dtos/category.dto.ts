@@ -15,6 +15,9 @@ export class CategoryTreeItem {
   slug: CategoryDto['slug'];
 
   @Expose()
+  sortOrder: CategoryDto['sortOrder'];
+
+  @Expose()
   @Type(() => CategoryTreeItem)
   children: CategoryTreeItem[];
 

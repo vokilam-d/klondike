@@ -33,6 +33,10 @@ export class AdminAddOrUpdateCategoryDto {
   breadcrumbs: BreadcrumbDto[];
 
   @Expose()
+  @IsNumber()
+  sortOrder: number;
+
+  @Expose()
   @ValidateNested()
   metaTags: MetaTagsDto;
 }

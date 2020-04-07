@@ -39,6 +39,9 @@ export class Category {
   @prop({ default: '' })
   imageUrl: string;
 
+  @prop({ default: 0 })
+  sortOrder: number;
+
   static collectionName: string = 'category';
 }
 

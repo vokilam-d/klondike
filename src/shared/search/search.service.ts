@@ -145,6 +145,7 @@ export class SearchService {
 
       sort.push(`${fieldName}:${value}`);
     });
+    sort.push('id:desc');
 
     try {
       const { body } = await this.client.search({

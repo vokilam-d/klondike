@@ -16,6 +16,9 @@ export const elasticTextType = {
   },
   "type" : "text"
 };
+export const elasticKeywordType = {
+  "type": "keyword"
+}
 export const elasticDateType = {
   "type": "date"
 };
