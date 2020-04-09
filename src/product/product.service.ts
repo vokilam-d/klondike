@@ -46,6 +46,8 @@ import { MetaTagsDto } from '../shared/dtos/shared-dtos/meta-tags.dto';
 import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
 import { areArraysEqual } from '../shared/helpers/are-arrays-equal.function';
 import { CurrencyService } from '../currency/currency.service';
+import { ProductCategory } from './models/product-category.model';
+import { AdminProductCategoryDto } from '../shared/dtos/admin/product-category.dto';
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
@@ -275,7 +277,7 @@ export class ProductService implements OnApplicationBootstrap {
       if (!migrate) {
         newProductModel.id = await this.counterService.getCounter(Product.collectionName);
       }
-      newProductModel.breadcrumbs = await this.buildBreadcrumbs(newProductModel.categoryIds);
+      await this.populateProductCategoriesAndBreadcrumbs(newProductModel);
 
       for (const dtoVariant of productDto.variants) {
         const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
@@ -373,8 +375,8 @@ export class ProductService implements OnApplicationBootstrap {
         inventories.push(inventory.toJSON());
       }
 
-      if (!areArraysEqual(found.categoryIds, productDto.categoryIds)) {
-        productDto.breadcrumbs = await this.buildBreadcrumbs(productDto.categoryIds);
+      if (!this.areProductCategoriesEqual(found.categories, productDto.categories)) {
+        await this.populateProductCategoriesAndBreadcrumbs(productDto);
       }
 
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
@@ -542,21 +544,45 @@ export class ProductService implements OnApplicationBootstrap {
   async removeCategoryId(categoryId: number, session: ClientSession): Promise<any> {
     categoryId = parseInt(categoryId as any);
 
+    const categoryToRemove: Partial<ProductCategory> = { id: categoryId };
     const breadcrumbToRemove: Partial<Breadcrumb> = { id: categoryId };
-    const update: Partial<Product> = { categoryIds: categoryId as any, breadcrumbs: breadcrumbToRemove as any };
+    const update: Partial<Record<keyof Product, any>> = {
+      categories: categoryToRemove,
+      breadcrumbs: breadcrumbToRemove
+    };
 
+    const categoriesProp: keyof Product = 'categories';
+    const categoryIdProp: keyof ProductCategory = 'id';
     return this.productModel
       .updateMany(
-        { categoryIds: categoryId },
+        { [`${categoriesProp}.${categoryIdProp}`]: categoryId },
         { $pull: update }
       )
       .session(session)
       .exec();
   }
 
-  async updateBreadcrumbs(breadcrumb: Breadcrumb, session: ClientSession): Promise<any> {
+  async updateProductCategory(categoryId: number, categoryName: string, categorySlug: string, session: ClientSession): Promise<any> {
+    const categoriesProp: keyof Product = 'categories';
+    const categoryIdProp: keyof ProductCategory = 'id';
+    const categoryNameProp: keyof ProductCategory = 'name';
+    const categorySlugProp: keyof ProductCategory = 'slug';
+
+    await this.productModel
+      .updateMany(
+        { [`${categoriesProp}.${categoryIdProp}`]: categoryId },
+        {
+          [`${categoriesProp}.$.${categoryNameProp}`]: categoryName,
+          [`${categoriesProp}.$.${categorySlugProp}`]: categorySlug
+        }
+      )
+      .session(session)
+      .exec();
+
+    // todo remove this lines under after converting breadcrumbs to ids only
     const breadcrumbsProp = getPropertyOf<Product>('breadcrumbs');
     const idProp = getPropertyOf<Breadcrumb>('id');
+    const breadcrumb = { id: categoryId, name: categoryName, slug: categorySlug };
 
     return this.productModel
       .updateMany(
@@ -567,7 +593,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  private async buildBreadcrumbs(categoryIds: number[]): Promise<Breadcrumb[]> {
+  private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto): Promise<void> {
     const breadcrumbsVariants: Breadcrumb[][] = [];
 
     const populate = (treeItems: CategoryTreeItem[], breadcrumbs: Breadcrumb[] = []) => {
@@ -575,8 +601,12 @@ export class ProductService implements OnApplicationBootstrap {
       for (const treeItem of treeItems) {
         const newBreadcrumbs: Breadcrumb[] = JSON.parse(JSON.stringify(breadcrumbs));
 
-        if (categoryIds.indexOf(treeItem.id) !== -1) {
-          newBreadcrumbs.push({
+        const foundIdx = product.categories.findIndex(category => category.id === treeItem.id);
+        if (foundIdx !== -1) {
+          product.categories[foundIdx].name = treeItem.name;
+          product.categories[foundIdx].slug = treeItem.slug;
+
+          newBreadcrumbs.push({ // todo remove this after converting breadcrumbs to ids only
             id: treeItem.id,
             name: treeItem.name,
             slug: treeItem.slug
@@ -595,7 +625,7 @@ export class ProductService implements OnApplicationBootstrap {
     populate(categoryTreeItems);
 
     breadcrumbsVariants.sort((a, b) => b.length - a.length);
-    return breadcrumbsVariants[0] || [];
+    product.breadcrumbs = breadcrumbsVariants[0] || [];
   }
 
   private async addSearchData(productWithQty: ProductWithQty) {
@@ -691,7 +721,7 @@ export class ProductService implements OnApplicationBootstrap {
 
       return {
         id: product._id,
-        categoryIds: product.categoryIds,
+        categories: product.categories,
         name: product.name,
         attributes: product.attributes,
         isEnabled: product.isEnabled,
@@ -767,14 +797,10 @@ export class ProductService implements OnApplicationBootstrap {
   private async transformToClientProductDto(productWithQty: ProductWithQty, slug: string): Promise<ClientProductDto> {
     const variant = productWithQty.variants.find(v => v.slug === slug);
 
-    const categories: ClientProductCategoryDto[] = [];
-    const categoryModels = await this.categoryService.getAllCategories();
-    for (const categoryId of productWithQty.categoryIds) {
-      const found = categoryModels.find(c => c.id === categoryId);
-      if (!found) { continue; }
-
-      categories.push({ id: found.id, name: found.name, slug: found.slug });
-    }
+    const categories: ClientProductCategoryDto[] = productWithQty.categories.map(category => {
+      const { sortOrder, ...rest } = category;
+      return rest;
+    });
 
     const variantGroups: ClientProductVariantGroupDto[] = [];
     const attributeModels = await this.attributeService.getAllAttributes();
@@ -923,5 +949,9 @@ export class ProductService implements OnApplicationBootstrap {
         this.searchService.updateByQuery(Product.collectionName, query, elasticUpdateScript);
       }
     });
+  }
+
+  private areProductCategoriesEqual(categories1: ProductCategory[], categories2: AdminProductCategoryDto[]): boolean {
+    return areArraysEqual(categories1.map(c => c.id), categories2.map(c => c.id));
   }
 }

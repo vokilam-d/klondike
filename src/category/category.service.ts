@@ -145,7 +145,7 @@ export class CategoryService {
         await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, session);
       }
       if (oldSlug !== categoryDto.slug || oldName !== categoryDto.name) {
-        await this.productService.updateBreadcrumbs({ id: categoryId, name: categoryDto.name, slug: categoryDto.slug }, session);
+        await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, session);
       }
 
       const saved = await found.save({ session });

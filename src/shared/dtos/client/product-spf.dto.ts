@@ -1,12 +1,11 @@
 import { ClientSortingPaginatingFilterDto } from './spf.dto';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsNumber, IsNumberString, IsOptional } from 'class-validator';
 import { getPropertyOf } from '../../helpers/get-property-of.function';
 import { Product } from '../../../product/models/product.model';
-import { ISorting } from '../shared-dtos/spf.dto';
+import { IFilter, ISorting } from '../shared-dtos/spf.dto';
 import { AdminProductListItemDto } from '../admin/product-list-item.dto';
 import { AdminProductVariantListItem } from '../admin/product-variant-list-item.dto';
-
-const defaultSortField = '-' + getPropertyOf<Product>('sortOrder');
+import { AdminProductCategoryDto } from '../admin/product-category.dto';
 
 enum ESort {
   Popularity = 'popularity',
@@ -18,7 +17,9 @@ export class ClientProductSortingPaginatingFilterDto extends ClientSortingPagina
   @IsOptional()
   sort;
 
-  categoryId: string | number;
+  @IsOptional()
+  @IsNumberString()
+  categoryId: string;
 
   getSortAsObj(): ISorting {
     const variantsProp: keyof AdminProductListItemDto = 'variants';
@@ -34,5 +35,18 @@ export class ClientProductSortingPaginatingFilterDto extends ClientSortingPagina
       default:
         return { [`${sortOrderProp}`]: 'desc' };
     }
+  }
+
+  getNormalizedFilters(): IFilter[] {
+    if (!this.categoryId) {
+      return super.getNormalizedFilters();
+    }
+
+    const categoryId = this.categoryId;
+    delete this.categoryId;
+    const filters = super.getNormalizedFilters();
+    const categoriesProp: keyof AdminProductListItemDto = 'categories';
+    const categoryIdProp: keyof AdminProductCategoryDto = 'id';
+    return [...filters, { fieldName: `${categoriesProp}.${categoryIdProp}`, value: categoryId }];
   }
 }

@@ -4,6 +4,8 @@ import { AdminProductSelectedAttributeDto } from './product-selected-attribute.d
 import { AdminProductVariantDto } from './product-variant.dto';
 import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
+import { ProductCategory } from '../../../product/models/product-category.model';
+import { AdminProductCategoryDto } from './product-category.dto';
 
 export class AdminAddOrUpdateProductDto {
   @Expose()
@@ -19,8 +21,9 @@ export class AdminAddOrUpdateProductDto {
   name: string;
 
   @Expose()
-  @IsNumber(undefined, { each: true })
-  categoryIds: number[];
+  @ValidateNested({ each: true })
+  @Type(() => AdminProductCategoryDto)
+  categories: AdminProductCategoryDto[];
 
   @Expose()
   @ValidateNested({ each: true })
@@ -38,10 +41,6 @@ export class AdminAddOrUpdateProductDto {
   @ValidateNested({ each: true })
   @Type(() => AdminProductVariantDto)
   variants: AdminProductVariantDto[];
-
-  @Expose()
-  @IsNumber()
-  sortOrder: number;
 
   @Expose()
   @IsOptional()

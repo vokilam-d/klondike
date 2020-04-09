@@ -286,12 +286,12 @@ export class Migrate {
       dto.updatedAt = new Date(product.updated_at);
       dto.isEnabled = true;
       dto.name = product.name || '';
-      dto.sortOrder = 0;
+      // dto.sortOrder = 0;
 
-      dto.categoryIds = [];
+      dto.categories = [];
       const categoryProductsForProduct = categoryProducts.filter(cp => cp.product_id === product.entity_id);
       for (const categoryProduct of categoryProductsForProduct) {
-        dto.categoryIds.push(categoryProduct.category_id);
+        dto.categories.push({ id: categoryProduct.category_id } as any);
       }
 
       dto.attributes = [];
@@ -422,7 +422,7 @@ export class Migrate {
       });
 
       const foundInventory = inventories.find(inventory => inventory.product_id === product.entity_id);
-      variantDto.qty = foundInventory ? foundInventory.qty : 0;
+      variantDto.qtyInStock = foundInventory ? foundInventory.qty : 0;
       variantDto.isDiscountApplicable = product.is_general_discount_applicable === 453;
 
       dto.variants.push(variantDto);

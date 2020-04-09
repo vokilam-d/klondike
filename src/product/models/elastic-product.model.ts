@@ -8,11 +8,14 @@ import {
 } from '../../shared/constants';
 import { ElasticProductVariantModel } from './elastic-product-variant.model';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
+import { ElasticProductCategory } from './elastic-product-category.model';
 
 export class ElasticProductModel implements Record<keyof AdminProductListItemDto, any> {
   id = elasticKeywordType;
-  categoryIds = elasticTextType;
-  isEnabled = elasticKeywordType;
+  categories = {
+    properties: new ElasticProductCategory()
+  };
+  isEnabled = elasticTextType;
   attributes = {
     properties: new ElasticProductSelectedAttributeModel()
   };

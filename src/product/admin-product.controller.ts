@@ -24,6 +24,7 @@ import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
 import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
+import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -59,6 +60,29 @@ export class AdminProductController {
     };
   }
 
+  /**
+   * @returns AdminMediaDto
+   */
+  @Post('media')
+  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
+    const media = await this.productsService.uploadMedia(request);
+
+    reply.status(201).send(media);
+  }
+
+  @Post('counter') // todo remove this and all counter updates after migrate
+  updateCounter() {
+    return this.productsService.updateCounter();
+  }
+
+  @Post('action/reorder')
+  async reorderProduct(@Body() reorderDto: ReorderDto,
+                       @Query() spf: AdminSortingPaginatingFilterDto
+  ): Promise<ResponseDto<AdminProductListItemDto[]>> {
+
+    return this.productsService.getAdminProductsList(spf, false);
+  }
+
   @Put(':id')
   async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<ResponseDto<AdminProductDto>> {
     const updated = await this.productsService.updateProduct(productId, productDto);
@@ -74,20 +98,5 @@ export class AdminProductController {
     return {
       data: plainToClass(AdminProductDto, deleted, { excludeExtraneousValues: true })
     };
-  }
-
-  /**
-   * @returns AdminMediaDto
-   */
-  @Post('media')
-  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
-    const media = await this.productsService.uploadMedia(request);
-
-    reply.status(201).send(media);
-  }
-
-  @Post('counter') // todo remove this and all counter updates after migrate
-  updateCounter() {
-    return this.productsService.updateCounter();
   }
 }

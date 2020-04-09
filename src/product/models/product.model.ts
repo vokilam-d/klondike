@@ -3,6 +3,7 @@ import { Category } from '../../category/models/category.model';
 import { ProductVariant } from './product-variant.model';
 import { ProductSelectedAttribute } from './product-selected-attribute.model';
 import { Breadcrumb } from '../../shared/models/breadcrumb.model';
+import { ProductCategory } from './product-category.model';
 
 export class Product {
   @prop()
@@ -17,8 +18,8 @@ export class Product {
   @prop({ required: true })
   name: string;
 
-  @arrayProp({ items: Number })
-  categoryIds: Category['_id'][];
+  @arrayProp({ items: ProductCategory, _id: false })
+  categories: ProductCategory[];
 
   @arrayProp({ items: Breadcrumb, _id: false })
   breadcrumbs: Breadcrumb[];
