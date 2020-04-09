@@ -40,7 +40,7 @@ export class Category {
   imageUrl: string;
 
   @prop({ default: 0 })
-  sortOrder: number;
+  reversedSortOrder: number;
 
   static collectionName: string = 'category';
 }

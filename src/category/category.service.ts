@@ -25,8 +25,8 @@ export class CategoryService {
   async getAllCategories(): Promise<Category[]> {
     let categories = await this.categoryModel.find().exec();
     categories = categories
-      .sort((a, b) => b.sortOrder - a.sortOrder)
-      .map(cat => cat.toJSON())
+      .sort((a, b) => a.reversedSortOrder - b.reversedSortOrder)
+      .map(cat => cat.toJSON());
 
     return categories;
   }
@@ -37,11 +37,11 @@ export class CategoryService {
 
     const found = await this.categoryModel.find().exec();
     found.forEach(category => {
-      const item = {
+      const item: CategoryTreeItem = {
         id: category.id,
         name: category.name,
         slug: category.slug,
-        sortOrder: category.sortOrder,
+        reversedSortOrder: category.reversedSortOrder,
         children: []
       };
 
@@ -62,7 +62,7 @@ export class CategoryService {
         populateChildrenArray(arrayItem.children);
       });
 
-      array.sort((a, b) => b.sortOrder - a.sortOrder);
+      array.sort((a, b) => a.reversedSortOrder - b.reversedSortOrder);
     };
 
     populateChildrenArray(treeItems);
@@ -100,6 +100,11 @@ export class CategoryService {
       const newCategoryModel = new this.categoryModel(category);
       if (!migrate) {
         newCategoryModel.id = await this.counterService.getCounter(Category.collectionName, session);
+      }
+
+      const lastSiblingOrder = await this.getLastSiblingOrder(category.parentId);
+      if (lastSiblingOrder) {
+        newCategoryModel.reversedSortOrder = lastSiblingOrder + 1;
       }
 
       newCategoryModel.breadcrumbs = await this.buildBreadcrumbs(newCategoryModel);
@@ -228,15 +233,66 @@ export class CategoryService {
     const category = await this.categoryModel.findById(categoryId).exec();
     if (!category) { throw new BadRequestException(`Category with id '${categoryId}' not found`); }
 
-    if (position === EReorderPosition.Inside) {
-      const targetCategory = await this.categoryModel.findById(targetCategoryId).exec();
-      if (!targetCategory) { throw new BadRequestException(`Category with id '${targetCategoryId}' not found`); }
+    const targetCategory = await this.categoryModel.findById(targetCategoryId).exec();
+    if (!targetCategory) { throw new BadRequestException(`Category with id '${targetCategoryId}' not found`); }
 
-      category.sortOrder = 0;
-      category.parentId = targetCategoryId;
-      await category.save();
-    } else if (position === EReorderPosition.Start) {
-      ???
+    const session = await this.categoryModel.db.startSession();
+    session.startTransaction();
+
+    try {
+
+      if (position === EReorderPosition.Inside) {
+
+        if (category.parentId !== targetCategoryId) {
+          category.reversedSortOrder = 0;
+          category.parentId = targetCategoryId;
+          const lastSiblingOrder = await this.getLastSiblingOrder(category.parentId);
+          if (lastSiblingOrder) {
+            category.reversedSortOrder = lastSiblingOrder + 1;
+          }
+          await category.save({ session });
+        }
+
+      } else {
+        let filterOperator;
+        let newOrder;
+        if (position === EReorderPosition.Start) {
+          filterOperator = '$gte';
+          newOrder = targetCategory.reversedSortOrder;
+        } else if (position === EReorderPosition.End) {
+          filterOperator = '$gt';
+          newOrder = targetCategory.reversedSortOrder + 1;
+        }
+
+        const sortProp: keyof Category = 'reversedSortOrder';
+        await this.categoryModel.updateMany(
+          { [sortProp]: { [filterOperator]: targetCategory.reversedSortOrder } },
+          { $inc: { [sortProp]: 1 } }
+        ).session(session).exec();
+
+        category.parentId = targetCategory.parentId;
+        category.reversedSortOrder = newOrder;
+        await category.save({ session });
+      }
+
+      await session.commitTransaction();
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  private async getLastSiblingOrder(parentId: number): Promise<number | undefined> {
+    const sortProp: keyof Category = 'reversedSortOrder';
+    const lastSibling = await this.categoryModel
+      .findOne({ parentId })
+      .sort({ [sortProp]: 'desc' })
+      .exec();
+
+    if (lastSibling) {
+      return lastSibling.reversedSortOrder + 1;
     }
   }
 }

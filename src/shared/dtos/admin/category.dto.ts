@@ -35,7 +35,7 @@ export class AdminAddOrUpdateCategoryDto {
   @Expose()
   @IsOptional()
   @IsNumber()
-  sortOrder: number;
+  reversedSortOrder: number;
 
   @Expose()
   @ValidateNested()

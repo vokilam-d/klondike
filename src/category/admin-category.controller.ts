@@ -57,7 +57,7 @@ export class AdminCategoryController {
     return this.categoryService.updateCounter();
   }
 
-  @Post('reorder')
+  @Post('action/reorder')
   async reorderCategories(@Body() reorderDto: ReorderDto): Promise<ResponseDto<CategoryTreeItem[]>> {
     await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position);
     const tree = await this.categoryService.getCategoriesTree();

@@ -15,7 +15,7 @@ export class CategoryTreeItem {
   slug: CategoryDto['slug'];
 
   @Expose()
-  sortOrder: CategoryDto['sortOrder'];
+  reversedSortOrder: CategoryDto['reversedSortOrder'];
 
   @Expose()
   @Type(() => CategoryTreeItem)

@@ -3,7 +3,7 @@ import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { Expose } from 'class-transformer';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 
-export class ClientCategoryDto implements Omit<AdminResponseCategoryDto, 'isEnabled'> {
+export class ClientCategoryDto implements Omit<AdminResponseCategoryDto, 'isEnabled' | 'reversedSortOrder'> {
   @Expose()
   description: string;
 
@@ -21,9 +21,6 @@ export class ClientCategoryDto implements Omit<AdminResponseCategoryDto, 'isEnab
 
   @Expose()
   slug: string;
-
-  @Expose()
-  sortOrder: number;
 
   @Expose()
   breadcrumbs: BreadcrumbDto[];
