@@ -244,12 +244,9 @@ export class CategoryService {
       if (position === EReorderPosition.Inside) {
 
         if (category.parentId !== targetCategoryId) {
-          category.reversedSortOrder = 0;
           category.parentId = targetCategoryId;
           const lastSiblingOrder = await this.getLastSiblingOrder(category.parentId);
-          if (lastSiblingOrder) {
-            category.reversedSortOrder = lastSiblingOrder + 1;
-          }
+          category.reversedSortOrder = lastSiblingOrder ? lastSiblingOrder + 1 : 0;
           await category.save({ session });
         }
 
