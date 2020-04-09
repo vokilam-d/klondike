@@ -11,6 +11,7 @@ import { plainToClass } from 'class-transformer';
 import { ClientSession } from 'mongoose';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
+import { EReorderPosition } from '../shared/enums/reoder-position.enum';
 
 @Injectable()
 export class CategoryService {
@@ -92,11 +93,6 @@ export class CategoryService {
   async createCategory(category: AdminAddOrUpdateCategoryDto, migrate?: any): Promise<Category> {
     category.slug = category.slug === '' ? transliterate(category.name) : category.slug;
 
-    const duplicate = await this.categoryModel.findOne({ slug: category.slug, parentId: category.parentId }).exec();
-    if (duplicate) {
-      throw new BadRequestException(`Category with slug '${category.slug}' already exists in parent with ID '${category.parentId}'`);
-    }
-
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();
 
@@ -144,7 +140,7 @@ export class CategoryService {
         await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, session);
       }
       if (oldSlug !== categoryDto.slug || oldName !== categoryDto.name) {
-        await this.productService.updateBreadcrumbs({ id: categoryId, name: categoryDto.name, slug: categoryDto.slug}, session);
+        await this.productService.updateBreadcrumbs({ id: categoryId, name: categoryDto.name, slug: categoryDto.slug }, session);
       }
 
       const saved = await found.save({ session });
@@ -205,15 +201,17 @@ export class CategoryService {
     return this.counterService.setCounter(Category.collectionName, lastCategory.id);
   }
 
-  private async buildBreadcrumbs(category: Category): Promise<Breadcrumb[]> {
+  private async buildBreadcrumbs(category: Category, allCategories?: Category[]): Promise<Breadcrumb[]> {
     if (!category.parentId) { return []; }
 
+    if (!allCategories) {
+      allCategories = await this.getAllCategories();
+    }
     const breadcrumbs: Breadcrumb[] = [];
-    const categories = await this.getAllCategories();
     let parentId = category.parentId;
 
     while (parentId) {
-      const parent = categories.find(c => c.id === parentId);
+      const parent = allCategories.find(c => c.id === parentId);
       breadcrumbs.unshift({
         id: parent.id,
         name: parent.name,
@@ -226,4 +224,19 @@ export class CategoryService {
     return breadcrumbs;
   }
 
+  async reoderCategory(categoryId: number, targetCategoryId: number, position: EReorderPosition) {
+    const category = await this.categoryModel.findById(categoryId).exec();
+    if (!category) { throw new BadRequestException(`Category with id '${categoryId}' not found`); }
+
+    if (position === EReorderPosition.Inside) {
+      const targetCategory = await this.categoryModel.findById(targetCategoryId).exec();
+      if (!targetCategory) { throw new BadRequestException(`Category with id '${targetCategoryId}' not found`); }
+
+      category.sortOrder = 0;
+      category.parentId = targetCategoryId;
+      await category.save();
+    } else if (position === EReorderPosition.Start) {
+      ???
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
@@ -33,6 +33,7 @@ export class AdminAddOrUpdateCategoryDto {
   breadcrumbs: BreadcrumbDto[];
 
   @Expose()
+  @IsOptional()
   @IsNumber()
   sortOrder: number;
 

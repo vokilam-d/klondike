@@ -18,6 +18,7 @@ import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
+import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -51,6 +52,20 @@ export class AdminCategoryController {
     };
   }
 
+  @Post('counter') // todo remove this and all counter updates
+  updateCounter() {
+    return this.categoryService.updateCounter();
+  }
+
+  @Post('reorder')
+  async reorderCategories(@Body() reorderDto: ReorderDto): Promise<ResponseDto<CategoryTreeItem[]>> {
+    await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position);
+    const tree = await this.categoryService.getCategoriesTree();
+    return {
+      data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
+    };
+  }
+
   @Put(':id')
   async updateCategory(@Param('id') id: string, @Body() category: AdminAddOrUpdateCategoryDto): Promise<ResponseDto<AdminResponseCategoryDto>> {
     const updated = await this.categoryService.updateCategory(parseInt(id), category);
@@ -65,10 +80,5 @@ export class AdminCategoryController {
     return {
       data: plainToClass(AdminResponseCategoryDto, deleted, { excludeExtraneousValues: true })
     };
-  }
-
-  @Post('counter') // todo remove this and all counter updates
-  updateCounter() {
-    return this.categoryService.updateCounter();
   }
 }
