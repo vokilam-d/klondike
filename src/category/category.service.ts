@@ -170,6 +170,12 @@ export class CategoryService {
         throw new NotFoundException(`Category with id '${categoryId}' not found`);
       }
 
+      const parentIdProp: keyof Category = 'parentId';
+      await this.categoryModel
+        .updateMany({ parentId: deleted._id }, { [parentIdProp]: deleted.parentId })
+        .session(session)
+        .exec();
+
       await this.productService.removeCategoryId(categoryId, session);
       await this.deleteCategoryPageRegistry(deleted.slug, session);
       await session.commitTransaction();
