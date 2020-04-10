@@ -80,6 +80,7 @@ export class AdminProductController {
                        @Query() spf: AdminSortingPaginatingFilterDto
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
+    ???
     return this.productsService.getAdminProductsList(spf, false);
   }
 

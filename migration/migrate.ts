@@ -286,7 +286,9 @@ export class Migrate {
       dto.updatedAt = new Date(product.updated_at);
       dto.isEnabled = true;
       dto.name = product.name || '';
+      ???
       // dto.sortOrder = 0;
+      ???
 
       dto.categories = [];
       const categoryProductsForProduct = categoryProducts.filter(cp => cp.product_id === product.entity_id);
