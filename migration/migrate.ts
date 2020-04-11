@@ -19,6 +19,7 @@ import { ECurrencyCode } from '../src/shared/enums/currency.enum';
 import { stripHtmlTags } from '../src/shared/helpers/strip-html-tags.function';
 import { MetaTagsDto } from '../src/shared/dtos/shared-dtos/meta-tags.dto';
 import { ShippingAddressDto } from '../src/shared/dtos/shared-dtos/shipping-address.dto';
+import { AdminProductCategoryDto } from '../src/shared/dtos/admin/product-category.dto';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3500';
@@ -78,9 +79,11 @@ export class Migrate {
    */
   public async retrieveModels(): Promise<void> {
     const modelInfo = await this.mysqldb.query(`show full tables where Table_Type = 'BASE TABLE'`);
-    this.models = modelInfo.map((res: { [x: string]: any }) => {
-      return res[Object.keys(res)[0]];
-    });
+    this.models = modelInfo
+      .map((res: { [x: string]: any }) => {
+        return res[Object.keys(res)[0]];
+      })
+      .filter((name: string) => name !== 'amasty_xsearch_users_search' && !name.startsWith('mst_cache_warmer'));
   }
 
   public setModels() {
@@ -286,14 +289,11 @@ export class Migrate {
       dto.updatedAt = new Date(product.updated_at);
       dto.isEnabled = true;
       dto.name = product.name || '';
-      ???
-      // dto.sortOrder = 0;
-      ???
 
       dto.categories = [];
       const categoryProductsForProduct = categoryProducts.filter(cp => cp.product_id === product.entity_id);
       for (const categoryProduct of categoryProductsForProduct) {
-        dto.categories.push({ id: categoryProduct.category_id } as any);
+        dto.categories.push({ id: categoryProduct.category_id, sortOrder: categoryProduct.position } as AdminProductCategoryDto);
       }
 
       dto.attributes = [];
@@ -449,6 +449,50 @@ export class Migrate {
         console.log(dto);
         console.log(dto.variants[0].medias);
         console.log(dto.variants[0].metaTags);
+      }
+    };
+
+    for (const batch of this.getBatches(products, 3)) {
+      await Promise.all(batch.map(product => addProduct(product)));
+    }
+
+    console.log(`.\n.\n***     Finish migrating PRODUCTS     ***\nCount: ${count} \n.\n.`);
+  }
+
+  async populateProductCategories() {
+    console.log('.\n.\n***     Start migrating PRODUCTS     ***\n.\n.');
+    const products: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_flat_1.json', 'utf-8')));
+    const categoryProducts: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_category_product.json', 'utf-8')));
+
+    let count: number = 0;
+
+
+    const addProduct = async (product) => {
+      // if (product.entity_id >= 400 && product.entity_id <= 457 ) { return; }
+      if (product.parent_id < 2) { return; }
+
+      const categories = [];
+      const categoryProductsForProduct = categoryProducts.filter(cp => cp.product_id === product.entity_id);
+      for (const categoryProduct of categoryProductsForProduct) {
+        categories.push({ id: categoryProduct.category_id, sortOrder: categoryProduct.position } as AdminProductCategoryDto);
+      }
+
+      try {
+        await axios.patch(
+          `${this.apiHostname}/api/v1/admin/products/${product.entity_id}`,
+          categories,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+          }
+        );
+        console.log(`[Products]: Migrated id`, product.entity_id);
+
+        count++;
+      } catch (ex) {
+        this.failedReqs.products.push(product.entity_id);
+        console.error(`[Products ERROR]: '${product.entity_id}': `, ex.response ? ex.response.status : ex);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
       }
     };
 

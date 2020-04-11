@@ -1,11 +1,12 @@
 import { ClientSPFDto } from './spf.dto';
-import { IsEnum, IsNumber, IsNumberString, IsOptional } from 'class-validator';
-import { getPropertyOf } from '../../helpers/get-property-of.function';
+import { IsNumberString, IsOptional } from 'class-validator';
 import { Product } from '../../../product/models/product.model';
 import { IFilter, ISorting } from '../shared-dtos/spf.dto';
 import { AdminProductListItemDto } from '../admin/product-list-item.dto';
 import { AdminProductVariantListItem } from '../admin/product-variant-list-item.dto';
 import { AdminProductCategoryDto } from '../admin/product-category.dto';
+import { Transform } from 'class-transformer';
+import { ProductCategory } from '../../../product/models/product-category.model';
 
 enum ESort {
   Popularity = 'popularity',
@@ -20,6 +21,15 @@ export class ClientProductSPFDto extends ClientSPFDto {
   @IsOptional()
   @IsNumberString()
   categoryId: string;
+
+  @Transform((value, obj: ClientProductSPFDto) => {
+    if (obj.categoryId) {
+      const categoriesProp: keyof Product = 'categories';
+      const categoryIdProp: keyof ProductCategory = 'id';
+      return { [`${categoriesProp}.${categoryIdProp}`]: obj.categoryId };
+    }
+  })
+  sortFilter: any;
 
   getSortAsObj(): ISorting {
     const variantsProp: keyof AdminProductListItemDto = 'variants';
