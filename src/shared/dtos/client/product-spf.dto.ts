@@ -1,4 +1,4 @@
-import { ClientSortingPaginatingFilterDto } from './spf.dto';
+import { ClientSPFDto } from './spf.dto';
 import { IsEnum, IsNumber, IsNumberString, IsOptional } from 'class-validator';
 import { getPropertyOf } from '../../helpers/get-property-of.function';
 import { Product } from '../../../product/models/product.model';
@@ -13,7 +13,7 @@ enum ESort {
   Expensive = 'expensive'
 }
 
-export class ClientProductSortingPaginatingFilterDto extends ClientSortingPaginatingFilterDto {
+export class ClientProductSPFDto extends ClientSPFDto {
   @IsOptional()
   sort;
 
@@ -24,7 +24,8 @@ export class ClientProductSortingPaginatingFilterDto extends ClientSortingPagina
   getSortAsObj(): ISorting {
     const variantsProp: keyof AdminProductListItemDto = 'variants';
     const priceProp: keyof AdminProductVariantListItem = 'priceInDefaultCurrency';
-    const sortOrderProp: keyof AdminProductListItemDto = 'sortOrder';
+    const categoriesProp: keyof AdminProductListItemDto = 'categories';
+    const sortOrderProp: keyof AdminProductCategoryDto = 'sortOrder';
 
     switch (this.sort) {
       case ESort.Cheap:
@@ -33,7 +34,7 @@ export class ClientProductSortingPaginatingFilterDto extends ClientSortingPagina
         return { [`${variantsProp}.${priceProp}`]: 'desc' };
       case ESort.Popularity:
       default:
-        return { [`${sortOrderProp}`]: 'desc' };
+        return { [`${categoriesProp}.${sortOrderProp}`]: 'desc' };
     }
   }
 

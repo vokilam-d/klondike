@@ -13,7 +13,6 @@ export class AdminProductListItemDto {
   prices: string;
   quantitiesInStock: string;
   sellableQuantities: string;
-  sortOrder: number;
   reviewsCount: number;
   reviewsAvgRating: number;
   variants?: AdminProductVariantListItem[];

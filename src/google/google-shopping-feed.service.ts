@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ProductService } from '../product/product.service';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
+import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { create } from 'xmlbuilder2/lib';
 import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
@@ -228,7 +228,7 @@ export class GoogleShoppingFeedService {
 
   private async getAllProducts(): Promise<ProductWithQty[]> {
     const countProducts = await this.productService.countProducts();
-    const spf = new AdminSortingPaginatingFilterDto();
+    const spf = new AdminSPFDto();
     spf.limit = countProducts + 100;
 
     return this.productService.getProductsWithQty(spf);
@@ -236,7 +236,7 @@ export class GoogleShoppingFeedService {
 
   private async getAllReviews(): Promise<AdminProductReviewDto[]> {
     const countReviews = await this.reviewService.countReviews();
-    const spf = new AdminSortingPaginatingFilterDto();
+    const spf = new AdminSPFDto();
     spf.limit = countReviews + 100;
 
     const responseDto = await this.reviewService.getReviewsResponse(spf);

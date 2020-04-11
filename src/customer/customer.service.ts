@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, forwardRef, Inject, Injectable,
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer } from './models/customer.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
+import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/counter/counter.service';
 import { ClientSession } from 'mongoose';
@@ -39,7 +39,7 @@ export class CustomerService implements OnApplicationBootstrap {
     this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
   }
 
-  async getCustomersList(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminCustomerDto[]>> {
+  async getCustomersList(spf: AdminSPFDto): Promise<ResponseDto<AdminCustomerDto[]>> {
     let customers: AdminCustomerDto[];
     let itemsFiltered: number;
 
@@ -255,7 +255,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return this.searchService.deleteDocument(Customer.collectionName, customer.id);
   }
 
-  private async searchByFilters(spf: AdminSortingPaginatingFilterDto) {
+  private async searchByFilters(spf: AdminSPFDto) {
     return this.searchService.searchByFilters<AdminCustomerDto>(
       Customer.collectionName,
       spf.getNormalizedFilters(),

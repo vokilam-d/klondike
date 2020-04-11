@@ -4,7 +4,7 @@ import { FastifyRequest } from 'fastify';
 import { Media } from '../../shared/models/media.model';
 import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 import { ForbiddenException, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
-import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/spf.dto';
+import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { AdminBaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
 import { ClientSession, FilterQuery } from 'mongoose';
 import { CounterService } from '../../shared/counter/counter.service';
@@ -33,7 +33,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());
   }
 
-  async getReviewsResponse(spf: AdminSortingPaginatingFilterDto,
+  async getReviewsResponse(spf: AdminSPFDto,
                            ipAddress?: string,
                            userId?: string,
                            customerId?: number): Promise<ResponseDto<U[]>> {
@@ -259,7 +259,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     return this.searchService.deleteDocument(this.collectionName, review.id);
   }
 
-  private async searchByFilters(spf: AdminSortingPaginatingFilterDto) {
+  private async searchByFilters(spf: AdminSPFDto) {
     return this.searchService.searchByFilters<U>(
       this.collectionName,
       spf.getNormalizedFilters(),

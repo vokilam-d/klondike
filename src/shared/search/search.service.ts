@@ -106,30 +106,47 @@ export class SearchService {
                                  filters: IFilter[],
                                  from: number,
                                  size: number,
-                                 sortObj: ISorting = { }
+                                 sortObj: ISorting = { },
+                                 sortFilter?: any
   ): Promise<[T[], number]> {
 
     // console.log({ m: 'searchByFilters', collection, filters, from, size, sortObj });
 
     // build queries
     const queries = filters.map(filter => {
-      const fields = [];
-      filter.fieldName.split('|').forEach(fieldName => {
-        fields.push(...[
-          fieldName,
-          `${fieldName}._2gram`,
-          `${fieldName}._3gram`
-        ]);
-      });
 
-      return {
-        multi_match: {
-          query: filter.value,
-          // type: "bool_prefix",
-          type: "phrase_prefix",
-          fields
-        }
-      };
+      if (filter.fieldName.includes('.')) {
+        const [ parentField ] = filter.fieldName.split('.');
+        return {
+          'nested': {
+            path: parentField,
+            query: {
+              'match_phrase_prefix': {
+                [filter.fieldName]: filter.value
+              }
+            }
+          }
+        };
+      } else {
+
+        const fields = [];
+        filter.fieldName.split('|').forEach(fieldName => {
+          fields.push(...[
+            fieldName,
+            `${fieldName}._2gram`,
+            `${fieldName}._3gram`
+          ]);
+        });
+
+        return {
+          multi_match: {
+            query: filter.value,
+            // type: "bool_prefix",
+            type: "phrase_prefix",
+            fields
+          }
+        };
+      }
 
       // return {
       //   match_phrase_prefix: {
@@ -140,10 +157,25 @@ export class SearchService {
 
     // build sort
     const sort = [];
+    let nestedSort = [];
     Object.entries(sortObj).forEach(entry => {
       const [ fieldName, value ] = entry;
 
-      sort.push(`${fieldName}:${value}`);
+      if (fieldName.includes('.')) {
+        const [ parentField ] = fieldName.split('.');
+        nestedSort.push({
+          [fieldName]: {
+            order: value,
+            nested: {
+              path: parentField,
+              ...(sortFilter ? { filter: { term: sortFilter } } : { })
+            }
+          }
+        });
+
+      } else {
+        sort.push(`${fieldName}:${value}`);
+      }
     });
     sort.push('id:desc');
 
@@ -157,8 +189,32 @@ export class SearchService {
           query: {
             bool: {
               must: queries
+              // must: [
+              //   {
+              //     'nested': {
+              //       path: 'categories',
+              //       query: {
+              //         'match_phrase_prefix': {
+              //           'categories.id': '45'
+              //         }
+              //       }
+              //     }
+              //   }
+              // ]
             }
-          }
+          },
+          ...(nestedSort.length ? { sort: nestedSort } : { })
+          // sort: {
+          //   'categories.sortOrder': {
+          //     'order': 'desc',
+          //     'nested': {
+          //       path: 'categories',
+          //       filter: {
+          //         term: { 'categories.id': 45 }
+          //       }
+          //     }
+          //   }
+          // }
         }
       });
 
@@ -175,10 +231,9 @@ export class SearchService {
   updateByQuery(collection: string, queryTerm: any, updateScript: string) {
     return this.client.update_by_query({
       index: collection,
+      refresh: true,
       body: {
-        query: {
-          term: queryTerm
-        },
+        query: queryTerm,
         script: {
           source: updateScript,
           lang: 'painless'

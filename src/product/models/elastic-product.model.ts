@@ -6,13 +6,14 @@ import {
   elasticKeywordType,
   elasticTextType
 } from '../../shared/constants';
-import { ElasticProductVariantModel } from './elastic-product-variant.model';
+import { ElasticProductVariant } from './elastic-product-variant.model';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
 import { ElasticProductCategory } from './elastic-product-category.model';
 
-export class ElasticProductModel implements Record<keyof AdminProductListItemDto, any> {
+export class ElasticProduct implements Record<keyof AdminProductListItemDto, any> {
   id = elasticKeywordType;
   categories = {
+    type: 'nested',
     properties: new ElasticProductCategory()
   };
   isEnabled = elasticTextType;
@@ -25,9 +26,9 @@ export class ElasticProductModel implements Record<keyof AdminProductListItemDto
   quantitiesInStock = elasticTextType;
   sellableQuantities = elasticTextType;
   skus = elasticTextType;
-  sortOrder = elasticIntegerType;
   variants = {
-    properties: new ElasticProductVariantModel()
+    type: 'nested',
+    properties: new ElasticProductVariant()
   };
   reviewsAvgRating = elasticFloatType;
   reviewsCount = elasticIntegerType;

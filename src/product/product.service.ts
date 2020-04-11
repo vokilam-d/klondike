@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { Product } from './models/product.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { InventoryService } from '../inventory/inventory.service';
@@ -9,7 +9,7 @@ import { CounterService } from '../shared/counter/counter.service';
 import { FastifyRequest } from 'fastify';
 import { Media } from '../shared/models/media.model';
 import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
+import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { Inventory } from '../inventory/models/inventory.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { ClientSession } from 'mongoose';
@@ -26,28 +26,22 @@ import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.
 import { ProductWithQty } from './models/product-with-qty.model';
 import { AdminProductVariantListItem } from '../shared/dtos/admin/product-variant-list-item.dto';
 import { DEFAULT_CURRENCY } from '../shared/enums/currency.enum';
-import { ElasticProductModel } from './models/elastic-product.model';
+import { ElasticProduct } from './models/elastic-product.model';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { SortingPaginatingFilterDto } from '../shared/dtos/shared-dtos/spf.dto';
-import {
-  ClientProductListItemDto,
-  ClientProductVariantDto,
-  ClientProductVariantGroupDto
-} from '../shared/dtos/client/product-list-item.dto';
+import { ClientProductListItemDto, ClientProductVariantDto, ClientProductVariantGroupDto } from '../shared/dtos/client/product-list-item.dto';
 import { AttributeService } from '../attribute/attribute.service';
-import {
-  ClientProductCategoryDto,
-  ClientProductCharacteristic,
-  ClientProductDto
-} from '../shared/dtos/client/product.dto';
+import { ClientProductCategoryDto, ClientProductCharacteristic, ClientProductDto } from '../shared/dtos/client/product.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../shared/dtos/client/media.dto';
 import { MetaTagsDto } from '../shared/dtos/shared-dtos/meta-tags.dto';
-import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
+import { ClientProductSPFDto } from '../shared/dtos/client/product-spf.dto';
 import { areArraysEqual } from '../shared/helpers/are-arrays-equal.function';
 import { CurrencyService } from '../currency/currency.service';
 import { ProductCategory } from './models/product-category.model';
 import { AdminProductCategoryDto } from '../shared/dtos/admin/product-category.dto';
+import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
+import { EReorderPosition } from '../shared/enums/reoder-position.enum';
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
@@ -69,13 +63,11 @@ export class ProductService implements OnApplicationBootstrap {
 
   onApplicationBootstrap(): any {
     this.handleCurrencyUpdates();
-    this.searchService.ensureCollection(Product.collectionName, new ElasticProductModel());
+    this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
     // this.reindexAllSearchData();
   }
 
-  async getAdminProductsList(spf: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto(),
-                             withVariants: boolean
-  ): Promise<ResponseDto<AdminProductListItemDto[]>> {
+  async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
     let products: AdminProductListItemDto[];
     let itemsFiltered: number;
@@ -106,7 +98,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async getClientProductListByFilters(spf: ClientProductSortingPaginatingFilterDto): Promise<ResponseDto<ClientProductListItemDto[]>> {
+  async getClientProductListByFilters(spf: ClientProductSPFDto): Promise<ResponseDto<ClientProductListItemDto[]>> {
 
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
 
@@ -125,7 +117,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async getProductsWithQty(sortingPaginating: AdminSortingPaginatingFilterDto = new AdminSortingPaginatingFilterDto()): Promise<ProductWithQty[]> {
+  async getProductsWithQty(sortingPaginating: AdminSPFDto = new AdminSPFDto()): Promise<ProductWithQty[]> {
     const variantsProp = getPropertyOf<Product>('variants');
     const descProp = getPropertyOf<ProductVariant>('fullDescription');
     const skuProp = getPropertyOf<Inventory>('sku');
@@ -635,7 +627,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   private async updateSearchData(productWithQty: ProductWithQty): Promise<any> {
     const [ adminListItem ] = this.transformToAdminListDto([productWithQty]);
-    await this.searchService.updateDocument(Product.collectionName, productWithQty.id, adminListItem);
+    await this.searchService.updateDocument(Product.collectionName, adminListItem.id, adminListItem);
   }
 
   private async deleteSearchData(productId: number): Promise<any> {
@@ -648,7 +640,8 @@ export class ProductService implements OnApplicationBootstrap {
       spf.getNormalizedFilters(),
       spf.skip,
       spf.limit,
-      spf.getSortAsObj()
+      spf.getSortAsObj(),
+      spf.sortFilter
     );
   }
 
@@ -681,7 +674,7 @@ export class ProductService implements OnApplicationBootstrap {
         skus.push(variant.sku);
         prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
         quantitiesInStock.push(variant.qtyInStock);
-        sellableQuantities.push(variant.qtyInStock - variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0));
+        sellableQuantities.push(variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0));
 
         let primaryMediaUrl;
         let secondaryMediaUrl;
@@ -715,7 +708,7 @@ export class ProductService implements OnApplicationBootstrap {
           priceInDefaultCurrency: variant.priceInDefaultCurrency,
           oldPriceInDefaultCurrency: variant.oldPriceInDefaultCurrency,
           qtyInStock: variant.qtyInStock,
-          sellableQty: variant.qtyInStock - variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)
+          sellableQty: variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0)
         });
       });
 
@@ -730,7 +723,6 @@ export class ProductService implements OnApplicationBootstrap {
         quantitiesInStock: quantitiesInStock.join(', '),
         sellableQuantities: sellableQuantities.join(', '),
         mediaUrl: productMediaUrl,
-        sortOrder: product.sortOrder,
         reviewsCount: product.reviewsCount,
         reviewsAvgRating: product.reviewsAvgRating,
         variants
@@ -871,9 +863,9 @@ export class ProductService implements OnApplicationBootstrap {
   private async reindexAllSearchData() {
     await this.searchService.deleteCollection(Product.collectionName);
     this.logger.log('Deleted Products elastic collection');
-    await this.searchService.ensureCollection(Product.collectionName, new ElasticProductModel());
+    await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
 
-    const spf = new AdminSortingPaginatingFilterDto();
+    const spf = new AdminSPFDto();
     spf.limit = 10000;
     const products = await this.getProductsWithQty(spf);
     const listItems = this.transformToAdminListDto(products);
@@ -896,7 +888,7 @@ export class ProductService implements OnApplicationBootstrap {
     return product;
   }
 
-  private handleCurrencyUpdates() { // todo this method is ugly, do separation
+  private handleCurrencyUpdates() { // todo this method is ugly, do separation on repositories
     const variantsProp: keyof Product = 'variants';
     const currencyProp: keyof ProductVariant = 'currency';
     const priceProp: keyof ProductVariant = 'price';
@@ -938,6 +930,14 @@ export class ProductService implements OnApplicationBootstrap {
           ]
         ).exec();
 
+        const elasticQuery = {
+          nested: {
+            path: variantsProp,
+            query: {
+              term: { [`${variantsProp}.${currencyProp}`]: currency._id }
+            }
+          }
+        };
         const elasticUpdateScript = `
           ctx._source.${variantsProp}.forEach(variant -> {
             if (variant.${oldPriceProp} != null) {
@@ -946,12 +946,93 @@ export class ProductService implements OnApplicationBootstrap {
             variant.${defaultPriceProp} = Math.ceil(variant.${priceProp} * ${currency.exchangeRate});
           })
         `;
-        this.searchService.updateByQuery(Product.collectionName, query, elasticUpdateScript);
+        this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript);
       }
     });
   }
 
   private areProductCategoriesEqual(categories1: ProductCategory[], categories2: AdminProductCategoryDto[]): boolean {
     return areArraysEqual(categories1.map(c => c.id), categories2.map(c => c.id));
+  }
+
+  async reorderProduct(reorderDto: ProductReorderDto) { // todo this method is ugly, do separation on repositories
+    const product = await this.productModel.findById(reorderDto.id).exec();
+    if (!product) { throw new BadRequestException(`Product with id '${reorderDto.id}' not found`); }
+    const targetProduct = await this.productModel.findById(reorderDto.targetId);
+    if (!targetProduct) { throw new BadRequestException(`Product with id '${reorderDto.targetId}' not found`); }
+    const targetProductOrder = targetProduct.categories.find(c => c.id === reorderDto.categoryId)?.sortOrder || 0;
+
+    const session = await this.productModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      let filterOperator;
+      let elasticComparisonOperator;
+      let newOrder;
+      if (reorderDto.position === EReorderPosition.Start) {
+        filterOperator = '$gt';
+        elasticComparisonOperator = '>';
+        newOrder = targetProductOrder + 1;
+      } else {
+        filterOperator = '$gte';
+        elasticComparisonOperator = '>=';
+        newOrder = targetProductOrder;
+      }
+
+      const categoriesProp: keyof Product = 'categories';
+      const categoryIdProp: keyof ProductCategory = 'id';
+      const sortProp: keyof ProductCategory = 'sortOrder';
+      await this.productModel.updateMany(
+        {
+          '_id': { $ne: reorderDto.id },
+          categories: {
+            $elemMatch: {
+              [categoryIdProp]: reorderDto.categoryId,
+              [sortProp]: { [filterOperator]: targetProductOrder }
+            }
+          }
+        },
+        {
+          $inc: { [`${categoriesProp}.$.${sortProp}`]: 1 }
+        }
+      ).session(session).exec();
+
+      const productCategoryIdx = product.categories.findIndex(c => c.id === reorderDto.categoryId);
+      product.categories[productCategoryIdx].sortOrder = newOrder;
+      await product.save({ session });
+      await session.commitTransaction();
+
+      const elasticQuery = {
+        nested: {
+          path: categoriesProp,
+          query: {
+            term: { [`${categoriesProp}.${categoryIdProp}`]: reorderDto.categoryId }
+          }
+        }
+      };
+      const elasticUpdateScript = `
+        ctx._source.${categoriesProp}.forEach(category -> {
+          if (
+            ctx._source.id != ${product.id}
+            && category.${categoryIdProp} == ${reorderDto.categoryId}
+            && category.${sortProp} ${elasticComparisonOperator} ${targetProductOrder}
+          ) {
+            category.${sortProp} += 1;
+          } else if (ctx._source.id == ${product.id} && category.${categoryIdProp} == ${reorderDto.categoryId}) {
+            category.${sortProp} = ${newOrder}
+          }
+          return category;
+        })
+      `;
+      await this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript);
+
+    } catch (ex) {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+      throw ex;
+    } finally {
+      await session.endSession();
+    }
   }
 }

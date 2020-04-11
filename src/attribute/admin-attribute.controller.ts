@@ -16,7 +16,7 @@ import { AttributeService } from './attribute.service';
 import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
 import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
+import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 
 @UseGuards(UserJwtGuard)
@@ -30,7 +30,7 @@ export class AdminAttributeController {
 
 
   @Get()
-  async getAttributes(@Query() spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminAttributeDto[]>> {
+  async getAttributes(@Query() spf: AdminSPFDto): Promise<ResponseDto<AdminAttributeDto[]>> {
     return this.attributeService.getAttributesResponse(spf);
   }
 

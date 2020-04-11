@@ -1,7 +1,7 @@
 import { IFilter, SortingPaginatingFilterDto } from '../shared-dtos/spf.dto';
 import { queryParamArrayDelimiter } from '../../constants';
 
-export class ClientSortingPaginatingFilterDto extends SortingPaginatingFilterDto {
+export class ClientSPFDto extends SortingPaginatingFilterDto {
 
   [fieldName: string]: any;
 

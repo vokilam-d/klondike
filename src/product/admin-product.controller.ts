@@ -9,7 +9,8 @@ import {
   Put,
   Query,
   Request,
-  Response, UseGuards,
+  Response,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe
@@ -20,11 +21,13 @@ import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
+import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
 import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
-import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
+import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
+import { Product } from './models/product.model';
+import { ProductCategory } from './models/product-category.model';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -36,7 +39,7 @@ export class AdminProductController {
   }
 
   @Get()
-  async getProducts(@Query() spf: AdminSortingPaginatingFilterDto,
+  async getProducts(@Query() spf: AdminSPFDto,
                     @Query('withVariants') withVariants: string): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
     return this.productsService.getAdminProductsList(spf, withVariants === 'true');
@@ -76,11 +79,15 @@ export class AdminProductController {
   }
 
   @Post('action/reorder')
-  async reorderProduct(@Body() reorderDto: ReorderDto,
-                       @Query() spf: AdminSortingPaginatingFilterDto
+  async reorderProduct(@Body() reorderDto: ProductReorderDto,
+                       @Query() spf: AdminSPFDto
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    ???
+    await this.productsService.reorderProduct(reorderDto);
+
+    const categoriesProp: keyof Product = 'categories';
+    const categoryIdProp: keyof ProductCategory = 'id';
+    spf.sortFilter = { [`${categoriesProp}.${categoryIdProp}`]: reorderDto.categoryId };
     return this.productsService.getAdminProductsList(spf, false);
   }
 

@@ -30,9 +30,6 @@ export class Product {
   @arrayProp({ items: ProductVariant, _id: true })
   variants: ProductVariant[];
 
-  @prop({ default: 0, index: true })
-  sortOrder: number;
-
   @prop({ default: 0 })
   reviewsCount: number;
 

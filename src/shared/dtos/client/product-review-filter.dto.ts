@@ -1,8 +1,8 @@
 import { IsNumber } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { ClientSortingPaginatingFilterDto } from './spf.dto';
+import { ClientSPFDto } from './spf.dto';
 
-export class ClientProductReviewFilterDto extends ClientSortingPaginatingFilterDto {
+export class ClientProductReviewFilterDto extends ClientSPFDto {
 
   @Transform((value => Number(value)))
   @IsNumber()

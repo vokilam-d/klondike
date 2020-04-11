@@ -2,7 +2,7 @@ import { ClassSerializerInterceptor, Controller, Get, Param, Query, UseIntercept
 import { ProductService } from './product.service';
 import { ClientProductDto } from '../shared/dtos/client/product.dto';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
-import { ClientProductSortingPaginatingFilterDto } from '../shared/dtos/client/product-spf.dto';
+import { ClientProductSPFDto } from '../shared/dtos/client/product-spf.dto';
 import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -13,7 +13,7 @@ export class ClientProductController {
   }
 
   @Get()
-  async findProducts(@Query() spf: ClientProductSortingPaginatingFilterDto): Promise<ResponseDto<ClientProductListItemDto[]>> {
+  async findProducts(@Query() spf: ClientProductSPFDto): Promise<ResponseDto<ClientProductListItemDto[]>> {
     return this.productService.getClientProductListByFilters(spf);
   }
 

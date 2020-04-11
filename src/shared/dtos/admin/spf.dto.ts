@@ -2,7 +2,7 @@ import { IsOptional, IsString } from 'class-validator';
 import { queryParamArrayDelimiter } from '../../constants';
 import { IFilter, SortingPaginatingFilterDto } from '../shared-dtos/spf.dto';
 
-export class AdminSortingPaginatingFilterDto extends SortingPaginatingFilterDto {
+export class AdminSPFDto extends SortingPaginatingFilterDto {
   @IsString()
   @IsOptional()
   filters: string;

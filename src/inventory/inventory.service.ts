@@ -12,8 +12,9 @@ export class InventoryService {
   constructor(@InjectModel(Inventory.name) private readonly inventoryModel: ReturnModelType<typeof Inventory>) {
   }
 
-  async createInventory(sku: string, productId: number, qty: number = 0, session: ClientSession): Promise<DocumentType<Inventory>> {
-    const newInventory = new this.inventoryModel({ sku, productId, qty});
+  async createInventory(sku: string, productId: number, qtyInStock: number = 0, session: ClientSession): Promise<DocumentType<Inventory>> {
+    const model: Inventory = { sku, productId, qtyInStock, reserved: [] };
+    const newInventory = new this.inventoryModel(model);
     await newInventory.save({ session });
 
     return newInventory;

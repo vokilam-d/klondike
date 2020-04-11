@@ -2,7 +2,7 @@ import { AdminProductVariantListItem } from '../../shared/dtos/admin/product-var
 import { elasticAutocompleteType, elasticBooleanType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
 
-export class ElasticProductVariantModel implements Record<keyof AdminProductVariantListItem, any> {
+export class ElasticProductVariant implements Record<keyof AdminProductVariantListItem, any> {
   currency = elasticTextType;
   id = elasticTextType;
   isEnabled = elasticBooleanType;

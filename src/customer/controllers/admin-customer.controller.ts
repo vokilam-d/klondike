@@ -13,7 +13,7 @@ import {
   ValidationPipe
 } from '@nestjs/common';
 import { CustomerService } from '../customer.service';
-import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/spf.dto';
+import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../../shared/dtos/admin/customer.dto';
@@ -29,7 +29,7 @@ export class AdminCustomerController {
   }
 
   @Get()
-  async getAllCustomers(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminCustomerDto[]>> {
+  async getAllCustomers(@Query() sortingPaging: AdminSPFDto): Promise<ResponseDto<AdminCustomerDto[]>> {
     return this.customerService.getCustomersList(sortingPaging);
   }
 

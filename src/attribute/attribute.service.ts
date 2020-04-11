@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Attribute } from './models/attribute.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
-import { AdminSortingPaginatingFilterDto } from '../shared/dtos/admin/spf.dto';
+import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { SearchService } from '../shared/search/search.service';
@@ -20,7 +20,7 @@ export class AttributeService implements OnApplicationBootstrap {
     this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttributeModel());
   }
 
-  async getAttributesResponse(spf: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminAttributeDto[]>> {
+  async getAttributesResponse(spf: AdminSPFDto): Promise<ResponseDto<AdminAttributeDto[]>> {
     let attributes: AdminAttributeDto[];
     let itemsFiltered: number;
 
@@ -149,7 +149,7 @@ export class AttributeService implements OnApplicationBootstrap {
     return this.searchService.deleteDocument(Attribute.collectionName, attribute.id);
   }
 
-  private async searchByFilters(spf: AdminSortingPaginatingFilterDto) {
+  private async searchByFilters(spf: AdminSPFDto) {
     return this.searchService.searchByFilters<AdminAttributeDto>(
       Attribute.collectionName,
       spf.getNormalizedFilters(),

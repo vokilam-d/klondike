@@ -19,7 +19,7 @@ import { StoreReviewService } from './store-review.service';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
-import { AdminSortingPaginatingFilterDto } from '../../shared/dtos/admin/spf.dto';
+import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { UserJwtGuard } from '../../auth/services/guards/user-jwt.guard';
 
 @UseGuards(UserJwtGuard)
@@ -31,7 +31,7 @@ export class AdminStoreReviewController {
   }
 
   @Get()
-  async findAllReviews(@Query() sortingPaging: AdminSortingPaginatingFilterDto): Promise<ResponseDto<AdminStoreReviewDto[]>> {
+  async findAllReviews(@Query() sortingPaging: AdminSPFDto): Promise<ResponseDto<AdminStoreReviewDto[]>> {
     return this.storeReviewService.getReviewsResponse(sortingPaging);
   }
 
