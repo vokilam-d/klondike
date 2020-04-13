@@ -22,6 +22,7 @@ import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ShippingAddressDto } from '../../shared/dtos/shared-dtos/shipping-address.dto';
 import { UserJwtGuard } from '../../auth/services/guards/user-jwt.guard';
+import { AdminTrackingIdDto } from '../../shared/dtos/admin/tracking-id.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -76,6 +77,15 @@ export class AdminOrderController {
   @Put(':id/address')
   async editOrderAddress(@Param('id') orderId: number, @Body() addressDto: ShippingAddressDto): Promise<ResponseDto<AdminOrderDto>> {
     const updated = await this.orderService.editOrderAddress(orderId, addressDto);
+
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Put(':id/tracking')
+  async editOrderTracking(@Param('id') orderId: number, @Body() trackingIdDto: AdminTrackingIdDto): Promise<ResponseDto<AdminOrderDto>> {
+    const updated = await this.orderService.editOrderTrackingId(orderId, trackingIdDto);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })

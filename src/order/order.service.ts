@@ -23,6 +23,7 @@ import { ClientSession, FilterQuery } from 'mongoose';
 import { ShippingMethodService } from '../shipping-method/shipping-method.service';
 import { PaymentMethodService } from '../payment-method/payment-method.service';
 import { ClientAddOrderDto } from '../shared/dtos/client/order.dto';
+import { AdminTrackingIdDto } from '../shared/dtos/admin/tracking-id.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -271,6 +272,18 @@ export class OrderService implements OnApplicationBootstrap {
     const updated = await this.orderModel.findByIdAndUpdate(
       orderId,
       { $set: { [addressProp]: addressDto } },
+      { new: true }
+    ).exec();
+
+    return updated;
+  }
+
+  async editOrderTrackingId(orderId: number, { trackingId }: AdminTrackingIdDto): Promise<Order> {
+    const trackingIdProp: keyof Order = 'novaposhtaTrackingId';
+
+    const updated = await this.orderModel.findByIdAndUpdate(
+      orderId,
+      { $set: { [trackingIdProp]: trackingId } },
       { new: true }
     ).exec();
 
