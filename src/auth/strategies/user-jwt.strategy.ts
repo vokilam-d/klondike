@@ -7,7 +7,7 @@ import { UserService } from '../../user/user.service';
 import { User } from '../../user/models/user.model';
 
 @Injectable()
-export class UserJwtStrategy     extends PassportStrategy(Strategy, authConstants.USER_JWT_STRATEGY_NAME) {
+export class UserJwtStrategy extends PassportStrategy(Strategy, authConstants.USER_JWT_STRATEGY_NAME) {
 
   constructor(private userService: UserService) {
     super({

@@ -479,7 +479,7 @@ export class Migrate {
 
       try {
         await axios.patch(
-          `${this.apiHostname}/api/v1/admin/products/${product.entity_id}`,
+          `${this.apiHostname}/api/v1/admin/products/${product.entity_id}/categories`,
           categories,
           {
             params: { migrate: true },

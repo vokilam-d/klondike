@@ -61,10 +61,11 @@ export class ProductService implements OnApplicationBootstrap {
               private readonly pageRegistryService: PageRegistryService) {
   }
 
-  onApplicationBootstrap(): any {
+  async onApplicationBootstrap() {
     this.handleCurrencyUpdates();
     this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
     // this.reindexAllSearchData();
+    // this.turnOverProductSortOrder();
   }
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
@@ -585,7 +586,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto): Promise<void> {
+  private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto, categoryTreeItems?): Promise<void> {
     const breadcrumbsVariants: Breadcrumb[][] = [];
 
     const populate = (treeItems: CategoryTreeItem[], breadcrumbs: Breadcrumb[] = []) => {
@@ -613,7 +614,9 @@ export class ProductService implements OnApplicationBootstrap {
       }
     };
 
-    const categoryTreeItems = await this.categoryService.getCategoriesTree();
+    if (!categoryTreeItems) {
+      categoryTreeItems = await this.categoryService.getCategoriesTree();
+    }
     populate(categoryTreeItems);
 
     breadcrumbsVariants.sort((a, b) => b.length - a.length);
@@ -869,10 +872,29 @@ export class ProductService implements OnApplicationBootstrap {
     spf.limit = 10000;
     const products = await this.getProductsWithQty(spf);
     const listItems = this.transformToAdminListDto(products);
-    for (let listItem of listItems) {
-      await this.searchService.addDocument(Product.collectionName, listItem.id, listItem);
-      console.log('Reindexed document with id', listItem.id);
+
+    for (const batch of getBatches(listItems, 20)) {
+      await Promise.all(batch.map(listItem => this.searchService.addDocument(Product.collectionName, listItem.id, listItem)));
+      console.log('Reindexed ids: ', batch.map(i => i.id).join());
     }
+
+    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
+      const result = [];
+      for (let i = 0; i < arr.length; i++) {
+        if (i % size !== 0) {
+          continue;
+        }
+
+        const resultItem = [];
+        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
+          resultItem.push(arr[i + k]);
+        }
+        result.push(resultItem);
+      }
+
+      return result;
+    }
+
   }
 
   private async setProductPrices(product: DocumentType<Product>): Promise<DocumentType<Product>> {
@@ -1034,5 +1056,107 @@ export class ProductService implements OnApplicationBootstrap {
     } finally {
       await session.endSession();
     }
+  }
+
+  async turnOverProductSortOrder() {
+    const session = await this.productModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      console.log(`Start fetch categories`);
+      const categories = await this.categoryService.getAllCategories();
+      console.log(`Got ${categories.length} categories`);
+      for (let k = 0; k < categories.length; k++) {
+        const categoryId = categories[k]._id;
+        if (categoryId === 11) { continue; }
+        console.log(`Start fetch products for category`, categoryId);
+        let products = await this.productModel.find({ 'categories.id': categoryId });
+        products = products
+          .filter(p => {
+            const foundCatsIdx = p.categories.findIndex(c => c.id === categoryId);
+            if (foundCatsIdx === -1 || p.categories[foundCatsIdx].sortOrder === 0) {
+              return false;
+            }
+            return true;
+          })
+          .sort((a, b) => {
+            const aCatIdx = a.categories.findIndex(c => c.id === categoryId);
+            const bCatIdx = b.categories.findIndex(c => c.id === categoryId);
+            return b.categories[bCatIdx].sortOrder - a.categories[aCatIdx].sortOrder;
+          });
+
+        console.log(`Got ${products.length} sorted products for category ${categoryId}`);
+        const end = Math.floor(products.length / 2);
+
+        console.table(
+          products.map(p => p.toJSON())
+            .map(p => {
+              return {
+                sortOrder: p.categories.find(c => c.id === categoryId).sortOrder,
+                name: p.name
+              }
+            })
+            .sort((a, b) => b.sortOrder - a.sortOrder)
+        )
+
+        for (let i = 0; i < end; i++) {
+          const product = products[i];
+          const productCategoryIdx = product.categories.findIndex(c => c.id === categoryId);
+
+          const mirror = products[products.length - 1 - i];
+          const mirrorCategoryIdx = mirror.categories.findIndex(c => c.id === categoryId);
+          const mirrorCategoryOrder = mirror.categories[mirrorCategoryIdx].sortOrder;
+
+          console.log(`Start sort orders: ${product.categories[productCategoryIdx].sortOrder} <-> ${mirror.categories[mirrorCategoryIdx].sortOrder}`);
+
+          mirror.categories[mirrorCategoryIdx].sortOrder = product.categories[productCategoryIdx].sortOrder;
+          product.categories[productCategoryIdx].sortOrder = mirrorCategoryOrder;
+
+          // console.log(`Finish sort orders: ${product.categories[productCategoryIdx].sortOrder} <-> ${mirror.categories[mirrorCategoryIdx].sortOrder}`);
+          await product.save();
+          await mirror.save();
+
+          console.log(`(${i + 1} of ${end}) Saved sort order of ${product.id} & ${mirror.id} in category: ${categoryId}`);
+        }
+
+        console.table(
+          products.map(p => p.toJSON())
+            .map(p => {
+              return {
+                sortOrder: p.categories.find(c => c.id === categoryId).sortOrder,
+                name: p.name
+              }
+            })
+            .sort((a, b) => b.sortOrder - a.sortOrder)
+        )
+
+        console.log(`Finished categories: (${k + 1} of ${categories.length})`);
+      }
+
+      console.log('Before commit transaction');
+      await session.commitTransaction();
+      console.log('After commit transaction');
+
+      await this.reindexAllSearchData();
+      console.log('After whole reindex');
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  async migrateProductCategories(productId: number, productDto: AdminProductCategoryDto[]) {
+    const found = await this.productModel.findById(productId).exec();
+
+    for (let category of found.categories) {
+      const foundCatDtoIdx = productDto.findIndex(catDto => catDto.id === category.id);
+      if (foundCatDtoIdx !== -1) {
+        category.sortOrder = productDto[foundCatDtoIdx].sortOrder;
+      }
+    }
+
+    await found.save();
   }
 }

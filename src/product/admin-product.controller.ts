@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -28,6 +29,7 @@ import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { Product } from './models/product.model';
 import { ProductCategory } from './models/product-category.model';
+import { AdminProductCategoryDto } from '../shared/dtos/admin/product-category.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -89,6 +91,11 @@ export class AdminProductController {
     const categoryIdProp: keyof ProductCategory = 'id';
     spf.sortFilter = { [`${categoriesProp}.${categoryIdProp}`]: reorderDto.categoryId };
     return this.productsService.getAdminProductsList(spf, false);
+  }
+
+  @Patch(':id/categories') // temp method
+  async updateCategories(@Param('id') productId: number, @Body() productDto: AdminProductCategoryDto[]) {
+    return this.productsService.migrateProductCategories(productId, productDto);
   }
 
   @Put(':id')
