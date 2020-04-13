@@ -665,12 +665,6 @@ export class Migrate {
         }
       }
 
-      dto.novaposhtaTrackingId = '';
-      const foundTracking = shipmentTracks.find(track => track.order_id === order.entity_id);
-      if (foundTracking) {
-        dto.novaposhtaTrackingId = foundTracking.track_number;
-      }
-
       dto.items = [];
       for (const magOrderItem of magOrderItems) {
         if (magOrderItem.order_id === order.entity_id) {
@@ -728,6 +722,17 @@ export class Migrate {
       if (foundFlat) {
         dto.clientNote = foundFlat.buyer_order_comment || '';
         dto.adminNote = foundFlat.manager_order_comment || '';
+      }
+
+      dto.novaposhtaTrackingId = '';
+      const foundTracking = shipmentTracks.find(track => track.order_id === order.entity_id);
+      if (foundTracking) {
+        dto.novaposhtaTrackingId = foundTracking.track_number;
+      } else if (dto.adminNote) {
+        const regexMatch = dto.adminNote.match(/([25]\d{13})/m);
+        if (regexMatch) {
+          dto.novaposhtaTrackingId = regexMatch[0];
+        }
       }
 
       dto.logs = [];
