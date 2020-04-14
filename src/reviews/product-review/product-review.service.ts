@@ -13,7 +13,10 @@ import { SearchService } from '../../shared/search/search.service';
 import { plainToClass } from 'class-transformer';
 import { ClientAddProductReviewCommentDto } from '../../shared/dtos/client/product-review-comment.dto';
 import { ClientProductReviewDto } from '../../shared/dtos/client/product-review.dto';
-import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
+import {
+  ClientAddProductReviewDto,
+  ClientAddProductReviewFromEmailDto
+} from '../../shared/dtos/client/add-product-review.dto';
 
 @Injectable()
 export class ProductReviewService extends BaseReviewService<ProductReview, AdminProductReviewDto> {
@@ -45,6 +48,10 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
 
   async createReview(reviewDto: AdminProductReviewDto | ClientAddProductReviewDto, migrate?): Promise<AdminProductReviewDto> {
     return super.createReview(reviewDto, (review, session) => this.productService.addReviewToProduct(review, session), migrate);
+  }
+
+  async createReviewFromEmail(fromEmailDto: ClientAddProductReviewFromEmailDto): Promise<string> {
+    return
   }
 
   async updateReview(reviewId: string, reviewDto: AdminProductReviewDto): Promise<AdminProductReviewDto> {

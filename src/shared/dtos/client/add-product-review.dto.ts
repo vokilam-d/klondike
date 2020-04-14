@@ -32,3 +32,20 @@ export class ClientAddProductReviewDto implements Pick<ClientProductReviewDto, '
 
   customerId?: number;
 }
+
+export class ClientAddProductReviewFromEmailDto implements Pick<ClientAddProductReviewDto, 'customerId' | 'productId' | 'productVariantId' | 'rating' | 'text'> {
+
+  customerId?: number;
+
+  @IsNumber()
+  productId: number;
+
+  @IsString()
+  productVariantId: string;
+
+  @IsNumber()
+  rating: number;
+
+  @IsString()
+  text: string;
+}

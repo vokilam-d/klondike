@@ -1,4 +1,16 @@
-import { Body, Controller, Get, Headers, Param, Post, Query, Request, Response } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  Query,
+  Redirect,
+  Request,
+  Response,
+  UsePipes, ValidationPipe
+} from '@nestjs/common';
 import { ProductReviewService } from './product-review.service';
 import { ClientProductReviewFilterDto } from '../../shared/dtos/client/product-review-filter.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
@@ -10,8 +22,12 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from "http";
 import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
-import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
+import {
+  ClientAddProductReviewDto,
+  ClientAddProductReviewFromEmailDto
+} from '../../shared/dtos/client/add-product-review.dto';
 
+@UsePipes(new ValidationPipe({ transform: true }))
 @Controller('product-reviews')
 export class ClientProductReviewController {
 
@@ -42,12 +58,24 @@ export class ClientProductReviewController {
   @Post()
   async createProductReview(@Body() productReviewDto: ClientAddProductReviewDto, @Query('migrate') migrate: any, @Headers() headers): Promise<ResponseDto<ClientProductReviewDto>> {
 
-    productReviewDto.customerId = headers.customerId;
+    if (productReviewDto.customerId) {
+      productReviewDto.customerId = headers.customerId;
+    }
     const review = await this.productReviewService.createReview(productReviewDto, migrate);
 
     return {
       data: plainToClass(ClientProductReviewDto, review, { excludeExtraneousValues: true })
     }
+  }
+
+  @Post('from-email') // todo handle not supporting email clients: add @Get to redirect to product page with saving all params. Maybe convert whole request to Get ?
+  @Redirect('/')
+  async createReviewFromEmail(@Body() fromEmailDto: ClientAddProductReviewFromEmailDto) {
+    const productSlug = await this.productReviewService.createReviewFromEmail(fromEmailDto);
+
+    return {
+      url: `/${productSlug}`
+    };
   }
 
   @Post(':id/comment')

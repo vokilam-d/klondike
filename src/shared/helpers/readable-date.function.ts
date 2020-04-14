@@ -1,7 +1,7 @@
 import { addLeadingZeros } from './add-leading-zeros.function';
 
 export function readableDate(date: Date): string {
-  const day = addLeadingZeros(date.getDay(), 2);
+  const day = addLeadingZeros(date.getDay() + 1, 2);
   const month = MONTHS[date.getMonth()];
   const year = date.getFullYear();
   const hours = addLeadingZeros(date.getHours(), 2);

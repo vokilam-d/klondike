@@ -19,8 +19,8 @@ const customerModel = {
   imports: [
     MongooseModule.forFeature([customerModel]),
     forwardRef(() => AuthModule),
-    OrderModule,
-    EmailModule
+    forwardRef(() => EmailModule),
+    forwardRef(() => OrderModule)
   ],
   providers: [CustomerService],
   controllers: [AdminCustomerController, ClientCustomerController, CartController],

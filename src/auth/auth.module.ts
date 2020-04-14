@@ -40,8 +40,8 @@ const confirmEmailModel = {
     }),
     forwardRef(() => CustomerModule),
     forwardRef(() => UserModule),
-    PassportModule,
-    EmailModule
+    forwardRef(() => EmailModule),
+    PassportModule
   ],
   providers: [
     AuthService,

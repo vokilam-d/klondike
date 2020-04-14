@@ -627,6 +627,7 @@ export class Migrate {
       dto.customerFirstName = order.customer_firstname || '';
       dto.customerLastName = order.customer_lastname || '';
       dto.customerEmail = order.customer_email;
+      dto.customerPhoneNumber = order.customer_email;
 
       dto.address = {} as ShippingAddressDto;
       const foundAddress = addresses.find(address => address.entity_id === order.shipping_address_id);
@@ -696,6 +697,7 @@ export class Migrate {
 
             orderItem.variantId = response.data.data.variantId;
             orderItem.imageUrl = response.data.data.imageUrl;
+            orderItem.slug = response.data.data.slug;
 
             dto.items.push(orderItem);
           } catch (ex) {

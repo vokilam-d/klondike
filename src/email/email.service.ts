@@ -11,6 +11,7 @@ enum EEmailType {
   EmailConfirmation = 'email-confirmation',
   RegistrationSuccess = 'registration-success',
   ResetPassword = 'password-reset',
+  LeaveReview = 'leave-review',
   OrderConfirmation = 'order-confirmation'
 }
 
@@ -48,6 +49,17 @@ export class EmailService {
     };
 
     return this.sendEmail(to, subject, html, attachment);
+  }
+
+  async sendLeaveReviewEmail(order: Order) {
+    const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
+
+    const subject = `${order.customerFirstName}, оставьте отзыв о товаре`;
+
+    const context = this.getLeaveReviewTemplateContext(order);
+    const html = this.getEmailHtml(EEmailType.LeaveReview, context);
+
+    return this.sendEmail(to, subject, html);
   }
 
   sendRegisterSuccessEmail(customer: Customer, token: string) {
@@ -128,6 +140,31 @@ export class EmailService {
       discountValue: order.discountValue,
       clientNote: order.clientNote,
       isCallbackNeeded: order.isCallbackNeeded
+    };
+  }
+
+  private getLeaveReviewTemplateContext(order: Order): any {
+    let mainProductIdx = 0;
+    order.items.forEach((item, index) => {
+      if (item.price > order.items[mainProductIdx].price) {
+        mainProductIdx = index;
+      }
+    });
+
+    const products = order.items
+      .filter((item, index) => index !== mainProductIdx)
+      .map(item => ({ name: item.name, imageUrl: item.imageUrl, slug: item.slug }))
+
+    return {
+      firstName: order.customerFirstName,
+      lastName: order.customerLastName,
+      mainProductSlug: order.items[mainProductIdx].slug,
+      mainProductName: order.items[mainProductIdx].name,
+      mainProductId: order.items[mainProductIdx].productId,
+      mainProductVariantId: order.items[mainProductIdx].variantId,
+      customerId: order.customerId,
+      email: order.customerEmail,
+      products
     };
   }
 }

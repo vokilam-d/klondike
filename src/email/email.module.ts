@@ -6,11 +6,11 @@ import { OrderModule } from '../order/order.module';
 
 @Module({
   imports: [
-    PdfGeneratorModule,
-    forwardRef(() => OrderModule)
+    PdfGeneratorModule
   ],
   providers: [EmailService],
   controllers: [AdminEmailController],
   exports: [EmailService]
 })
-export class EmailModule {}
+export class EmailModule {
+}

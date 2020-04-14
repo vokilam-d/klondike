@@ -192,6 +192,10 @@ export class OrderService implements OnApplicationBootstrap {
       newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
       newOrder.idForCustomer = addLeadingZeros(newOrder.id);
       newOrder.customerId = customer.id;
+      newOrder.customerEmail = customer.email;
+      newOrder.customerFirstName = customer.firstName;
+      newOrder.customerLastName = customer.lastName;
+      newOrder.customerPhoneNumber = customer.phoneNumber;
       newOrder.createdAt = new Date();
       newOrder.status = EOrderStatus.NEW;
       newOrder.discountPercent = customer.discountPercent;
