@@ -9,4 +9,5 @@ import { CityController } from './controller/city.controller';
   providers: [NovaPoshtaService],
   controllers: [CityController]
 })
-export class NovaPoshtaModule {}
+export class NovaPoshtaModule {
+}
