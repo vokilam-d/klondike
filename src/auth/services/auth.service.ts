@@ -31,7 +31,7 @@ export class AuthService {
   }
 
   getCustomerIdFromReq(req: FastifyRequest): Promise<number | undefined> {
-    return this.getEntityIdFromReq(req, authConstants.JWT_COOKIE_NAME);
+    return this.getEntityIdFromReq(req, authConstants.JWT_COOKIE_NAME).then(id => parseInt(id));
   }
 
   async getCustomerFromReq(req: FastifyRequest): Promise<DocumentType<Customer> | undefined> {
