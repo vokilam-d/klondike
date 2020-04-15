@@ -22,6 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { NovaPoshtaModule } from './nova-poshta/nova-poshta.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -59,7 +60,8 @@ import { NovaPoshtaModule } from './nova-poshta/nova-poshta.module';
     CurrencyModule,
     AuthModule,
     UserModule,
-    NovaPoshtaModule
+    NovaPoshtaModule,
+    TasksModule
   ],
   providers: [GlobalExceptionFilter],
   controllers: []
