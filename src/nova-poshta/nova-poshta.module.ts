@@ -1,12 +1,12 @@
 import { HttpModule, Module } from '@nestjs/common';
-import { NovaPoshtaService } from './nova-poshta.service';
+import { CityService } from './city.service';
 import { CityController } from './controller/city.controller';
 
 @Module({
   imports: [
     HttpModule
   ],
-  providers: [NovaPoshtaService],
+  providers: [CityService],
   controllers: [CityController]
 })
 export class NovaPoshtaModule {

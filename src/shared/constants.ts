@@ -18,7 +18,7 @@ export const elasticTextType = {
 };
 export const elasticKeywordType = {
   "type": "keyword"
-}
+};
 export const elasticDateType = {
   "type": "date"
 };
@@ -31,4 +31,34 @@ export const elasticFloatType = {
 };
 export const elasticBooleanType = {
   "type": "boolean"
+};
+export const elasticAutocompleteTextType = {
+  "type" : "text",
+  "analyzer": "autocomplete",
+  "search_analyzer": "autocomplete_search"
+};
+export const autocompleteSettings = {
+  "analysis": {
+    "analyzer": {
+      "autocomplete": {
+        "tokenizer": "autocomplete",
+        "filter": [
+          "lowercase"
+        ]
+      },
+      "autocomplete_search": {
+        "tokenizer": "lowercase"
+      }
+    },
+    "tokenizer": {
+      "autocomplete": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 20,
+        "token_chars": [
+          "letter"
+        ]
+      }
+    }
+  }
 };

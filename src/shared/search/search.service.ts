@@ -20,7 +20,7 @@ export class SearchService {
     // });
   }
 
-  async ensureCollection(collection: string, properties): Promise<any> {
+  async ensureCollection(collection: string, properties, customSettings?): Promise<any> {
     try {
       const { body: exists } = await this.client.indices.exists({ index: collection });
       if (exists) { return; }
@@ -30,7 +30,8 @@ export class SearchService {
         body: {
           mappings: {
             properties
-          }
+          },
+          settings : customSettings
         }
       });
     } catch (ex) {
@@ -51,6 +52,20 @@ export class SearchService {
       });
     } catch (ex) {
       this.logger.error('Could not create document:');
+      this.logger.error(ex.meta ? ex.meta.body : ex);
+    }
+  }
+
+  // TODO doc should implement hasId or something
+  async addDocuments(collection: string, documents: any): Promise<any> {
+    if (documents.length == 0) {
+      return;
+    }
+    const body = documents.flatMap(doc => [{ index: { _index: collection } }, doc]);
+    try {
+      await this.client.bulk({ refresh: "true", body });
+    } catch (ex) {
+      this.logger.error('Failed to submit document bulk:');
       this.logger.error(ex.meta ? ex.meta.body : ex);
     }
   }
@@ -114,9 +129,8 @@ export class SearchService {
 
     // build queries
     const queries = filters.map(filter => {
-
       if (filter.fieldName.includes('.')) {
-        const [ parentField ] = filter.fieldName.split('.');
+        const [parentField] = filter.fieldName.split('.');
         return {
           'nested': {
             path: parentField,
@@ -127,32 +141,14 @@ export class SearchService {
             }
           }
         };
-      } else {
-
-        const fields = [];
-        filter.fieldName.split('|').forEach(fieldName => {
-          fields.push(...[
-            fieldName,
-            `${fieldName}._2gram`,
-            `${fieldName}._3gram`
-          ]);
-        });
-
-        return {
-          multi_match: {
-            query: filter.value,
-            // type: "bool_prefix",
-            type: "phrase_prefix",
-            fields
-          }
-        };
       }
-
-      // return {
-      //   match_phrase_prefix: {
-      //     [filter.fieldName]: filter.value
-      //   }
-      // }
+      return {
+        multi_match: {
+          query: filter.value,
+          type: 'phrase_prefix',
+          fields: filter.fieldName.split('|')
+        }
+      };
     });
 
     // build sort
