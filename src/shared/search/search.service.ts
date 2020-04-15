@@ -61,7 +61,7 @@ export class SearchService {
     if (documents.length == 0) {
       return;
     }
-    const body = documents.flatMap(doc => [{ index: { _index: collection } }, doc]);
+    const body = documents.flatMap(doc => [{ index: { _index: collection, _id: doc.id} }, doc]);
     try {
       await this.client.bulk({ refresh: "true", body });
     } catch (ex) {
