@@ -2,7 +2,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
-  Put,
+  Post,
   Query,
   UseInterceptors,
   UsePipes,
@@ -20,15 +20,16 @@ export class CityController {
   constructor(private readonly novaPoshtaService: CityService) {
   }
 
-  @Put('catalog-migration')
+  @Post('action/update-catalog')
   async loadCitiesToElastic() {
     this.novaPoshtaService.loadCitiesToElastic();
-    return 'City catalog migration has been triggered.'
+    return 'City catalog migration has been triggered.';
   }
 
   @Get()
-  async getFiltered(@Query() spf: ClientSPFDto): Promise<ResponseDto<Array<any>>> {
-    return await this.novaPoshtaService.getCities(spf);
+  async getFiltered(@Query() spf: ClientSPFDto): Promise<ResponseDto<any[]>> {
+    return {
+      data: await this.novaPoshtaService.getCities(spf)
+    };
   }
-
 }

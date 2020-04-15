@@ -1,5 +1,5 @@
 import { CronExpression } from '@nestjs/schedule';
-import { HttpService, Injectable, Logger } from '@nestjs/common';
+import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { SearchService } from '../shared/search/search.service';
 import { ElasticCity } from './models/elastic-city.model';
 import { autocompleteSettings } from '../shared/constants';
@@ -8,7 +8,7 @@ import { IFilter } from '../shared/dtos/shared-dtos/spf.dto';
 import { PrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
 
 @Injectable()
-export class CityService {
+export class CityService implements OnApplicationBootstrap {
 
   private logger = new Logger(CityService.name);
 
@@ -28,16 +28,17 @@ export class CityService {
       do {
         pageNumber++;
         cities = await this.fetchCityCatalogPage(pageNumber);
-        let esCities = cities.map(city => CityService.toEsCity(city));
+        const esCities = cities.map(CityService.toCityDto);
         this.searchService.addDocuments(ElasticCity.collectionName, esCities);
-        this.logger.log('Loaded 150 cities to ES. Bulk number ' + pageNumber);
         cityCount += cities.length;
-      } while (cities.length != 0);
+      } while (cities.length !== 0);
+
     } catch (ex) {
       this.logger.error('Failed to fetch cities');
       throw ex;
     }
-    this.logger.log(`Loaded ${cityCount} cities to Elastic`);
+
+    this.logger.log(`Sent ${cityCount} cities to index`);
   }
 
   private async fetchCityCatalogPage(cityBulkNumber: number) {
@@ -51,10 +52,11 @@ export class CityService {
         },
         'apiKey': 'fc458ea324bd4fea1f1013dba44cdd03'
       }).toPromise();
+
     return response.data.data;
   }
 
-  private static toEsCity(city) {
+  private static toCityDto(city) {
     const cityPrefix = city.SettlementTypeDescription
       .replace(/селище міського типу/, 'смт.')
       .replace(/село/, 'с.')
@@ -70,14 +72,11 @@ export class CityService {
   }
 
   async getCities(spf: ClientSPFDto) {
-    let filters: IFilter[] = [{ fieldName: 'name|ruName', value: spf['filter'] }];
+    const filters: IFilter[] = [{ fieldName: 'name|ruName', value: spf['filter'] }];
     const searchResponse = await this.searchService.searchByFilters(ElasticCity.collectionName, filters, 0, spf.limit);
-    let cities = searchResponse[0]
+    return searchResponse[0]
       .map(esCity => ({ id: esCity.id, name: esCity.fullName }))
       .sort((a, b) => a.name.localeCompare(b.name));
-    return {
-      data: cities
-    };
   }
 
 }
