@@ -1,9 +1,11 @@
+import { CronExpression } from '@nestjs/schedule';
 import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { SearchService } from '../shared/search/search.service';
 import { ElasticCity } from './models/elastic-city.model';
 import { autocompleteSettings } from '../shared/constants';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { IFilter } from '../shared/dtos/shared-dtos/spf.dto';
+import { PrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
 
 @Injectable()
 export class CityService {
@@ -17,6 +19,7 @@ export class CityService {
     this.searchService.ensureCollection(ElasticCity.collectionName, new ElasticCity(), autocompleteSettings);
   }
 
+  @PrimaryInstanceCron(CronExpression.EVERY_DAY_AT_3AM)
   async loadCitiesToElastic() {
     let cityCount = 0;
     try {
