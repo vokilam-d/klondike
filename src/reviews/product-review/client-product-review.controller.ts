@@ -6,10 +6,11 @@ import {
   Param,
   Post,
   Query,
-  Redirect,
+  Redirect, Req,
   Request,
   Response,
-  UsePipes, ValidationPipe
+  UsePipes,
+  ValidationPipe
 } from '@nestjs/common';
 import { ProductReviewService } from './product-review.service';
 import { ClientProductReviewFilterDto } from '../../shared/dtos/client/product-review-filter.dto';
@@ -19,19 +20,18 @@ import { IpAddress } from '../../shared/decorators/ip-address.decorator';
 import { plainToClass } from 'class-transformer';
 import { ClientAddProductReviewCommentDto } from '../../shared/dtos/client/product-review-comment.dto';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { ServerResponse } from "http";
-import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
+import { ServerResponse } from 'http';
 import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
-import {
-  ClientAddProductReviewDto,
-  ClientAddProductReviewFromEmailDto
-} from '../../shared/dtos/client/add-product-review.dto';
+import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
+import { ModuleRef } from '@nestjs/core';
+import { AuthService } from '../../auth/services/auth.service';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('product-reviews')
 export class ClientProductReviewController {
 
-  constructor(private readonly productReviewService: ProductReviewService) {
+  constructor(private readonly productReviewService: ProductReviewService,
+              private moduleRef: ModuleRef) {
   }
 
   @Get()
@@ -47,6 +47,16 @@ export class ClientProductReviewController {
     }
   }
 
+  @Get('from-email')
+  @Redirect('/')
+  async createReviewFromEmail(@Query() productReviewDto: ClientAddProductReviewDto) {
+    const productSlug = await this.productReviewService.createReviewFromEmail(productReviewDto);
+
+    return {
+      url: `/${productSlug}?review-from-email=true`
+    };
+  }
+
   @Post('media')
   async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
     const media = await this.productReviewService.uploadMedia(request);
@@ -56,10 +66,11 @@ export class ClientProductReviewController {
   }
 
   @Post()
-  async createProductReview(@Body() productReviewDto: ClientAddProductReviewDto, @Query('migrate') migrate: any, @Headers() headers): Promise<ResponseDto<ClientProductReviewDto>> {
+  async createProductReview(@Req() req, @Body() productReviewDto: ClientAddProductReviewDto, @Query('migrate') migrate: any): Promise<ResponseDto<ClientProductReviewDto>> {
 
-    if (productReviewDto.customerId) {
-      productReviewDto.customerId = headers.customerId;
+    if (!productReviewDto.customerId) {
+      const authService = this.moduleRef.get(AuthService, { strict: false });
+      productReviewDto.customerId = await authService.getCustomerIdFromReq(req);
     }
     const review = await this.productReviewService.createReview(productReviewDto, migrate);
 
@@ -68,20 +79,13 @@ export class ClientProductReviewController {
     }
   }
 
-  @Post('from-email') // todo handle not supporting email clients: add @Get to redirect to product page with saving all params. Maybe convert whole request to Get ?
-  @Redirect('/')
-  async createReviewFromEmail(@Body() fromEmailDto: ClientAddProductReviewFromEmailDto) {
-    const productSlug = await this.productReviewService.createReviewFromEmail(fromEmailDto);
-
-    return {
-      url: `/${productSlug}`
-    };
-  }
-
   @Post(':id/comment')
-  async addComment(@Param('id') reviewId: string, @Body() commentDto: ClientAddProductReviewCommentDto, @Headers() headers): Promise<ResponseDto<ClientProductReviewDto>> {
-    const review = await this.productReviewService.addComment(parseInt(reviewId), commentDto, headers.customerId);
-    const adminDto = this.productReviewService.transformReviewToDto(review, undefined, headers.userId, headers.customerId, true);
+  async addComment(@Param('id') reviewId: string, @Req() req, @Body() commentDto: ClientAddProductReviewCommentDto, @Headers() headers): Promise<ResponseDto<ClientProductReviewDto>> {
+    const authService = this.moduleRef.get(AuthService, { strict: false });
+    const customerId = await authService.getCustomerIdFromReq(req);
+
+    const review = await this.productReviewService.addComment(parseInt(reviewId), commentDto, customerId);
+    const adminDto = this.productReviewService.transformReviewToDto(review, undefined, headers.userId, customerId, true);
 
     return {
       data: plainToClass(ClientProductReviewDto, adminDto, { excludeExtraneousValues: true })
@@ -89,8 +93,11 @@ export class ClientProductReviewController {
   }
 
   @Post(':id/vote')
-  async createVote(@Param('id') reviewId: string, @IpAddress() ipAddress: string | null, @Headers() headers): Promise<ResponseDto<boolean>> {
-    await this.productReviewService.createVote(parseInt(reviewId), ipAddress, headers.userId, headers.customerId);
+  async createVote(@Req() req, @Param('id') reviewId: string, @IpAddress() ipAddress: string | null, @Headers() headers): Promise<ResponseDto<boolean>> {
+    const authService = this.moduleRef.get(AuthService, { strict: false });
+    const customerId = await authService.getCustomerIdFromReq(req);
+
+    await this.productReviewService.createVote(parseInt(reviewId), ipAddress, headers.userId, customerId);
 
     return {
       data: true
@@ -98,9 +105,11 @@ export class ClientProductReviewController {
   }
 
   @Post(':id/downvote')
-  async removeVote(@Param('id') reviewId: string, @IpAddress() ipAddress: string | null, @Headers() headers): Promise<ResponseDto<boolean>> {
-    await this.productReviewService.removeVote(parseInt(reviewId), ipAddress, headers.userId, headers.customerId);
+  async removeVote(@Req() req, @Param('id') reviewId: string, @IpAddress() ipAddress: string | null, @Headers() headers): Promise<ResponseDto<boolean>> {
+    const authService = this.moduleRef.get(AuthService, { strict: false });
+    const customerId = await authService.getCustomerIdFromReq(req);
 
+    await this.productReviewService.removeVote(parseInt(reviewId), ipAddress, headers.userId, customerId);
     return {
       data: true
     }

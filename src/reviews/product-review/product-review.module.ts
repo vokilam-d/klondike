@@ -5,7 +5,6 @@ import { ProductReview, ProductReviewModel } from './models/product-review.model
 import { AdminProductReviewController } from './admin-product-review.controller';
 import { ProductModule } from '../../product/product.module';
 import { ClientProductReviewController } from './client-product-review.controller';
-import { CustomerModule } from '../../customer/customer.module';
 
 const productReviewModel = {
   name: ProductReviewModel.modelName,

@@ -12,11 +12,7 @@ import { ElasticProductReviewModel } from './models/elastic-product-review.model
 import { SearchService } from '../../shared/search/search.service';
 import { plainToClass } from 'class-transformer';
 import { ClientAddProductReviewCommentDto } from '../../shared/dtos/client/product-review-comment.dto';
-import { ClientProductReviewDto } from '../../shared/dtos/client/product-review.dto';
-import {
-  ClientAddProductReviewDto,
-  ClientAddProductReviewFromEmailDto
-} from '../../shared/dtos/client/add-product-review.dto';
+import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
 
 @Injectable()
 export class ProductReviewService extends BaseReviewService<ProductReview, AdminProductReviewDto> {
@@ -50,8 +46,10 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     return super.createReview(reviewDto, (review, session) => this.productService.addReviewToProduct(review, session), migrate);
   }
 
-  async createReviewFromEmail(fromEmailDto: ClientAddProductReviewFromEmailDto): Promise<string> {
-    return
+  async createReviewFromEmail(reviewDto: ClientAddProductReviewDto): Promise<string> {
+    await this.createReview(reviewDto);
+    const product = await this.productService.getProductWithQtyById(reviewDto.productId);
+    return product.variants.find(v => v._id.equals(reviewDto.productVariantId)).slug;
   }
 
   async updateReview(reviewId: string, reviewDto: AdminProductReviewDto): Promise<AdminProductReviewDto> {

@@ -30,8 +30,12 @@ export class AuthService {
               private readonly jwtService: JwtService) {
   }
 
+  getCustomerIdFromReq(req: FastifyRequest): Promise<number | undefined> {
+    return this.getEntityIdFromReq(req, authConstants.JWT_COOKIE_NAME);
+  }
+
   async getCustomerFromReq(req: FastifyRequest): Promise<DocumentType<Customer> | undefined> {
-    const id = await this.getEntityIdFromReq(req, authConstants.JWT_COOKIE_NAME);
+    const id = await this.getCustomerIdFromReq(req);
     if (!id) { return; }
 
     const customer = await this.customerService.getCustomerById(+id, false);
