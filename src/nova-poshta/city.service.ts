@@ -18,7 +18,6 @@ export class CityService {
   }
 
   async loadCitiesToElastic() {
-    this.searchService.ensureCollection(ElasticCity.collectionName, new ElasticCity(), autocompleteSettings);
     let cityCount = 0;
     try {
       let pageNumber = 0;
