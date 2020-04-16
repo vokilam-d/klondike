@@ -8,22 +8,22 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
-import { CityService } from '../city.service';
+import { SettlementService } from '../settlement.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { ClientSPFDto } from '../../shared/dtos/client/spf.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
-@Controller('cities')
-export class CityController {
+@Controller('warehouses')
+export class WarehouseController {
 
-  constructor(private readonly novaPoshtaService: CityService) {
+  constructor(private readonly novaPoshtaService: SettlementService) {
   }
 
   @Post('action/update-catalog')
   async loadCitiesToElastic() {
     this.novaPoshtaService.loadCitiesToElastic();
-    return 'City catalog migration has been triggered.';
+    return 'Settlement catalog migration has been triggered.';
   }
 
   @Get()

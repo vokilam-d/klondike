@@ -13,11 +13,11 @@ export class TasksService implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap() {
-    await this.setupSavedTasks();
+    // await this.setupSavedTasks();
 
-    setTimeout(() => {
-      this.addTask('testTask2', new Date(Date.now() + 20 * 1000), () => console.log('my task2!'));
-    }, 200);
+    // setTimeout(() => {
+    //   this.addTask('testTask2', new Date(Date.now() + 20 * 1000), () => console.log('my task2!'));
+    // }, 200);
   }
 
   private async setupSavedTasks() {

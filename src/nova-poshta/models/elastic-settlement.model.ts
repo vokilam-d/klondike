@@ -3,11 +3,11 @@ import {
   elasticKeywordType,
   elasticTextType
 } from '../../shared/constants';
-import { CityDto } from './city.dto';
+import { SettlementDto } from './settlement.dto';
 
-export class ElasticCity implements Record<keyof CityDto, any> {
+export class ElasticSettlement implements Record<keyof SettlementDto, any> {
 
-  static collectionName: string = 'city';
+  static collectionName: string = 'settlement';
 
   id = elasticKeywordType;
   fullName = elasticTextType;
