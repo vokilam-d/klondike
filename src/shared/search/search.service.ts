@@ -23,7 +23,9 @@ export class SearchService {
   async ensureCollection(collection: string, properties, customSettings?): Promise<any> {
     try {
       const { body: exists } = await this.client.indices.exists({ index: collection });
-      if (exists) { return; }
+      if (exists) {
+        return;
+      }
 
       await this.client.indices.create({
         index: collection,
@@ -31,7 +33,7 @@ export class SearchService {
           mappings: {
             properties
           },
-          settings : customSettings
+          settings: customSettings
         }
       });
     } catch (ex) {
@@ -61,9 +63,9 @@ export class SearchService {
     if (documents.length == 0) {
       return;
     }
-    const body = documents.flatMap(doc => [{ index: { _index: collection, _id: doc.id} }, doc]);
+    const body = documents.flatMap(doc => [{ index: { _index: collection, _id: doc.id } }, doc]);
     try {
-      await this.client.bulk({ refresh: "true", body });
+      await this.client.bulk({ refresh: 'true', body });
     } catch (ex) {
       this.logger.error('Failed to submit document bulk:');
       this.logger.error(ex.meta ? ex.meta.body : ex);
@@ -121,13 +123,10 @@ export class SearchService {
                                  filters: IFilter[],
                                  from: number,
                                  size: number,
-                                 sortObj: ISorting = { },
+                                 sortObj: ISorting = {},
                                  sortFilter?: any
   ): Promise<[T[], number]> {
 
-    // console.log({ m: 'searchByFilters', collection, filters, from, size, sortObj });
-
-    // build queries
     const queries = filters.map(filter => {
       if (filter.fieldName.includes('.')) {
         const [parentField] = filter.fieldName.split('.');
@@ -151,29 +150,15 @@ export class SearchService {
       };
     });
 
-    // build sort
-    const sort = [];
-    let nestedSort = [];
-    Object.entries(sortObj).forEach(entry => {
-      const [ fieldName, value ] = entry;
+    return await this.searchByQuery(collection, queries, from, size, sortObj, sortFilter);
+  }
 
-      if (fieldName.includes('.')) {
-        const [ parentField ] = fieldName.split('.');
-        nestedSort.push({
-          [fieldName]: {
-            order: value,
-            nested: {
-              path: parentField,
-              ...(sortFilter ? { filter: { term: sortFilter } } : { })
-            }
-          }
-        });
+  public async searchByQuery<T = any>(collection: string, query: any, from: number,
+                                      size: number, sortObj: ISorting = {}, sortFilter?: any): Promise<[T[], number]> {
 
-      } else {
-        sort.push(`${fieldName}:${value}`);
-      }
-    });
-    sort.push('id:desc');
+    const __ret = this.buildSort(sortObj, sortFilter);
+    const sort = __ret.sort;
+    let nestedSort = __ret.nestedSort;
 
     try {
       const { body } = await this.client.search({
@@ -184,33 +169,10 @@ export class SearchService {
         body: {
           query: {
             bool: {
-              must: queries
-              // must: [
-              //   {
-              //     'nested': {
-              //       path: 'categories',
-              //       query: {
-              //         'match_phrase_prefix': {
-              //           'categories.id': '45'
-              //         }
-              //       }
-              //     }
-              //   }
-              // ]
+              must: query
             }
           },
-          ...(nestedSort.length ? { sort: nestedSort } : { })
-          // sort: {
-          //   'categories.sortOrder': {
-          //     'order': 'desc',
-          //     'nested': {
-          //       path: 'categories',
-          //       filter: {
-          //         term: { 'categories.id': 45 }
-          //       }
-          //     }
-          //   }
-          // }
+          ...(nestedSort.length ? { sort: nestedSort } : {})
         }
       });
 
@@ -222,6 +184,32 @@ export class SearchService {
       this.logger.error(ex.meta ? ex.meta.body : ex);
       throw new Error();
     }
+  }
+
+  private buildSort(sortObj: ISorting, sortFilter: any) {
+    const sort = [];
+    let nestedSort = [];
+    Object.entries(sortObj).forEach(entry => {
+      const [fieldName, value] = entry;
+
+      if (fieldName.includes('.')) {
+        const [parentField] = fieldName.split('.');
+        nestedSort.push({
+          [fieldName]: {
+            order: value,
+            nested: {
+              path: parentField,
+              ...(sortFilter ? { filter: { term: sortFilter } } : {})
+            }
+          }
+        });
+
+      } else {
+        sort.push(`${fieldName}:${value}`);
+      }
+    });
+    sort.push('id:desc');
+    return { sort, nestedSort };
   }
 
   updateByQuery(collection: string, queryTerm: any, updateScript: string) {

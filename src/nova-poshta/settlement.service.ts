@@ -21,26 +21,26 @@ export class SettlementService implements OnApplicationBootstrap {
     this.searchService.ensureCollection(ElasticSettlement.collectionName, new ElasticSettlement(), autocompleteSettings);
   }
 
-  public async getCities(spf: ClientSPFDto) : Promise<SettlementDto[]> {
+  public async getSettlements(spf: ClientSPFDto) : Promise<SettlementDto[]> {
     const filters: IFilter[] = [{ fieldName: 'name|ruName', value: spf['filter'] }];
     const searchResponse = await this.searchService.searchByFilters(ElasticSettlement.collectionName, filters, 0, spf.limit);
     return plainToClass(SettlementDto, searchResponse[0],{ excludeExtraneousValues: true })
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort((a, b) => a.fullName.localeCompare(b.fullName));
   }
 
   @PrimaryInstanceCron(CronExpression.EVERY_DAY_AT_3AM)
-  public async loadCitiesToElastic() {
+  public async loadSettlementsToElastic() {
     let settlementCount = 0;
     try {
       let pageNumber = 0;
-      let settlements = [];
+      let plainSettlements = [];
       do {
         pageNumber++;
-        settlements = await this.fetchSettlementCatalogPage(pageNumber);
-        const esSettlements = settlements.map(c => SettlementService.toSettlementDto(c));
-        this.searchService.addDocuments(ElasticSettlement.collectionName, esSettlements);
-        settlementCount += settlements.length;
-      } while (settlements.length !== 0);
+        plainSettlements = await this.fetchSettlementCatalogPage(pageNumber);
+        const settlements = plainSettlements.map(settlement => SettlementService.toSettlementDto(settlement));
+        this.searchService.addDocuments(ElasticSettlement.collectionName, settlements);
+        settlementCount += plainSettlements.length;
+      } while (plainSettlements.length !== 0);
 
     } catch (ex) {
       this.logger.error('Failed to fetch settlements');

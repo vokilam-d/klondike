@@ -32,31 +32,46 @@ export const elasticFloatType = {
 export const elasticBooleanType = {
   "type": "boolean"
 };
+export const elasticAutocompleteLowercaseTextType = {
+  "type" : "text",
+  "analyzer": "analyze_autocomplete_lower_case",
+  "search_analyzer": "search_autocomplete_lower_case"
+};
 export const elasticAutocompleteTextType = {
   "type" : "text",
-  "analyzer": "autocomplete",
-  "search_analyzer": "autocomplete_search"
+  "analyzer": "analyse_autocomplete_letters_digits"
 };
 export const autocompleteSettings = {
   "analysis": {
     "analyzer": {
-      "autocomplete": {
-        "tokenizer": "autocomplete",
+      "analyse_autocomplete_letters_digits": {
+        "tokenizer": "autocomplete_letters_digits"
+      },
+      "analyze_autocomplete_lower_case": {
+        "tokenizer": "autocomplete_letters_lowercase",
         "filter": [
           "lowercase"
         ]
       },
-      "autocomplete_search": {
+      "search_autocomplete_lower_case": {
         "tokenizer": "lowercase"
       }
     },
     "tokenizer": {
-      "autocomplete": {
+      "autocomplete_letters_lowercase": {
         "type": "edge_ngram",
-        "min_gram": 2,
+        "min_gram": 1,
         "max_gram": 20,
         "token_chars": [
-          "letter"
+          "letter", "digit"
+        ]
+      },
+      "autocomplete_letters_digits": {
+        "type": "edge_ngram",
+        "min_gram": 1,
+        "max_gram": 20,
+        "token_chars": [
+          "letter", "digit"
         ]
       }
     }

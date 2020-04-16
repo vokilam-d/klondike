@@ -1,5 +1,5 @@
 import {
-  elasticAutocompleteTextType,
+  elasticAutocompleteLowercaseTextType,
   elasticKeywordType,
   elasticTextType
 } from '../../shared/constants';
@@ -11,7 +11,7 @@ export class ElasticSettlement implements Record<keyof SettlementDto, any> {
 
   id = elasticKeywordType;
   fullName = elasticTextType;
-  name = elasticAutocompleteTextType;
-  ruName = elasticAutocompleteTextType;
+  name = elasticAutocompleteLowercaseTextType;
+  ruName = elasticAutocompleteLowercaseTextType;
 
 }
