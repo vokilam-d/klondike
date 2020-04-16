@@ -156,9 +156,28 @@ export class SearchService {
   public async searchByQuery<T = any>(collection: string, query: any, from: number,
                                       size: number, sortObj: ISorting = {}, sortFilter?: any): Promise<[T[], number]> {
 
-    const __ret = this.buildSort(sortObj, sortFilter);
-    const sort = __ret.sort;
-    let nestedSort = __ret.nestedSort;
+    const sort = [];
+    let nestedSort = [];
+    Object.entries(sortObj).forEach(entry => {
+      const [fieldName, value] = entry;
+
+      if (fieldName.includes('.')) {
+        const [parentField] = fieldName.split('.');
+        nestedSort.push({
+          [fieldName]: {
+            order: value,
+            nested: {
+              path: parentField,
+              ...(sortFilter ? { filter: { term: sortFilter } } : {})
+            }
+          }
+        });
+
+      } else {
+        sort.push(`${fieldName}:${value}`);
+      }
+    });
+    sort.push('id:desc');
 
     try {
       const { body } = await this.client.search({
@@ -184,32 +203,6 @@ export class SearchService {
       this.logger.error(ex.meta ? ex.meta.body : ex);
       throw new Error();
     }
-  }
-
-  private buildSort(sortObj: ISorting, sortFilter: any) {
-    const sort = [];
-    let nestedSort = [];
-    Object.entries(sortObj).forEach(entry => {
-      const [fieldName, value] = entry;
-
-      if (fieldName.includes('.')) {
-        const [parentField] = fieldName.split('.');
-        nestedSort.push({
-          [fieldName]: {
-            order: value,
-            nested: {
-              path: parentField,
-              ...(sortFilter ? { filter: { term: sortFilter } } : {})
-            }
-          }
-        });
-
-      } else {
-        sort.push(`${fieldName}:${value}`);
-      }
-    });
-    sort.push('id:desc');
-    return { sort, nestedSort };
   }
 
   updateByQuery(collection: string, queryTerm: any, updateScript: string) {
