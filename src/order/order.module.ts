@@ -13,6 +13,7 @@ import { ShippingMethodModule } from '../shipping-method/shipping-method.module'
 import { PaymentMethodModule } from '../payment-method/payment-method.module';
 import { ClientOrderController } from './controllers/client-order.controller';
 import { AuthModule } from '../auth/auth.module';
+import { TasksModule } from '../tasks/tasks.module';
 
 const orderModel = {
   name: OrderModel.modelName,
@@ -26,6 +27,7 @@ const orderModel = {
     forwardRef(() => CustomerModule),
     forwardRef(() => AuthModule),
     ProductModule,
+    TasksModule,
     ShippingMethodModule,
     PaymentMethodModule,
     PdfGeneratorModule,

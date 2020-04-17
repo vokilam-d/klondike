@@ -24,6 +24,7 @@ import { ShippingMethodService } from '../shipping-method/shipping-method.servic
 import { PaymentMethodService } from '../payment-method/payment-method.service';
 import { ClientAddOrderDto } from '../shared/dtos/client/order.dto';
 import { AdminTrackingIdDto } from '../shared/dtos/admin/tracking-id.dto';
+import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -31,17 +32,18 @@ export class OrderService implements OnApplicationBootstrap {
   private cachedOrderCount: number;
 
   constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
-              private counterService: CounterService,
+              private readonly counterService: CounterService,
               private readonly shippingMethodService: ShippingMethodService,
               private readonly paymentMethodService: PaymentMethodService,
-              private pdfGeneratorService: PdfGeneratorService,
-              private inventoryService: InventoryService,
-              private productService: ProductService,
+              private readonly tasksService: TasksService,
+              private readonly pdfGeneratorService: PdfGeneratorService,
+              private readonly inventoryService: InventoryService,
+              private readonly productService: ProductService,
               private readonly searchService: SearchService,
-              private customerService: CustomerService) {
+              private readonly customerService: CustomerService) {
   }
 
-  onApplicationBootstrap(): any {
+  async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
   }
 
@@ -128,6 +130,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
+      this.tasksService.sendLeaveReviewEmail(newOrder);
       return newOrder;
 
     } catch (ex) {
@@ -175,6 +178,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
+      this.tasksService.sendLeaveReviewEmail(newOrder);
       return newOrder;
 
     } catch (ex) {
@@ -231,7 +235,6 @@ export class OrderService implements OnApplicationBootstrap {
     await newOrder.save({ session });
     return newOrder;
   }
-
 
   async editOrder(orderId: number, orderDto: AdminAddOrUpdateOrderDto): Promise<Order> {
     const session = await this.orderModel.db.startSession();

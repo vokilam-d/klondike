@@ -1,13 +1,19 @@
-import { getModelForClass, prop } from '@typegoose/typegoose';
-import { CronJob } from 'cron';
+import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
+import { ETaskType } from '../../shared/enums/task-type.enum';
 
 export class Task {
 
   @prop()
-  _id: string;
+  name: string;
+
+  @prop({ enum: ETaskType })
+  type: ETaskType;
+
+  @arrayProp({ default: [], items: Object })
+  arguments: any[];
 
   @prop()
-  cronJob: any;
+  time: Date;
 
   static collectionName = 'task';
 }
