@@ -6,13 +6,14 @@ import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dt
 import { ProductReview, ProductReviewComment } from './models/product-review.model';
 import { ProductService } from '../../product/product.service';
 import { ClientSession, FilterQuery } from 'mongoose';
-import { CounterService } from '../../shared/counter/counter.service';
-import { MediaService } from '../../shared/media-service/media.service';
+import { CounterService } from '../../shared/services/counter/counter.service';
+import { MediaService } from '../../shared/services/media/media.service';
 import { ElasticProductReviewModel } from './models/elastic-product-review.model';
-import { SearchService } from '../../shared/search/search.service';
+import { SearchService } from '../../shared/services/search/search.service';
 import { plainToClass } from 'class-transformer';
 import { ClientAddProductReviewCommentDto } from '../../shared/dtos/client/product-review-comment.dto';
 import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
+import { __ } from '../../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class ProductReviewService extends BaseReviewService<ProductReview, AdminProductReviewDto> {
@@ -90,7 +91,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   async addComment(reviewId: number, commentDto: ClientAddProductReviewCommentDto, customerId: any): Promise<DocumentType<ProductReview>> {
     const review = await this.reviewModel.findById(reviewId).exec();
     if (!review) {
-      throw new NotFoundException(`Review with id '${reviewId}' not found`);
+      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
     }
 
     const comment = new ProductReviewComment();

@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { ShippingMethod } from './models/shipping-method.model';
 import { AdminShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class ShippingMethodService {
@@ -37,7 +38,7 @@ export class ShippingMethodService {
 
     const found = await this.shippingMethodModel.findById(methodId).exec();
     if (!found) {
-      throw new NotFoundException(`Shipping method with id '${methodId}' not found`);
+      throw new NotFoundException(__('Shipping method with id "$1" not found', 'ru', methodId));
     }
 
     Object.keys(methodDto).forEach(key => found[key] = methodDto[key]);
@@ -48,7 +49,7 @@ export class ShippingMethodService {
   async deleteShippingMethod(methodId: string): Promise<ShippingMethod> {
     const deleted = await this.shippingMethodModel.findByIdAndDelete(methodId).exec();
     if (!deleted) {
-      throw new NotFoundException(`Shipping method with id '${methodId}' not found`);
+      throw new NotFoundException(__('Shipping method with id "$1" not found', 'ru', methodId));
     }
 
     return deleted;

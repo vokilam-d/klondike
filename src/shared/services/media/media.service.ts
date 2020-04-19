@@ -5,11 +5,11 @@ import * as sharp from 'sharp';
 import { FastifyRequest } from 'fastify';
 import { join, parse } from 'path';
 import { promisify } from 'util';
-import { transliterate } from '../helpers/transliterate.function';
-import { Media } from '../models/media.model';
-import { readableBytes } from '../helpers/readable-bytes.function';
-import { EMediaVariant } from '../enums/media-variant.enum';
-import { AdminMediaDto } from '../dtos/admin/media.dto';
+import { transliterate } from '../../helpers/transliterate.function';
+import { Media } from '../../models/media.model';
+import { readableBytes } from '../../helpers/readable-bytes.function';
+import { EMediaVariant } from '../../enums/media-variant.enum';
+import { AdminMediaDto } from '../../dtos/admin/media.dto';
 
 const pipeline = promisify(pipelineImport);
 

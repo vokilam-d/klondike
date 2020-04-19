@@ -5,7 +5,7 @@ import { InventoryService } from '../inventory/inventory.service';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { AdminAddOrUpdateProductDto } from '../shared/dtos/admin/product.dto';
-import { CounterService } from '../shared/counter/counter.service';
+import { CounterService } from '../shared/services/counter/counter.service';
 import { FastifyRequest } from 'fastify';
 import { Media } from '../shared/models/media.model';
 import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
@@ -17,10 +17,10 @@ import { AdminProductVariantDto } from '../shared/dtos/admin/product-variant.dto
 import { ProductReview } from '../reviews/product-review/models/product-review.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { ProductVariant } from './models/product-variant.model';
-import { MediaService } from '../shared/media-service/media.service';
+import { MediaService } from '../shared/services/media/media.service';
 import { CategoryService } from '../category/category.service';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
-import { SearchService } from '../shared/search/search.service';
+import { SearchService } from '../shared/services/search/search.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
 import { ProductWithQty } from './models/product-with-qty.model';
@@ -42,6 +42,7 @@ import { ProductCategory } from './models/product-category.model';
 import { AdminProductCategoryDto } from '../shared/dtos/admin/product-category.dto';
 import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { EReorderPosition } from '../shared/enums/reoder-position.enum';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
@@ -168,7 +169,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
 
     if (!found) {
-      throw new NotFoundException(`Product with id '${id}' not found`);
+      throw new NotFoundException(__('Product with id "$1" not found', 'ru', id));
     }
 
     return found;
@@ -197,7 +198,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
 
     if (!found) {
-      throw new NotFoundException(`Product with sku '${sku}' not found`);
+      throw new NotFoundException(__('Product with sku "$1" not found', 'ru', sku));
     }
 
     return found;
@@ -252,7 +253,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
 
     if (!found) {
-      throw new NotFoundException(`Product with slug '${slug}' not found`);
+      throw new NotFoundException(__('Product with slug "$1" not found', 'ru', slug));
     }
 
     return this.transformToClientProductDto(found, slug);
@@ -310,7 +311,7 @@ export class ProductService implements OnApplicationBootstrap {
   async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto): Promise<Product> {
     const found = await this.productModel.findById(productId).exec();
     if (!found) {
-      throw new NotFoundException(`Product with id '${productId}' not found`);
+      throw new NotFoundException(__('Product with id "$1" not found', 'ru', productId));
     }
 
     const session = await this.productModel.db.startSession();
@@ -403,7 +404,7 @@ export class ProductService implements OnApplicationBootstrap {
     try {
       const deleted = await this.productModel.findByIdAndDelete(productId).exec();
       if (!deleted) {
-        throw new NotFoundException(`No product found with id '${productId}'`);
+        throw new NotFoundException(__('Product with id "$1" not found', 'ru', productId));
       }
 
       const mediasToDelete: Media[] = [];
@@ -920,47 +921,48 @@ export class ProductService implements OnApplicationBootstrap {
 
     this.currencyService.echangeRatesUpdated$.subscribe(currencies => {
       for (const currency of currencies) {
-        const query = { [`${variantsProp}.${currencyProp}`]: currency._id };
+        try {
+          const query = { [`${variantsProp}.${currencyProp}`]: currency._id };
 
-        this.productModel.updateMany(
-          query,
-          [
-            {
-              $addFields: {
-                [variantsProp]: {
-                  $map: {
-                    input: `$${variantsProp}`,
-                    in: {
-                      $mergeObjects: [
-                        '$$this',
-                        {
-                          [defaultPriceProp]: {
-                            $ceil: { $multiply: [`$$this.${priceProp}`, currency.exchangeRate] }
+          this.productModel.updateMany(
+            query,
+            [
+              {
+                $addFields: {
+                  [variantsProp]: {
+                    $map: {
+                      input: `$${variantsProp}`,
+                      in: {
+                        $mergeObjects: [
+                          '$$this',
+                          {
+                            [defaultPriceProp]: {
+                              $ceil: { $multiply: [`$$this.${priceProp}`, currency.exchangeRate] }
+                            }
+                          },
+                          {
+                            [defaultOldPriceProp]: {
+                              $ceil: { $multiply: [`$$this.${oldPriceProp}`, currency.exchangeRate] }
+                            }
                           }
-                        },
-                        {
-                          [defaultOldPriceProp]: {
-                            $ceil: { $multiply: [`$$this.${oldPriceProp}`, currency.exchangeRate] }
-                          }
-                        }
-                      ]
+                        ]
+                      }
                     }
                   }
                 }
-              }
-            },
-          ]
-        ).exec();
+              },
+            ]
+          ).exec();
 
-        const elasticQuery = {
-          nested: {
-            path: variantsProp,
-            query: {
-              term: { [`${variantsProp}.${currencyProp}`]: currency._id }
+          const elasticQuery = {
+            nested: {
+              path: variantsProp,
+              query: {
+                term: { [`${variantsProp}.${currencyProp}`]: currency._id }
+              }
             }
-          }
-        };
-        const elasticUpdateScript = `
+          };
+          const elasticUpdateScript = `
           ctx._source.${variantsProp}.forEach(variant -> {
             if (variant.${oldPriceProp} != null) {
               variant.${defaultOldPriceProp} = Math.ceil(variant.${oldPriceProp} * ${currency.exchangeRate});
@@ -968,7 +970,11 @@ export class ProductService implements OnApplicationBootstrap {
             variant.${defaultPriceProp} = Math.ceil(variant.${priceProp} * ${currency.exchangeRate});
           })
         `;
-        this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript);
+          this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript);
+        } catch (ex) {
+          this.logger.error(`Could not update product prices on currency update:`)
+          this.logger.error(ex.meta?.body || ex);
+        }
       }
     });
   }
@@ -979,9 +985,11 @@ export class ProductService implements OnApplicationBootstrap {
 
   async reorderProduct(reorderDto: ProductReorderDto) { // todo this method is ugly, do separation on repositories
     const product = await this.productModel.findById(reorderDto.id).exec();
-    if (!product) { throw new BadRequestException(`Product with id '${reorderDto.id}' not found`); }
+    if (!product) { throw new BadRequestException(__('Product with id "$1" not found', 'ru', reorderDto.id)); }
+
     const targetProduct = await this.productModel.findById(reorderDto.targetId);
-    if (!targetProduct) { throw new BadRequestException(`Product with id '${reorderDto.targetId}' not found`); }
+    if (!targetProduct) { throw new BadRequestException(__('Product with id "$1" not found', 'ru', reorderDto.targetId)); }
+
     const targetProductOrder = targetProduct.categories.find(c => c.id === reorderDto.categoryId)?.sortOrder || 0;
 
     const session = await this.productModel.db.startSession();

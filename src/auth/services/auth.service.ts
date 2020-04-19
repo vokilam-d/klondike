@@ -15,6 +15,7 @@ import { DocumentType } from '@typegoose/typegoose';
 import { User } from '../../user/models/user.model';
 import { UserService } from '../../user/user.service';
 import { UserDto } from '../../shared/dtos/admin/user.dto';
+import { __ } from '../../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class AuthService {
@@ -90,7 +91,7 @@ export class AuthService {
 
     if (customer.password === null) {
       await this.initResetCustomerPassword(customer);
-      throw new BadRequestException('Your password is outdated, we sent you an email with the instruction on how to update your password');
+      throw new BadRequestException(__('Your password is outdated, we sent you an email with the instruction on how to update your password', 'ru'));
     }
 
     const isValidPassword = await this.encryptor.validatePassword(password, customer.password);

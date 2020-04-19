@@ -5,13 +5,14 @@ import { ProductService } from '../product/product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminAddOrUpdateCategoryDto } from '../shared/dtos/admin/category.dto';
-import { CounterService } from '../shared/counter/counter.service';
+import { CounterService } from '../shared/services/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
 import { ClientSession } from 'mongoose';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { EReorderPosition } from '../shared/enums/reoder-position.enum';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class CategoryService {
@@ -75,7 +76,7 @@ export class CategoryService {
 
     const found = await this.categoryModel.findById(id).exec();
     if (!found) {
-      throw new NotFoundException(`Category with id '${id}' not found`);
+      throw new NotFoundException(__('Category with id "$1" not found', 'ru', id));
     }
 
     return found;
@@ -84,7 +85,7 @@ export class CategoryService {
   async getCategoryBySlug(slug: string): Promise<Category> { // todo cache
     const found = await this.categoryModel.findOne({ slug }).exec();
     if (!found) {
-      throw new NotFoundException(`Category with slug '${slug}' not found`);
+      throw new NotFoundException(__('Category with slug "$1" not found', 'ru', slug));
     }
 
     return found.toJSON();
@@ -167,7 +168,7 @@ export class CategoryService {
     try {
       const deleted = await this.categoryModel.findByIdAndDelete(categoryId).session(session).exec();
       if (deleted === null) {
-        throw new NotFoundException(`Category with id '${categoryId}' not found`);
+        throw new NotFoundException(__('Category with id "$1" not found', 'ru', categoryId));
       }
 
       const parentIdProp: keyof Category = 'parentId';
@@ -237,10 +238,10 @@ export class CategoryService {
 
   async reoderCategory(categoryId: number, targetCategoryId: number, position: EReorderPosition) {
     const category = await this.categoryModel.findById(categoryId).exec();
-    if (!category) { throw new BadRequestException(`Category with id '${categoryId}' not found`); }
+    if (!category) { throw new BadRequestException(__('Category with id "$1" not found', 'ru', categoryId)); }
 
     const targetCategory = await this.categoryModel.findById(targetCategoryId).exec();
-    if (!targetCategory) { throw new BadRequestException(`Category with id '${targetCategoryId}' not found`); }
+    if (!targetCategory) { throw new BadRequestException(__('Category with id "$1" not found', 'ru', targetCategoryId)); }
 
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();

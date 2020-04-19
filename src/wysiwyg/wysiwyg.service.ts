@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
-import { MediaService } from '../shared/media-service/media.service';
+import { MediaService } from '../shared/services/media/media.service';
 
 @Injectable()
 export class WysiwygService {

@@ -4,11 +4,11 @@ import { Customer } from './models/customer.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../shared/dtos/admin/customer.dto';
-import { CounterService } from '../shared/counter/counter.service';
+import { CounterService } from '../shared/services/counter/counter.service';
 import { ClientSession } from 'mongoose';
 import { Order } from '../order/models/order.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
-import { SearchService } from '../shared/search/search.service';
+import { SearchService } from '../shared/services/search/search.service';
 import { ElasticCustomerModel } from './models/elastic-customer.model';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
@@ -21,6 +21,7 @@ import { ClientUpdateCustomerDto } from '../shared/dtos/client/update-customer.d
 import { ClientUpdatePasswordDto } from '../shared/dtos/client/update-password.dto';
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
 import { OrderItem } from '../order/models/order-item.model';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -72,7 +73,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async getCustomerById(customerId: number, serialized: boolean = true): Promise<Customer | DocumentType<Customer>> {
     const found = await this.customerModel.findById(customerId).exec();
     if (!found) {
-      throw new NotFoundException(`Customer with id '${customerId}' not found`);
+      throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
     }
 
     return serialized ? found.toJSON() : found;
@@ -108,7 +109,7 @@ export class CustomerService implements OnApplicationBootstrap {
       if (migrate) { // todo just throw err after migrate
         return foundByEmail;
       } else {
-        throw new ConflictException(`Customer with email '${customerDto.email}' already exists`);
+        throw new ConflictException(__('Customer with email "$1" already exists', 'ru', customerDto.email));
       }
     }
 
@@ -118,7 +119,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async clientRegisterCustomer(registerDto: ClientRegisterDto): Promise<Customer> {
     const foundByEmail = await this.customerModel.findOne({ email: registerDto.email }).exec();
     if (foundByEmail) {
-      throw new ConflictException(`Customer with email '${registerDto.email}' already exists`);
+      throw new ConflictException(__('Customer with email "$1" already exists', 'ru', registerDto.email));
     }
 
     const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
@@ -139,7 +140,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async updateCustomerById(customerId: number, customerDto: AdminAddOrUpdateCustomerDto): Promise<Customer> {
     const found = await this.customerModel.findById(customerId).exec();
     if (!found) {
-      throw new NotFoundException(`Customer with id '${customerId}' not found`);
+      throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
     }
 
     Object.keys(customerDto).forEach(key => found[key] = customerDto[key]);
@@ -160,7 +161,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async updatePassword(customer: DocumentType<Customer>, passwordDto: ClientUpdatePasswordDto): Promise<Customer> {
     const isValidOldPassword = await this.encryptor.validatePassword(passwordDto.currentPassword, customer.password);
     if (!isValidOldPassword) {
-      throw new BadRequestException(`Current password is not valid`); // "Неверный текущий пароль"
+      throw new BadRequestException(__('Current password is not valid', 'ru'));
     }
 
     customer.password = await this.encryptor.hashPassword(passwordDto.newPassword);
@@ -172,7 +173,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async addCustomerAddressById(customerId: number, address: ShippingAddressDto, session: ClientSession): Promise<Customer> {
     const found = await this.customerModel.findById(customerId).session(session).exec();
     if (!found) {
-      throw new NotFoundException(`Customer with id '${customerId}' not found`);
+      throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
     }
 
     return this.addCustomerAddress(found, address, session);
@@ -189,7 +190,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async deleteCustomer(customerId: number): Promise<Customer> {
     const deleted = await this.customerModel.findByIdAndDelete(customerId).exec();
     if (!deleted) {
-      throw new NotFoundException(`Customer with id '${customerId}' not found`);
+      throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
     }
 
     this.deleteSearchData(deleted);
@@ -273,7 +274,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async resetPasswordByDto(resetDto: ResetPasswordDto) {
     const customer = await this.getCustomerByEmailOrPhoneNumber(resetDto.login);
     if (!customer) {
-      throw new NotFoundException(`Customer with login "${resetDto.login}" not found`);
+      throw new NotFoundException(__('Customer with login "$1" not found', 'ru', resetDto.login));
     }
 
     return this.authService.initResetCustomerPassword(customer);
@@ -281,7 +282,7 @@ export class CustomerService implements OnApplicationBootstrap {
 
   async sendEmailConfirmationEmail(customer: Customer) {
     if (customer.isEmailConfirmed) {
-      throw new BadRequestException(`Your email has been already confirmed`);
+      throw new BadRequestException(__('Your email has been already confirmed', 'ru'));
     }
 
     const token = await this.authService.createCustomerEmailConfirmToken(customer);
@@ -300,7 +301,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async editShippingAddress(customer: DocumentType<Customer>, addressId: string, addressDto: ShippingAddressDto): Promise<Customer> {
     const foundAddressIdx = customer.addresses.findIndex(address => address._id.equals(addressId));
     if (foundAddressIdx === -1) {
-      throw new BadRequestException(`No address with id ${addressId}`);
+      throw new BadRequestException(__('No address with id "$1"', 'ru', addressId));
     }
 
     if (addressDto.isDefault) {

@@ -4,6 +4,7 @@ import { User } from './models/user.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AddOrUpdateUserDto } from '../shared/dtos/admin/user.dto';
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class UserService {
@@ -36,7 +37,7 @@ export class UserService {
   async updateUser(userId: string, userDto: AddOrUpdateUserDto): Promise<User> {
     const user = await this.userModel.findById(userId).exec();
     if (!user) {
-      throw new NotFoundException(`User with id '${userId}' not found`);
+      throw new NotFoundException(__('User with id "$1" not found', 'ru', userId));
     }
 
     user.password = await this.encryptor.hashPassword(userDto.password);
@@ -47,7 +48,7 @@ export class UserService {
   async deleteUser(userId: string): Promise<User> {
     const deleted = await this.userModel.findByIdAndDelete(userId).exec();
     if (!deleted) {
-      throw new NotFoundException(`User with id '${userId}' not found`);
+      throw new NotFoundException(__('User with id "$1" not found', 'ru', userId));
     }
     return deleted.toJSON();
   }

@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { ProductService } from '../product/product.service';
 import { CustomerService } from '../customer/customer.service';
 import { OrderItem } from './models/order-item.model';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class OrderItemService {
@@ -12,13 +13,13 @@ export class OrderItemService {
   async createOrderItem(sku: string, qty: number, customerId?: number, migrate?): Promise<OrderItem> {
     const foundProduct = await this.productService.getProductWithQtyBySku(sku);
     if (!foundProduct) {
-      throw new BadRequestException(`Product with sku '${sku}' not found`);
+      throw new BadRequestException(__('Product with sku "$1" not found', 'ru', sku));
     }
     const variant = foundProduct.variants.find(v => v.sku === sku);
 
     if (!migrate) { // todo remove this line after migrate
       if (variant.qtyInStock < qty) {
-        throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${qty}. In stock: ${variant.qtyInStock}`);
+        throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, variant.qtyInStock));
       }
     }
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Counter } from './counter.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
-import { AdminAddOrUpdateCustomerDto } from '../dtos/admin/customer.dto';
+import { AdminAddOrUpdateCustomerDto } from '../../dtos/admin/customer.dto';
 import { ClientSession } from "mongoose";
 
 @Injectable()

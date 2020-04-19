@@ -7,10 +7,11 @@ import { ForbiddenException, NotFoundException, OnApplicationBootstrap } from '@
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { AdminBaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
 import { ClientSession, FilterQuery } from 'mongoose';
-import { CounterService } from '../../shared/counter/counter.service';
-import { MediaService } from '../../shared/media-service/media.service';
-import { SearchService } from '../../shared/search/search.service';
+import { CounterService } from '../../shared/services/counter/counter.service';
+import { MediaService } from '../../shared/services/media/media.service';
+import { SearchService } from '../../shared/services/search/search.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
+import { __ } from '../../shared/helpers/translate/translate.function';
 
 type IReviewCallback<T = any> = (review: T, session: ClientSession) => Promise<any>;
 
@@ -69,7 +70,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   async findReview(reviewId: string, ipAddress?: string, userId?: string, customerId?: number): Promise<U> {
     const review = await this.reviewModel.findById(reviewId).exec();
     if (!review) {
-      throw new NotFoundException(`Review with id '${reviewId}' not found`);
+      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
     }
 
     return this.transformReviewToDto(review, ipAddress, userId, customerId);
@@ -109,7 +110,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   async updateReview(reviewId: string, reviewDto: U, { onEnable, onDisable }: IUpdateReviewCallbacks = {}): Promise<U> {
     const review = await this.reviewModel.findById(reviewId).exec();
     if (!review) {
-      throw new NotFoundException(`Review with id '${reviewId}' not found`);
+      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
     }
 
     const session = await this.reviewModel.db.startSession();
@@ -159,7 +160,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
 
     try {
       const deleted = await this.reviewModel.findByIdAndDelete(reviewId).session(session).exec();
-      if (!deleted) { throw new NotFoundException(`No review found with id '${reviewId}'`); }
+      if (!deleted) { throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId)); }
 
       if (deleted.isEnabled && callback) { await callback(deleted, session) };
       await session.commitTransaction();
@@ -183,13 +184,13 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   async createVote(reviewId: number, ipAddress: string, userId: string, customerId: number) {
     const foundReview = await this.reviewModel.findById(reviewId).exec();
     if (!foundReview) {
-      throw new NotFoundException(`Review with id '${reviewId}' not found`);
+      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
     }
 
     const alreadyVoted = this.hasVoted(foundReview, ipAddress, userId, customerId);
 
     if (alreadyVoted) {
-      throw new ForbiddenException(`Вы уже голосовали за этот отзыв`);
+      throw new ForbiddenException(__('You have already voted for this review', 'ru'));
     }
 
     const vote = new ReviewVote();
@@ -205,13 +206,13 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   async removeVote(reviewId: number, ipAddress: string, userId: string, customerId: number) {
     const foundReview = await this.reviewModel.findById(reviewId).exec();
     if (!foundReview) {
-      throw new NotFoundException(`Review with id '${reviewId}' not found`);
+      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
     }
 
     const alreadyVoted = this.hasVoted(foundReview, ipAddress, userId, customerId);
 
     if (alreadyVoted) {
-      throw new ForbiddenException(`You have already voted for this review`);
+      throw new ForbiddenException(__('You have already voted for this review', 'ru'));
     }
 
     foundReview.votes.pop();

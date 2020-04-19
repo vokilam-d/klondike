@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { CronExpression } from '@nestjs/schedule';
 import { PrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
 import { Subject } from 'rxjs';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 type ExchangeRate = {
   bid: number;
@@ -71,7 +72,7 @@ export class CurrencyService {
   async updateCurrency(currencyCode: ECurrencyCode, currencyDto: AdminCurrencyDto): Promise<Currency> {
     const found = await this.currencyModel.findById(currencyCode);
     if (!found) {
-      throw new NotFoundException(`Currency '${currencyCode}' not found`);
+      throw new NotFoundException(__('Currency "$1" not found', 'ru', currencyCode));
     }
 
     Object.keys(currencyDto).forEach(key => found[key] = currencyDto[key]);
@@ -90,7 +91,7 @@ export class CurrencyService {
 
     const foundCurrency = await this.currencyModel.findById(currencyCode).exec();
     if (!foundCurrency) {
-      throw new NotFoundException(`Currency '${currencyCode}' not found`);
+      throw new NotFoundException(__('Currency "$1" not found', 'ru', currencyCode));
     }
 
     return foundCurrency.exchangeRate;

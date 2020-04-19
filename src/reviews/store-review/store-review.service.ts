@@ -4,9 +4,9 @@ import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { StoreReview } from './models/store-review.model';
 import { BaseReviewService } from '../base-review/base-review.service';
 import { AdminStoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
-import { CounterService } from '../../shared/counter/counter.service';
-import { MediaService } from '../../shared/media-service/media.service';
-import { SearchService } from '../../shared/search/search.service';
+import { CounterService } from '../../shared/services/counter/counter.service';
+import { MediaService } from '../../shared/services/media/media.service';
+import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticStoreReviewModel } from './models/elastic-store-review.model';
 import { plainToClass } from 'class-transformer';
 

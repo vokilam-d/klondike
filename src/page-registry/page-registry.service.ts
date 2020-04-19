@@ -3,6 +3,7 @@ import { PageRegistry } from './models/page-registry.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { ClientSession } from 'mongoose';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class PageRegistryService {
@@ -20,7 +21,7 @@ export class PageRegistryService {
     const found = await this.registryModel.findOne({ slug: slug });
 
     if (!found) {
-      throw new NotFoundException(`Page with url '${slug}' not found`);
+      throw new NotFoundException(__('Page with url "$1" not found', 'ru', slug));
     }
 
     return found.type;

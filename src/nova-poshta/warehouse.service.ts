@@ -1,6 +1,6 @@
 import { CronExpression } from '@nestjs/schedule';
 import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { SearchService } from '../shared/search/search.service';
+import { SearchService } from '../shared/services/search/search.service';
 import { ElasticWarehouse } from './models/elastic-warehouse.model';
 import { autocompleteSettings } from '../shared/constants';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';

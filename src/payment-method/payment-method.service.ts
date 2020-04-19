@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { AdminPaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { PaymentMethod } from './models/payment-method.model';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class PaymentMethodService {
@@ -36,7 +37,7 @@ export class PaymentMethodService {
   async updatePaymentMethod(methodId: string, methodDto: AdminPaymentMethodDto): Promise<PaymentMethod> {
     const found = await this.paymentMethodModel.findById(methodId);
     if (!found) {
-      throw new NotFoundException(`Payment method with id '${methodId}' not found`);
+      throw new NotFoundException(__('Payment method with id "$1" not found', 'ru', methodId));
     }
 
     Object.keys(methodDto).forEach(key => found[key] = methodDto[key]);
@@ -47,7 +48,7 @@ export class PaymentMethodService {
   async deletePaymentMethod(methodId: string): Promise<PaymentMethod> {
     const deleted = await this.paymentMethodModel.findByIdAndDelete(methodId);
     if (!deleted) {
-      throw new NotFoundException(`Payment method with id '${methodId}' not found`);
+      throw new NotFoundException(__('Payment method with id "$1" not found', 'ru', methodId));
     }
 
     return deleted;

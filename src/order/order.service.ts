@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
-import { CounterService } from '../shared/counter/counter.service';
+import { CounterService } from '../shared/services/counter/counter.service';
 import { CustomerService } from '../customer/customer.service';
 import { AdminAddOrUpdateCustomerDto } from '../shared/dtos/admin/customer.dto';
 import { InventoryService } from '../inventory/inventory.service';
@@ -15,7 +15,7 @@ import { Customer } from '../customer/models/customer.model';
 import { ProductService } from '../product/product.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import { SearchService } from '../shared/search/search.service';
+import { SearchService } from '../shared/services/search/search.service';
 import { ElasticOrderModel } from './models/elastic-order.model';
 import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
 import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
@@ -25,6 +25,7 @@ import { PaymentMethodService } from '../payment-method/payment-method.service';
 import { ClientAddOrderDto } from '../shared/dtos/client/order.dto';
 import { AdminTrackingIdDto } from '../shared/dtos/admin/tracking-id.dto';
 import { TasksService } from '../tasks/tasks.service';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -85,7 +86,7 @@ export class OrderService implements OnApplicationBootstrap {
   async getOrderById(orderId: number): Promise<DocumentType<Order>> {
     const found = await this.orderModel.findById(orderId).exec();
     if (!found) {
-      throw new NotFoundException(`Order with id '${orderId}' not found`);
+      throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
     }
 
     return found;
@@ -211,11 +212,11 @@ export class OrderService implements OnApplicationBootstrap {
         const variant = product && product.variants.find(variant => variant._id.equals(item.variantId));
 
         if (!product || !variant) {
-          throw new BadRequestException(`Product with sku '${item.sku}' not found`);
+          throw new BadRequestException(__('Product with sku "$1" not found', 'ru', item.sku));
         }
 
         if (variant.qtyInStock < item.qty) {
-          throw new ForbiddenException(`Not enough quantity in stock. You are trying to add: ${item.qty}. In stock: ${variant.qtyInStock}`);
+          throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', item.qty, variant.qtyInStock));
         }
 
         await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
@@ -242,11 +243,11 @@ export class OrderService implements OnApplicationBootstrap {
     try {
       const found = await this.orderModel.findById(orderId).session(session).exec();
       if (!found) {
-        throw new NotFoundException(`Order with id '${orderId}' not found`);
+        throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
       }
 
       if (found.status !== EOrderStatus.NEW && found.status !== EOrderStatus.STARTED) {
-        throw new ForbiddenException(`Cannot edit order with status '${found.status}'`);
+        throw new ForbiddenException(__('Cannot edit order with status "$1"', 'ru', found.status));
       }
 
       for (const item of found.items) {
@@ -318,11 +319,11 @@ export class OrderService implements OnApplicationBootstrap {
     try {
       const found = await this.orderModel.findById(orderId).session(session).exec();
       if (!found) {
-        throw new NotFoundException(`Order with id '${orderId}' not found`);
+        throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
       }
 
       if (found.status !== EOrderStatus.NEW && found.status !== EOrderStatus.STARTED) {
-        throw new ForbiddenException(`Cannot cancel order with status '${found.status}'`);
+        throw new ForbiddenException(__('Cannot cancel order with status "$1"', 'ru', found.status));
       }
 
       for (const item of found.items) {
@@ -350,11 +351,11 @@ export class OrderService implements OnApplicationBootstrap {
     try {
       const found = await this.orderModel.findById(orderId).session(session).exec();
       if (!found) {
-        throw new NotFoundException(`Order with id '${orderId}' not found`);
+        throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
       }
 
       if (found.status !== EOrderStatus.NEW) {
-        throw new ForbiddenException(`Cannot start order with status '${found.status}'`);
+        throw new ForbiddenException(__('Cannot start order with status "$1"', 'ru', found.status));
       }
 
       for (const item of found.items) {
@@ -382,11 +383,11 @@ export class OrderService implements OnApplicationBootstrap {
     try {
       const found = await this.orderModel.findById(orderId).session(session).exec();
       if (!found) {
-        throw new NotFoundException(`Order with id '${orderId}' not found`);
+        throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
       }
 
       if (found.status !== EOrderStatus.STARTED) {
-        throw new ForbiddenException(`Cannot ship order with status '${found.status}'`);
+        throw new ForbiddenException(__('Cannot ship order with status "$1"', 'ru', found.status));
       }
 
       found.status = EOrderStatus.SHIPPED;

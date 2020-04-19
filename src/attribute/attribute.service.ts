@@ -6,8 +6,9 @@ import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } f
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import { SearchService } from '../shared/search/search.service';
+import { SearchService } from '../shared/services/search/search.service';
 import { ElasticAttributeModel } from './models/elastic-attribute.model';
+import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {
@@ -58,7 +59,7 @@ export class AttributeService implements OnApplicationBootstrap {
   async getAttribute(id: string): Promise<DocumentType<Attribute>> {
     const found = await this.attributeModel.findById(id).exec();
     if (!found) {
-      throw new NotFoundException(`Attribute with id '${id}' not found`);
+      throw new NotFoundException(__('Attribute with id "$1" not found', 'ru', id));
     }
 
     return found;
@@ -67,7 +68,7 @@ export class AttributeService implements OnApplicationBootstrap {
   async createAttribute(attributeDto: AdminCreateAttributeDto): Promise<DocumentType<Attribute>> {
     const found = await this.attributeModel.findById(attributeDto.id).exec();
     if (found) {
-      throw new BadRequestException(`Attribute with id '${attributeDto.id}' already exists`);
+      throw new BadRequestException(__('Attribute with id "$1" already exists', 'ru', attributeDto.id));
     }
 
     this.checkDtoForErrors(attributeDto);
@@ -98,7 +99,7 @@ export class AttributeService implements OnApplicationBootstrap {
   async deleteAttribute(attributeId: string): Promise<DocumentType<Attribute>> {
     const deleted = await this.attributeModel.findByIdAndDelete(attributeId).exec();
     if (!deleted) {
-      throw new NotFoundException(`No attribute with id '${attributeId}'`);
+      throw new NotFoundException(__('Attribute with id "$1" not found', 'ru', attributeId));
     }
     this.deleteSearchData(deleted);
 
