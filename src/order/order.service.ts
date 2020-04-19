@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  OnApplicationBootstrap
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
@@ -7,7 +13,7 @@ import { CounterService } from '../shared/services/counter/counter.service';
 import { CustomerService } from '../customer/customer.service';
 import { AdminAddOrUpdateCustomerDto } from '../shared/dtos/admin/customer.dto';
 import { InventoryService } from '../inventory/inventory.service';
-import { EOrderStatus } from '../shared/enums/order-status.enum';
+import { OrderStatusEnum } from '../shared/enums/order-status.enum';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
@@ -23,7 +29,6 @@ import { ClientSession, FilterQuery } from 'mongoose';
 import { ShippingMethodService } from '../shipping-method/shipping-method.service';
 import { PaymentMethodService } from '../payment-method/payment-method.service';
 import { ClientAddOrderDto } from '../shared/dtos/client/order.dto';
-import { AdminTrackingIdDto } from '../shared/dtos/admin/tracking-id.dto';
 import { TasksService } from '../tasks/tasks.service';
 import { __ } from '../shared/helpers/translate/translate.function';
 
@@ -49,12 +54,12 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
-    let orders: AdminOrderDto[];
+    let orderDtos: AdminOrderDto[];
     let itemsFiltered: number;
 
     if (spf.hasFilters()) {
       const searchResponse = await this.searchByFilters(spf);
-      orders = searchResponse[0];
+      orderDtos = searchResponse[0];
       itemsFiltered = searchResponse[1];
 
     } else {
@@ -63,20 +68,20 @@ export class OrderService implements OnApplicationBootstrap {
         conditions.customerId = spf.customerId;
       }
 
-      orders = await this.orderModel
+      const orders: Order[] = await this.orderModel
         .find(conditions)
         .sort(spf.getSortAsObj())
         .skip(spf.skip)
         .limit(spf.limit)
         .exec();
 
-      orders = plainToClass(AdminOrderDto, orders, { excludeExtraneousValues: true });
+      orderDtos = plainToClass(AdminOrderDto, orders, { excludeExtraneousValues: true });
     }
 
     const itemsTotal = await this.countOrders();
     const pagesTotal = Math.ceil(itemsTotal / spf.limit);
     return {
-      data: orders,
+      data: orderDtos,
       itemsTotal,
       itemsFiltered,
       pagesTotal
@@ -90,6 +95,30 @@ export class OrderService implements OnApplicationBootstrap {
     }
 
     return found;
+  }
+
+  async updateOrdersByStatus(orderStatus: OrderStatusEnum,
+                             updateOrdersFunction: (orders) => Promise<Order[]>): Promise<Order[]> {
+    const statusProp: keyof Order = 'status';
+    const session = await this.orderModel.db.startSession();
+    session.startTransaction();
+    try {
+      let orders = await this.orderModel.find({[statusProp]: orderStatus}).session(session).exec();
+
+      const updatedOrders = await updateOrdersFunction(orders);
+
+      for (let order of orders) {
+        await order.save({ session });
+        await this.updateSearchData(order);
+      }
+      await session.commitTransaction();
+      return updatedOrders;
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
+    }
   }
 
   async createOrderAdmin(orderDto: AdminAddOrUpdateOrderDto, migrate: any): Promise<Order> {
@@ -202,7 +231,7 @@ export class OrderService implements OnApplicationBootstrap {
       newOrder.customerLastName = customer.lastName;
       newOrder.customerPhoneNumber = customer.phoneNumber;
       newOrder.createdAt = new Date();
-      newOrder.status = EOrderStatus.NEW;
+      newOrder.status = OrderStatusEnum.NEW;
       newOrder.discountPercent = customer.discountPercent;
       this.setOrderPrices(newOrder);
 
@@ -229,6 +258,7 @@ export class OrderService implements OnApplicationBootstrap {
       newOrder.shippingMethodClientName = shippingMethod.clientName;
 
       const paymentMethod = await this.paymentMethodService.getPaymentMethodById(orderDto.paymentMethodId);
+      newOrder.paymentType = paymentMethod.paymentType;
       newOrder.paymentMethodAdminName = paymentMethod.adminName;
       newOrder.paymentMethodClientName = paymentMethod.clientName;
     }
@@ -246,7 +276,7 @@ export class OrderService implements OnApplicationBootstrap {
         throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
       }
 
-      if (found.status !== EOrderStatus.NEW && found.status !== EOrderStatus.STARTED) {
+      if (found.status !== OrderStatusEnum.NEW && found.status !== OrderStatusEnum.STARTED) {
         throw new ForbiddenException(__('Cannot edit order with status "$1"', 'ru', found.status));
       }
 
@@ -286,18 +316,6 @@ export class OrderService implements OnApplicationBootstrap {
     return updated;
   }
 
-  async editOrderTrackingId(orderId: number, { trackingId }: AdminTrackingIdDto): Promise<Order> {
-    const trackingIdProp: keyof Order = 'novaposhtaTrackingId';
-
-    const updated = await this.orderModel.findByIdAndUpdate(
-      orderId,
-      { $set: { [trackingIdProp]: trackingId } },
-      { new: true }
-    ).exec();
-
-    return updated;
-  }
-
   async countOrders(): Promise<number> {
     if (this.cachedOrderCount >= 0) {
       return this.cachedOrderCount;
@@ -322,14 +340,14 @@ export class OrderService implements OnApplicationBootstrap {
         throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
       }
 
-      if (found.status !== EOrderStatus.NEW && found.status !== EOrderStatus.STARTED) {
+      if (found.status !== OrderStatusEnum.NEW && found.status !== OrderStatusEnum.STARTED) {
         throw new ForbiddenException(__('Cannot cancel order with status "$1"', 'ru', found.status));
       }
 
       for (const item of found.items) {
         await this.inventoryService.retrieveFromOrderedBackToStock(item.sku, orderId, session);
       }
-      found.status = EOrderStatus.CANCELED;
+      found.status = OrderStatusEnum.CANCELED;
 
       await found.save({ session });
       await session.commitTransaction();
@@ -354,14 +372,14 @@ export class OrderService implements OnApplicationBootstrap {
         throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
       }
 
-      if (found.status !== EOrderStatus.NEW) {
+      if (found.status !== OrderStatusEnum.NEW) {
         throw new ForbiddenException(__('Cannot start order with status "$1"', 'ru', found.status));
       }
 
       for (const item of found.items) {
         await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
       }
-      found.status = EOrderStatus.STARTED;
+      found.status = OrderStatusEnum.STARTED;
 
       await found.save({ session });
       await session.commitTransaction();
@@ -386,11 +404,11 @@ export class OrderService implements OnApplicationBootstrap {
         throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
       }
 
-      if (found.status !== EOrderStatus.STARTED) {
+      if (found.status !== OrderStatusEnum.STARTED) {
         throw new ForbiddenException(__('Cannot ship order with status "$1"', 'ru', found.status));
       }
 
-      found.status = EOrderStatus.SHIPPED;
+      found.status = OrderStatusEnum.SHIPPED;
 
       await this.customerService.incrementTotalOrdersCost(found.customerId, found, session);
       for (const item of found.items) {
@@ -440,7 +458,7 @@ export class OrderService implements OnApplicationBootstrap {
     await this.searchService.addDocument(Order.collectionName, order.id, orderDto);
   }
 
-  private updateSearchData(order: Order): Promise<any> {
+  public updateSearchData(order: Order): Promise<any> {
     const orderDto = plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true });
     return this.searchService.updateDocument(Order.collectionName, order.id, orderDto);
   }

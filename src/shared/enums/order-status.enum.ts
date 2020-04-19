@@ -1,6 +1,7 @@
-export enum EOrderStatus {
+export enum OrderStatusEnum {
   CANCELED = 'CANCELED',
   NEW = 'NEW',
   STARTED = 'STARTED',
-  SHIPPED = 'SHIPPED'
+  SHIPPED = 'SHIPPED',
+  FINISHED = 'FINISHED'
 }

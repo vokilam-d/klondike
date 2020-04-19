@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { ShippingAddressDto } from '../shared-dtos/shipping-address.dto';
+import { ShipmentDto } from './shipment.dto';
 
 export class AdminAddOrUpdateOrderDto {
   @Expose()
@@ -97,7 +98,9 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsOptional()
-  novaposhtaTrackingId: any;
+  @ValidateNested()
+  @Type(() => ShipmentDto)
+  shipment?: ShipmentDto;
 
   @Expose()
   @IsArray()

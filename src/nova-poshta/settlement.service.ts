@@ -1,5 +1,5 @@
 import { CronExpression } from '@nestjs/schedule';
-import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { SearchService } from '../shared/services/search/search.service';
 import { ElasticSettlement } from './models/elastic-settlement.model';
 import { autocompleteSettings } from '../shared/constants';
@@ -9,12 +9,14 @@ import { PrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.
 import { SettlementDto } from './models/settlement.dto';
 import { plainToClass } from 'class-transformer';
 
+import { NovaPoshtaService } from './nova-poshta.service';
+
 @Injectable()
 export class SettlementService implements OnApplicationBootstrap {
 
   private logger = new Logger(SettlementService.name);
 
-  constructor(private readonly http: HttpService, private readonly searchService: SearchService) {
+  constructor(private readonly novaPoshtaService: NovaPoshtaService, private readonly searchService: SearchService) {
   }
 
   async onApplicationBootstrap() {
@@ -33,14 +35,13 @@ export class SettlementService implements OnApplicationBootstrap {
     let settlementCount = 0;
     try {
       let pageNumber = 0;
-      let plainSettlements = [];
+      let settlements = [];
       do {
         pageNumber++;
-        plainSettlements = await this.fetchSettlementCatalogPage(pageNumber);
-        const settlements = plainSettlements.map(settlement => SettlementService.toSettlementDto(settlement));
+        settlements = await this.novaPoshtaService.fetchSettlementCatalogPage(pageNumber);
         this.searchService.addDocuments(ElasticSettlement.collectionName, settlements);
-        settlementCount += plainSettlements.length;
-      } while (plainSettlements.length !== 0);
+        settlementCount += settlements.length;
+      } while (settlements.length !== 0);
 
     } catch (ex) {
       this.logger.error('Failed to fetch settlements');
@@ -48,48 +49,6 @@ export class SettlementService implements OnApplicationBootstrap {
     }
 
     this.logger.log(`Sent ${settlementCount} settlements to index`);
-  }
-
-  private async fetchSettlementCatalogPage(settlementBulkNumber: number) : Promise<any[]> {
-    const response = await this.http.post('http://api.novaposhta.ua/v2.0/json/Address/searchSettlements/',
-      {
-        modelName: 'AddressGeneral',
-        calledMethod: 'getSettlements',
-        methodProperties: {
-          Page: settlementBulkNumber,
-          Warehouse: '1'
-        },
-        apiKey: process.env.NOVA_POSHTA_API_KEY
-      }).toPromise();
-
-    return response.data.data;
-  }
-
-  private static toSettlementDto(settlement): SettlementDto {
-    const shortSettlementType = this.shortenSettlementType(settlement.SettlementTypeDescription);
-    let fullName = `${shortSettlementType} ${settlement.Description} (${settlement.AreaDescription}`;
-    if (settlement.RegionsDescription) {
-      fullName += ', ' + settlement.RegionsDescription
-    }
-    fullName += ')';
-
-    return {
-      id: settlement.Ref,
-      name: settlement.Description,
-      ruName: settlement.DescriptionRu,
-      fullName: fullName
-    };
-  }
-
-  private static shortenSettlementType(settlementType: string): string {
-    if (settlementType.includes('селище міського типу')) {
-      return 'смт.'
-    } else if (settlementType.includes('село') || settlementType.includes('селище')) {
-      return 'с.'
-    } else if (settlementType.includes('місто')) {
-      return 'м.'
-    }
-    return '';
   }
 
 }

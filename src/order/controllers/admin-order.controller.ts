@@ -22,14 +22,15 @@ import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ShippingAddressDto } from '../../shared/dtos/shared-dtos/shipping-address.dto';
 import { UserJwtGuard } from '../../auth/services/guards/user-jwt.guard';
-import { AdminTrackingIdDto } from '../../shared/dtos/admin/tracking-id.dto';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { OrderShipmentService } from '../order-shipment.service';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/orders')
 export class AdminOrderController {
 
-  constructor(private orderService: OrderService) {
+  constructor(private orderService: OrderService, private orderShipmentService: OrderShipmentService) {
   }
 
   @Get()
@@ -83,9 +84,19 @@ export class AdminOrderController {
     };
   }
 
-  @Put(':id/tracking')
-  async editOrderTracking(@Param('id') orderId: number, @Body() trackingIdDto: AdminTrackingIdDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderService.editOrderTrackingId(orderId, trackingIdDto);
+  @Put(':id/shipment')
+  async editOrderShipment(@Param('id') orderId: number,
+                          @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
+    const updated = await this.orderShipmentService.editOrderShipment(orderId, shipmentDto);
+
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Get('/latest-shipment-statuses')
+  async fetchShipmentStatuses(): Promise<ResponseDto<AdminOrderDto[]>> {
+    const updated = await this.orderShipmentService.getOrdersWithLatestShipmentStatuses();
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })

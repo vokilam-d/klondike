@@ -9,6 +9,7 @@ import {
   elasticTextType
 } from '../../shared/constants';
 import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 
 class ElasticOrderItemModel implements Record<keyof OrderItemDto, any>{
   cost = elasticFloatType;
@@ -23,6 +24,13 @@ class ElasticOrderItemModel implements Record<keyof OrderItemDto, any>{
   slug = elasticTextType;
   totalCost = elasticIntegerType;
   variantId = elasticTextType;
+}
+
+class ShipmentElasticOrderModel implements Record<keyof ShipmentDto, any>{
+  trackingNumber = elasticTextType;
+  status = elasticTextType;
+  statusDescription = elasticTextType;
+  senderPhone = elasticTextType;
 }
 
 export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
@@ -48,7 +56,7 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
     properties: new ElasticOrderItemModel()
   };
   logs = elasticTextType;
-  novaposhtaTrackingId = elasticTextType;
+  shipment = new ShipmentElasticOrderModel();
   paymentMethodAdminName = elasticTextType;
   paymentMethodClientName = elasticTextType;
   paymentMethodId = elasticTextType;

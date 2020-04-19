@@ -3,7 +3,7 @@ import { ArrayMinSize, IsArray, IsBoolean, IsOptional, IsString, ValidateNested 
 import { Expose, Transform, Type } from 'class-transformer';
 import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { Order } from '../../../order/models/order.model';
-import { EOrderStatus } from '../../enums/order-status.enum';
+import { OrderStatusEnum } from '../../enums/order-status.enum';
 
 export class ClientAddOrderDto {
   @Expose()
@@ -59,7 +59,7 @@ export class ClientOrderDto extends ClientAddOrderDto {
   novaposhtaTrackingId: string;
 
   @Expose()
-  status: EOrderStatus;
+  status: OrderStatusEnum;
 
   @Expose()
   totalItemsCost: number;

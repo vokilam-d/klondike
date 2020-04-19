@@ -1,7 +1,9 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { ShippingAddress } from '../../customer/models/customer.model';
 import { OrderItem } from './order-item.model';
-import { EOrderStatus } from '../../shared/enums/order-status.enum';
+import { OrderStatusEnum } from '../../shared/enums/order-status.enum';
+import { Shipment } from './shipment.model';
+import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
 
 export class Order {
   @prop()
@@ -44,6 +46,9 @@ export class Order {
   paymentMethodId: string;
 
   @prop()
+  paymentType: PaymentTypeEnum;
+
+  @prop()
   paymentMethodClientName: string;
 
   @prop()
@@ -62,7 +67,7 @@ export class Order {
   isCallbackNeeded: boolean;
 
   @prop()
-  novaposhtaTrackingId: string;
+  shipment: Shipment;
 
   @arrayProp({ items: OrderItem })
   items: OrderItem[];
@@ -71,7 +76,7 @@ export class Order {
   state: any;
 
   @prop()
-  status: EOrderStatus;
+  status: OrderStatusEnum;
 
   @prop()
   clientNote: string;
