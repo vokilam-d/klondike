@@ -14,9 +14,10 @@ export class SearchService {
     });
 
     // this.client.on('response', (err, result) => {
-    //   if (err) { }
-    //   delete result.meta.connection;
-    //   console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
+    //   if (err) {
+    //     delete result.meta.connection;
+    //     console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
+    //   }
     // });
   }
 
@@ -127,10 +128,25 @@ export class SearchService {
                                  sortFilter?: any
   ): Promise<[T[], number]> {
 
-    const queries = filters.map(filter => {
-      if (filter.fieldName.includes('.')) {
+    const boolQuery = {
+      must: [],
+      should: []
+    }
+
+    filters.forEach(filter => {
+      if (typeof filter.value === 'string' && filter.value.includes('|')) {
+
+        filter.value.split('|').forEach(value => {
+          boolQuery.should.push({
+            term: {
+              [filter.fieldName]: value
+            }
+          });
+        });
+
+      } else if (filter.fieldName.includes('.')) {
         const [parentField] = filter.fieldName.split('.');
-        return {
+        boolQuery.must.push({
           'nested': {
             path: parentField,
             query: {
@@ -139,22 +155,28 @@ export class SearchService {
               }
             }
           }
-        };
+        });
+      } else {
+        boolQuery.must.push({
+          multi_match: {
+            query: filter.value,
+            type: 'phrase_prefix',
+            fields: filter.fieldName.split('|')
+          }
+        });
       }
-      return {
-        multi_match: {
-          query: filter.value,
-          type: 'phrase_prefix',
-          fields: filter.fieldName.split('|')
-        }
-      };
     });
 
-    return await this.searchByQuery(collection, queries, from, size, sortObj, sortFilter);
+    return await this.searchByQuery(collection, boolQuery, from, size, sortObj, sortFilter);
   }
 
-  public async searchByQuery<T = any>(collection: string, query: any, from: number,
-                                      size: number, sortObj: ISorting = {}, sortFilter?: any): Promise<[T[], number]> {
+  public async searchByQuery<T = any>(collection: string,
+                                      boolQuery: any,
+                                      from: number,
+                                      size: number,
+                                      sortObj: ISorting = {},
+                                      sortFilter?: any
+  ): Promise<[T[], number]> {
 
     const sort = [];
     let nestedSort = [];
@@ -187,9 +209,7 @@ export class SearchService {
         sort,
         body: {
           query: {
-            bool: {
-              must: query
-            }
+            bool: boolQuery
           },
           ...(nestedSort.length ? { sort: nestedSort } : {})
         }

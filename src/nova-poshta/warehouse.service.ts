@@ -23,26 +23,29 @@ export class WarehouseService implements OnApplicationBootstrap {
 
   public async getWarehouses(spf: ClientSPFDto): Promise<WarehouseDto[]> {
     //TODO move to search service
-    const query: any[] = [
+    const queries: any[] = [
       {
         match: {
           settlementId: {
-            query: spf['settlementId']
+            query: spf.settlementId
           }
         }
       }
     ];
-    if (spf['filter']) {
-      query.push({
+    if (spf.filter) {
+      queries.push({
         multi_match: {
           fields: ['postOfficeNumber', 'address', 'addressRu'],
-          query: spf['filter'].toLowerCase(),
+          query: spf.filter.toLowerCase(),
           type: 'phrase_prefix'
         }
       });
     }
-    const searchResponse = await this.searchService.searchByQuery(ElasticWarehouse.collectionName, query, 0, spf.limit);
-    return plainToClass(WarehouseDto, searchResponse[0], { excludeExtraneousValues: true })
+
+    const boolQuery = { must: queries };
+    const [ warehouses ] = await this.searchService.searchByQuery(ElasticWarehouse.collectionName, boolQuery, 0, spf.limit);
+
+    return plainToClass(WarehouseDto, warehouses, { excludeExtraneousValues: true })
       .sort((a, b) => a.description.localeCompare(b.description));
   }
 
@@ -55,7 +58,7 @@ export class WarehouseService implements OnApplicationBootstrap {
       do {
         pageNumber++;
         warehouses = await this.novaPoshtaService.fetchWarehouseCatalogPage(pageNumber);
-        this.searchService.addDocuments(ElasticWarehouse.collectionName, warehouses);
+        this.searchService.addDocuments(ElasticWarehouse.collectionName, warehouses).then();
         warehouseCount += warehouses.length;
       } while (warehouses.length !== 0);
 
