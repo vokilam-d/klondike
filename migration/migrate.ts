@@ -264,6 +264,7 @@ export class Migrate {
   async populateProducts() {
     console.log('.\n.\n***     Start migrating PRODUCTS     ***\n.\n.');
     const products: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_flat_1.json', 'utf-8')));
+    const productLinks: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_link.json', 'utf-8')));
     const inventories: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'cataloginventory_stock_item.json', 'utf-8')));
     const categoryProducts: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_category_product.json', 'utf-8')));
     const catalog_product_entity_varchars: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_varchar.json', 'utf-8')));
@@ -427,6 +428,16 @@ export class Migrate {
       variantDto.qtyInStock = foundInventory ? foundInventory.qty : 0;
       variantDto.isDiscountApplicable = product.is_general_discount_applicable === 453;
 
+      productLinks.forEach(link => {
+        if (link.product_id === dto.id) {
+          if (link.link_type_id === 1) {
+            variantDto.relatedProducts.push({ productId: link.linked_product_id, variantId: '???', sortOrder: 0 });
+          } else if (link.link_type_id === 5) {
+            variantDto.crossSellProducts.push({ productId: link.linked_product_id, variantId: '???', sortOrder: 0 });
+          }
+        }
+      });
+
       dto.variants.push(variantDto);
 
       try {
@@ -454,6 +465,23 @@ export class Migrate {
 
     for (const batch of this.getBatches(products, 3)) {
       await Promise.all(batch.map(product => addProduct(product)));
+    }
+
+    try {
+      await axios.post(
+        `${this.apiHostname}/api/v1/admin/products/migrate-linked`,
+        {  },
+        {
+          params: { migrate: true },
+          raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+        }
+      );
+      console.log(`[Products]: Updated Related and CrossSell products`);
+
+      count++;
+    } catch (ex) {
+      console.error(`[Products ERROR]: could not update Related and CrossSell products`);
+      console.error(this.buildErrorMessage(ex.response && ex.response.data));
     }
 
     console.log(`.\n.\n***     Finish migrating PRODUCTS     ***\nCount: ${count} \n.\n.`);

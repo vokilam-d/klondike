@@ -1171,4 +1171,33 @@ export class ProductService implements OnApplicationBootstrap {
 
     await found.save();
   }
+
+  async migrateLinked() {
+    const found = await this.productModel.find().exec();
+
+    for (const product of found) {
+      let needToSave: boolean = false;
+      for (let i = 0; i < product.variants.length; i++){
+        const variant = product.variants[i];
+
+        for (let relatedProduct of variant.relatedProducts) {
+          needToSave = true;
+
+          const linkedProduct = found.find(p => p._id === relatedProduct.productId);
+          relatedProduct.variantId = linkedProduct.variants[i]._id.toString();
+        }
+
+        for (let crossSellProduct of variant.crossSellProducts) {
+          needToSave = true;
+
+          const linkedProduct = found.find(p => p._id === crossSellProduct.productId);
+          crossSellProduct.variantId = linkedProduct.variants[i]._id.toString();
+        }
+      }
+
+      if (needToSave) {
+        await product.save();
+      }
+    }
+  }
 }

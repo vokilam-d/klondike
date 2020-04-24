@@ -65,6 +65,11 @@ export class AdminProductController {
     };
   }
 
+  @Post('migrate-linked') // todo remove this after migrate
+  async migrateLinked() {
+    return this.productsService.migrateLinked();
+  }
+
   /**
    * @returns AdminMediaDto
    */
