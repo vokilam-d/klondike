@@ -1,10 +1,11 @@
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CronOptions } from '@nestjs/schedule/dist/decorators/cron.decorator';
+import { isProdEnv } from '../helpers/is-prod-env.function';
 
-export const PrimaryInstanceCron = (cronTime: string | Date | CronExpression, options?: CronOptions) => {
+export const ProdPrimaryInstanceCron = (cronTime: string | Date | CronExpression, options?: CronOptions) => {
   const instanceId = process.env.INSTANCE_ID;
 
-  if (instanceId === undefined || instanceId === '0') {
+  if (isProdEnv() && (instanceId === undefined || instanceId === '0')) {
     return Cron(cronTime, options);
   } else {
     return () => {};

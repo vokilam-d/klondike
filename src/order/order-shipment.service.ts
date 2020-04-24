@@ -9,7 +9,7 @@ import { OrderService } from './order.service';
 import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
 import { OrderStatusEnum } from '../shared/enums/order-status.enum';
 import { PaymentTypeEnum } from '../shared/enums/payment-type.enum';
-import { PrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
+import { ProdPrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
 
 @Injectable()
 export class OrderShipmentService {
@@ -19,7 +19,7 @@ export class OrderShipmentService {
               private readonly novaPoshtaService: NovaPoshtaService) {
   }
 
-  @PrimaryInstanceCron(CronExpression.EVERY_HOUR)
+  @ProdPrimaryInstanceCron(CronExpression.EVERY_HOUR)
   public async getOrdersWithLatestShipmentStatuses(): Promise<Order[]> {
     return await this.orderService.updateOrdersByStatus(OrderStatusEnum.SHIPPED,
         orders => this.updateShipmentStatus(orders));

@@ -5,7 +5,7 @@ import { ElasticSettlement } from './models/elastic-settlement.model';
 import { autocompleteSettings } from '../shared/constants';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { IFilter } from '../shared/dtos/shared-dtos/spf.dto';
-import { PrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
+import { ProdPrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
 import { SettlementDto } from './models/settlement.dto';
 import { plainToClass } from 'class-transformer';
 
@@ -30,7 +30,7 @@ export class SettlementService implements OnApplicationBootstrap {
       .sort((a, b) => a.fullName.localeCompare(b.fullName));
   }
 
-  @PrimaryInstanceCron(CronExpression.EVERY_DAY_AT_3AM)
+  @ProdPrimaryInstanceCron(CronExpression.EVERY_DAY_AT_3AM)
   public async loadSettlementsToElastic() {
     let settlementCount = 0;
     try {
