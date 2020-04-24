@@ -5,6 +5,7 @@ import { Expose, Type } from 'class-transformer';
 import { ClientMediaDto } from './media.dto';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
+import { ClientLinkedProductDto } from './linked-product.dto';
 
 export class ClientProductCharacteristic {
   label: string;
@@ -83,4 +84,10 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
 
   @Expose()
   gtin: string;
+
+  @Expose()
+  relatedProducts: ClientLinkedProductDto[];
+
+  @Expose()
+  crossSellProducts: ClientLinkedProductDto[];
 }

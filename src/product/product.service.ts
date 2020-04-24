@@ -712,7 +712,8 @@ export class ProductService implements OnApplicationBootstrap {
           priceInDefaultCurrency: variant.priceInDefaultCurrency,
           oldPriceInDefaultCurrency: variant.oldPriceInDefaultCurrency,
           qtyInStock: variant.qtyInStock,
-          sellableQty: variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0)
+          crossSellProducts: variant.crossSellProducts,
+          sellableQty: variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0),
         });
       });
 
@@ -786,6 +787,7 @@ export class ProductService implements OnApplicationBootstrap {
         mediaAltText: variant.mediaAltText,
         reviewsCount: product.reviewsCount,
         reviewsAvgRating: product.reviewsAvgRating,
+        crossSellProducts: variant.crossSellProducts
       }
     });
   }
@@ -860,7 +862,9 @@ export class ProductService implements OnApplicationBootstrap {
       price: variant.priceInDefaultCurrency,
       oldPrice: variant.oldPriceInDefaultCurrency,
       reviewsAvgRating: productWithQty.reviewsAvgRating,
-      reviewsCount: productWithQty.reviewsCount
+      reviewsCount: productWithQty.reviewsCount,
+      relatedProducts: variant.relatedProducts.map(p => ({ productId: p.productId, variantId: p.variantId.toString() })),
+      crossSellProducts: variant.crossSellProducts.map(p => ({ productId: p.productId, variantId: p.variantId.toString() })),
     }
   }
 
@@ -919,12 +923,12 @@ export class ProductService implements OnApplicationBootstrap {
     const oldPriceProp: keyof ProductVariant = 'oldPrice';
     const defaultOldPriceProp: keyof ProductVariant = 'oldPriceInDefaultCurrency';
 
-    this.currencyService.echangeRatesUpdated$.subscribe(currencies => {
+    this.currencyService.echangeRatesUpdated$.subscribe(async currencies => {
       for (const currency of currencies) {
         try {
           const query = { [`${variantsProp}.${currencyProp}`]: currency._id };
 
-          this.productModel.updateMany(
+          await this.productModel.updateMany(
             query,
             [
               {
@@ -963,14 +967,14 @@ export class ProductService implements OnApplicationBootstrap {
             }
           };
           const elasticUpdateScript = `
-          ctx._source.${variantsProp}.forEach(variant -> {
-            if (variant.${oldPriceProp} != null) {
-              variant.${defaultOldPriceProp} = Math.ceil(variant.${oldPriceProp} * ${currency.exchangeRate});
-            }
-            variant.${defaultPriceProp} = Math.ceil(variant.${priceProp} * ${currency.exchangeRate});
-          })
-        `;
-          this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript);
+            ctx._source.${variantsProp}.forEach(variant -> {
+              if (variant.${oldPriceProp} != null) {
+                variant.${defaultOldPriceProp} = Math.ceil(variant.${oldPriceProp} * ${currency.exchangeRate});
+              }
+              variant.${defaultPriceProp} = Math.ceil(variant.${priceProp} * ${currency.exchangeRate});
+            })
+          `;
+          await this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript);
         } catch (ex) {
           this.logger.error(`Could not update product prices on currency update:`)
           this.logger.error(ex.meta?.body || ex);
@@ -999,7 +1003,7 @@ export class ProductService implements OnApplicationBootstrap {
       let filterOperator;
       let elasticComparisonOperator;
       let newOrder;
-      if (reorderDto.position === EReorderPosition.Start) {
+      if (reorderDto.position === EReorderPosition.Start || targetProductOrder === 0) {
         filterOperator = '$gt';
         elasticComparisonOperator = '>';
         newOrder = targetProductOrder + 1;

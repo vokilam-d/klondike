@@ -1,6 +1,7 @@
-import { Expose, Transform, Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { ProductVariant } from '../../../product/models/product-variant.model';
 import { Product } from '../../../product/models/product.model';
+import { ClientLinkedProductDto } from './linked-product.dto';
 
 export class ClientProductVariantDto {
   @Expose()
@@ -23,7 +24,7 @@ export class ClientProductVariantGroupDto {
 }
 
 type PickedProduct = Pick<Product, 'reviewsCount' | 'reviewsAvgRating'>;
-type PickedVariant = Pick<ProductVariant, 'slug' | 'sku' | 'name' | 'price'>;
+type PickedVariant = Record<keyof Pick<ProductVariant, 'slug' | 'sku' | 'name' | 'price' | 'crossSellProducts'>, any>;
 
 export class ClientProductListItemDto implements PickedProduct, PickedVariant {
   @Expose()
@@ -68,4 +69,7 @@ export class ClientProductListItemDto implements PickedProduct, PickedVariant {
 
   @Expose()
   reviewsCount: number;
+
+  @Expose()
+  crossSellProducts: ClientLinkedProductDto[];
 }

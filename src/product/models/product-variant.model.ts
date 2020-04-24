@@ -4,6 +4,7 @@ import { MetaTags } from '../../shared/models/meta-tags.model';
 import { ProductSelectedAttribute } from './product-selected-attribute.model';
 import { Types } from 'mongoose';
 import { ECurrencyCode } from '../../shared/enums/currency.enum';
+import { LinkedProduct } from './linked-product.model';
 
 export class ProductVariant {
   @prop({ index: true })
@@ -68,4 +69,10 @@ export class ProductVariant {
 
   @prop()
   googleAdsProductTitle: string;
+
+  @arrayProp({ items: LinkedProduct, default: [] })
+  relatedProducts: LinkedProduct[];
+
+  @arrayProp({ items: LinkedProduct, default: [] })
+  crossSellProducts: LinkedProduct[];
 }

@@ -6,6 +6,7 @@ import { transliterate } from '../../helpers/transliterate.function';
 import { ECurrencyCode } from '../../enums/currency.enum';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { ProductVariantWithQty } from '../../../product/models/product-with-qty.model';
+import { AdminLinkedProductDto } from './linked-product.dto';
 
 export class AdminProductVariantDto {
   @Exclude()
@@ -95,7 +96,7 @@ export class AdminProductVariantDto {
   qtyInStock: number;
 
   @Expose()
-  @Transform((price, obj: ProductVariantWithQty) => obj?.qtyInStock - obj?.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0))
+  @Transform((price, obj: ProductVariantWithQty) => obj.qtyInStock - obj.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0))
   sellableQty: number;
 
   @Expose()
@@ -111,4 +112,14 @@ export class AdminProductVariantDto {
   @IsOptional()
   @IsString()
   googleAdsProductTitle: string;
+
+  @Expose()
+  @ValidateNested({ each: true })
+  @Type(() => AdminLinkedProductDto)
+  relatedProducts: AdminLinkedProductDto[];
+
+  @Expose()
+  @ValidateNested({ each: true })
+  @Type(() => AdminLinkedProductDto)
+  crossSellProducts: AdminLinkedProductDto[];
 }

@@ -1,6 +1,7 @@
 import { AdminProductVariantListItem } from '../../shared/dtos/admin/product-variant-list-item.dto';
 import { elasticAutocompleteType, elasticBooleanType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
+import { ElasticLinkedProduct } from './elastic-linked-product.model';
 
 export class ElasticProductVariant implements Record<keyof AdminProductVariantListItem, any> {
   currency = elasticTextType;
@@ -20,5 +21,9 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   sku = elasticAutocompleteType;
   attributes = {
     properties: new ElasticProductSelectedAttributeModel()
+  };
+  crossSellProducts = {
+    type: 'nested',
+    properties: new ElasticLinkedProduct()
   };
 }
