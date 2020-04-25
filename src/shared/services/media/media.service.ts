@@ -8,13 +8,13 @@ import { promisify } from 'util';
 import { transliterate } from '../../helpers/transliterate.function';
 import { Media } from '../../models/media.model';
 import { readableBytes } from '../../helpers/readable-bytes.function';
-import { EMediaVariant } from '../../enums/media-variant.enum';
+import { MediaVariantEnum } from '../../enums/media-variant.enum';
 import { AdminMediaDto } from '../../dtos/admin/media.dto';
 
 const pipeline = promisify(pipelineImport);
 
 interface ResizeOptions {
-  variant: EMediaVariant;
+  variant: MediaVariantEnum;
   maxDimension: number | null;
 }
 
@@ -25,16 +25,16 @@ export class MediaService {
   private tmpDirName = 'tmp';
   private resizeOptions: ResizeOptions[] = [
     {
-      variant: EMediaVariant.Original,
+      variant: MediaVariantEnum.Original,
       maxDimension: null
     }, {
-      variant: EMediaVariant.Large,
+      variant: MediaVariantEnum.Large,
       maxDimension: 1024
     }, {
-      variant: EMediaVariant.Medium,
+      variant: MediaVariantEnum.Medium,
       maxDimension: 600
     }, {
-      variant: EMediaVariant.Small,
+      variant: MediaVariantEnum.Small,
       maxDimension: 300
     }
   ];
@@ -125,7 +125,7 @@ export class MediaService {
     await fs.promises.mkdir(dir, { recursive: true });
 
     for (const option of this.resizeOptions) {
-      const fileName = option.variant === EMediaVariant.Original ? fileNameToSave : `${name}_${option.variant}${ext}`;
+      const fileName = option.variant === MediaVariantEnum.Original ? fileNameToSave : `${name}_${option.variant}${ext}`;
       const pathToNewFile = join(dir, fileName);
       const writeStream = fs.createWriteStream(pathToNewFile);
       const resizeStream = sharp()

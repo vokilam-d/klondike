@@ -1,13 +1,13 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { ETaskType } from '../../shared/enums/task-type.enum';
+import { TaskTypeEnum } from '../../shared/enums/task-type.enum';
 
 export class Task {
 
   @prop()
   name: string;
 
-  @prop({ enum: ETaskType })
-  type: ETaskType;
+  @prop({ enum: TaskTypeEnum })
+  type: TaskTypeEnum;
 
   @arrayProp({ default: [], items: Object })
   arguments: any[];

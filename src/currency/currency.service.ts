@@ -1,7 +1,7 @@
 import { HttpService, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Currency } from './models/currency.model';
 import { ReturnModelType } from '@typegoose/typegoose';
-import { DEFAULT_CURRENCY, ECurrencyCode } from '../shared/enums/currency.enum';
+import { DEFAULT_CURRENCY, CurrencyCodeEnum } from '../shared/enums/currency.enum';
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { CronExpression } from '@nestjs/schedule';
@@ -19,7 +19,7 @@ type ExchangeRate = {
 }
 
 type ExchangeRates = {
-  [currency in ECurrencyCode]: ExchangeRate;
+  [currency in CurrencyCodeEnum]: ExchangeRate;
 }
 
 @Injectable()
@@ -54,7 +54,7 @@ export class CurrencyService {
 
     for (let currency of currencies) {
       const rate: ExchangeRate = exchangeRates[currency.id];
-      if (!rate || currency.id === ECurrencyCode.UAH) {
+      if (!rate || currency.id === CurrencyCodeEnum.UAH) {
         continue;
       }
 
@@ -69,7 +69,7 @@ export class CurrencyService {
     return converted;
   }
 
-  async updateCurrency(currencyCode: ECurrencyCode, currencyDto: AdminCurrencyDto): Promise<Currency> {
+  async updateCurrency(currencyCode: CurrencyCodeEnum, currencyDto: AdminCurrencyDto): Promise<Currency> {
     const found = await this.currencyModel.findById(currencyCode);
     if (!found) {
       throw new NotFoundException(__('Currency "$1" not found', 'ru', currencyCode));
@@ -84,7 +84,7 @@ export class CurrencyService {
     return foundJson;
   }
 
-  async getExchangeRate(currencyCode: ECurrencyCode): Promise<number> {
+  async getExchangeRate(currencyCode: CurrencyCodeEnum): Promise<number> {
     if (currencyCode === DEFAULT_CURRENCY) {
       return 1;
     }

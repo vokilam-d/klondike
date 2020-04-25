@@ -15,7 +15,7 @@ import { OrderItemDto } from '../src/shared/dtos/shared-dtos/order-item.dto';
 import { AdminCreateOrderItemDto } from '../src/shared/dtos/admin/create-order-item.dto';
 import { AdminStoreReviewDto } from '../src/shared/dtos/admin/store-review.dto';
 import { AdminProductReviewDto } from '../src/shared/dtos/admin/product-review.dto';
-import { ECurrencyCode } from '../src/shared/enums/currency.enum';
+import { CurrencyCodeEnum } from '../src/shared/enums/currency.enum';
 import { stripHtmlTags } from '../src/shared/helpers/strip-html-tags.function';
 import { MetaTagsDto } from '../src/shared/dtos/shared-dtos/meta-tags.dto';
 import { ShippingAddressDto } from '../src/shared/dtos/shared-dtos/shipping-address.dto';
@@ -327,10 +327,10 @@ export class Migrate {
       variantDto.priceInDefaultCurrency = product.price || 0;
       const euro_price_attr = euro_price_attrs.find(attr => attr.entity_id === product.entity_id);
       if (euro_price_attr) {
-        variantDto.currency = ECurrencyCode.EUR;
+        variantDto.currency = CurrencyCodeEnum.EUR;
         variantDto.price = euro_price_attr.value || 0;
       } else {
-        variantDto.currency = ECurrencyCode.UAH;
+        variantDto.currency = CurrencyCodeEnum.UAH;
         variantDto.price = variantDto.priceInDefaultCurrency;
       }
 

@@ -16,7 +16,7 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../../shared/dtos/admin/order-action.dto';
-import { EOrderAction } from '../../shared/enums/order-action.enum';
+import { OrderActionEnum } from '../../shared/enums/order-action.enum';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
@@ -113,13 +113,13 @@ export class AdminOrderController {
     let order;
 
     switch (params.actionName) {
-      case EOrderAction.CANCEL:
+      case OrderActionEnum.CANCEL:
         order = await this.orderService.cancelOrder(params.id);
         break;
-      case EOrderAction.START:
+      case OrderActionEnum.START:
         order = await this.orderService.startOrder(params.id);
         break;
-      case EOrderAction.SHIP:
+      case OrderActionEnum.SHIP:
         order = await this.orderService.shipOrder(params.id);
         break;
     }

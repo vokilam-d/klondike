@@ -1,18 +1,18 @@
-import { EMediaVariant } from '../../enums/media-variant.enum';
+import { MediaVariantEnum } from '../../enums/media-variant.enum';
 import { Expose } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
 
 type VariantsUrls = {
-  [k in EMediaVariant]: string;
+  [k in MediaVariantEnum]: string;
 };
 
 export abstract class MediaDto {
   @Expose()
   variantsUrls: VariantsUrls = {
-    [EMediaVariant.Original]: '',
-    [EMediaVariant.Large]: '',
-    [EMediaVariant.Medium]: '',
-    [EMediaVariant.Small]: '',
+    [MediaVariantEnum.Original]: '',
+    [MediaVariantEnum.Large]: '',
+    [MediaVariantEnum.Medium]: '',
+    [MediaVariantEnum.Small]: '',
   };
 
   @Expose()

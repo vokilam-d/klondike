@@ -1,3 +1,3 @@
-export enum ETaskType {
+export enum TaskTypeEnum {
   SendEmail = 'send-email'
 }

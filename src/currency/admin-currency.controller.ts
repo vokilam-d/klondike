@@ -3,7 +3,7 @@ import { CurrencyService } from './currency.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { plainToClass } from 'class-transformer';
-import { ECurrencyCode } from '../shared/enums/currency.enum';
+import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
 import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
 
 @UseGuards(UserJwtGuard)
@@ -34,7 +34,7 @@ export class AdminCurrencyController {
 
   @Put(':currencyCode')
   async updateCurrency(
-    @Param('currencyCode') currencyCode: ECurrencyCode,
+    @Param('currencyCode') currencyCode: CurrencyCodeEnum,
     @Body() currencyDto: AdminCurrencyDto
   ): Promise<ResponseDto<AdminCurrencyDto>> {
 

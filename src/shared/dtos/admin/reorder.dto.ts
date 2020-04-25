@@ -1,4 +1,4 @@
-import { EReorderPosition } from '../../enums/reoder-position.enum';
+import { ReorderPositionEnum } from '../../enums/reoder-position.enum';
 import { IsDefined, IsEnum, IsNumber } from 'class-validator';
 
 export class ReorderDto {
@@ -8,8 +8,8 @@ export class ReorderDto {
   @IsDefined()
   targetId: any;
 
-  @IsEnum(EReorderPosition)
-  position: EReorderPosition;
+  @IsEnum(ReorderPositionEnum)
+  position: ReorderPositionEnum;
 }
 
 export class ProductReorderDto extends ReorderDto {

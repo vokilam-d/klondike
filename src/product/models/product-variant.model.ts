@@ -3,7 +3,7 @@ import { Media } from '../../shared/models/media.model';
 import { MetaTags } from '../../shared/models/meta-tags.model';
 import { ProductSelectedAttribute } from './product-selected-attribute.model';
 import { Types } from 'mongoose';
-import { ECurrencyCode } from '../../shared/enums/currency.enum';
+import { CurrencyCodeEnum } from '../../shared/enums/currency.enum';
 import { LinkedProduct } from './linked-product.model';
 
 export class ProductVariant {
@@ -40,8 +40,8 @@ export class ProductVariant {
   @prop({ default: null })
   oldPrice: number;
 
-  @prop({ default: ECurrencyCode.UAH })
-  currency: ECurrencyCode;
+  @prop({ default: CurrencyCodeEnum.UAH })
+  currency: CurrencyCodeEnum;
 
   @prop({ default: 0 })
   priceInDefaultCurrency: number;

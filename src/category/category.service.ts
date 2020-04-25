@@ -11,7 +11,7 @@ import { plainToClass } from 'class-transformer';
 import { ClientSession } from 'mongoose';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
-import { EReorderPosition } from '../shared/enums/reoder-position.enum';
+import { ReorderPositionEnum } from '../shared/enums/reoder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
@@ -236,7 +236,7 @@ export class CategoryService {
     return breadcrumbs;
   }
 
-  async reoderCategory(categoryId: number, targetCategoryId: number, position: EReorderPosition) {
+  async reoderCategory(categoryId: number, targetCategoryId: number, position: ReorderPositionEnum) {
     const category = await this.categoryModel.findById(categoryId).exec();
     if (!category) { throw new BadRequestException(__('Category with id "$1" not found', 'ru', categoryId)); }
 
@@ -248,7 +248,7 @@ export class CategoryService {
 
     try {
 
-      if (position === EReorderPosition.Inside) {
+      if (position === ReorderPositionEnum.Inside) {
 
         if (category.parentId !== targetCategoryId) {
           category.parentId = targetCategoryId;
@@ -260,10 +260,10 @@ export class CategoryService {
       } else {
         let filterOperator;
         let newOrder;
-        if (position === EReorderPosition.Start) {
+        if (position === ReorderPositionEnum.Start) {
           filterOperator = '$gte';
           newOrder = targetCategory.reversedSortOrder;
-        } else if (position === EReorderPosition.End) {
+        } else if (position === ReorderPositionEnum.End) {
           filterOperator = '$gt';
           newOrder = targetCategory.reversedSortOrder + 1;
         }

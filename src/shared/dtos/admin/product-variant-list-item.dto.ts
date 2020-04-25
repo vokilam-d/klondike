@@ -1,4 +1,4 @@
-import { ECurrencyCode } from '../../enums/currency.enum';
+import { CurrencyCodeEnum } from '../../enums/currency.enum';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductVariantDto } from './product-variant.dto';
 import { AdminLinkedProductDto } from './linked-product.dto';
@@ -15,7 +15,7 @@ export class AdminProductVariantListItem implements Pick<AdminProductVariantDto,
   sku: string;
   price: number;
   oldPrice: number;
-  currency: ECurrencyCode;
+  currency: CurrencyCodeEnum;
   priceInDefaultCurrency: number;
   oldPriceInDefaultCurrency: number;
   qtyInStock: number;

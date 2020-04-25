@@ -3,7 +3,7 @@ import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } fro
 import { AdminMediaDto } from './media.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { transliterate } from '../../helpers/transliterate.function';
-import { ECurrencyCode } from '../../enums/currency.enum';
+import { CurrencyCodeEnum } from '../../enums/currency.enum';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { ProductVariantWithQty } from '../../../product/models/product-with-qty.model';
 import { AdminLinkedProductDto } from './linked-product.dto';
@@ -60,8 +60,8 @@ export class AdminProductVariantDto {
   oldPrice: number;
 
   @Expose()
-  @IsEnum(ECurrencyCode)
-  currency: ECurrencyCode;
+  @IsEnum(CurrencyCodeEnum)
+  currency: CurrencyCodeEnum;
 
   @Expose()
   @IsOptional()

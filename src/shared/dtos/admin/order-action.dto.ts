@@ -1,4 +1,4 @@
-import { EOrderAction } from '../../enums/order-action.enum';
+import { OrderActionEnum } from '../../enums/order-action.enum';
 import { IsEnum, IsNumber } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -7,6 +7,6 @@ export class OrderActionDto {
   @IsNumber()
   id: number;
 
-  @IsEnum(EOrderAction)
-  actionName: EOrderAction;
+  @IsEnum(OrderActionEnum)
+  actionName: OrderActionEnum;
 }

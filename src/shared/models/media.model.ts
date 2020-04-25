@@ -1,9 +1,9 @@
 import { prop } from '@typegoose/typegoose';
 import { Exclude } from 'class-transformer';
-import { EMediaVariant } from '../enums/media-variant.enum';
+import { MediaVariantEnum } from '../enums/media-variant.enum';
 
 type VariantsUrls = {
-  [k in EMediaVariant]: string;
+  [k in MediaVariantEnum]: string;
 };
 
 export class Media {
@@ -16,10 +16,10 @@ export class Media {
 
   @prop()
   variantsUrls: VariantsUrls = {
-    [EMediaVariant.Original]: '',
-    [EMediaVariant.Large]: '',
-    [EMediaVariant.Medium]: '',
-    [EMediaVariant.Small]: '',
+    [MediaVariantEnum.Original]: '',
+    [MediaVariantEnum.Large]: '',
+    [MediaVariantEnum.Medium]: '',
+    [MediaVariantEnum.Small]: '',
   };
 
   @prop()

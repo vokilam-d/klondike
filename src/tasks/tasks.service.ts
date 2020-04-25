@@ -6,14 +6,14 @@ import { ReturnModelType } from '@typegoose/typegoose';
 import { CronJob } from 'cron';
 import { Order } from '../order/models/order.model';
 import { EmailService } from '../email/email.service';
-import { ETaskType } from '../shared/enums/task-type.enum';
+import { TaskTypeEnum } from '../shared/enums/task-type.enum';
 
 @Injectable()
 export class TasksService implements OnApplicationBootstrap {
 
   private logger = new Logger(TasksService.name);
-  private readonly delaysInDays: { [t in ETaskType]?: number; } = {
-    [ETaskType.SendEmail]: 14
+  private readonly delaysInDays: { [t in TaskTypeEnum]?: number; } = {
+    [TaskTypeEnum.SendEmail]: 14
   };
 
   constructor(@InjectModel(Task.name) private readonly taskModel: ReturnModelType<typeof Task>,
@@ -26,11 +26,11 @@ export class TasksService implements OnApplicationBootstrap {
   }
 
   async sendLeaveReviewEmail(order: Order) {
-    const name = `${ETaskType.SendEmail}-${order._id}-${Date.now()}`;
+    const name = `${TaskTypeEnum.SendEmail}-${order._id}-${Date.now()}`;
     const time = new Date();
-    time.setDate(time.getDate() + this.delaysInDays[ETaskType.SendEmail]);
+    time.setDate(time.getDate() + this.delaysInDays[TaskTypeEnum.SendEmail]);
 
-    await this.addTask(name, time, ETaskType.SendEmail, [order]);
+    await this.addTask(name, time, TaskTypeEnum.SendEmail, [order]);
   }
 
   private async setupSavedTasks() {
@@ -44,13 +44,13 @@ export class TasksService implements OnApplicationBootstrap {
     }
   }
 
-  private async addTask(name: string, time: Date, taskType: ETaskType, args: any[] = []) {
+  private async addTask(name: string, time: Date, taskType: TaskTypeEnum, args: any[] = []) {
     await this.startJob(name, time, taskType, args);
     const newTask: Task = { name, time, type: taskType, arguments: args };
     await this.taskModel.create(newTask);
   }
 
-  private startJob(name: string, time: Date, taskType: ETaskType, args: any[]) {
+  private startJob(name: string, time: Date, taskType: TaskTypeEnum, args: any[]) {
     const job = this.buildJob(taskType, args);
     const onComplete = () => {
       this.scheduler.deleteCronJob(name);
@@ -67,9 +67,9 @@ export class TasksService implements OnApplicationBootstrap {
     cronJob.start();
   }
 
-  private buildJob(taskType: ETaskType, args: any[]): () => any {
+  private buildJob(taskType: TaskTypeEnum, args: any[]): () => any {
     switch (taskType) {
-      case ETaskType.SendEmail:
+      case TaskTypeEnum.SendEmail:
         return () => this.emailService.sendLeaveReviewEmail(args[0]);
     }
   }
