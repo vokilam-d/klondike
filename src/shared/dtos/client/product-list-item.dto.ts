@@ -24,7 +24,7 @@ export class ClientProductVariantGroupDto {
 }
 
 type PickedProduct = Pick<Product, 'reviewsCount' | 'reviewsAvgRating'>;
-type PickedVariant = Record<keyof Pick<ProductVariant, 'slug' | 'sku' | 'name' | 'price' | 'crossSellProducts'>, any>;
+type PickedVariant = Record<keyof Pick<ProductVariant, 'slug' | 'sku' | 'name' | 'price'>, any>;
 
 export class ClientProductListItemDto implements PickedProduct, PickedVariant {
   @Expose()
@@ -69,7 +69,4 @@ export class ClientProductListItemDto implements PickedProduct, PickedVariant {
 
   @Expose()
   reviewsCount: number;
-
-  @Expose()
-  crossSellProducts: ClientLinkedProductDto[];
 }

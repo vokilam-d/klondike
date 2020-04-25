@@ -22,8 +22,4 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   attributes = {
     properties: new ElasticProductSelectedAttributeModel()
   };
-  crossSellProducts = {
-    type: 'nested',
-    properties: new ElasticLinkedProduct()
-  };
 }

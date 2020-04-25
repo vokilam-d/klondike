@@ -1,4 +1,5 @@
 import { prop } from '@typegoose/typegoose';
+import { ClientProductListItemDto } from '../../shared/dtos/client/product-list-item.dto';
 
 export class OrderItem {
   @prop()
@@ -36,4 +37,6 @@ export class OrderItem {
 
   @prop()
   slug: string;
+
+  crossSellProducts: ClientProductListItemDto[] = [];
 }

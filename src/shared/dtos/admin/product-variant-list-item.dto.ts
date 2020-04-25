@@ -3,7 +3,7 @@ import { AdminProductSelectedAttributeDto } from './product-selected-attribute.d
 import { AdminProductVariantDto } from './product-variant.dto';
 import { AdminLinkedProductDto } from './linked-product.dto';
 
-export class AdminProductVariantListItem implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty' | 'crossSellProducts'> {
+export class AdminProductVariantListItem implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty'> {
   id: string;
   isEnabled: boolean;
   mediaUrl: string;
@@ -20,5 +20,4 @@ export class AdminProductVariantListItem implements Pick<AdminProductVariantDto,
   oldPriceInDefaultCurrency: number;
   qtyInStock: number;
   sellableQty: number;
-  crossSellProducts: AdminLinkedProductDto[];
 }

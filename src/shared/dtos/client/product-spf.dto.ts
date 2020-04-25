@@ -16,11 +16,11 @@ enum ESort {
 
 export class ClientProductSPFDto extends ClientSPFDto {
   @IsOptional()
-  sort;
+  sort?;
 
   @IsOptional()
   @IsNumberString()
-  categoryId: string;
+  categoryId?: string;
 
   @Transform((value, obj: ClientProductSPFDto) => {
     if (obj.categoryId) {

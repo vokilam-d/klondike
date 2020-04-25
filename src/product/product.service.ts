@@ -712,7 +712,6 @@ export class ProductService implements OnApplicationBootstrap {
           priceInDefaultCurrency: variant.priceInDefaultCurrency,
           oldPriceInDefaultCurrency: variant.oldPriceInDefaultCurrency,
           qtyInStock: variant.qtyInStock,
-          crossSellProducts: variant.crossSellProducts,
           sellableQty: variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0),
         });
       });
@@ -786,8 +785,7 @@ export class ProductService implements OnApplicationBootstrap {
         mediaHoverUrl: variant.mediaHoverUrl,
         mediaAltText: variant.mediaAltText,
         reviewsCount: product.reviewsCount,
-        reviewsAvgRating: product.reviewsAvgRating,
-        crossSellProducts: variant.crossSellProducts
+        reviewsAvgRating: product.reviewsAvgRating
       }
     });
   }
@@ -863,8 +861,7 @@ export class ProductService implements OnApplicationBootstrap {
       oldPrice: variant.oldPriceInDefaultCurrency,
       reviewsAvgRating: productWithQty.reviewsAvgRating,
       reviewsCount: productWithQty.reviewsCount,
-      relatedProducts: variant.relatedProducts.map(p => ({ productId: p.productId, variantId: p.variantId.toString() })),
-      crossSellProducts: variant.crossSellProducts.map(p => ({ productId: p.productId, variantId: p.variantId.toString() })),
+      relatedProducts: variant.relatedProducts.map(p => ({ productId: p.productId, variantId: p.variantId.toString() }))
     }
   }
 

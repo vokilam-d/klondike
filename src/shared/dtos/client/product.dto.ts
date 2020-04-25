@@ -87,7 +87,4 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
 
   @Expose()
   relatedProducts: ClientLinkedProductDto[];
-
-  @Expose()
-  crossSellProducts: ClientLinkedProductDto[];
 }

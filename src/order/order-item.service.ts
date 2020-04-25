@@ -3,6 +3,9 @@ import { ProductService } from '../product/product.service';
 import { CustomerService } from '../customer/customer.service';
 import { OrderItem } from './models/order-item.model';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { LinkedProduct } from '../product/models/linked-product.model';
+import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
+import { ClientProductSPFDto } from '../shared/dtos/client/product-spf.dto';
 
 @Injectable()
 export class OrderItemService {
@@ -42,8 +45,21 @@ export class OrderItemService {
       const customer = await this.customerService.getCustomerById(customerId);
       orderItem.discountValue = Math.round(orderItem.cost * customer.discountPercent / 100);
     }
-
     orderItem.totalCost = orderItem.cost - orderItem.discountValue;
+
+    orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
+
     return orderItem;
+  }
+
+  private async getCrossSellProducts(crossSellProducts: LinkedProduct[]): Promise<ClientProductListItemDto[]> {
+    if (!crossSellProducts.length) { return []; }
+
+    const spf = new ClientProductSPFDto();
+    spf.limit = crossSellProducts.length;
+    spf.id = crossSellProducts.map(p => p.productId).join('|');
+    const { data: products } = await this.productService.getClientProductListByFilters(spf);
+    
+    return products;
   }
 }

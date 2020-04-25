@@ -17,7 +17,7 @@ export abstract class SortingPaginatingFilterDto {
 
   @IsString()
   @IsOptional()
-  sort: string = '';
+  sort?: string = '';
 
   sortFilter: any;
 

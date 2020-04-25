@@ -11,7 +11,7 @@ import {
 import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 
-class ElasticOrderItemModel implements Record<keyof OrderItemDto, any>{
+class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'crossSellProducts'> {
   cost = elasticFloatType;
   discountValue = elasticFloatType;
   imageUrl = elasticTextType;

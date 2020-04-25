@@ -1,5 +1,6 @@
 import { Expose } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { ClientProductListItemDto } from '../client/product-list-item.dto';
 
 export class OrderItemDto {
   @Expose()
@@ -51,4 +52,7 @@ export class OrderItemDto {
   @IsOptional()
   @IsString()
   slug: string;
+
+  @Expose()
+  crossSellProducts: ClientProductListItemDto[];
 }
