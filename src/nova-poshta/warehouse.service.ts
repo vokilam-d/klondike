@@ -5,7 +5,7 @@ import { ElasticWarehouse } from './models/elastic-warehouse.model';
 import { autocompleteSettings } from '../shared/constants';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { ProdPrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
-import { WarehouseDto } from './models/warehouse.dto';
+import { WarehouseDto } from '../shared/dtos/shared-dtos/warehouse.dto';
 import { plainToClass } from 'class-transformer';
 import { NovaPoshtaService } from './nova-poshta.service';
 

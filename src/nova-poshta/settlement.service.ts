@@ -6,7 +6,7 @@ import { autocompleteSettings } from '../shared/constants';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { IFilter } from '../shared/dtos/shared-dtos/spf.dto';
 import { ProdPrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
-import { SettlementDto } from './models/settlement.dto';
+import { SettlementDto } from '../shared/dtos/shared-dtos/settlement.dto';
 import { plainToClass } from 'class-transformer';
 
 import { NovaPoshtaService } from './nova-poshta.service';

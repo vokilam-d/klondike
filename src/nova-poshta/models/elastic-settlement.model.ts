@@ -3,7 +3,7 @@ import {
   elasticKeywordType,
   elasticTextType
 } from '../../shared/constants';
-import { SettlementDto } from './settlement.dto';
+import { SettlementDto } from '../../shared/dtos/shared-dtos/settlement.dto';
 
 export class ElasticSettlement implements Record<keyof SettlementDto, any> {
 

@@ -1,9 +1,9 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { SettlementDto } from './models/settlement.dto';
-import { WarehouseDto } from './models/warehouse.dto';
+import { SettlementDto } from '../shared/dtos/shared-dtos/settlement.dto';
+import { WarehouseDto } from '../shared/dtos/shared-dtos/warehouse.dto';
 import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
-import { StreetDto } from './models/street.dto';
+import { StreetDto } from '../shared/dtos/shared-dtos/street.dto';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 
 @Injectable()
