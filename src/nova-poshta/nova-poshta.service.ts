@@ -3,11 +3,32 @@ import { SettlementDto } from './models/settlement.dto';
 import { WarehouseDto } from './models/warehouse.dto';
 import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
+import { StreetDto } from './models/street.dto';
+import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 
 @Injectable()
 export class NovaPoshtaService {
 
   constructor(private readonly http: HttpService) {
+  }
+
+  public async fetchStreets(spf: ClientSPFDto): Promise<StreetDto[]> {
+    const response = await this.http.post('http://api.novaposhta.ua/v2.0/json/',
+      {
+        modelName: 'Address',
+        calledMethod: 'searchSettlementStreets',
+        methodProperties: {
+          StreetName: spf.filter,
+          SettlementRef: spf.settlementId,
+          Limit: spf.limit
+        },
+        apiKey: process.env.NOVA_POSHTA_API_KEY
+      }).toPromise();
+
+    return response.data.data.flatMap(resp => resp.Addresses).map(street => ({
+      id: street.SettlementStreetRef,
+      name: street.Present
+    }));
   }
 
   public async fetchShipment(shipmentDto: ShipmentDto): Promise<ShipmentDto> {

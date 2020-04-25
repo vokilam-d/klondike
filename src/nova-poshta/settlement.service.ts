@@ -24,7 +24,7 @@ export class SettlementService implements OnApplicationBootstrap {
   }
 
   public async getSettlements(spf: ClientSPFDto) : Promise<SettlementDto[]> {
-    const filters: IFilter[] = [{ fieldName: 'name|ruName', value: spf['filter'] }];
+    const filters: IFilter[] = [{ fieldName: 'name|ruName', value: spf.filter }];
     const searchResponse = await this.searchService.searchByFilters(ElasticSettlement.collectionName, filters, 0, spf.limit);
     return plainToClass(SettlementDto, searchResponse[0],{ excludeExtraneousValues: true })
       .sort((a, b) => a.fullName.localeCompare(b.fullName));
