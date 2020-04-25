@@ -754,16 +754,20 @@ export class Migrate {
         dto.adminNote = foundFlat.manager_order_comment || '';
       }
 
-      dto.novaposhtaTrackingId = '';
+      let novaposhtaTrackingId = '';
       const foundTracking = shipmentTracks.find(track => track.order_id === order.entity_id);
       if (foundTracking) {
-        dto.novaposhtaTrackingId = foundTracking.track_number;
+        novaposhtaTrackingId = foundTracking.track_number;
       } else if (dto.adminNote) {
         const regexMatch = dto.adminNote.match(/([25]\d{13})/m);
         if (regexMatch) {
-          dto.novaposhtaTrackingId = regexMatch[0];
+          novaposhtaTrackingId = regexMatch[0];
         }
       }
+      dto.shipment = {
+        trackingNumber: novaposhtaTrackingId,
+        senderPhone: foundAddress.telephone
+      };
 
       dto.logs = [];
       dto.totalItemsCost = order.subtotal;
