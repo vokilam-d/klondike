@@ -13,12 +13,12 @@ export class SearchService {
       node: process.env.ELASTICSEARCH_URI
     });
 
-    this.client.on('response', (err, result) => {
-      // if (err) {
-        delete result.meta.connection;
-        console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
-      // }
-    });
+    // this.client.on('response', (err, result) => {
+    //   if (err) {
+    //     delete result.meta.connection;
+    //     console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
+    //   }
+    // });
   }
 
   async ensureCollection(collection: string, properties, customSettings?): Promise<any> {
