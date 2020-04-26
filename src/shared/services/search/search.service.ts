@@ -13,12 +13,12 @@ export class SearchService {
       node: process.env.ELASTICSEARCH_URI
     });
 
-    // this.client.on('response', (err, result) => {
-    //   if (err) {
-    //     delete result.meta.connection;
-    //     console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
-    //   }
-    // });
+    this.client.on('response', (err, result) => {
+      // if (err) {
+        delete result.meta.connection;
+        console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
+      // }
+    });
   }
 
   async ensureCollection(collection: string, properties, customSettings?): Promise<any> {
@@ -128,7 +128,7 @@ export class SearchService {
                                  sortFilter?: any
   ): Promise<[T[], number]> {
 
-    const boolQuery = {
+    const boolQuery: any = {
       must: [],
       should: []
     }
@@ -143,6 +143,8 @@ export class SearchService {
             }
           });
         });
+
+        boolQuery.minimum_should_match = 1;
 
       } else if (filter.fieldName.includes('.')) {
         const [parentField] = filter.fieldName.split('.');
@@ -199,7 +201,6 @@ export class SearchService {
         sort.push(`${fieldName}:${value}`);
       }
     });
-    sort.push('id:desc');
 
     try {
       const { body } = await this.client.search({
