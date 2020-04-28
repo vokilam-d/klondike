@@ -861,7 +861,9 @@ export class ProductService implements OnApplicationBootstrap {
       oldPrice: variant.oldPriceInDefaultCurrency,
       reviewsAvgRating: productWithQty.reviewsAvgRating,
       reviewsCount: productWithQty.reviewsCount,
-      relatedProducts: variant.relatedProducts.map(p => ({ productId: p.productId, variantId: p.variantId.toString() }))
+      relatedProducts: variant.relatedProducts
+        .sort(((a, b) => b.sortOrder - a.sortOrder))
+        .map(p => ({ productId: p.productId, variantId: p.variantId.toString() }))
     }
   }
 

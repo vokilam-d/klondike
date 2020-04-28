@@ -55,11 +55,27 @@ export class OrderItemService {
   private async getCrossSellProducts(crossSellProducts: LinkedProduct[]): Promise<ClientProductListItemDto[]> {
     if (!crossSellProducts.length) { return []; }
 
+    crossSellProducts.sort((a, b) => b.sortOrder - a.sortOrder);
+    const idsArr = crossSellProducts.map(p => p.productId);
+
     const spf = new ClientProductSPFDto();
     spf.limit = crossSellProducts.length;
-    spf.id = crossSellProducts.map(p => p.productId).join('|');
+    spf.id = idsArr.join('|');
     const { data: products } = await this.productService.getClientProductListByFilters(spf);
-    
+
+    products.sort((a, b) => {
+      const indexOfA = idsArr.indexOf(a.productId);
+      const indexOfB = idsArr.indexOf(b.productId);
+
+      if (indexOfA > indexOfB) {
+        return 1;
+      } else if (indexOfA < indexOfB) {
+        return -1;
+      } else {
+        return 0;
+      }
+    });
+
     return products;
   }
 }
