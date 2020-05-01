@@ -145,6 +145,7 @@ export class CustomerService implements OnApplicationBootstrap {
     adminCustomerDto.password = '';
     adminCustomerDto.lastLoggedIn = new Date();
 
+    adminCustomerDto.isEmailConfirmed = true;
     adminCustomerDto.isRegisteredByThirdParty = true;
 
     return this.createCustomer(adminCustomerDto);
