@@ -18,7 +18,7 @@ import { UserDto } from '../../shared/dtos/admin/user.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { HttpAdapterHost } from '@nestjs/core';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
-import { OAuth2Namespace } from 'fastify-oauth2';
+import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
 
 interface IGoogleIDToken {
   sub: string;
@@ -62,7 +62,7 @@ export class AuthService {
     const id = await this.getCustomerIdFromReq(req);
     if (!id) { return; }
 
-    const customer = await this.customerService.getCustomerById(+id, false);
+    const customer = await this.customerService.getCustomerById(id, false);
     return customer as DocumentType<Customer>;
   }
 
@@ -130,23 +130,30 @@ export class AuthService {
       customer = await this.customerService.createCustomerByThirdParty(firstName, lastName, email);
     }
 
-    return this.login(customer, res, authConstants.JWT_COOKIE_NAME);
+    const frontendOrigin = isProdEnv() ? '' : 'http://localhost:4002';
+    const redirectHref = `${frontendOrigin}/oauth-success`;
+
+    return this.login(customer, res, authConstants.JWT_COOKIE_NAME, redirectHref);
   }
 
   async loginUser(userDto: UserDto, res: FastifyReply<ServerResponse>) {
     return this.login(userDto, res, authConstants.JWT_ADMIN_COOKIE_NAME);
   }
 
-  async login<T>(entity: T & { id: any; }, res: FastifyReply<ServerResponse>, cookieName: string) {
+  async login<T>(entity: T & { id: any; }, res: FastifyReply<ServerResponse>, cookieName: string, redirectPath?: string) {
     const payload = { sub: entity.id };
     const jwt = await this.jwtService.signAsync(payload);
-    const returnValue: ResponseDto<T> = {
-      data: entity
-    };
 
-    res
-      .setCookie(cookieName, jwt, this.getCookieOptions() as any)
-      .send(returnValue);
+    res.setCookie(cookieName, jwt, this.getCookieOptions() as any);
+
+    if (redirectPath) {
+      res.redirect(301, redirectPath);
+    } else {
+      const returnValue: ResponseDto<T> = {
+        data: entity
+      };
+      res.send(returnValue);
+    }
   }
 
   async validateCustomer(login: string, password: string): Promise<Customer | null> {
