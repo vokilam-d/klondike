@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpService, Inject, Injectable, Logger } from '@nestjs/common';
 import { CustomerService } from '../../customer/customer.service';
 import { Customer } from '../../customer/models/customer.model';
 import { JwtService } from '@nestjs/jwt';
@@ -16,6 +16,27 @@ import { User } from '../../user/models/user.model';
 import { UserService } from '../../user/user.service';
 import { UserDto } from '../../shared/dtos/admin/user.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
+import { HttpAdapterHost } from '@nestjs/core';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
+import { OAuth2Namespace } from 'fastify-oauth2';
+
+interface IGoogleIDToken {
+  sub: string;
+  name: string;
+  given_name: string;
+  family_name: string;
+  picture: string;
+  email: string;
+  email_verified: boolean,
+  locale: string;
+}
+
+interface IFacebookIDToken {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -24,8 +45,10 @@ export class AuthService {
 
   constructor(@Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
               private readonly userService: UserService,
+              private readonly http: HttpService,
               private readonly resetPasswordService: ResetPasswordService,
               private readonly confirmEmailService: ConfirmEmailService,
+              private readonly adapterHost: HttpAdapterHost,
               private readonly encryptor: EncryptorService,
               private readonly emailService: EmailService,
               private readonly jwtService: JwtService) {
@@ -65,8 +88,49 @@ export class AuthService {
     return confirmModel.token;
   }
 
-  async loginCustomer(customerDto: ClientCustomerDto, res: FastifyReply<ServerResponse>) {
+  async loginCustomerByDto(customerDto: ClientCustomerDto, res: FastifyReply<ServerResponse>) {
     return this.login(customerDto, res, authConstants.JWT_COOKIE_NAME);
+  }
+
+  async callbackOAuthGoogle(req: FastifyRequest, res: FastifyReply<ServerResponse>) {
+    const instance = this.adapterHost.httpAdapter.getInstance<NestFastifyApplication>();
+    const token = await instance[authConstants.GOOGLE_OAUTH_NAMESPACE].getAccessTokenFromAuthorizationCodeFlow(req);
+
+    if (!token) {
+      throw new BadRequestException(__('Token in request not found', 'ru'));
+    }
+
+    const { data: googleIDToken } = await this.http.get<IGoogleIDToken>(
+      `https://www.googleapis.com/oauth2/v3/userinfo`,
+      { headers: { 'Authorization': `Bearer ${token.access_token}` } }
+    ).toPromise();
+
+    return this.callbackOAuth(googleIDToken.given_name, googleIDToken.family_name, googleIDToken.email, res);
+  }
+
+  async callbackOAuthFacebook(req: FastifyRequest, res: FastifyReply<ServerResponse>) {
+    const instance = this.adapterHost.httpAdapter.getInstance<NestFastifyApplication>();
+    const token = await instance[authConstants.FACEBOOK_OAUTH_NAMESPACE].getAccessTokenFromAuthorizationCodeFlow(req);
+
+    if (!token) {
+      throw new BadRequestException(__('Token in request not found', 'ru'));
+    }
+
+    const { data: facebookIDToken } = await this.http.get<IFacebookIDToken>(
+      `https://graph.facebook.com/v6.0/me`,
+      { headers: { 'Authorization': `Bearer ${token.access_token}` }, params: { fields: 'email,first_name,last_name' } }
+    ).toPromise();
+
+    return this.callbackOAuth(facebookIDToken.first_name, facebookIDToken.last_name, facebookIDToken.email, res);
+  }
+
+  private async callbackOAuth(firstName: string, lastName: string, email: string, res: FastifyReply<ServerResponse>) {
+    let customer: Customer = await this.customerService.getCustomerByEmailOrPhoneNumber(email);
+    if (!customer) {
+      customer = await this.customerService.createCustomerByThirdParty(firstName, lastName, email);
+    }
+
+    return this.login(customer, res, authConstants.JWT_COOKIE_NAME);
   }
 
   async loginUser(userDto: UserDto, res: FastifyReply<ServerResponse>) {
@@ -112,7 +176,7 @@ export class AuthService {
 
   async initResetCustomerPassword(customer: Customer) {
     const resetModel = await this.resetPasswordService.create(customer);
-    this.emailService.sendResetPasswordEmail(customer, resetModel.token);
+    await this.emailService.sendResetPasswordEmail(customer, resetModel.token);
 
     return;
   }

@@ -1,6 +1,6 @@
 import { TRANSLATIONS } from './translations';
 
-function translate(str: keyof typeof TRANSLATIONS | string, lang: string, ...args: any): string {
+function translate(str: keyof typeof TRANSLATIONS | string, lang: 'ru', ...args: any): string {
   let translation = TRANSLATIONS[str]?.[lang] || str;
 
   for (let i = 0; i < args.length; i++) {

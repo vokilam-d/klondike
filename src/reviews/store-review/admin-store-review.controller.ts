@@ -20,7 +20,7 @@ import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
-import { UserJwtGuard } from '../../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))

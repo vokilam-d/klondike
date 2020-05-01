@@ -30,8 +30,8 @@ import { ClientUpdateCustomerDto } from '../../shared/dtos/client/update-custome
 import { DocumentType } from '@typegoose/typegoose';
 import { ClientUpdatePasswordDto } from '../../shared/dtos/client/update-password.dto';
 import { ShippingAddressDto } from '../../shared/dtos/shared-dtos/shipping-address.dto';
-import { CustomerJwtGuard } from '../../auth/services/guards/customer-jwt.guard';
-import { CustomerLocalGuard } from '../../auth/services/guards/customer-local.guard';
+import { CustomerJwtGuard } from '../../auth/guards/customer-jwt.guard';
+import { CustomerLocalGuard } from '../../auth/guards/customer-local.guard';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -50,6 +50,16 @@ export class ClientCustomerController {
     return {
       data: dto
     };
+  }
+
+  @Get('google/callback')
+  googleLoginCallback(@Req() req, @Res() res: FastifyReply<ServerResponse>) {
+    return this.authService.callbackOAuthGoogle(req, res);
+  }
+
+  @Get('facebook/callback')
+  facebookLoginCallback(@Req() req, @Res() res: FastifyReply<ServerResponse>) {
+    return this.authService.callbackOAuthFacebook(req, res);
   }
 
   @UseGuards(CustomerJwtGuard)
@@ -72,7 +82,7 @@ export class ClientCustomerController {
     const updated = await this.customerService.updatePassword(customer, dto);
     const customerDto = plainToClass(ClientCustomerDto, updated, { excludeExtraneousValues: true });
 
-    return this.authService.loginCustomer(customerDto, res);
+    return this.authService.loginCustomerByDto(customerDto, res);
   }
 
   /**
@@ -83,7 +93,7 @@ export class ClientCustomerController {
     const customer = await this.customerService.clientRegisterCustomer(registerDto);
     const customerDto = plainToClass(ClientCustomerDto, customer, { excludeExtraneousValues: true });
 
-    return this.authService.loginCustomer(customerDto, res);
+    return this.authService.loginCustomerByDto(customerDto, res);
   }
 
   /**
@@ -96,7 +106,7 @@ export class ClientCustomerController {
     this.customerService.updateLastLoggedIn(customer.id);
     const customerDto = plainToClass(ClientCustomerDto, customer, { excludeExtraneousValues: true });
 
-    return this.authService.loginCustomer(customerDto, res);
+    return this.authService.loginCustomerByDto(customerDto, res);
   }
 
   @Post('reset')

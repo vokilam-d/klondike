@@ -25,7 +25,7 @@ import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
-import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { Product } from './models/product.model';
 import { ProductCategory } from './models/product-category.model';

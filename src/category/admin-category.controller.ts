@@ -17,7 +17,7 @@ import { AdminAddOrUpdateCategoryDto, AdminResponseCategoryDto } from '../shared
 import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
-import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
 
 @UseGuards(UserJwtGuard)

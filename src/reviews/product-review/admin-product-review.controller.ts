@@ -20,7 +20,7 @@ import { ServerResponse } from 'http';
 import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReviewService } from './product-review.service';
 import { AdminProductReviewFilterDto } from '../../shared/dtos/admin/product-review-filter.dto';
-import { UserJwtGuard } from '../../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))

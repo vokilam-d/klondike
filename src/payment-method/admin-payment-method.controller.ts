@@ -3,7 +3,7 @@ import { PaymentMethodService } from './payment-method.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminPaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { plainToClass } from 'class-transformer';
-import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))

@@ -23,4 +23,5 @@ export class ElasticCustomerModel implements Record<keyof AdminCustomerDto, any>
   reviewIds = elasticIntegerType;
   totalOrdersCost = elasticFloatType;
   wishlistProductIds = elasticIntegerType;
+  isRegisteredByThirdParty = elasticBooleanType;
 }

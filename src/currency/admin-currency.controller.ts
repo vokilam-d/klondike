@@ -4,7 +4,7 @@ import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { plainToClass } from 'class-transformer';
 import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
-import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))

@@ -18,11 +18,11 @@ import { AuthService } from '../auth/services/auth.service';
 import { DocumentType } from '@typegoose/typegoose';
 import { User } from './models/user.model';
 import { plainToClass } from 'class-transformer';
-import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { LoginDto } from '../shared/dtos/shared-dtos/login.dto';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
-import { UserLocalGuard } from '../auth/services/guards/user-local.guard';
+import { UserLocalGuard } from '../auth/guards/user-local.guard';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/user')

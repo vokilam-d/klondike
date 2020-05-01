@@ -13,5 +13,7 @@ export const authConstants = {
   CUSTOMER_LOCAL_STRATEGY_NAME: `${Customer.collectionName}-local`,
   CUSTOMER_JWT_STRATEGY_NAME: `${Customer.collectionName}-JWT`,
   USER_LOCAL_STRATEGY_NAME: `${User.collectionName}-local`,
-  USER_JWT_STRATEGY_NAME: `${User.collectionName}-JWT`
+  USER_JWT_STRATEGY_NAME: `${User.collectionName}-JWT`,
+  GOOGLE_OAUTH_NAMESPACE: 'googleOAuth2',
+  FACEBOOK_OAUTH_NAMESPACE: 'facebookOAuth2'
 };

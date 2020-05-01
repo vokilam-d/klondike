@@ -126,5 +126,13 @@ export const TRANSLATIONS = {
   'You have already voted for this review': {
     en: 'You have already voted for this review',
     ru: 'Вы уже голосовали за этот отзыв'
+  },
+  'Unknown OAuth provider': {
+    en: 'Unknown OAuth provider',
+    ru: 'Неизвестный тип OAuth'
+  },
+  'Token in request not found': {
+    en: 'Token in request not found',
+    ru: 'Токен в запросе не найден'
   }
 }

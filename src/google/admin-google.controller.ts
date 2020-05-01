@@ -2,11 +2,11 @@ import { Controller, Get, Res, UseGuards } from '@nestjs/common';
 import { GoogleShoppingFeedService } from './google-shopping-feed.service';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
-import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 
 @UseGuards(UserJwtGuard)
-@Controller('admin/google')
-export class AdminGoogleController {
+@Controller('admin/google') // todo rename to "admin/feed"
+export class AdminGoogleController { // todo rename to AdminFeedController
 
   constructor(private readonly googleShoppingFeedService: GoogleShoppingFeedService) {
   }

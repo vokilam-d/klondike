@@ -91,6 +91,9 @@ export class Customer {
   @prop({ default: [] })
   cart: OrderItem[];
 
+  @prop({ default: false })
+  isRegisteredByThirdParty: boolean;
+
 
   static collectionName: string = 'customer';
 }

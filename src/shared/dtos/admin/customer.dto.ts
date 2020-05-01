@@ -88,6 +88,8 @@ export class AdminAddOrUpdateCustomerDto {
   @IsOptional()
   @IsNumber()
   totalOrdersCost: number;
+
+  isRegisteredByThirdParty?: boolean;
 }
 
 export class AdminCustomerDto extends AdminAddOrUpdateCustomerDto {

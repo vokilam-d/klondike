@@ -137,6 +137,19 @@ export class CustomerService implements OnApplicationBootstrap {
     return created;
   }
 
+  createCustomerByThirdParty(firstName: string, lastName: string, email: string): Promise<Customer> {
+    const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
+    adminCustomerDto.firstName = firstName;
+    adminCustomerDto.lastName = lastName;
+    adminCustomerDto.email = email;
+    adminCustomerDto.password = '';
+    adminCustomerDto.lastLoggedIn = new Date();
+
+    adminCustomerDto.isRegisteredByThirdParty = true;
+
+    return this.createCustomer(adminCustomerDto);
+  }
+
   async updateCustomerById(customerId: number, customerDto: AdminAddOrUpdateCustomerDto): Promise<Customer> {
     const found = await this.customerModel.findById(customerId).exec();
     if (!found) {

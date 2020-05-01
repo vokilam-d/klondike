@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { OrderService } from '../order/order.service';
-import { UserJwtGuard } from '../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { ModuleRef } from '@nestjs/core';
 import { __ } from '../shared/helpers/translate/translate.function';
 

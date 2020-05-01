@@ -17,7 +17,7 @@ import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../../shared/dtos/admin/customer.dto';
-import { UserJwtGuard } from '../../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))

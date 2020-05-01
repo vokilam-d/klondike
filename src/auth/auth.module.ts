@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, HttpModule, Module } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 import { CustomerModule } from '../customer/customer.module';
 import { CustomerLocalStrategy } from './strategies/customer-local.strategy';
@@ -41,7 +41,8 @@ const confirmEmailModel = {
     forwardRef(() => CustomerModule),
     forwardRef(() => UserModule),
     forwardRef(() => EmailModule),
-    PassportModule
+    PassportModule,
+    HttpModule
   ],
   providers: [
     AuthService,

@@ -21,7 +21,7 @@ import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ShippingAddressDto } from '../../shared/dtos/shared-dtos/shipping-address.dto';
-import { UserJwtGuard } from '../../auth/services/guards/user-jwt.guard';
+import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { OrderShipmentService } from '../order-shipment.service';
 
