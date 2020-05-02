@@ -125,9 +125,11 @@ export class AuthService {
   }
 
   private async callbackOAuth(firstName: string, lastName: string, email: string, res: FastifyReply<ServerResponse>) {
-    let customer: Customer = await this.customerService.getCustomerByEmailOrPhoneNumber(email);
-    if (!customer) {
-      customer = await this.customerService.createCustomerByThirdParty(firstName, lastName, email);
+    let customer: DocumentType<Customer> = await this.customerService.getCustomerByEmailOrPhoneNumber(email);
+    if (customer) {
+      this.customerService.confirmCustomerEmail(customer).catch();
+    } else {
+      customer = await this.customerService.createCustomerByThirdParty(firstName, lastName, email) as any;
     }
 
     const frontendOrigin = isProdEnv() ? '' : 'http://localhost:4002';

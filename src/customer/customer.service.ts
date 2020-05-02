@@ -343,9 +343,16 @@ export class CustomerService implements OnApplicationBootstrap {
 
   async deleteFromCart(customer: DocumentType<Customer>, sku: string) {
     const foundIdx = customer.cart.findIndex(item => item.sku === sku);
-    if (foundIdx !== -1) {
-      customer.cart.splice(foundIdx, 1);
-      await customer.save();
-    }
+    if (foundIdx === -1) { return; }
+
+    customer.cart.splice(foundIdx, 1);
+    await customer.save();
+  }
+
+  async confirmCustomerEmail(customer: DocumentType<Customer>) {
+    if (customer.isEmailConfirmed) { return; }
+
+    customer.isEmailConfirmed = true;
+    await customer.save();
   }
 }
