@@ -127,7 +127,7 @@ export class AuthService {
   private async callbackOAuth(firstName: string, lastName: string, email: string, res: FastifyReply<ServerResponse>) {
     let customer: DocumentType<Customer> = await this.customerService.getCustomerByEmailOrPhoneNumber(email);
     if (customer) {
-      this.customerService.confirmCustomerEmail(customer).catch();
+      await this.customerService.confirmCustomerEmail(customer);
     } else {
       customer = await this.customerService.createCustomerByThirdParty(firstName, lastName, email) as any;
     }

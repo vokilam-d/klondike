@@ -1,4 +1,13 @@
-import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer } from './models/customer.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
@@ -26,6 +35,7 @@ import { __ } from '../shared/helpers/translate/translate.function';
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
 
+  private logger = new Logger(CustomerService.name);
   private cachedCustomerCount: number;
 
   constructor(@InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
@@ -352,7 +362,11 @@ export class CustomerService implements OnApplicationBootstrap {
   async confirmCustomerEmail(customer: DocumentType<Customer>) {
     if (customer.isEmailConfirmed) { return; }
 
-    customer.isEmailConfirmed = true;
-    await customer.save();
+    try {
+      customer.isEmailConfirmed = true;
+      await customer.save();
+    } catch (e) {
+      this.logger.error(`Could not confirm customer email:`, e);
+    }
   }
 }
