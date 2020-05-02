@@ -351,7 +351,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async deleteFromCart(customer: DocumentType<Customer>, sku: string) {
+  async deleteFromCart(customesr: DocumentType<Customer>, sku: string) {
     const foundIdx = customer.cart.findIndex(item => item.sku === sku);
     if (foundIdx === -1) { return; }
 
@@ -361,12 +361,7 @@ export class CustomerService implements OnApplicationBootstrap {
 
   async confirmCustomerEmail(customer: DocumentType<Customer>) {
     if (customer.isEmailConfirmed) { return; }
-
-    try {
-      customer.isEmailConfirmed = true;
-      await customer.save();
-    } catch (e) {
-      this.logger.error(`Could not confirm customer email:`, e);
-    }
+    customer.isEmailConfirmed = true;
+    await customer.save();
   }
 }

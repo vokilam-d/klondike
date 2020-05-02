@@ -127,7 +127,11 @@ export class AuthService {
   private async callbackOAuth(firstName: string, lastName: string, email: string, res: FastifyReply<ServerResponse>) {
     let customer: DocumentType<Customer> = await this.customerService.getCustomerByEmailOrPhoneNumber(email);
     if (customer) {
-      await this.customerService.confirmCustomerEmail(customer);
+      try {
+        await this.customerService.confirmCustomerEmail(customer);
+      } catch (e) {
+        this.logger.error(`Could not confirm customer email:`, e);
+      }
     } else {
       customer = await this.customerService.createCustomerByThirdParty(firstName, lastName, email) as any;
     }
