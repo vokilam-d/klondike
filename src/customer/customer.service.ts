@@ -351,7 +351,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async deleteFromCart(customesr: DocumentType<Customer>, sku: string) {
+  async deleteFromCart(customer: DocumentType<Customer>, sku: string) {
     const foundIdx = customer.cart.findIndex(item => item.sku === sku);
     if (foundIdx === -1) { return; }
 
