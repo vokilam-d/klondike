@@ -292,7 +292,10 @@ export class CustomerService implements OnApplicationBootstrap {
   updateLastLoggedIn(id: number): void {
     const lastLoggedInProp: keyof Customer = 'lastLoggedIn';
 
-    this.customerModel.findByIdAndUpdate(id, { [lastLoggedInProp]: new Date() }).exec();
+    this.customerModel
+      .findByIdAndUpdate(id, { [lastLoggedInProp]: new Date() })
+      .exec()
+      .catch(ex => this.logger.error(`Could not update last logged in date:`, ex));
   }
 
   async resetPasswordByDto(resetDto: ResetPasswordDto) {
@@ -310,7 +313,7 @@ export class CustomerService implements OnApplicationBootstrap {
     }
 
     const token = await this.authService.createCustomerEmailConfirmToken(customer);
-    this.emailService.sendEmailConfirmationEmail(customer, token);
+    await this.emailService.sendEmailConfirmationEmail(customer, token);
   }
 
   async addShippingAddress(customer: DocumentType<Customer>, addressDto: ShippingAddressDto): Promise<Customer> {

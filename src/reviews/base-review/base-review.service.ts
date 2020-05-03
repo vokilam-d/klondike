@@ -6,7 +6,7 @@ import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 import { ForbiddenException, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { AdminBaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
-import { ClientSession, FilterQuery } from 'mongoose';
+import { ClientSession } from 'mongoose';
 import { CounterService } from '../../shared/services/counter/counter.service';
 import { MediaService } from '../../shared/services/media/media.service';
 import { SearchService } from '../../shared/services/search/search.service';
@@ -34,10 +34,11 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());
   }
 
-  async getReviewsResponse(spf: AdminSPFDto,
-                           ipAddress?: string,
-                           userId?: string,
-                           customerId?: number): Promise<ResponseDto<U[]>> {
+  async findReviewsByFilters(spf: AdminSPFDto,
+                             ipAddress?: string,
+                             userId?: string,
+                             customerId?: number
+  ): Promise<ResponseDto<U[]>> {
 
     let itemsFiltered: number;
     let reviews: U[];
@@ -65,6 +66,13 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       itemsFiltered,
       pagesTotal
     };
+  }
+
+  async findAllReviews(onlyEnabled: boolean, ipAddress?: string, userId?: string, customerId?: number): Promise<U[]> {
+    const isEnabledProp: keyof T = 'isEnabled';
+    const reviews = await this.reviewModel.find({ [isEnabledProp]: true } as any).sort('-_id').exec();
+
+    return reviews.map(review => this.transformReviewToDto(review, ipAddress, userId, customerId));
   }
 
   async findReview(reviewId: string, ipAddress?: string, userId?: string, customerId?: number): Promise<U> {

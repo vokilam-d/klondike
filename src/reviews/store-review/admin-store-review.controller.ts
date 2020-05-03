@@ -32,7 +32,7 @@ export class AdminStoreReviewController {
 
   @Get()
   async findAllReviews(@Query() sortingPaging: AdminSPFDto): Promise<ResponseDto<AdminStoreReviewDto[]>> {
-    return this.storeReviewService.getReviewsResponse(sortingPaging);
+    return this.storeReviewService.findReviewsByFilters(sortingPaging);
   }
 
   @Get(':id')

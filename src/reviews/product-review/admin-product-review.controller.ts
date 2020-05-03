@@ -39,7 +39,7 @@ export class AdminProductReviewController {
       };
 
     } else {
-      return this.productReviewService.getReviewsResponse(spf);
+      return this.productReviewService.findReviewsByFilters(spf);
     }
   }
 

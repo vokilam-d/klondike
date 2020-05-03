@@ -239,7 +239,7 @@ export class GoogleShoppingFeedService {
     const spf = new AdminSPFDto();
     spf.limit = countReviews + 100;
 
-    const responseDto = await this.reviewService.getReviewsResponse(spf);
+    const responseDto = await this.reviewService.findReviewsByFilters(spf);
     return responseDto.data;
   }
 

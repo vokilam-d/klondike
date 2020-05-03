@@ -5,5 +5,5 @@ import { AdminBaseReviewDto } from './base-review.dto';
 export class AdminStoreReviewDto extends AdminBaseReviewDto {
   @Expose()
   @IsString()
-  managerComment: string;
+  managerComment?: string;
 }
