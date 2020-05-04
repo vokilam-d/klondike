@@ -12,6 +12,7 @@ import * as requestIp from 'request-ip';
 import { isProdEnv } from './shared/helpers/is-prod-env.function';
 import * as fastifyOauth2 from 'fastify-oauth2';
 import { authConstants } from './auth/auth-constants';
+import { CommonRequestInterceptor } from './shared/interceptors/common-request.interceptor';
 
 declare const module: any;
 
@@ -26,9 +27,11 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, fastifyAdapter);
   const globalExceptionFilter = app.get<GlobalExceptionFilter>(GlobalExceptionFilter);
+  const commonReqInterceptor = app.get<CommonRequestInterceptor>(CommonRequestInterceptor);
 
   app.setGlobalPrefix('/api/v1');
   app.useGlobalFilters(globalExceptionFilter);
+  app.useGlobalInterceptors(commonReqInterceptor);
 
   app.enableCors();
   app.use(helmet());

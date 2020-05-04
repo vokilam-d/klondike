@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post, Query, Req, Request, Response } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, Request, Response } from '@nestjs/common';
 import { StoreReviewService } from './store-review.service';
 import { IpAddress } from '../../shared/decorators/ip-address.decorator';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
@@ -10,6 +10,7 @@ import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
 import { ClientAddStoreReviewDto } from '../../shared/dtos/client/add-store-review.dto';
 import { ClientStoreReviewDto } from '../../shared/dtos/client/store-review.dto';
+import { ClientId } from '../../shared/decorators/client-id.decorator';
 
 @Controller('store-reviews')
 export class ClientStoreReviewController {
@@ -45,7 +46,10 @@ export class ClientStoreReviewController {
   }
 
   @Post()
-  async createStoreReview(@Req() req, @Body() storeReviewDto: ClientAddStoreReviewDto, @Query('migrate') migrate: any): Promise<ResponseDto<ClientStoreReviewDto>> {
+  async createStoreReview(@Req() req,
+                          @Body() storeReviewDto: ClientAddStoreReviewDto,
+                          @Query('migrate') migrate: any
+  ): Promise<ResponseDto<ClientStoreReviewDto>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
@@ -57,10 +61,15 @@ export class ClientStoreReviewController {
   }
 
   @Post(':id/vote')
-  async createVote(@Req() req, @Param('id') reviewId: string, @IpAddress() ipAddress: string | null, @Headers() headers): Promise<ResponseDto<boolean>> {
+  async createVote(@Req() req,
+                   @Param('id') reviewId: string,
+                   @IpAddress() ipAddress: string | null,
+                   @ClientId() clientId: string
+  ): Promise<ResponseDto<boolean>> {
+
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
-    await this.storeReviewService.createVote(parseInt(reviewId), ipAddress, headers.userId, customerId);
+    await this.storeReviewService.createVote(parseInt(reviewId), ipAddress, clientId, customerId);
 
     return {
       data: true
@@ -68,11 +77,16 @@ export class ClientStoreReviewController {
   }
 
   @Post(':id/downvote')
-  async removeVote(@Req() req, @Param('id') reviewId: string, @IpAddress() ipAddress: string | null, @Headers() headers): Promise<ResponseDto<boolean>> {
+  async removeVote(@Req() req,
+                   @Param('id') reviewId: string,
+                   @IpAddress() ipAddress: string | null,
+                   @ClientId() clientId: string
+  ): Promise<ResponseDto<boolean>> {
+
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
 
-    await this.storeReviewService.removeVote(parseInt(reviewId), ipAddress, headers.userId, customerId);
+    await this.storeReviewService.removeVote(parseInt(reviewId), ipAddress, clientId, customerId);
     return {
       data: true
     }

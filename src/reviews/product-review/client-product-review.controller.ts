@@ -1,17 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Headers,
-  Param,
-  Post,
-  Query,
-  Redirect, Req,
-  Request,
-  Response,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Redirect, Req, Request, Response, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ProductReviewService } from './product-review.service';
 import { ClientProductReviewFilterDto } from '../../shared/dtos/client/product-review-filter.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
@@ -25,6 +12,7 @@ import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
 import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
 import { ModuleRef } from '@nestjs/core';
 import { AuthService } from '../../auth/services/auth.service';
+import { ClientId } from '../../shared/decorators/client-id.decorator';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('product-reviews')
@@ -36,11 +24,15 @@ export class ClientProductReviewController {
 
   @Get()
   async findProductReviews(@Query() query: ClientProductReviewFilterDto,
+                           @Req() req,
                            @IpAddress() ipAddress: string | null,
-                           @Headers() headers
+                           @ClientId() clientId: string
   ): Promise<ResponseDto<ClientProductReviewDto[]>> {
 
-    const adminDto = await this.productReviewService.findReviewsByProductId(query.productId, true, ipAddress, headers.userId, headers.customerId);
+    const authService = this.moduleRef.get(AuthService, { strict: false });
+    const customerId = await authService.getCustomerIdFromReq(req);
+
+    const adminDto = await this.productReviewService.findReviewsByProductId(query.productId, true, ipAddress, clientId, customerId);
 
     return {
       data: plainToClass(ClientProductReviewDto, adminDto, { excludeExtraneousValues: true })
@@ -66,7 +58,10 @@ export class ClientProductReviewController {
   }
 
   @Post()
-  async createProductReview(@Req() req, @Body() productReviewDto: ClientAddProductReviewDto, @Query('migrate') migrate: any): Promise<ResponseDto<ClientProductReviewDto>> {
+  async createProductReview(@Req() req,
+                            @Body() productReviewDto: ClientAddProductReviewDto,
+                            @Query('migrate') migrate: any
+  ): Promise<ResponseDto<ClientProductReviewDto>> {
 
     if (!productReviewDto.customerId) {
       const authService = this.moduleRef.get(AuthService, { strict: false });
@@ -80,12 +75,17 @@ export class ClientProductReviewController {
   }
 
   @Post(':id/comment')
-  async addComment(@Param('id') reviewId: string, @Req() req, @Body() commentDto: ClientAddProductReviewCommentDto, @Headers() headers): Promise<ResponseDto<ClientProductReviewDto>> {
+  async addComment(@Param('id') reviewId: string,
+                   @Req() req,
+                   @Body() commentDto: ClientAddProductReviewCommentDto,
+                   @ClientId() clientId: string
+  ): Promise<ResponseDto<ClientProductReviewDto>> {
+
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
 
     const review = await this.productReviewService.addComment(parseInt(reviewId), commentDto, customerId);
-    const adminDto = this.productReviewService.transformReviewToDto(review, undefined, headers.userId, customerId, true);
+    const adminDto = this.productReviewService.transformReviewToDto(review, undefined, clientId, customerId, true);
 
     return {
       data: plainToClass(ClientProductReviewDto, adminDto, { excludeExtraneousValues: true })
@@ -93,11 +93,16 @@ export class ClientProductReviewController {
   }
 
   @Post(':id/vote')
-  async createVote(@Req() req, @Param('id') reviewId: string, @IpAddress() ipAddress: string | null, @Headers() headers): Promise<ResponseDto<boolean>> {
+  async createVote(@Req() req,
+                   @Param('id') reviewId: string,
+                   @IpAddress() ipAddress: string | null,
+                   @ClientId() clientId: string
+  ): Promise<ResponseDto<boolean>> {
+
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
 
-    await this.productReviewService.createVote(parseInt(reviewId), ipAddress, headers.userId, customerId);
+    await this.productReviewService.createVote(parseInt(reviewId), ipAddress, clientId, customerId);
 
     return {
       data: true
@@ -105,11 +110,16 @@ export class ClientProductReviewController {
   }
 
   @Post(':id/downvote')
-  async removeVote(@Req() req, @Param('id') reviewId: string, @IpAddress() ipAddress: string | null, @Headers() headers): Promise<ResponseDto<boolean>> {
+  async removeVote(@Req() req,
+                   @Param('id') reviewId: string,
+                   @IpAddress() ipAddress: string | null,
+                   @ClientId() clientId: string
+  ): Promise<ResponseDto<boolean>> {
+
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
 
-    await this.productReviewService.removeVote(parseInt(reviewId), ipAddress, headers.userId, customerId);
+    await this.productReviewService.removeVote(parseInt(reviewId), ipAddress, clientId, customerId);
     return {
       data: true
     }

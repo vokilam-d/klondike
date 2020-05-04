@@ -23,6 +23,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { NovaPoshtaModule } from './nova-poshta/nova-poshta.module';
 import { TasksModule } from './tasks/tasks.module';
+import { CommonRequestInterceptor } from './shared/interceptors/common-request.interceptor';
 
 @Module({
   imports: [
@@ -63,7 +64,10 @@ import { TasksModule } from './tasks/tasks.module';
     NovaPoshtaModule,
     TasksModule
   ],
-  providers: [GlobalExceptionFilter],
+  providers: [
+    GlobalExceptionFilter,
+    CommonRequestInterceptor
+  ],
   controllers: []
 })
 export class AppModule {
