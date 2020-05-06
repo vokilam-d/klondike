@@ -28,7 +28,7 @@ export class UserService {
 
   async addNewUser(userDto: AddOrUpdateUserDto): Promise<User> {
     const newUser = new this.userModel(userDto);
-    newUser.password = await this.encryptor.hashPassword(userDto.password);
+    newUser.password = await this.encryptor.hash(userDto.password);
     await newUser.save();
 
     return newUser.toJSON();
@@ -40,7 +40,7 @@ export class UserService {
       throw new NotFoundException(__('User with id "$1" not found', 'ru', userId));
     }
 
-    user.password = await this.encryptor.hashPassword(userDto.password);
+    user.password = await this.encryptor.hash(userDto.password);
     await user.save();
     return user.toJSON();
   }

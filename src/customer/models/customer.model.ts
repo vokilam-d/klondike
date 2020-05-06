@@ -47,7 +47,7 @@ export class Customer {
   phoneNumber: string;
 
   @prop({ default: null })
-  password: any;
+  password: string;
 
   @prop({ default: new Date() })
   createdAt: Date;

@@ -23,7 +23,6 @@ import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientRegisterDto } from '../shared/dtos/client/register.dto';
 import { AuthService } from '../auth/services/auth.service';
-import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
 import { EmailService } from '../email/email.service';
 import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
 import { ClientUpdateCustomerDto } from '../shared/dtos/client/update-customer.dto';
@@ -31,6 +30,8 @@ import { ClientUpdatePasswordDto } from '../shared/dtos/client/update-password.d
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
 import { OrderItem } from '../order/models/order-item.model';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { InitResetPasswordDto } from '../shared/dtos/client/init-reset-password.dto';
+import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -136,7 +137,7 @@ export class CustomerService implements OnApplicationBootstrap {
     adminCustomerDto.firstName = registerDto.firstName;
     adminCustomerDto.lastName = registerDto.lastName;
     adminCustomerDto.email = registerDto.email;
-    adminCustomerDto.password = await this.encryptor.hashPassword(registerDto.password);
+    adminCustomerDto.password = await this.encryptor.hash(registerDto.password);
     adminCustomerDto.lastLoggedIn = new Date();
 
     const created = await this.createCustomer(adminCustomerDto);
@@ -183,12 +184,12 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async updatePassword(customer: DocumentType<Customer>, passwordDto: ClientUpdatePasswordDto): Promise<Customer> {
-    const isValidOldPassword = await this.encryptor.validatePassword(passwordDto.currentPassword, customer.password);
+    const isValidOldPassword = await this.encryptor.validate(passwordDto.currentPassword, customer.password);
     if (!isValidOldPassword) {
       throw new BadRequestException(__('Current password is not valid', 'ru'));
     }
 
-    customer.password = await this.encryptor.hashPassword(passwordDto.newPassword);
+    customer.password = await this.encryptor.hash(passwordDto.newPassword);
     await customer.save();
 
     return customer;
@@ -298,13 +299,31 @@ export class CustomerService implements OnApplicationBootstrap {
       .catch(ex => this.logger.error(`Could not update last logged in date:`, ex));
   }
 
-  async resetPasswordByDto(resetDto: ResetPasswordDto) {
+  async initResetPassword(resetDto: InitResetPasswordDto) {
     const customer = await this.getCustomerByEmailOrPhoneNumber(resetDto.login);
     if (!customer) {
       throw new NotFoundException(__('Customer with login "$1" not found', 'ru', resetDto.login));
     }
 
     return this.authService.initResetCustomerPassword(customer);
+  }
+
+  async resetPassword(resetDto: ResetPasswordDto) {
+    const customerId: number = await this.authService.getCustomerIdByResetPasswordToken(resetDto.token);
+    if (!customerId) {
+      throw new BadRequestException(__('Reset password link is invalid or expired', 'ru'));
+    }
+
+    const found = await this.customerModel.findById(customerId).exec();
+    if (!found) {
+      throw new BadRequestException(__('Customer not found', 'ru'));
+    }
+
+    found.password = await this.encryptor.hash(resetDto.password);
+    await found.save();
+    this.authService.deleteResetPasswordToken(resetDto.token).catch();
+
+    return true;
   }
 
   async sendEmailConfirmationEmail(customer: Customer) {

@@ -6,11 +6,11 @@ export class EncryptorService {
 
   private saltRounds = 10;
 
-  validatePassword(password: string, password2: any): Promise<boolean> {
-    return compare(password, password2)
+  validate(str: string, str2: string): Promise<boolean> {
+    return compare(str, str2)
   }
 
-  hashPassword(password: string): Promise<string> {
-    return hash(password, this.saltRounds);
+  hash(str: string): Promise<string> {
+    return hash(str, this.saltRounds);
   }
 }

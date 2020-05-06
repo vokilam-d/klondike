@@ -41,7 +41,11 @@ export const TRANSLATIONS = {
   },
   'Customer with id "$1" not found': {
     en: 'Customer with id "$1" not found',
-    ru: 'Клиент с id "$1" не найден'
+    ru: 'Пользователь с id "$1" не найден'
+  },
+  'Customer not found': {
+    en: 'Customer not found',
+    ru: 'Пользователь не найден'
   },
   'Customer with email "$1" already exists': {
     en: 'Customer with email "$1" already exists',
@@ -134,5 +138,9 @@ export const TRANSLATIONS = {
   'Token in request not found': {
     en: 'Token in request not found',
     ru: 'Токен в запросе не найден'
+  },
+  'Reset password link is invalid or expired': {
+    en: 'Reset password link is invalid or expired',
+    ru: 'Ссылка для восстановления пароля неверна или устарела'
   }
 }

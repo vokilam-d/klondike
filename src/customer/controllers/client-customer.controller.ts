@@ -24,7 +24,6 @@ import { plainToClass } from 'class-transformer';
 import { ClientCustomerDto } from '../../shared/dtos/client/customer.dto';
 import { AuthService } from '../../auth/services/auth.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
-import { ResetPasswordDto } from '../../shared/dtos/client/reset-password.dto';
 import { ClientDetailedCustomerDto } from '../../shared/dtos/client/detailed-customer.dto';
 import { ClientUpdateCustomerDto } from '../../shared/dtos/client/update-customer.dto';
 import { DocumentType } from '@typegoose/typegoose';
@@ -32,6 +31,8 @@ import { ClientUpdatePasswordDto } from '../../shared/dtos/client/update-passwor
 import { ShippingAddressDto } from '../../shared/dtos/shared-dtos/shipping-address.dto';
 import { CustomerJwtGuard } from '../../auth/guards/customer-jwt.guard';
 import { CustomerLocalGuard } from '../../auth/guards/customer-local.guard';
+import { InitResetPasswordDto } from '../../shared/dtos/client/init-reset-password.dto';
+import { ResetPasswordDto } from '../../shared/dtos/client/reset-password.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -109,9 +110,20 @@ export class ClientCustomerController {
     return this.authService.loginCustomerByDto(customerDto, res);
   }
 
-  @Post('reset')
-  resetPassword(@Body() resetDto: ResetPasswordDto) {
-    return this.customerService.resetPasswordByDto(resetDto);
+  @Post('init-reset-password')
+  async initResetPassword(@Body() resetDto: InitResetPasswordDto) {
+    const result = await this.customerService.initResetPassword(resetDto);
+    return {
+      data: result
+    }
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() resetDto: ResetPasswordDto) {
+    const result = await this.customerService.resetPassword(resetDto);
+    return {
+      data: result
+    }
   }
 
   @Post('logout')

@@ -37,8 +37,16 @@ export class ResetPasswordService {
     return resetModel.toJSON();
   }
 
-  async getByToken(token: string): Promise<ResetPassword> {
-    return this.resetPasswordModel.findOne({ token }).exec();
+  async getValidByToken(token: string): Promise<ResetPassword> {
+    const found = await this.resetPasswordModel.findOne({ token }).exec();
+    if (!found) { return; }
+
+    if (found.expireDate < new Date()) {
+      found.remove().catch();
+      return;
+    }
+
+    return found;
   }
 
   deleteByToken(token: string): Promise<ResetPassword> {

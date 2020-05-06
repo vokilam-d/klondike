@@ -171,7 +171,7 @@ export class AuthService {
       throw new BadRequestException(__('Your password is outdated, we sent you an email with the instruction on how to update your password', 'ru'));
     }
 
-    const isValidPassword = await this.encryptor.validatePassword(password, customer.password);
+    const isValidPassword = await this.encryptor.validate(password, customer.password);
     if (!isValidPassword) { return null; }
 
     return customer;
@@ -181,7 +181,7 @@ export class AuthService {
     const user = await this.userService.getUserByLogin(login);
     if (!user) { return null; }
 
-    const isValidPassword = await this.encryptor.validatePassword(password, user.password);
+    const isValidPassword = await this.encryptor.validate(password, user.password);
     if (!isValidPassword) { return null; }
 
     return user;
@@ -192,6 +192,13 @@ export class AuthService {
     await this.emailService.sendResetPasswordEmail(customer, resetModel.token);
 
     return;
+  }
+
+  async getCustomerIdByResetPasswordToken(token: string): Promise<number> {
+    const resetModel = await this.resetPasswordService.getValidByToken(token);
+    if (!resetModel) { return; }
+
+    return resetModel.customerId;
   }
 
   logoutCustomer(res: FastifyReply<ServerResponse>) {
@@ -205,7 +212,7 @@ export class AuthService {
   private logout(res: FastifyReply<ServerResponse>, cookieName) {
     res
       .clearCookie(cookieName)
-      .send();
+      .send({ data: null });
   }
 
   private getCookieOptions() {
@@ -218,5 +225,9 @@ export class AuthService {
       expires,
       path: '/'
     };
+  }
+
+  deleteResetPasswordToken(token: string) {
+    return this.resetPasswordService.deleteByToken(token);
   }
 }
