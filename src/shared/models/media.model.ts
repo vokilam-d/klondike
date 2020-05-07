@@ -7,13 +7,6 @@ type VariantsUrls = {
 };
 
 export class Media {
-  @Exclude()
-  @prop()
-  _id: number;
-
-  @Exclude()
-  __v: any;
-
   @prop()
   variantsUrls: VariantsUrls = {
     [MediaVariantEnum.Original]: '',

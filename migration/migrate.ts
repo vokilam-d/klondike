@@ -20,9 +20,11 @@ import { stripHtmlTags } from '../src/shared/helpers/strip-html-tags.function';
 import { MetaTagsDto } from '../src/shared/dtos/shared-dtos/meta-tags.dto';
 import { ShippingAddressDto } from '../src/shared/dtos/shared-dtos/shipping-address.dto';
 import { AdminProductCategoryDto } from '../src/shared/dtos/admin/product-category.dto';
+import { AdminBlogPostCreateDto } from '../src/shared/dtos/admin/blog-post.dto';
+import { AdminBlogCategoryCreateDto } from '../src/shared/dtos/admin/blog-category.dto';
 
 export class Migrate {
-  private apiHostname = 'http://localhost:3500';
+  private apiHostname = 'http://localhost:3000';
   /**
    * Hold name of the models to be generated
    *
@@ -118,6 +120,10 @@ export class Migrate {
       'sales_order_payment',
       'sales_shipment_track',
       'sales_order_item',
+      'magefan_blog_category',
+      'magefan_blog_post',
+      'magefan_blog_post_relatedpost',
+      'magefan_blog_post_relatedproduct',
       'intenso_review_storeowner_comment'
     ]
   }
@@ -920,6 +926,216 @@ export class Migrate {
 
     console.log(`.\n.\n***     Finish migrating Product Reviews     ***\nCount: ${count} \n.\n.`);
   }
+
+  async populateBlogCategories() {
+    console.log('.\n.\n***     Start migrating BLOG CATEGORIES     ***\n.\n.');
+    const categorys: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'magefan_blog_category.json', 'utf-8')));
+
+    let count: number = 0;
+
+    const addCategory = async (category) => {
+      // if (product.entity_id >= 400 && product.entity_id <= 457 ) { return; }
+
+      const dto = {} as AdminBlogCategoryCreateDto;
+      dto.id = category.category_id;
+      dto.isEnabled = !!category.is_active;
+      dto.name = category.title || '';
+      dto.slug = category.identifier || '';
+      dto.content = category.content || '';
+      dto.metaTags = {
+        title: category.meta_title || '',
+        description: category.meta_description || '',
+        keywords: category.meta_keywords || ''
+      };
+      dto.sortOrder = category.position || 0;
+
+      try {
+        await axios.post(
+          `${this.apiHostname}/api/v1/admin/blog/category`,
+          dto,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+          }
+        );
+        console.log(`[Blog Categorys]: Migrated id`, dto.id, `- '${dto.name}'`);
+
+        count++;
+      } catch (ex) {
+        this.failedReqs.products.push(dto.id);
+        console.error(`[Blog Categorys ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
+        console.log(`'${dto.id}' dto: `);
+        console.log(dto);
+      }
+    };
+
+    for (const batch of this.getBatches(categorys, 3)) {
+      await Promise.all(batch.map(product => addCategory(product)));
+    }
+
+    console.log(`.\n.\n***     Finish migrating BLOG CATEGORIES     ***\nCount: ${count} \n.\n.`);
+  }
+
+  async populateBlogPosts() {
+    console.log('.\n.\n***     Start migrating BLOG POSTS     ***\n.\n.');
+    const posts: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'magefan_blog_post.json', 'utf-8')));
+    const relatedPosts: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'magefan_blog_post_relatedpost.json', 'utf-8')));
+    const relatedProducts: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'magefan_blog_post_relatedproduct.json', 'utf-8')));
+
+    let count: number = 0;
+
+    const addPost = async (post) => {
+      // if (product.entity_id >= 400 && product.entity_id <= 457 ) { return; }
+
+      const dto = {} as AdminBlogPostCreateDto;
+      dto.id = post.post_id;
+      dto.createdAt = new Date(post.creation_time);
+      dto.updatedAt = new Date(post.update_time);
+      dto.publishedAt = new Date(post.publish_time)
+      dto.isEnabled = !!post.is_active;
+      dto.name = post.title || '';
+      dto.slug = post.identifier || '';
+      dto.content = post.content || '';
+      dto.shortContent = post.short_content || '';
+      dto.metaTags = {
+        title: post.meta_title || '',
+        description: post.meta_description || '',
+        keywords: post.meta_keywords || ''
+      };
+      dto.sortOrder = post.position || 0;
+      if (post.featured_img) {
+        try {
+          const imgResponse = await axios.get(`https://klondike.com.ua/media/${post.featured_img}`, { responseType: 'arraybuffer' });
+          const form = new FormData();
+          form.append('file', imgResponse.data, { filename: path.parse(post.featured_img).base });
+
+          const { data: media } = await axios.post<AdminMediaDto>(`${this.apiHostname}/api/v1/admin/blog/media`, form, { headers: form.getHeaders() });
+          media.altText = dto.name;
+          media.isHidden = false;
+          dto.featuredMedia = media;
+
+        } catch (ex) {
+          console.error(`[Blog Post Feature Media]: '${post.featured_img}' for post id '${dto.id}' error: `, ex.response ? ex.response.status : ex);
+          console.error(this.buildErrorMessage(ex.response && ex.response.data));
+        }
+      } else {
+        dto.featuredMedia = null;
+      }
+
+      dto.medias = [];
+      if (post.media_gallery) {
+        const galleryUrls = post.media_gallery.split(';');
+        for (const galleryUrl of galleryUrls) {
+          try {
+            const imgResponse = await axios.get(`https://klondike.com.ua/media/${galleryUrl}`, { responseType: 'arraybuffer' });
+            const form = new FormData();
+            form.append('file', imgResponse.data, { filename: path.parse(galleryUrl).base });
+
+            const { data: media } = await axios.post<AdminMediaDto>(`${this.apiHostname}/api/v1/admin/blog/media`, form, { headers: form.getHeaders() });
+            media.altText = dto.name;
+            media.isHidden = false;
+            dto.medias.push(media);
+
+          } catch (ex) {
+            console.error(`[Blog Post Media]: '${galleryUrl}' for post id '${dto.id}' error: `, ex.response ? ex.response.status : ex);
+            console.error(this.buildErrorMessage(ex.response && ex.response.data));
+          }
+        }
+      }
+
+      const regex = new RegExp(/{{media url=&quot;(.+?)&quot;}}/, 'g');
+      do {
+        const exec = regex.exec(dto.content);
+        if (!exec) { continue; }
+
+        const str = exec[0];
+        const urlPart = exec[1];
+
+        try {
+          const imgResponse = await axios.get(`https://klondike.com.ua/media/${urlPart}`, { responseType: 'arraybuffer' });
+          const form = new FormData();
+          form.append('file', imgResponse.data, { filename: path.parse(urlPart).base });
+
+          const { data: newUrl } = await axios.post<AdminMediaDto>(`${this.apiHostname}/api/v1/admin/wysiwyg/media`, form, { headers: form.getHeaders() });
+
+          dto.content = dto.content.slice(0, exec.index)
+            + newUrl
+            + dto.content.slice(exec.index + str.length);
+
+        } catch (ex) {
+          console.dir({ urlPart, str });
+          console.error(`[WYSIWYG Media]: '${urlPart}' for blog post id '${dto.id}' error: `, ex.response ? ex.response.status : ex);
+          console.error(this.buildErrorMessage(ex.response && ex.response.data));
+        }
+      } while (regex.lastIndex !== 0);
+
+      dto.linkedPosts = [];
+      for (const relatedPost of relatedPosts) {
+        if (relatedPost.post_id !== dto.id) { continue; }
+
+        dto.linkedPosts.push({
+          id: relatedPost.related_id,
+          sortOrder: relatedPost.position
+        } as any);
+      }
+
+      dto.linkedProducts = [];
+      for (const relatedProduct of relatedProducts) {
+        if (relatedProduct.post_id !== dto.id) { continue; }
+
+        dto.linkedProducts.push({
+          productId: relatedProduct.related_id,
+          sortOrder: relatedProduct.position
+        } as any);
+      }
+
+      try {
+        await axios.post(
+          `${this.apiHostname}/api/v1/admin/blog/post`,
+          dto,
+          {
+            params: { migrate: true },
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+          }
+        );
+        console.log(`[Blog Posts]: Migrated id`, dto.id, `- '${dto.name}'`);
+
+        count++;
+      } catch (ex) {
+        this.failedReqs.products.push(dto.id);
+        console.error(`[Blog Posts ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
+        console.error(ex.response && ex.response.data);
+        console.error(this.buildErrorMessage(ex.response && ex.response.data));
+        console.log(`'${dto.id}' dto: `);
+        console.log(dto);
+      }
+    };
+
+    for (const batch of this.getBatches(posts, 3)) {
+      await Promise.all(batch.map(product => addPost(product)));
+    }
+
+    try {
+      await axios.post(
+        `${this.apiHostname}/api/v1/admin/blog/migrate-linked`,
+        {  },
+        {
+          params: { migrate: true },
+          raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+        }
+      );
+      console.log(`[Blog Posts]: Updated Linked products`);
+
+      count++;
+    } catch (ex) {
+      console.error(`[Blog Posts ERROR]: could not update Linked products`);
+      console.error(this.buildErrorMessage(ex.response && ex.response.data));
+    }
+
+    console.log(`.\n.\n***     Finish migrating BLOG POSTS     ***\nCount: ${count} \n.\n.`);
+  }
+
 
   async updateCounter(entity: string) {
     await axios.post(

@@ -4,10 +4,10 @@ import { Exclude } from 'class-transformer';
 export class MetaTags {
   @Exclude()
   @prop()
-  _id: number;
+  _id?: number;
 
   @Exclude()
-  __v: any;
+  __v?: any;
 
   @prop({ default: '' })
   title: string;
