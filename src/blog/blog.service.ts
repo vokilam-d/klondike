@@ -14,6 +14,7 @@ import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { FilterQuery } from 'mongoose';
 import { LinkedBlogCategory } from './models/linked-blog-category.model';
+import { PageRegistryService } from '../page-registry/page-registry.service';
 
 @Injectable()
 export class BlogService {
@@ -23,26 +24,53 @@ export class BlogService {
   constructor(@InjectModel(BlogPost.name) private readonly postModel: ReturnModelType<typeof BlogPost>,
               @InjectModel(BlogCategory.name) private readonly blogCategoryModel: ReturnModelType<typeof BlogCategory>,
               private readonly counterService: CounterService,
+              private readonly pageRegistryService: PageRegistryService,
               private readonly productService: ProductService,
               private readonly mediaService: MediaService) {
   }
 
   async createBlogCategory(createDto: AdminBlogCategoryCreateDto, migrate?: any): Promise<BlogCategory> {
-    const created = new this.blogCategoryModel(createDto);
-    if (!migrate) {
-      created.id = await this.counterService.getCounter(BlogCategory.collectionName);
+    const session = await this.blogCategoryModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const created = new this.blogCategoryModel(createDto);
+      if (!migrate) {
+        created.id = await this.counterService.getCounter(BlogCategory.collectionName, session);
+      }
+      await created.save({ session });
+      await this.pageRegistryService.createPageRegistry({ slug: created.slug, type: 'blog-category' }, session);
+
+      await session.commitTransaction();
+      return created.toJSON();
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
     }
-    await created.save();
-    return created.toJSON();
   }
 
   async createPost(createDto: AdminBlogPostCreateDto, migrate?: any): Promise<BlogPost> {
-    const created = new this.postModel(createDto);
-    if (!migrate) {
-      created.id = await this.counterService.getCounter(BlogPost.collectionName);
+    const session = await this.postModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const created = new this.postModel(createDto);
+      if (!migrate) {
+        created.id = await this.counterService.getCounter(BlogPost.collectionName, session);
+      }
+      await created.save({ session });
+      await this.pageRegistryService.createPageRegistry({ slug: created.slug, type: 'blog-post' }, session);
+
+      await session.commitTransaction();
+      return created.toJSON();
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
     }
-    await created.save();
-    return created.toJSON();
   }
 
   uploadMedia(request: FastifyRequest): Promise<Media> {

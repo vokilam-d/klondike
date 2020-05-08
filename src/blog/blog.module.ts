@@ -6,6 +6,7 @@ import { BlogService } from './blog.service';
 import { BlogCategory, BlogCategoryModel } from './models/blog-category.model';
 import { ProductModule } from '../product/product.module';
 import { ClientBlogController } from './client-blog.controller';
+import { PageRegistryModule } from '../page-registry/page-registry.module';
 
 const blogPostModel = {
   name: BlogPostModel.modelName,
@@ -22,6 +23,7 @@ const blogCategoryModel = {
 @Module({
   imports: [
     MongooseModule.forFeature([blogPostModel, blogCategoryModel]),
+    PageRegistryModule,
     ProductModule
   ],
   controllers: [AdminBlogController, ClientBlogController],

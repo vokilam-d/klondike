@@ -16,7 +16,7 @@ export class AdminBlogController {
   constructor(private readonly blogService: BlogService) {
   }
 
-  @Post('categoriesw')
+  @Post('categories')
   async createCategory(@Body() createDto: AdminBlogCategoryCreateDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminBlogCategoryDto>> {
     const created = await this.blogService.createBlogCategory(createDto, migrate);
 

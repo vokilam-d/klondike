@@ -941,7 +941,7 @@ export class Migrate {
       dto.id = category.category_id;
       dto.isEnabled = !!category.is_active;
       dto.name = category.title || '';
-      dto.slug = category.identifier || '';
+      dto.slug = `${category.identifier}.html`;
       dto.content = category.content || '';
       dto.metaTags = {
         title: category.meta_title || '',
@@ -998,7 +998,7 @@ export class Migrate {
       dto.publishedAt = new Date(post.publish_time)
       dto.isEnabled = !!post.is_active;
       dto.name = post.title || '';
-      dto.slug = post.identifier || '';
+      dto.slug = `${post.identifier}.html`;
       dto.content = post.content || '';
       dto.shortContent = post.short_content || '';
       dto.metaTags = {

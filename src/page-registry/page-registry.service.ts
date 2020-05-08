@@ -28,7 +28,7 @@ export class PageRegistryService {
   }
 
   async createPageRegistry(pageRegistry: PageRegistry, session: ClientSession): Promise<any> {
-    const newPage = new this.registryModel({ slug: pageRegistry.slug, type: pageRegistry.type});
+    const newPage = new this.registryModel({ slug: pageRegistry.slug, type: pageRegistry.type });
     await newPage.save({ session });
 
     if (newPage) {

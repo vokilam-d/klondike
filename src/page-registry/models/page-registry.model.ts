@@ -6,7 +6,7 @@ export class PageRegistry {
   slug: string;
 
   @prop({ required: true })
-  type: 'category' | 'product' | 'content';
+  type: 'category' | 'product' | 'content' | 'blog-category' | 'blog-post';
 
   static collectionName: string = 'page-registry';
 }
