@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AdminBlogCategoryCreateDto } from '../shared/dtos/admin/blog-category.dto';
 import { AdminBlogPostCreateDto } from '../shared/dtos/admin/blog-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -11,6 +11,9 @@ import { MediaService } from '../shared/services/media/media.service';
 import { CounterService } from '../shared/services/counter/counter.service';
 import { ProductService } from '../product/product.service';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
+import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
+import { FilterQuery } from 'mongoose';
+import { LinkedBlogCategory } from './models/linked-blog-category.model';
 
 @Injectable()
 export class BlogService {
@@ -46,7 +49,7 @@ export class BlogService {
     return this.mediaService.upload(request, this.mediaDir, false);
   }
 
-  async updateCounter() {
+  async updateCounter() { // todo remove after migrate
     const lastCategory = await this.blogCategoryModel.findOne().sort('-_id').exec();
     await this.counterService.setCounter(BlogCategory.collectionName, lastCategory.id);
 
@@ -54,7 +57,7 @@ export class BlogService {
     await this.counterService.setCounter(BlogPost.collectionName, lastPost.id);
   }
 
-  async migrateLinked() {
+  async migrateLinked() { // todo remove after migrate
     const spf = new AdminSPFDto();
     spf.limit = 10000;
     const allProducts = await this.productService.getProductsWithQty(spf);
@@ -92,5 +95,47 @@ export class BlogService {
 
       await post.save();
     }
+  }
+
+  async getAllEnabledCategories(): Promise<BlogCategory[]> {
+    const categories = await this.blogCategoryModel.find({ isEnabled: true }).exec();
+
+    return categories
+      .map(c => c.toJSON())
+      .sort(((a, b) => b.sortOrder - a.sortOrder));
+  }
+
+  async getEnabledCategoryBySlug(slug: string): Promise<BlogCategory> {
+    const category = await this.blogCategoryModel.findOne({ slug, isEnabled: true }).exec();
+    if (!category) {
+      throw new NotFoundException();
+    }
+
+    return category.toJSON();
+  }
+
+  async getEnabledPostsList(spf: ClientSPFDto): Promise<BlogPost[]> {
+
+    const query: FilterQuery<BlogPost> = { isEnabled: true };
+    if (spf.categoryId) {
+      const categoryProp: keyof BlogPost = 'category';
+      const categoryIdProp: keyof LinkedBlogCategory = 'id';
+      query[`${categoryProp}.${categoryIdProp}`] = spf.categoryId;
+    }
+
+    const posts = await this.blogCategoryModel
+      .find(query)
+      .skip(spf.skip)
+      .exec();
+
+    return posts
+      .map(post => post.toJSON())
+      .sort(((a, b) => b.sortOrder - a.sortOrder));
+  }
+
+  async getEnabledPostBySlug(slug: string): Promise<BlogPost> {
+    const post = await this.blogCategoryModel.findOne({ slug, isEnabled: true }).exec();
+
+    return post.toJSON();
   }
 }

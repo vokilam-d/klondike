@@ -16,7 +16,7 @@ export class AdminBlogController {
   constructor(private readonly blogService: BlogService) {
   }
 
-  @Post('category')
+  @Post('categoriesw')
   async createCategory(@Body() createDto: AdminBlogCategoryCreateDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminBlogCategoryDto>> {
     const created = await this.blogService.createBlogCategory(createDto, migrate);
 
@@ -25,7 +25,7 @@ export class AdminBlogController {
     }
   }
 
-  @Post('post')
+  @Post('posts')
   async createPost(@Body() createDto: AdminBlogPostCreateDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminBlogPostDto>> {
     const created = await this.blogService.createPost(createDto, migrate);
 
@@ -49,7 +49,7 @@ export class AdminBlogController {
     return this.blogService.updateCounter();
   }
 
-  @Post('migrate-linked') // todo remove after migrate this and IMPORT PRODUCT MODULE
+  @Post('migrate-linked') // todo remove after migrate this and IMPORT PRODUCT MODULE FROM THIS MODULE
   async migrateLinked() {
     return this.blogService.migrateLinked();
   }

@@ -952,7 +952,7 @@ export class Migrate {
 
       try {
         await axios.post(
-          `${this.apiHostname}/api/v1/admin/blog/category`,
+          `${this.apiHostname}/api/v1/admin/blog/categories`,
           dto,
           {
             params: { migrate: true },
@@ -1108,7 +1108,7 @@ export class Migrate {
 
       try {
         await axios.post(
-          `${this.apiHostname}/api/v1/admin/blog/post`,
+          `${this.apiHostname}/api/v1/admin/blog/posts`,
           dto,
           {
             params: { migrate: true },

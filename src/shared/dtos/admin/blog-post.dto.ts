@@ -44,7 +44,7 @@ export class LinkedBlogPostDto implements LinkedBlogPost {
 }
 
 export class AdminBlogPostCreateDto implements Record<keyof Omit<BlogPost, '_id' | 'id'>, any> {
-  id?: any;
+  id?: any; // todo remove after migrate
 
   @Expose()
   @IsString()
