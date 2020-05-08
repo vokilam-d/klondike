@@ -122,6 +122,7 @@ export class Migrate {
       'sales_order_item',
       'magefan_blog_category',
       'magefan_blog_post',
+      'magefan_blog_post_category',
       'magefan_blog_post_relatedpost',
       'magefan_blog_post_relatedproduct',
       'intenso_review_storeowner_comment'
@@ -982,6 +983,8 @@ export class Migrate {
     const posts: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'magefan_blog_post.json', 'utf-8')));
     const relatedPosts: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'magefan_blog_post_relatedpost.json', 'utf-8')));
     const relatedProducts: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'magefan_blog_post_relatedproduct.json', 'utf-8')));
+    const blog_post_categories: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'magefan_blog_post_category.json', 'utf-8')));
+    const blog_categories: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'magefan_blog_category.json', 'utf-8')));
 
     let count: number = 0;
 
@@ -1004,6 +1007,19 @@ export class Migrate {
         keywords: post.meta_keywords || ''
       };
       dto.sortOrder = post.position || 0;
+      dto.category = null;
+      const post_category = blog_post_categories.find(pc => pc.post_id === dto.id);
+      if (post_category) {
+        const category = blog_categories.find(c => c.category_id === post_category.category_id);
+        if (category) {
+          dto.category = {
+            id: category.category_id,
+            name: category.title,
+            slug: category.identifier
+          };
+        }
+      }
+
       if (post.featured_img) {
         try {
           const imgResponse = await axios.get(`https://klondike.com.ua/media/${post.featured_img}`, { responseType: 'arraybuffer' });

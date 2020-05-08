@@ -12,11 +12,7 @@ export class UserJwtStrategy extends PassportStrategy(Strategy, authConstants.US
   constructor(private userService: UserService) {
     super({
       jwtFromRequest: (req: FastifyRequest) => {
-        let token = null;
-        if (req && req.cookies) {
-          token = req.cookies[authConstants.JWT_ADMIN_COOKIE_NAME];
-        }
-        return token;
+        return req?.cookies?.[authConstants.JWT_ADMIN_COOKIE_NAME];
       },
       ignoreExpiration: false,
       secretOrKey: authConstants.JWT_SECRET

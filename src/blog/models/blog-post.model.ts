@@ -4,6 +4,7 @@ import { MetaTags } from '../../shared/models/meta-tags.model';
 import { LinkedProduct } from '../../product/models/linked-product.model';
 import { LinkedBlogPost } from './linked-blog-post.model';
 import { Media } from '../../shared/models/media.model';
+import { LinkedBlogCategory } from './linked-blog-category.model';
 
 export class BlogPost {
   @prop()
@@ -18,6 +19,9 @@ export class BlogPost {
 
   @prop({ required: true })
   slug: string;
+
+  @prop({ _id: false })
+  category: LinkedBlogCategory;
 
   @prop({ default: true })
   isEnabled: boolean;

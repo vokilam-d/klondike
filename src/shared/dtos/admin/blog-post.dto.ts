@@ -6,19 +6,38 @@ import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } fro
 import { Expose, Transform, Type } from 'class-transformer';
 import { AdminMediaDto } from './media.dto';
 import { transliterate } from '../../helpers/transliterate.function';
+import { LinkedBlogCategory } from '../../../blog/models/linked-blog-category.model';
 
-export class LinkedBlogPostDto implements LinkedBlogPost {
+export class LinkedBlogCategoryDto implements LinkedBlogCategory {
+  @Expose()
   @IsNumber()
   id: number;
 
+  @Expose()
+  @IsString()
+  name: string;
+
+  @Expose()
+  @IsString()
+  slug: string;
+}
+
+export class LinkedBlogPostDto implements LinkedBlogPost {
+  @Expose()
+  @IsNumber()
+  id: number;
+
+  @Expose()
   @IsOptional() // todo remove @IsOptional after migrate
   @IsString()
   name: string;
 
+  @Expose()
   @IsOptional() // todo remove @IsOptional after migrate
   @IsString()
   slug: string;
 
+  @Expose()
   @IsNumber()
   @IsOptional()
   sortOrder: number;
@@ -35,6 +54,10 @@ export class AdminBlogPostCreateDto implements Record<keyof Omit<BlogPost, '_id'
   @IsString()
   @Transform((slug, post) => slug === '' ? transliterate(post.name) : slug)
   slug: string;
+
+  @Expose()
+  @ValidateNested()
+  category: LinkedBlogCategoryDto;
 
   @Expose()
   @IsString()

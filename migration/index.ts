@@ -26,7 +26,7 @@ async function migrate() {
   // await migrate.updateCounter('store-reviews');
   // await migrate.populateProductReviews();
   // await migrate.updateCounter('product-reviews');
-  await migrate.populateBlogCategories();
+  // await migrate.populateBlogCategories();
   await migrate.populateBlogPosts();
   await migrate.updateCounter('blog');
 
