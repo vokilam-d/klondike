@@ -35,7 +35,9 @@ export class ClientBlogController {
 
   @Get('posts')
   async getPostsList(@Query() spf: ClientSPFDto): Promise<ResponseDto<ClientBlogPostListItemDto[]>> {
-    const list = await this.blogService.getEnabledPostsList(spf);
+    const list = spf.lastPosts
+      ? await this.blogService.getEnabledLastPostsList(spf)
+      : await this.blogService.getEnabledPostsList(spf);
 
     return {
       data: plainToClass(ClientBlogPostListItemDto, list, { excludeExtraneousValues: true })

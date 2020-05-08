@@ -126,6 +126,22 @@ export class BlogService {
     const posts = await this.blogCategoryModel
       .find(query)
       .skip(spf.skip)
+      .limit(spf.limit)
+      .exec();
+
+    return posts
+      .map(post => post.toJSON())
+      .sort(((a, b) => b.sortOrder - a.sortOrder));
+  }
+
+  async getEnabledLastPostsList(spf: ClientSPFDto): Promise<BlogPost[]> {
+    const publishedAtProp: keyof BlogPost = 'publishedAt';
+
+    const posts = await this.blogCategoryModel
+      .find({ isEnabled: true })
+      .skip(spf.skip)
+      .limit(spf.limit)
+      .sort(`-${publishedAtProp}`)
       .exec();
 
     return posts
