@@ -18,9 +18,10 @@ export class ClientBlogController {
   @Get('categories')
   async getCategoriesList(): Promise<ResponseDto<ClientBlogCategoryListItemDto[]>> {
     const categories = await this.blogService.getAllEnabledCategories();
+    const populated = await this.blogService.populateCategoriesWithPostsCount(categories);
 
     return {
-      data: plainToClass(ClientBlogCategoryListItemDto, categories, { excludeExtraneousValues: true })
+      data: plainToClass(ClientBlogCategoryListItemDto, populated, { excludeExtraneousValues: true })
     };
   }
 

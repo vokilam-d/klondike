@@ -7,4 +7,7 @@ export class ClientBlogCategoryListItemDto implements Pick<BlogCategory, 'name' 
 
   @Expose()
   slug: string;
+
+  @Expose()
+  postsCount: number;
 }

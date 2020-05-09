@@ -1,9 +1,11 @@
 import { BlogPost } from '../../../blog/models/blog-post.model';
 import { LinkedBlogCategoryDto } from '../admin/blog-post.dto';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
+import { ClientMediaDto } from './media.dto';
 
-export class ClientBlogPostListItemDto implements Pick<BlogPost, 'name' | 'slug' | 'shortContent' | 'category' | 'publishedAt'> {
+export class ClientBlogPostListItemDto implements Pick<BlogPost, 'name' | 'slug' | 'shortContent' | 'category' | 'publishedAt'>, Record<keyof Pick<BlogPost, 'featuredMedia'>, ClientMediaDto> {
   @Expose()
+  @Type(() => LinkedBlogCategoryDto)
   category: LinkedBlogCategoryDto;
 
   @Expose()
@@ -17,4 +19,8 @@ export class ClientBlogPostListItemDto implements Pick<BlogPost, 'name' | 'slug'
 
   @Expose()
   slug: string;
+
+  @Expose()
+  @Type(() => ClientMediaDto)
+  featuredMedia: ClientMediaDto;
 }

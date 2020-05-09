@@ -1,6 +1,6 @@
 import { BlogCategory } from '../../../blog/models/blog-category.model';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 
 export class ClientBlogCategoryDto implements Pick<BlogCategory, 'id' | 'name' | 'content' | 'metaTags'> {
   @Expose()
@@ -10,6 +10,7 @@ export class ClientBlogCategoryDto implements Pick<BlogCategory, 'id' | 'name' |
   id: number;
 
   @Expose()
+  @Type(() => MetaTagsDto)
   metaTags: MetaTagsDto;
 
   @Expose()

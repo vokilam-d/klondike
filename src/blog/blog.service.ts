@@ -151,10 +151,14 @@ export class BlogService {
       query[`${categoryProp}.${categoryIdProp}`] = spf.categoryId;
     }
 
+    const publishedAtProp: keyof BlogPost = 'publishedAt';
+    const sortOrderProp: keyof BlogPost = 'sortOrder';
+
     const posts = await this.blogCategoryModel
       .find(query)
       .skip(spf.skip)
       .limit(spf.limit)
+      .sort(`-${sortOrderProp} -${publishedAtProp}`)
       .exec();
 
     return posts
@@ -165,7 +169,7 @@ export class BlogService {
   async getEnabledLastPostsList(spf: ClientSPFDto): Promise<BlogPost[]> {
     const publishedAtProp: keyof BlogPost = 'publishedAt';
 
-    const posts = await this.blogCategoryModel
+    const posts = await this.postModel
       .find({ isEnabled: true })
       .skip(spf.skip)
       .limit(spf.limit)
@@ -181,5 +185,21 @@ export class BlogService {
     const post = await this.blogCategoryModel.findOne({ slug, isEnabled: true }).exec();
 
     return post.toJSON();
+  }
+
+  async populateCategoriesWithPostsCount(categories: BlogCategory[]): Promise<BlogCategory[] & { postsCount:number }[]> {
+    const result = [];
+    const categoryProp: keyof BlogPost = 'category';
+    const categoryIdProp: keyof LinkedBlogCategory = 'id';
+
+    for (const category of categories) {
+      const postsCount = await this.postModel.countDocuments({ [`${categoryProp}.${categoryIdProp}`]: category.id }).exec();
+      result.push({
+        ...category,
+        postsCount
+      });
+    }
+
+    return result;
   }
 }
