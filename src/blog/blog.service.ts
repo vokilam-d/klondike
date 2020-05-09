@@ -154,7 +154,7 @@ export class BlogService {
     const publishedAtProp: keyof BlogPost = 'publishedAt';
     const sortOrderProp: keyof BlogPost = 'sortOrder';
 
-    const posts = await this.blogCategoryModel
+    const posts = await this.postModel
       .find(query)
       .skip(spf.skip)
       .limit(spf.limit)
