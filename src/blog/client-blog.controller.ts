@@ -40,8 +40,11 @@ export class ClientBlogController {
       ? await this.blogService.getEnabledLastPostsList(spf)
       : await this.blogService.getEnabledPostsList(spf);
 
+    const itemsTotal = await this.blogService.countPosts({ categoryId: spf.categoryId });
+
     return {
-      data: plainToClass(ClientBlogPostListItemDto, list, { excludeExtraneousValues: true })
+      data: plainToClass(ClientBlogPostListItemDto, list, { excludeExtraneousValues: true }),
+      pagesTotal: Math.ceil(itemsTotal / spf.limit)
     };
   }
 

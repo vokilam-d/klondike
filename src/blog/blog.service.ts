@@ -143,8 +143,8 @@ export class BlogService {
   }
 
   async getEnabledPostsList(spf: ClientSPFDto): Promise<BlogPost[]> {
-
     const query: FilterQuery<BlogPost> = { isEnabled: true };
+
     if (spf.categoryId) {
       const categoryProp: keyof BlogPost = 'category';
       const categoryIdProp: keyof LinkedBlogCategory = 'id';
@@ -182,18 +182,19 @@ export class BlogService {
   }
 
   async getEnabledPostBySlug(slug: string): Promise<BlogPost> {
-    const post = await this.blogCategoryModel.findOne({ slug, isEnabled: true }).exec();
+    const post = await this.postModel.findOne({ slug, isEnabled: true }).exec();
+    if (!post) {
+      throw new NotFoundException();
+    }
 
     return post.toJSON();
   }
 
   async populateCategoriesWithPostsCount(categories: BlogCategory[]): Promise<BlogCategory[] & { postsCount:number }[]> {
     const result = [];
-    const categoryProp: keyof BlogPost = 'category';
-    const categoryIdProp: keyof LinkedBlogCategory = 'id';
 
     for (const category of categories) {
-      const postsCount = await this.postModel.countDocuments({ [`${categoryProp}.${categoryIdProp}`]: category.id }).exec();
+      const postsCount = await this.countPosts({ categoryId: category.id });
       result.push({
         ...category,
         postsCount
@@ -201,5 +202,16 @@ export class BlogService {
     }
 
     return result;
+  }
+
+  async countPosts(filters?: { categoryId: number }): Promise<number> {
+    const query: any = { };
+    if (filters?.categoryId) {
+      const categoryProp: keyof BlogPost = 'category';
+      const categoryIdProp: keyof LinkedBlogCategory = 'id';
+      query[`${categoryProp}.${categoryIdProp}`] = filters.categoryId;
+    }
+
+    return this.postModel.countDocuments(query).exec();
   }
 }

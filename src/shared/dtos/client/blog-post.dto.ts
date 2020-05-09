@@ -5,7 +5,7 @@ import { Expose, Type } from 'class-transformer';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { ClientMediaDto } from './media.dto';
 
-export class ClientBlogPostDto implements Pick<BlogPost, 'category' | 'content' | 'name' | 'metaTags' | 'linkedPosts' | 'publishedAt'>, Record<keyof Pick<BlogPost, 'linkedProducts' | 'medias'>, any> {
+export class ClientBlogPostDto implements Pick<BlogPost, 'category' | 'content' | 'name' | 'metaTags' | 'linkedPosts' | 'publishedAt' | 'updatedAt' | 'slug'>, Record<keyof Pick<BlogPost, 'linkedProducts' | 'medias'>, any> {
 
   @Expose()
   @Type(() => LinkedBlogCategoryDto)
@@ -34,5 +34,11 @@ export class ClientBlogPostDto implements Pick<BlogPost, 'category' | 'content' 
   name: string;
 
   @Expose()
+  slug: string;
+
+  @Expose()
   publishedAt: Date;
+
+  @Expose()
+  updatedAt: Date;
 }

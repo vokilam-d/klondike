@@ -989,8 +989,6 @@ export class Migrate {
     let count: number = 0;
 
     const addPost = async (post) => {
-      // if (product.entity_id >= 400 && product.entity_id <= 457 ) { return; }
-
       const dto = {} as AdminBlogPostCreateDto;
       dto.id = post.post_id;
       dto.createdAt = new Date(post.creation_time);
@@ -1000,7 +998,7 @@ export class Migrate {
       dto.name = post.title || '';
       dto.slug = `${post.identifier}.html`;
       dto.content = post.content || '';
-      dto.shortContent = post.short_content || '';
+      dto.shortContent = stripHtmlTags(post.short_content || '').slice(0, 100);
       dto.metaTags = {
         title: post.meta_title || '',
         description: post.meta_description || '',
