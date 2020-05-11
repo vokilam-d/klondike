@@ -1,4 +1,5 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
+import { AttributeTypeEnum } from '../../shared/enums/attribute-type.enum';
 
 export class AttributeValue {
   @prop()
@@ -23,6 +24,9 @@ export class Attribute {
 
   @arrayProp({ items: AttributeValue, default: [], _id: false })
   values: AttributeValue[];
+
+  @prop({ enum: AttributeTypeEnum })
+  type: AttributeTypeEnum;
 
   @prop()
   groupName: string;

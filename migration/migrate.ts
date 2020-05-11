@@ -7,7 +7,6 @@ import * as FormData from 'form-data';
 import { AdminProductDto } from '../src/shared/dtos/admin/product.dto';
 import { AdminAttributeDto, AdminAttributeValueDto } from '../src/shared/dtos/admin/attribute.dto';
 import { AdminProductVariantDto } from '../src/shared/dtos/admin/product-variant.dto';
-import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/product-selected-attribute.dto';
 import { AdminMediaDto } from '../src/shared/dtos/admin/media.dto';
 import { AdminCustomerDto } from '../src/shared/dtos/admin/customer.dto';
 import { AdminAddOrUpdateOrderDto } from '../src/shared/dtos/admin/order.dto';
@@ -22,6 +21,8 @@ import { ShippingAddressDto } from '../src/shared/dtos/shared-dtos/shipping-addr
 import { AdminProductCategoryDto } from '../src/shared/dtos/admin/product-category.dto';
 import { AdminBlogPostCreateDto } from '../src/shared/dtos/admin/blog-post.dto';
 import { AdminBlogCategoryCreateDto } from '../src/shared/dtos/admin/blog-category.dto';
+import { AttributeTypeEnum } from '../src/shared/enums/attribute-type.enum';
+import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/product-selected-attribute.dto';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3000';
@@ -95,6 +96,7 @@ export class Migrate {
       'amasty_order_attribute_grid_flat',
       'catalog_category_flat_store_1',
       'catalog_product_flat_1',
+      'catalog_product_link',
       'cataloginventory_stock_item',
       'catalog_category_product',
       'catalog_product_entity_varchar',
@@ -205,12 +207,9 @@ export class Migrate {
 
   async populateProductAttributes() {
     console.log('.\n.\n***     Start migrating PRODUCT ATTRIBUTES     ***\n***\n***');
-    const attrsFile = fs.readFileSync(this.datafilesdir + 'eav_attribute.json', 'utf-8');
-    const attributes: any[] = Array.from(JSON.parse(attrsFile));
-    const optionsFile = fs.readFileSync(this.datafilesdir + 'eav_attribute_option.json', 'utf-8');
-    const options: any[] = Array.from(JSON.parse(optionsFile));
-    const optionValuesFile = fs.readFileSync(this.datafilesdir + 'eav_attribute_option_value.json', 'utf-8');
-    const optionValues: any[] = Array.from(JSON.parse(optionValuesFile));
+    const attributes: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'eav_attribute.json', 'utf-8')));
+    const options: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'eav_attribute_option.json', 'utf-8')));
+    const optionValues: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'eav_attribute_option_value.json', 'utf-8')));
     const attrDecimals: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_decimal.json', 'utf-8')));
 
     let count: number = 0;
@@ -224,6 +223,11 @@ export class Migrate {
       dto.label = attr.frontend_label;
       dto.groupName = '';
       dto.values = [];
+      if (attr.frontend_input === 'select') {
+        dto.type = AttributeTypeEnum.Select;
+      } else if (attr.frontend_input === 'multiselect') {
+        dto.type = AttributeTypeEnum.MultiSelect;
+      }
 
       const attrOptions = options.filter(option => option.attribute_id === attr.attribute_id);
       for (const option of attrOptions) {
@@ -311,11 +315,20 @@ export class Migrate {
         if (product[key] !== null) {
           const savedAttribute = savedAttributes.find(attr => attr.id === key);
           if (savedAttribute) {
-            const savedValue = savedAttribute.values.find(v => v.label === product[`${key}_value`]);
-            if (savedValue) {
+            if (savedAttribute.type === AttributeTypeEnum.Select) {
+              const savedValue = savedAttribute.values.find(v => v.label === product[`${key}_value`]);
+              if (savedValue) {
+                const selectedAttr = {} as AdminProductSelectedAttributeDto;
+                selectedAttr.attributeId = savedAttribute.id;
+                selectedAttr.valueIds = [savedValue.id];
+                dto.attributes.push(selectedAttr);
+              }
+            } else if (savedAttribute.type === AttributeTypeEnum.MultiSelect) {
+              const valuesArr = product[key].split(',');
+
               const selectedAttr = {} as AdminProductSelectedAttributeDto;
               selectedAttr.attributeId = savedAttribute.id;
-              selectedAttr.valueId = savedValue.id;
+              selectedAttr.valueIds = valuesArr;
               dto.attributes.push(selectedAttr);
             }
           }
@@ -435,6 +448,8 @@ export class Migrate {
       variantDto.qtyInStock = foundInventory ? foundInventory.qty : 0;
       variantDto.isDiscountApplicable = product.is_general_discount_applicable === 453;
 
+      variantDto.relatedProducts = [];
+      variantDto.crossSellProducts = [];
       productLinks.forEach(link => {
         if (link.product_id === dto.id) {
           if (link.link_type_id === 1) {

@@ -1,4 +1,4 @@
-import { prop } from '@typegoose/typegoose';
+import { arrayProp, prop } from '@typegoose/typegoose';
 
 export class ProductSelectedAttribute {
   /**
@@ -10,6 +10,9 @@ export class ProductSelectedAttribute {
   /**
    * @type AttributeValue.id
    */
+  @arrayProp({ items: String })
+  valueIds: string[];
+
   @prop()
   valueId: string;
 }

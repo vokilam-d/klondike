@@ -82,9 +82,9 @@ export class GoogleShoppingFeedService {
       if (!product.isEnabled) { return; }
 
       let brand = '';
-      const productBrandAttr = product.attributes.find(attr => attr.valueId === 'manufacturer');
+      const productBrandAttr = product.attributes.find(attr => attr.attributeId === 'manufacturer');
       if (productBrandAttr) {
-        brand = productBrandAttr.valueId;
+        brand = productBrandAttr.valueIds[0];
       }
 
       product.variants.forEach(variant => {
@@ -103,9 +103,9 @@ export class GoogleShoppingFeedService {
           }
         });
 
-        const variantBrandAttr = variant.attributes.find(attr => attr.valueId === 'manufacturer');
+        const variantBrandAttr = variant.attributes.find(attr => attr.attributeId === 'manufacturer');
         if (variantBrandAttr) {
-          brand = variantBrandAttr.valueId;
+          brand = variantBrandAttr.valueIds[0];
         }
 
         const item: IShoppingFeedItem = {

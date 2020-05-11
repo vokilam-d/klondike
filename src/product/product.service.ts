@@ -43,6 +43,7 @@ import { AdminProductCategoryDto } from '../shared/dtos/admin/product-category.d
 import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { ReorderPositionEnum } from '../shared/enums/reoder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { AttributeTypeEnum } from '../shared/enums/attribute-type.enum';
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
@@ -745,10 +746,10 @@ export class ProductService implements OnApplicationBootstrap {
         product.variants.forEach(variant => {
           variant.attributes.forEach(selectedAttr => {
             const attribute = attributes.find(a => a.id === selectedAttr.attributeId);
-            if (attribute!) { return; }
+            if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { return; }
 
             const attrLabel = attribute.label;
-            const attrValue = attribute.values.find(v => v.id === selectedAttr.valueId);
+            const attrValue = attribute.values.find(v => v.id === selectedAttr.valueIds[0]);
             if (!attrValue) { return; }
 
             const foundIdx = variantGroups.findIndex(group => group.label === attrLabel);
@@ -804,10 +805,10 @@ export class ProductService implements OnApplicationBootstrap {
       productWithQty.variants.forEach(variant => {
         variant.attributes.forEach(selectedAttr => {
           const attribute = attributeModels.find(a => a.id === selectedAttr.attributeId);
-          if (attribute!) { return; }
+          if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { return; }
 
           const attrLabel = attribute.label;
-          const attrValue = attribute.values.find(v => v.id === selectedAttr.valueId);
+          const attrValue = attribute.values.find(v => selectedAttr.valueIds.includes(v.id));
           if (!attrValue) { return; }
 
           const foundIdx = variantGroups.findIndex(group => group.label === attrLabel);
@@ -834,10 +835,11 @@ export class ProductService implements OnApplicationBootstrap {
     for (const attribute of productWithQty.attributes) {
       const foundAttr = attributeModels.find(a => a.id === attribute.attributeId);
       if (!foundAttr) { continue; }
-      const foundAttrValue = foundAttr.values.find(v => v.id === attribute.valueId);
-      if (!foundAttrValue) { continue; }
+      const foundAttrValues = foundAttr.values.filter(v => attribute.valueIds.includes(v.id));
+      if (!foundAttrValues.length) { continue; }
 
-      characteristics.push({ label: foundAttr.label, code: foundAttr._id, value: foundAttrValue.label });
+      const value = foundAttrValues.map(value => value.label).join(', ');
+      characteristics.push({ label: foundAttr.label, code: foundAttr._id, value });
     }
 
     return {

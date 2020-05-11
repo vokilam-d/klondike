@@ -11,6 +11,7 @@ export class ElasticAttributeModel implements Record<keyof AdminAttributeDto, an
   groupName = elasticTextType;
   id = elasticTextType;
   label = elasticTextType;
+  type = elasticTextType;
   values = {
     properties: new ElasticAttributeValueModel()
   };

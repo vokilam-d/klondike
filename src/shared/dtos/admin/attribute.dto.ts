@@ -1,5 +1,6 @@
 import { Expose, Type } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { AttributeTypeEnum } from '../../enums/attribute-type.enum';
 
 export class AdminAttributeValueDto {
   @Expose()
@@ -36,6 +37,10 @@ export class AdminCreateAttributeDto extends AdminUpdateAttributeDto {
   @Expose()
   @IsString()
   id: string;
+
+  @Expose()
+  @IsEnum(AttributeTypeEnum)
+  type: AttributeTypeEnum;
 }
 
 export class AdminAttributeDto extends AdminCreateAttributeDto {

@@ -7,6 +7,6 @@ export class AdminProductSelectedAttributeDto {
   attributeId: string;
 
   @Expose()
-  @IsString()
-  valueId: string;
+  @IsString({ each: true })
+  valueIds: string[];
 }
