@@ -283,6 +283,7 @@ export class Migrate {
     const mediaValues: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_media_gallery_value.json', 'utf-8')));
     const mediaGalleries: any[] = Array.from(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_media_gallery.json', 'utf-8')));
     const euro_price_attrs: any[] = Array.from<any>(JSON.parse(fs.readFileSync(this.datafilesdir + 'catalog_product_entity_decimal.json', 'utf-8'))).filter(attr => attr.attribute_id === 233);
+    const eav_attr_options_values: any[] = Array.from<any>(JSON.parse(fs.readFileSync(this.datafilesdir + 'eav_attribute_option_value.json', 'utf-8')));
 
     let count: number = 0;
 
@@ -324,11 +325,16 @@ export class Migrate {
                 dto.attributes.push(selectedAttr);
               }
             } else if (savedAttribute.type === AttributeTypeEnum.MultiSelect) {
-              const valuesArr = product[key].split(',');
-
               const selectedAttr = {} as AdminProductSelectedAttributeDto;
               selectedAttr.attributeId = savedAttribute.id;
-              selectedAttr.valueIds = valuesArr;
+              selectedAttr.valueIds = [];
+
+              const option_value_ids = product[key].split(',').map(id => parseInt(id));
+              for (const option_value_id of option_value_ids) {
+                const eav_attr_options_value = eav_attr_options_values.find(value => value.option_id === option_value_id);
+                selectedAttr.valueIds.push(eav_attr_options_value.value);
+              }
+
               dto.attributes.push(selectedAttr);
             }
           }

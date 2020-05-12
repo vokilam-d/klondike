@@ -1185,14 +1185,14 @@ export class ProductService implements OnApplicationBootstrap {
           needToSave = true;
 
           const linkedProduct = found.find(p => p._id === relatedProduct.productId);
-          relatedProduct.variantId = linkedProduct.variants[i]._id.toString();
+          relatedProduct.variantId = linkedProduct?.variants[i]._id.toString();
         }
 
         for (let crossSellProduct of variant.crossSellProducts) {
           needToSave = true;
 
           const linkedProduct = found.find(p => p._id === crossSellProduct.productId);
-          crossSellProduct.variantId = linkedProduct.variants[i]._id.toString();
+          crossSellProduct.variantId = linkedProduct?.variants[i]._id.toString();
         }
       }
 
