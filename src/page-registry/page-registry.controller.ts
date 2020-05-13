@@ -8,7 +8,7 @@ export class PageRegistryController {
   }
 
   @Get()
-  findAll() {
+  findAll() { // todo add dtos
     return this.pageRegistryService.getAllPages();
   }
 

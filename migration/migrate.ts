@@ -965,7 +965,7 @@ export class Migrate {
       dto.slug = `${category.identifier}.html`;
       dto.content = category.content || '';
       dto.metaTags = {
-        title: category.meta_title || '',
+        title: category.meta_title || dto.name || '',
         description: category.meta_description || '',
         keywords: category.meta_keywords || ''
       };
@@ -1021,7 +1021,7 @@ export class Migrate {
       dto.content = post.content || '';
       dto.shortContent = stripHtmlTags(post.short_content || '').slice(0, 100);
       dto.metaTags = {
-        title: post.meta_title || '',
+        title: post.meta_title || dto.name || '',
         description: post.meta_description || '',
         keywords: post.meta_keywords || ''
       };
