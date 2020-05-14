@@ -529,7 +529,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     return this.productModel
       .updateOne(
-        { _id: productId as any, variants: variantId as any },
+        { _id: productId as any, [`${variantsProp}._id`]: variantId as any },
         { $inc: { [`${variantsProp}.$.${countProp}`]: count } }
       )
       .session(session)
