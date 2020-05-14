@@ -99,11 +99,10 @@ export class OrderService implements OnApplicationBootstrap {
 
   async updateOrdersByStatus(orderStatus: OrderStatusEnum,
                              updateOrdersFunction: (orders) => Promise<Order[]>): Promise<Order[]> {
-    const statusProp: keyof Order = 'status';
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
-      let orders = await this.orderModel.find({[statusProp]: orderStatus}).session(session).exec();
+      let orders = await this.orderModel.find({ status: orderStatus }).session(session).exec();
 
       const updatedOrders = await updateOrdersFunction(orders);
 
