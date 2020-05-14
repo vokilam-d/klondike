@@ -35,7 +35,6 @@ export class ShippingAddressDto {
 
   @Expose()
   @IsOptional()
-  @IsString()
   novaposhtaOffice: any;
 
   @Expose()

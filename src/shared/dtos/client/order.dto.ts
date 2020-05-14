@@ -1,5 +1,5 @@
 import { ShippingAddressDto } from '../shared-dtos/shipping-address.dto';
-import { ArrayMinSize, IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, IsBoolean, IsDate, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
 import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { Order } from '../../../order/models/order.model';
@@ -56,6 +56,7 @@ export class ClientOrderDto extends ClientAddOrderDto {
   paymentMethodName: string;
 
   @Expose()
+  @Transform(((value, obj: Order) => value ? value : obj.shipment?.trackingNumber))
   novaposhtaTrackingId: string;
 
   @Expose()
@@ -75,4 +76,7 @@ export class ClientOrderDto extends ClientAddOrderDto {
 
   @Expose()
   totalCost: number;
+
+  @Expose()
+  createdAt: Date;
 }

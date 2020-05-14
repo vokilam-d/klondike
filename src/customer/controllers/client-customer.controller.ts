@@ -33,6 +33,9 @@ import { CustomerJwtGuard } from '../../auth/guards/customer-jwt.guard';
 import { CustomerLocalGuard } from '../../auth/guards/customer-local.guard';
 import { InitResetPasswordDto } from '../../shared/dtos/client/init-reset-password.dto';
 import { ResetPasswordDto } from '../../shared/dtos/client/reset-password.dto';
+import { OrderService } from '../../order/order.service';
+import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
+import { ClientOrderDto } from '../../shared/dtos/client/order.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -40,6 +43,7 @@ import { ResetPasswordDto } from '../../shared/dtos/client/reset-password.dto';
 export class ClientCustomerController {
 
   constructor(private customerService: CustomerService,
+              private orderService: OrderService,
               private authService: AuthService) {
   }
 
@@ -70,6 +74,21 @@ export class ClientCustomerController {
 
     return {
       data: plainToClass(ClientDetailedCustomerDto, customer, { excludeExtraneousValues: true })
+    };
+  }
+
+  @UseGuards(CustomerJwtGuard)
+  @Get('order')
+  async getOrders(@Req() req): Promise<ResponseDto<ClientOrderDto[]>> {
+    const customer: DocumentType<Customer> = req.user;
+
+    const orderFilterDto = new OrderFilterDto();
+    orderFilterDto.customerId = customer.id;
+    orderFilterDto.limit = 100;
+    const { data: orders } = await this.orderService.getOrdersList(orderFilterDto);
+
+    return {
+      data: plainToClass(ClientOrderDto, orders, { excludeExtraneousValues: true })
     };
   }
 

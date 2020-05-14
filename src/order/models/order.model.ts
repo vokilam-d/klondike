@@ -39,6 +39,9 @@ export class Order {
   @prop({ default: new Date() })
   createdAt: Date;
 
+  @prop({ default: new Date() })
+  updatedAt: Date;
+
   @prop()
   isConfirmationEmailSent: boolean;
 
