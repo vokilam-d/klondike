@@ -21,13 +21,15 @@ export class OrderShipmentService {
 
   @ProdPrimaryInstanceCron(CronExpression.EVERY_HOUR)
   public async getOrdersWithLatestShipmentStatuses(): Promise<Order[]> {
-    return await this.orderService.updateOrdersByStatus(OrderStatusEnum.SHIPPED,
-        orders => this.updateShipmentStatus(orders));
+    return await this.orderService.updateOrdersByStatus(
+      OrderStatusEnum.SHIPPED,
+      orders => this.updateShipmentStatus(orders)
+    );
   }
 
   private async updateShipmentStatus(orders: Order[]): Promise<Order[]> {
     const ordersWithShipments: Order[] = orders
-      .filter(order => order.shipment && order.shipment.trackingNumber);
+      .filter(order => order.shipment?.trackingNumber);
 
     let shipments: ShipmentDto[] = ordersWithShipments.map(order => ({
       trackingNumber: order.shipment.trackingNumber,
@@ -95,13 +97,15 @@ export class OrderShipmentService {
   }
 
   private static updateOrderStatus(order) {
-    if (order.shipment.status === ShipmentStatusEnum.RECEIVED
-          && order.paymentType !== PaymentTypeEnum.CASH_ON_DELIVERY
-      || order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP
-          && order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY) {
+    const isCashOnDelivery = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
+
+    if (
+      isCashOnDelivery && order.shipment.status === ShipmentStatusEnum.RECEIVED
+      || !isCashOnDelivery && order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP
+    ) {
       order.status = OrderStatusEnum.FINISHED;
     } else {
-      order.status = OrderStatusEnum.SHIPPED
+      order.status = OrderStatusEnum.SHIPPED;
     }
   }
 
