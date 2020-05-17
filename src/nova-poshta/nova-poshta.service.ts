@@ -5,11 +5,150 @@ import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
 import { StreetDto } from '../shared/dtos/shared-dtos/street.dto';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
+import { ShipmentSenderDto } from '../shared/dtos/admin/shipment-sender.dto';
+import { ShipmentTypeEnum } from '../shared/enums/shipment-type.enum';
+import { ShipmentPayerEnum } from '../shared/enums/shipment-payer.enum';
+import { PaymentMethodEnum } from '../shared/enums/payment-method.enum';
+import { ShipmentPaymentMethodEnum } from '../shared/enums/shipment-payment-method.enum';
+import { ShipmentParticipantDto } from '../shared/dtos/admin/shipment-participant.dto';
 
 @Injectable()
 export class NovaPoshtaService {
 
+  private static settlementPriority = new Map([['Киев', 1], ['Харьков', 2], ['Одесса', 3], ['Днепр', 4],
+    ['Запорожье', 5], ['Львов', 6], ['Кривой Рог', 7], ['Николаев', 8], ['Мариуполь', 9]]);
+
   constructor(private readonly http: HttpService) {
+  }
+
+  public async shipmentRecipient(spf: ClientSPFDto): Promise<ShipmentParticipantDto> {
+
+    const response = await this.http.post('http://api.novaposhta.ua/v2.0/json/',
+      {
+        modelName: 'Counterparty',
+        calledMethod: 'getCatalogCounterparty',
+        methodProperties: {
+          Phone: spf.phone,
+          LastName: spf.lastName
+        },
+        apiKey: process.env.NOVA_POSHTA_API_KEY
+      }).toPromise();
+
+    if (response.data.data.length === 1) {
+      const counterparty = response.data.data[0];
+      return {
+        lastName: counterparty.LastName,
+        firstName: counterparty.FirstName,
+        middleName: counterparty.MiddleName
+      };
+    } else {
+      return {};
+    }
+  }
+
+  public async createInternetDocument(shipment: ShipmentDto,
+                                      sender: ShipmentSenderDto,
+                                      orderItemsCost: string,
+                                      orderPaymentMetod: PaymentMethodEnum): Promise<ShipmentDto> {
+
+
+    const saveContactRequestBody = {
+      modelName: 'ContactPerson',
+      calledMethod: 'save',
+      methodProperties: {
+        FirstName: shipment.recipient.firstName,
+        LastName: shipment.recipient.lastName,
+        MiddleName: shipment.recipient.middleName,
+        CounterpartyRef: sender.counterpartyRef,
+        Phone: shipment.recipient.phone
+      },
+      apiKey: process.env.NOVA_POSHTA_API_KEY
+    };
+    await this.http.post('http://api.novaposhta.ua/v2.0/json/', saveContactRequestBody).toPromise();
+    saveContactRequestBody.modelName = 'ContactPersonGeneral';
+    const contactPersonSaveResponse = await this.http.post('http://api.novaposhta.ua/v2.0/json/',
+      saveContactRequestBody).toPromise();
+    const contactPersonRef = contactPersonSaveResponse.data.data[0].Ref;
+
+    const saveAddressRequestBody: any = {
+      modelName: 'AddressContactPersonGeneral',
+      calledMethod: 'save',
+      methodProperties: {
+        ContactPersonRef: contactPersonRef,
+        SettlementRef: shipment.recipient.settlementId,
+        AddressRef: shipment.recipient.addressId
+      },
+      apiKey: process.env.NOVA_POSHTA_API_KEY
+    };
+
+    if (shipment.shipmentType === ShipmentTypeEnum.WAREHOUSE_WAREHOUSE) {
+      saveAddressRequestBody.methodProperties.AddressType = 'Warehouse';
+    } else if (shipment.shipmentType === ShipmentTypeEnum.WAREHOUSE_DOORS) {
+      saveAddressRequestBody.methodProperties.AddressType = 'Doors';
+      saveAddressRequestBody.methodProperties.BuildingNumber = shipment.recipient.buildingNumber;
+      saveAddressRequestBody.methodProperties.Flat = shipment.recipient.flat;
+      saveAddressRequestBody.methodProperties.Note = shipment.recipient.note;
+    }
+
+    const saveAddressResponse = await this.http.post('http://api.novaposhta.ua/v2.0/json/', saveAddressRequestBody)
+      .toPromise();
+    const recipientAddress = saveAddressResponse.data.data[0].Ref;
+    const cityRef = saveAddressResponse.data.data[0].CityRef;
+
+
+    const today = new Date();
+    let saveInternetDocumentRequestBody: any = {
+      modelName: 'InternetDocument',
+      calledMethod: 'save',
+      methodProperties: {
+        CitySender: sender.cityId,
+        Sender: sender.senderId,
+        ContactSender: sender.contactId,
+        SenderAddress: sender.addressId,
+        SendersPhone: sender.phone,
+        Recipient: sender.counterpartyRef,
+        CityRecipient: cityRef,
+        RecipientAddress: recipientAddress,
+        ContactRecipient: contactPersonRef,
+        RecipientsPhone: shipment.recipient.phone,
+        ServiceType: shipment.shipmentType,
+        CargoType: 'Cargo',
+        ParamsOptionsSeats: false,
+        Cost: orderItemsCost,
+        Description: shipment.description,
+        PayerType: ShipmentPayerEnum.RECIPIENT,
+        PaymentMethod: ShipmentPaymentMethodEnum.CASH,
+        DateTime: `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`,
+        SeatsAmount: '1',
+        OptionsSeat: [
+          {
+            weight: shipment.weight,
+            volumetricLength: shipment.length,
+            volumetricWidth: shipment.width,
+            volumetricHeight: shipment.height
+          }
+        ]
+      },
+      apiKey: process.env.NOVA_POSHTA_API_KEY
+    };
+
+    if (orderPaymentMetod === PaymentMethodEnum.CASH_ON_DELIVERY) {
+      const redelivery = shipment.backwardMoneyDelivery ? shipment.backwardMoneyDelivery : orderItemsCost;
+      saveInternetDocumentRequestBody.methodProperties.BackwardDeliveryData = [{
+        PayerType: ShipmentPayerEnum.RECIPIENT,
+        CargoType: 'Money',
+        RedeliveryString: redelivery
+      }];
+    }
+
+    const internetDocumentSaveResponse = await this.http.post('http://api.novaposhta.ua/v2.0/json/',
+      saveInternetDocumentRequestBody).toPromise();
+    const responseData = internetDocumentSaveResponse.data.data[0];
+
+    shipment.trackingNumber = responseData.IntDocNumber;
+    shipment.estimatedDeliveryDate = responseData.EstimatedDeliveryDate;
+
+    return shipment;
   }
 
   public async fetchStreets(spf: ClientSPFDto): Promise<StreetDto[]> {
@@ -43,7 +182,7 @@ export class NovaPoshtaService {
         calledMethod: 'getStatusDocuments',
         methodProperties: {
           Documents: shipmentDtos.map(shipment =>
-            ({ DocumentNumber: shipment.trackingNumber, Phone: shipment.senderPhone }))
+            ({ DocumentNumber: shipment.trackingNumber }))
         },
         apiKey: process.env.NOVA_POSHTA_API_KEY
       }).toPromise();
@@ -51,8 +190,7 @@ export class NovaPoshtaService {
     return response.data.data.map(shipment => ({
       trackingNumber: shipment.Number,
       status: NovaPoshtaService.toShipmentStatus(shipment.StatusCode),
-      statusDescription: shipment.Status,
-      senderPhone: shipment.PhoneSender
+      statusDescription: shipment.Status
     }));
   }
 
@@ -116,17 +254,20 @@ export class NovaPoshtaService {
 
   private static toSettlementDto(settlement): SettlementDto {
     const shortSettlementType = this.shortenSettlementType(settlement.SettlementTypeDescription);
+    const ruName = settlement.DescriptionRu;
+    const priority = NovaPoshtaService.settlementPriority.has(ruName) && shortSettlementType === 'м.' ?
+      NovaPoshtaService.settlementPriority.get(ruName) : 99;
     let fullName = `${shortSettlementType} ${settlement.Description} (${settlement.AreaDescription}`;
     if (settlement.RegionsDescription) {
       fullName += ', ' + settlement.RegionsDescription
     }
     fullName += ')';
-
     return {
       id: settlement.Ref,
       name: settlement.Description,
-      ruName: settlement.DescriptionRu,
-      fullName: fullName
+      ruName: ruName,
+      fullName: fullName,
+      priority: priority
     };
   }
 
@@ -172,6 +313,7 @@ export class NovaPoshtaService {
     return warehouse.Description.substring(warehouse.Description.indexOf(':') + 1).trim();
   }
 
+
   private static getStreet(shortAddress): string {
     if (!shortAddress) {
       return '';
@@ -183,5 +325,4 @@ export class NovaPoshtaService {
     }
     return result.trim().toLowerCase();
   }
-
 }

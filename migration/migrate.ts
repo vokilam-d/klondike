@@ -793,8 +793,7 @@ export class Migrate {
         }
       }
       dto.shipment = {
-        trackingNumber: novaposhtaTrackingId,
-        senderPhone: foundAddress.telephone
+        trackingNumber: novaposhtaTrackingId
       };
 
       dto.logs = [];

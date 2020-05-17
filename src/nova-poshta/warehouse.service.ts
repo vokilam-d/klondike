@@ -22,7 +22,6 @@ export class WarehouseService implements OnApplicationBootstrap {
   }
 
   public async getWarehouses(spf: ClientSPFDto): Promise<WarehouseDto[]> {
-    //TODO move to search service
     const queries: any[] = [
       {
         match: {
@@ -43,10 +42,10 @@ export class WarehouseService implements OnApplicationBootstrap {
     }
 
     const boolQuery = { must: queries };
-    const [ warehouses ] = await this.searchService.searchByQuery(ElasticWarehouse.collectionName, boolQuery, 0, spf.limit);
+    const [ warehouses ] = await this.searchService.searchByQuery(ElasticWarehouse.collectionName, boolQuery, 0,
+      spf.limit, {description : 'asc'});
 
-    return plainToClass(WarehouseDto, warehouses, { excludeExtraneousValues: true })
-      .sort((a, b) => a.description.localeCompare(b.description));
+    return plainToClass(WarehouseDto, warehouses, { excludeExtraneousValues: true });
   }
 
   @ProdPrimaryInstanceCron(CronExpression.EVERY_DAY_AT_4AM)

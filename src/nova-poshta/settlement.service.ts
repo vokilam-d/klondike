@@ -23,11 +23,24 @@ export class SettlementService implements OnApplicationBootstrap {
     this.searchService.ensureCollection(ElasticSettlement.collectionName, new ElasticSettlement(), autocompleteSettings);
   }
 
-  public async getSettlements(spf: ClientSPFDto) : Promise<SettlementDto[]> {
-    const filters: IFilter[] = [{ fieldName: 'name|ruName', value: spf.filter }];
-    const searchResponse = await this.searchService.searchByFilters(ElasticSettlement.collectionName, filters, 0, spf.limit);
-    return plainToClass(SettlementDto, searchResponse[0],{ excludeExtraneousValues: true })
-      .sort((a, b) => a.fullName.localeCompare(b.fullName));
+  public async getSettlements(spf: ClientSPFDto): Promise<SettlementDto[]> {
+    const query = !spf.name ? { 'match_all': {} } :
+      {
+        'multi_match': {
+          'query': spf.name,
+          'type': 'phrase_prefix',
+          'fields': [
+            'name',
+            'ruName'
+          ]
+        }
+      };
+    const searchResponse = await this.searchService.searchByQuery(ElasticSettlement.collectionName,
+      { must: query },
+      0,
+      spf.limit,
+      { priority: 'asc', fullName: 'asc' });
+    return plainToClass(SettlementDto, searchResponse[0], { excludeExtraneousValues: true });
   }
 
   @ProdPrimaryInstanceCron(CronExpression.EVERY_DAY_AT_3AM)

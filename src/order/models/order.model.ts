@@ -3,7 +3,7 @@ import { ShippingAddress } from '../../customer/models/customer.model';
 import { OrderItem } from './order-item.model';
 import { OrderStatusEnum } from '../../shared/enums/order-status.enum';
 import { Shipment } from './shipment.model';
-import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
+import { PaymentMethodEnum } from '../../shared/enums/payment-method.enum';
 
 export class Order {
   @prop()
@@ -49,7 +49,7 @@ export class Order {
   paymentMethodId: string;
 
   @prop()
-  paymentType: PaymentTypeEnum;
+  paymentType: PaymentMethodEnum;
 
   @prop()
   paymentMethodClientName: string;
@@ -70,7 +70,7 @@ export class Order {
   isCallbackNeeded: boolean;
 
   @prop()
-  shipment: Shipment;
+  shipment: Shipment = {};
 
   @arrayProp({ items: OrderItem })
   items: OrderItem[];

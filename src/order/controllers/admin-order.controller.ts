@@ -87,7 +87,17 @@ export class AdminOrderController {
   @Put(':id/shipment')
   async editOrderShipment(@Param('id') orderId: number,
                           @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderShipmentService.editOrderShipment(orderId, shipmentDto);
+    const updated = await this.orderShipmentService.updateOrderShipment(orderId, shipmentDto);
+
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Post(':id/shipment/internet-document')
+  async createInternetDocument(@Param('id') orderId: number,
+                               @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
+    const updated = await this.orderShipmentService.createInternetDocument(orderId, shipmentDto);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })

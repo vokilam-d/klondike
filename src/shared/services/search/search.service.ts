@@ -59,7 +59,6 @@ export class SearchService {
     }
   }
 
-  // TODO doc should implement hasId or something
   async addDocuments(collection: string, documents: any): Promise<any> {
     if (documents.length == 0) {
       return;

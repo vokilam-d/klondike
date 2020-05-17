@@ -26,11 +26,10 @@ class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'cr
   variantId = elasticTextType;
 }
 
-class ShipmentElasticOrderModel implements Record<keyof ShipmentDto, any>{
+class ElasticShipmentModel {
   trackingNumber = elasticTextType;
   status = elasticTextType;
   statusDescription = elasticTextType;
-  senderPhone = elasticTextType;
 }
 
 export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
@@ -56,7 +55,7 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
     properties: new ElasticOrderItemModel()
   };
   logs = elasticTextType;
-  shipment = new ShipmentElasticOrderModel();
+  shipment = new ElasticShipmentModel();
   paymentMethodAdminName = elasticTextType;
   paymentMethodClientName = elasticTextType;
   paymentMethodId = elasticTextType;
