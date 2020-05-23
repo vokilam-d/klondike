@@ -23,6 +23,7 @@ import { AdminBlogPostCreateDto } from '../src/shared/dtos/admin/blog-post.dto';
 import { AdminBlogCategoryCreateDto } from '../src/shared/dtos/admin/blog-category.dto';
 import { AttributeTypeEnum } from '../src/shared/enums/attribute-type.enum';
 import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/product-selected-attribute.dto';
+import { transliterate } from '../src/shared/helpers/transliterate.function';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3000';
@@ -244,6 +245,7 @@ export class Migrate {
         if (!valueDto.label) {
           valueDto.label = valueDto.id;
         }
+        valueDto.id = transliterate(valueDto.id);
         dto.values.push(valueDto);
       }
 
