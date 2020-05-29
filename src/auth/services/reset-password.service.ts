@@ -20,7 +20,7 @@ export class ResetPasswordService {
       .digest('hex');
 
     const expireDate = new Date();
-    expireDate.setDate(expireDate.getHours() + this.expirationDurationHours);
+    expireDate.setHours(expireDate.getHours() + this.expirationDurationHours);
 
     const resetPassword: ResetPassword = {
       expireDate,

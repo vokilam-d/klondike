@@ -191,7 +191,7 @@ export class AuthService {
     const resetModel = await this.resetPasswordService.create(customer);
     await this.emailService.sendResetPasswordEmail(customer, resetModel.token);
 
-    return;
+    return true;
   }
 
   async getCustomerIdByResetPasswordToken(token: string): Promise<number> {
