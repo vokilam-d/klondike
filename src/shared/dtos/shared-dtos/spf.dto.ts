@@ -4,7 +4,7 @@ import { Transform } from 'class-transformer';
 
 export interface IFilter {
   fieldName: string;
-  value: string | boolean;
+  values: any[];
 }
 
 export interface ISorting {

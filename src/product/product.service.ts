@@ -28,7 +28,7 @@ import { AdminProductVariantListItem } from '../shared/dtos/admin/product-varian
 import { DEFAULT_CURRENCY } from '../shared/enums/currency.enum';
 import { ElasticProduct } from './models/elastic-product.model';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
-import { SortingPaginatingFilterDto } from '../shared/dtos/shared-dtos/spf.dto';
+import { IFilter, SortingPaginatingFilterDto } from '../shared/dtos/shared-dtos/spf.dto';
 import { ClientProductListItemDto, ClientProductVariantDto, ClientProductVariantGroupDto } from '../shared/dtos/client/product-list-item.dto';
 import { AttributeService } from '../attribute/attribute.service';
 import { ClientProductCategoryDto, ClientProductCharacteristic, ClientProductDto } from '../shared/dtos/client/product.dto';
@@ -44,12 +44,25 @@ import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { ReorderPositionEnum } from '../shared/enums/reoder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { AttributeTypeEnum } from '../shared/enums/attribute-type.enum';
+import { ClientProductListResponseDto } from '../shared/dtos/client/product-list-response.dto';
+import { ClientFilterDto, ClientFilterValueDto } from '../shared/dtos/client/filter.dto';
+import { Attribute } from '../attribute/models/attribute.model';
+import { isNumber } from '../shared/helpers/is-number.function';
+import { AdminProductSelectedAttributeDto } from '../shared/dtos/admin/product-selected-attribute.dto';
+
+interface AttributeProductCountMap {
+  [attributeId: string]: {
+    valuesMap: { [valueId: string]: number; };
+    productCountForAttr: number;
+  };
+}
 
 @Injectable()
 export class ProductService implements OnApplicationBootstrap {
 
   private logger = new Logger(ProductService.name);
   private cachedProductCount: number;
+  private filtersThresholdPercent = 25;
 
   constructor(@InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
               @Inject(forwardRef(() => ProductReviewService)) private readonly productReviewService: ProductReviewService,
@@ -101,8 +114,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async getClientProductListByFilters(spf: ClientProductSPFDto): Promise<ResponseDto<ClientProductListItemDto[]>> {
-
+  async getClientProductList(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
 
     spf[isEnabledProp] = true;
@@ -110,7 +122,8 @@ export class ProductService implements OnApplicationBootstrap {
     const searchResponse = await this.findByFilters(spf);
     const adminDtos = searchResponse[0];
     const itemsTotal = searchResponse[1];
-    const clientDtos = await this.transformToClientListDto(adminDtos);
+    const attributes = await this.attributeService.getAllAttributes();
+    const clientDtos = await this.transformToClientListDto(adminDtos, attributes);
 
     return {
       data: clientDtos,
@@ -118,6 +131,128 @@ export class ProductService implements OnApplicationBootstrap {
       pagesTotal: Math.ceil(itemsTotal / spf.limit),
       itemsTotal
     }
+  }
+
+  async getClientProductListWithFilters(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
+    // todo move logic to elastic
+    // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
+    const [ adminListItems ] = await this.findAllProductListItems(spf, true, spf.categoryId);
+    const attributes = await this.attributeService.getAllAttributes();
+    const spfFilters = spf
+      .getNormalizedFilters()
+      .filter(spfFilter => !!attributes.find(attribute => attribute.id === spfFilter.fieldName)); // leave only valid attributes
+
+    const allSelectedAttributesProductCountMap: AttributeProductCountMap = { };
+
+    const addPossibleAttribute = (attribute: AdminProductSelectedAttributeDto) => {
+      if (!allSelectedAttributesProductCountMap[attribute.attributeId]) {
+        allSelectedAttributesProductCountMap[attribute.attributeId] = {
+          valuesMap: { },
+          productCountForAttr: 0
+        };
+      }
+      allSelectedAttributesProductCountMap[attribute.attributeId].productCountForAttr += 1;
+
+      for (const valueId of attribute.valueIds) {
+        if (allSelectedAttributesProductCountMap[attribute.attributeId].valuesMap[valueId] === undefined) {
+          allSelectedAttributesProductCountMap[attribute.attributeId].valuesMap[valueId] = 0;
+        }
+      }
+    }
+    const incProductCount = (attributesArg: AdminProductSelectedAttributeDto[]) => {
+      for (const attribute of attributesArg) {
+        for (const valueId of attribute.valueIds) {
+          allSelectedAttributesProductCountMap[attribute.attributeId].valuesMap[valueId] += 1;
+        }
+      }
+    }
+
+    let possibleMinPrice = adminListItems[0].variants[0].price;
+    let possibleMaxPrice = possibleMinPrice;
+
+    let filterMinPrice: number;
+    let filterMaxPrice: number;
+    const split = spf.price?.split('-').map(price => parseInt(price));
+    if (isNumber(split?.[0])) { filterMinPrice = split[0]; }
+    if (isNumber(split?.[1])) { filterMaxPrice = split[1]; }
+
+    let filteredAdminListItems: AdminProductListItemDto[] = [];
+    for (const adminListItem of adminListItems) {
+      const filteredVariants: AdminProductVariantListItem[] = [];
+      let isProductAttributesSetInProductCount = false;
+
+      for (const variant of adminListItem.variants) {
+        const selectedAttributes = [ ...adminListItem.attributes, ...variant.attributes ];
+        const unmatchedSelectedAttributes: AdminProductSelectedAttributeDto[] = [];
+        let spfFiltersMatches: number = 0;
+
+        for (const attribute of selectedAttributes) {
+          addPossibleAttribute(attribute);
+          const foundSpfFilter = spfFilters.find(spfFilter => spfFilter.fieldName === attribute.attributeId);
+          if (!foundSpfFilter) { continue; }
+
+          spfFiltersMatches += 1;
+          const foundSpfFilterValue = foundSpfFilter.values.find(spfFilterValue => attribute.valueIds.includes(spfFilterValue));
+          if (!foundSpfFilterValue) {
+            unmatchedSelectedAttributes.push(attribute);
+          }
+        }
+
+        let isPassedByPrice: boolean = true;
+        if (filterMinPrice >= 0) {
+          if (variant.price < filterMinPrice) {
+            isPassedByPrice = false;
+          }
+          if (filterMaxPrice && variant.price > filterMaxPrice) {
+            isPassedByPrice = false;
+          }
+        }
+
+        if (spfFiltersMatches === spfFilters.length && isPassedByPrice) {
+          if (unmatchedSelectedAttributes.length === 0) {
+            incProductCount(variant.attributes);
+            filteredVariants.push(variant);
+
+            if (!isProductAttributesSetInProductCount) {
+              incProductCount(adminListItem.attributes);
+              isProductAttributesSetInProductCount = true;
+            }
+          } else if (unmatchedSelectedAttributes.length === 1) {
+            incProductCount([unmatchedSelectedAttributes[0]]); // maybe this?
+          }
+
+        }
+
+        if (variant.price < possibleMinPrice) { possibleMinPrice = variant.price; }
+        if (variant.price > possibleMaxPrice) { possibleMaxPrice = variant.price; }
+      }
+
+      if (filteredVariants.length) {
+        filteredAdminListItems.push({
+          ...adminListItem,
+          variants: filteredVariants
+        });
+      }
+    }
+
+    const itemsTotal = adminListItems.length;
+    let itemsFiltered: number;
+    if (spfFilters.length || filterMinPrice >= 0) { itemsFiltered = filteredAdminListItems.length; }
+
+    filteredAdminListItems = filteredAdminListItems.slice(spf.skip, spf.skip + spf.limit);
+    const clientListItems = await this.transformToClientListDto(filteredAdminListItems, attributes);
+
+    let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, spfFilters);
+    filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
+
+    return {
+      data: clientListItems,
+      page: spf.page,
+      pagesTotal: Math.ceil(filteredAdminListItems.length / spf.limit),
+      itemsTotal,
+      itemsFiltered,
+      filters
+    };
   }
 
   async getProductsWithQty(sortingPaginating: AdminSPFDto = new AdminSPFDto()): Promise<ProductWithQty[]> {
@@ -639,6 +774,28 @@ export class ProductService implements OnApplicationBootstrap {
     await this.searchService.deleteDocument(Product.collectionName, productId);
   }
 
+  private async findAllProductListItems(spf: SortingPaginatingFilterDto, onlyEnabled: boolean, categoryId?: string) {
+    const filters: IFilter[] = [];
+    if (onlyEnabled) {
+      const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
+      filters.push({ fieldName: isEnabledProp, values: [true] })
+    }
+    if (categoryId) {
+      const categoriesProp: keyof AdminProductListItemDto = 'categories';
+      const categoryIdProp: keyof AdminProductCategoryDto = 'id';
+      filters.push({ fieldName: `${categoriesProp}.${categoryIdProp}`, values: [categoryId] })
+    }
+
+    return this.searchService.searchByFilters<AdminProductListItemDto>(
+      Product.collectionName,
+      filters,
+      undefined,
+      10000,
+      spf.getSortAsObj(),
+      spf.sortFilter
+    );
+  }
+
   private async findByFilters(spf: SortingPaginatingFilterDto) {
     return this.searchService.searchByFilters<AdminProductListItemDto>(
       Product.collectionName,
@@ -735,8 +892,10 @@ export class ProductService implements OnApplicationBootstrap {
     });
   }
 
-  private async transformToClientListDto(adminListItemDtos: AdminProductListItemDto[]): Promise<ClientProductListItemDto[]> { // todo cache
-    const attributes = await this.attributeService.getAllAttributes();
+  private async transformToClientListDto(
+    adminListItemDtos: AdminProductListItemDto[],
+    attributes: Attribute[]
+  ): Promise<ClientProductListItemDto[]> {
 
     return adminListItemDtos.map(product => {
       const variant = product.variants[0]; // todo add flag in ProductVariant to select here default variant?
@@ -1076,13 +1235,10 @@ export class ProductService implements OnApplicationBootstrap {
     session.startTransaction();
 
     try {
-      console.log(`Start fetch categories`);
       const categories = await this.categoryService.getAllCategories();
-      console.log(`Got ${categories.length} categories`);
       for (let k = 0; k < categories.length; k++) {
         const categoryId = categories[k]._id;
         if (categoryId === 11) { continue; }
-        console.log(`Start fetch products for category`, categoryId);
         let products = await this.productModel.find({ 'categories.id': categoryId });
         products = products
           .filter(p => {
@@ -1098,19 +1254,7 @@ export class ProductService implements OnApplicationBootstrap {
             return b.categories[bCatIdx].sortOrder - a.categories[aCatIdx].sortOrder;
           });
 
-        console.log(`Got ${products.length} sorted products for category ${categoryId}`);
         const end = Math.floor(products.length / 2);
-
-        console.table(
-          products.map(p => p.toJSON())
-            .map(p => {
-              return {
-                sortOrder: p.categories.find(c => c.id === categoryId).sortOrder,
-                name: p.name
-              }
-            })
-            .sort((a, b) => b.sortOrder - a.sortOrder)
-        )
 
         for (let i = 0; i < end; i++) {
           const product = products[i];
@@ -1120,38 +1264,19 @@ export class ProductService implements OnApplicationBootstrap {
           const mirrorCategoryIdx = mirror.categories.findIndex(c => c.id === categoryId);
           const mirrorCategoryOrder = mirror.categories[mirrorCategoryIdx].sortOrder;
 
-          console.log(`Start sort orders: ${product.categories[productCategoryIdx].sortOrder} <-> ${mirror.categories[mirrorCategoryIdx].sortOrder}`);
-
           mirror.categories[mirrorCategoryIdx].sortOrder = product.categories[productCategoryIdx].sortOrder;
           product.categories[productCategoryIdx].sortOrder = mirrorCategoryOrder;
 
-          // console.log(`Finish sort orders: ${product.categories[productCategoryIdx].sortOrder} <-> ${mirror.categories[mirrorCategoryIdx].sortOrder}`);
           await product.save();
           await mirror.save();
-
-          console.log(`(${i + 1} of ${end}) Saved sort order of ${product.id} & ${mirror.id} in category: ${categoryId}`);
         }
-
-        console.table(
-          products.map(p => p.toJSON())
-            .map(p => {
-              return {
-                sortOrder: p.categories.find(c => c.id === categoryId).sortOrder,
-                name: p.name
-              }
-            })
-            .sort((a, b) => b.sortOrder - a.sortOrder)
-        )
 
         console.log(`Finished categories: (${k + 1} of ${categories.length})`);
       }
 
-      console.log('Before commit transaction');
       await session.commitTransaction();
-      console.log('After commit transaction');
 
       await this.reindexAllSearchData();
-      console.log('After whole reindex');
     } catch (ex) {
       await session.abortTransaction();
       throw ex;
@@ -1200,5 +1325,91 @@ export class ProductService implements OnApplicationBootstrap {
         await product.save();
       }
     }
+  }
+
+  private buildClientFilters(
+    attributeProductCountMap: AttributeProductCountMap,
+    attributes: Attribute[],
+    totalFound: number,
+    spfFilters: IFilter[]
+  ): ClientFilterDto[] {
+
+    const clientFilters: ClientFilterDto[] = [];
+
+    Object.keys(attributeProductCountMap).forEach(attributeId => {
+      const { valuesMap, productCountForAttr } = attributeProductCountMap[attributeId];
+      if ((productCountForAttr / totalFound) < (this.filtersThresholdPercent / 100)) { return; }
+
+      const attribute = attributes.find(attribute => attribute.id === attributeId);
+      if (!attribute) { return; }
+
+      const spfFilter = spfFilters.find(spfFilter => spfFilter.fieldName === attributeId);
+
+      const values: ClientFilterValueDto[] = [];
+      let valuesProductsCount = 0;
+      Object.entries(valuesMap).forEach(([ valueId, productsCount ]) => {
+        const attributeValue = attribute.values.find(value => value.id === valueId);
+        if (!attributeValue) { return; }
+
+        let isSelected = false;
+        if (spfFilter) {
+          isSelected = spfFilter.values.includes(valueId);
+        }
+
+        valuesProductsCount += productsCount;
+
+        values.push({
+          id: attributeValue.id,
+          label: attributeValue.label,
+          isDisabled: productsCount === 0,
+          productsCount,
+          isSelected
+        });
+      });
+
+      clientFilters.push({
+        id: attribute.id,
+        label: attribute.label,
+        isDisabled: valuesProductsCount === 0,
+        type: 'checkbox',
+        values
+      });
+    });
+
+    return clientFilters;
+  }
+
+  private addPriceFilter(
+    clientFilters: ClientFilterDto[],
+    prices: {
+      possibleMinPrice: number;
+      possibleMaxPrice: number;
+      filterMinPrice: number;
+      filterMaxPrice: number;
+    }
+  ): ClientFilterDto[] {
+
+    const priceFilterSortIndex = 1;
+    const rangeMin = Math.floor(prices.possibleMinPrice);
+    const rangeMax = Math.ceil(prices.possibleMaxPrice);
+
+    clientFilters.splice(priceFilterSortIndex, 0, {
+      id: 'price',
+      label: 'Цена',
+      isDisabled: false,
+      type: 'range',
+      rangeValues: {
+        range: {
+          min: rangeMin,
+          max: rangeMax
+        },
+        selected: {
+          min: prices.filterMinPrice || rangeMin,
+          max: prices.filterMaxPrice || rangeMax
+        }
+      }
+    });
+
+    return clientFilters;
   }
 }

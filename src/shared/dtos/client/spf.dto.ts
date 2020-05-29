@@ -12,15 +12,13 @@ export class ClientSPFDto extends SortingPaginatingFilterDto {
     Object.keys(this)
       .filter(fieldName => !spfOwnFields.includes(fieldName))
       .forEach(fieldName => {
-        const queryValue = this[fieldName];
+        let queryValue = this[fieldName];
         if (queryValue === undefined) { return; }
 
-        queryValue.toString()
-          .split(queryParamArrayDelimiter)
-          .map(value => decodeURIComponent(value))
-          .forEach(value => {
-            filters.push({ fieldName, value });
-          });
+        filters.push({
+          fieldName,
+          values: decodeURIComponent(queryValue).split(queryParamArrayDelimiter)
+        });
       });
 
     return filters;

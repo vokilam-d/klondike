@@ -61,7 +61,7 @@ export class OrderItemService {
     const spf = new ClientProductSPFDto();
     spf.limit = crossSellProducts.length;
     spf.id = idsArr.join('|');
-    const { data: products } = await this.productService.getClientProductListByFilters(spf);
+    const { data: products } = await this.productService.getClientProductList(spf);
 
     products.sort((a, b) => {
       const indexOfA = idsArr.indexOf(a.productId);

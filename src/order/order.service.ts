@@ -159,7 +159,9 @@ export class OrderService implements OnApplicationBootstrap {
 
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
-      this.tasksService.sendLeaveReviewEmail(newOrder);
+      if (!migrate) {
+        this.tasksService.sendLeaveReviewEmail(newOrder);
+      }
       return newOrder;
 
     } catch (ex) {
@@ -466,7 +468,7 @@ export class OrderService implements OnApplicationBootstrap {
     const filters = spf.getNormalizedFilters();
     if (spf.customerId) {
       const customerIdProp = getPropertyOf<AdminOrderDto>('customerId');
-      filters.push({ fieldName: customerIdProp, value: `${spf.customerId}` });
+      filters.push({ fieldName: customerIdProp, values: [spf.customerId] });
     }
 
     return this.searchService.searchByFilters<AdminOrderDto>(

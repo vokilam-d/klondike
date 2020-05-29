@@ -5,7 +5,7 @@ import { DEFAULT_CURRENCY, CurrencyCodeEnum } from '../shared/enums/currency.enu
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { CronExpression } from '@nestjs/schedule';
-import { ProdPrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
+import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { Subject } from 'rxjs';
 import { __ } from '../shared/helpers/translate/translate.function';
 
@@ -39,7 +39,7 @@ export class CurrencyService {
     return currencies.map(currency => currency.toJSON());
   }
 
-  @ProdPrimaryInstanceCron(CronExpression.EVERY_30_MINUTES)
+  @CronProdPrimaryInstance(CronExpression.EVERY_30_MINUTES)
   async updateExchangeRates(): Promise<Currency[]> {
     const currencies = await this.currencyModel.find().exec();
     let exchangeRates: ExchangeRates;

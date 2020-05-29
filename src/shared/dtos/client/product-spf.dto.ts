@@ -47,17 +47,4 @@ export class ClientProductSPFDto extends ClientSPFDto {
         return { [`${categoriesProp}.${sortOrderProp}`]: 'desc' };
     }
   }
-
-  getNormalizedFilters(): IFilter[] {
-    if (!this.categoryId) {
-      return super.getNormalizedFilters();
-    }
-
-    const categoryId = this.categoryId;
-    delete this.categoryId;
-    const filters = super.getNormalizedFilters();
-    const categoriesProp: keyof AdminProductListItemDto = 'categories';
-    const categoryIdProp: keyof AdminProductCategoryDto = 'id';
-    return [...filters, { fieldName: `${categoriesProp}.${categoryIdProp}`, value: categoryId }];
-  }
 }

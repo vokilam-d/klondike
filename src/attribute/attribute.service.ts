@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Attribute } from './models/attribute.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
@@ -9,9 +9,14 @@ import { plainToClass } from 'class-transformer';
 import { SearchService } from '../shared/services/search/search.service';
 import { ElasticAttributeModel } from './models/elastic-attribute.model';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
+import { CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {
+
+  private logger = new Logger(AttributeService.name);
+  private cachedAttrbiutes: Attribute[] = [];
 
   constructor(@InjectModel(Attribute.name) private readonly attributeModel: ReturnModelType<typeof Attribute>,
               private readonly searchService: SearchService) {
@@ -19,6 +24,7 @@ export class AttributeService implements OnApplicationBootstrap {
 
   onApplicationBootstrap(): any {
     this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttributeModel());
+    this.updateCachedAttributes();
   }
 
   async getAttributesResponse(spf: AdminSPFDto): Promise<ResponseDto<AdminAttributeDto[]>> {
@@ -51,8 +57,11 @@ export class AttributeService implements OnApplicationBootstrap {
   }
 
   async getAllAttributes(): Promise<Attribute[]> {
-    const attributes = await this.attributeModel.find().exec();
+    if (this.cachedAttrbiutes) {
+      return this.cachedAttrbiutes;
+    }
 
+    const attributes = await this.attributeModel.find().exec();
     return attributes.map(attr => attr.toJSON());
   }
 
@@ -76,6 +85,7 @@ export class AttributeService implements OnApplicationBootstrap {
     const attribute = new this.attributeModel(attributeDto);
     await attribute.save();
     this.addSearchData(attribute);
+    this.updateCachedAttributes();
 
     return attribute;
   }
@@ -92,6 +102,7 @@ export class AttributeService implements OnApplicationBootstrap {
 
     await attribute.save();
     this.updateSearchData(attribute);
+    this.updateCachedAttributes();
 
     return attribute;
   }
@@ -102,12 +113,20 @@ export class AttributeService implements OnApplicationBootstrap {
       throw new NotFoundException(__('Attribute with id "$1" not found', 'ru', attributeId));
     }
     this.deleteSearchData(deleted);
+    this.updateCachedAttributes();
 
     return deleted;
   }
 
   countAttributes(): Promise<number> {
     return this.attributeModel.estimatedDocumentCount().exec();
+  }
+
+  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  updateCachedAttributes() {
+    this.attributeModel.find()
+      .then(attributes => this.cachedAttrbiutes = attributes.map(a => a.toJSON()))
+      .catch(err => this.logger.warn(`Could not update cached attributes`, err));
   }
 
   private checkDtoForErrors(attributeDto: AdminCreateAttributeDto | AdminUpdateAttributeDto) {

@@ -134,38 +134,41 @@ export class SearchService {
     }
 
     filters.forEach(filter => {
-      if (typeof filter.value === 'string' && filter.value.includes('|')) {
-
-        filter.value.split('|').forEach(value => {
+      if (filter.values.length > 1) {
+        filter.values.forEach(value => {
           boolQuery.should.push({
             term: {
               [filter.fieldName]: value
             }
           });
+
         });
 
         boolQuery.minimum_should_match = 1;
+      } else {
+        const value = filter.values[0];
 
-      } else if (filter.fieldName.includes('.')) {
-        const [parentField] = filter.fieldName.split('.');
-        boolQuery.must.push({
-          'nested': {
-            path: parentField,
-            query: {
-              'match_phrase_prefix': {
-                [filter.fieldName]: filter.value
+        if (filter.fieldName.includes('.')) {
+          const [parentField] = filter.fieldName.split('.');
+          boolQuery.must.push({
+            'nested': {
+              path: parentField,
+              query: {
+                'match_phrase_prefix': {
+                  [filter.fieldName]: value
+                }
               }
             }
-          }
-        });
-      } else {
-        boolQuery.must.push({
-          multi_match: {
-            query: filter.value,
-            type: 'phrase_prefix',
-            fields: filter.fieldName.split('|')
-          }
-        });
+          });
+        } else {
+          boolQuery.must.push({
+            multi_match: {
+              query: value,
+              type: 'phrase_prefix',
+              fields: filter.fieldName.split('|')
+            }
+          });
+        }
       }
     });
 
