@@ -633,7 +633,7 @@ export class ProductService implements OnApplicationBootstrap {
       .session(session)
       .exec();
 
-    const elasticQuery = { id: review.productId };
+    const elasticQuery = { term: { id: review.productId } };
     const elasticUpdateScript = `
       ctx._source.${countProp} = ctx._source.${countProp} + 1;
       if (ctx._source.${ratingProp} == null) {
@@ -670,7 +670,7 @@ export class ProductService implements OnApplicationBootstrap {
       .session(session)
       .exec();
 
-    const elasticQuery = { id: review.productId };
+    const elasticQuery = { term: { id: review.productId } };
     const elasticUpdateScript = `
       if (ctx._source.${countProp} == 0) {
         ctx._source.${ratingProp} = null;
