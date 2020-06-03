@@ -79,4 +79,7 @@ export class ClientOrderDto extends ClientAddOrderDto {
 
   @Expose()
   createdAt: Date;
+
+  @Expose()
+  isOnlinePayment: boolean;
 }

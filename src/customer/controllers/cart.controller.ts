@@ -30,7 +30,6 @@ export class CartController {
     };
   }
 
-
   @Delete(':sku')
   async deleteOrderItem(@Req() req: FastifyRequest, @Param('sku') sku: string): Promise<ResponseDto<boolean>> {
     const customer = await this.authService.getCustomerFromReq(req);

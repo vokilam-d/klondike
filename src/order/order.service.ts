@@ -31,6 +31,8 @@ import { PaymentMethodService } from '../payment-method/payment-method.service';
 import { ClientAddOrderDto } from '../shared/dtos/client/order.dto';
 import { TasksService } from '../tasks/tasks.service';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { OnlinePaymentDetailsDto } from '../shared/dtos/client/online-payment-details.dto';
+import { createHmac } from 'crypto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -477,5 +479,50 @@ export class OrderService implements OnApplicationBootstrap {
       spf.skip,
       spf.limit
     );
+  }
+
+  async getPaymentDetails(orderId: number): Promise<OnlinePaymentDetailsDto> {
+    const order = await this.getOrderById(orderId);
+
+    const merchantAccount = process.env.MERCHANT_ACCOUNT;
+    const merchantDomainName = process.env.MERCHANT_DOMAIN;
+    const orderReference = order.idForCustomer + '#' + new Date().getTime();
+    const orderDate = order.createdAt.getTime() + '';
+    const amount = order.totalCost;
+    const currency = 'UAH';
+
+    const itemNames: string[] = [];
+    const itemPrices: number[] = [];
+    const itemCounts: number[] = [];
+    for (const item of order.items) {
+      itemNames.push(item.name);
+      itemPrices.push(item.price);
+      itemCounts.push(item.qty);
+    }
+
+    const secretKey = process.env.MERCHANT_SECRET_KEY;
+    const merchantSignature = createHmac('md5', secretKey)
+      .update([ merchantAccount, merchantDomainName, orderReference, orderDate, amount, currency, ...itemNames, ...itemCounts, ...itemPrices ].join(';'))
+      .digest('hex');
+
+    return {
+      merchantAccount,
+      merchantAuthType: 'SimpleSignature',
+      merchantDomainName,
+      merchantSignature,
+      orderReference,
+      orderDate,
+      orderNo: order.idForCustomer,
+      amount,
+      currency,
+      productName: itemNames,
+      productPrice: itemPrices,
+      productCount: itemCounts,
+      clientFirstName: order.customerFirstName,
+      clientLastName: order.customerLastName,
+      clientEmail: order.customerEmail,
+      clientPhone: order.customerPhoneNumber || order.address.phoneNumber,
+      language: 'RU'
+    }
   }
 }
