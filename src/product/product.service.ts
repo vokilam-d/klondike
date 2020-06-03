@@ -49,6 +49,8 @@ import { ClientFilterDto, ClientFilterValueDto } from '../shared/dtos/client/fil
 import { Attribute } from '../attribute/models/attribute.model';
 import { isNumber } from '../shared/helpers/is-number.function';
 import { AdminProductSelectedAttributeDto } from '../shared/dtos/admin/product-selected-attribute.dto';
+import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
+import { CronExpression } from '@nestjs/schedule';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -611,7 +613,7 @@ export class ProductService implements OnApplicationBootstrap {
     const countProp = getPropertyOf<Product>('reviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
 
-    return this.productModel
+    await this.productModel
       .updateOne(
         { _id: review.productId as any },
         [
@@ -630,13 +632,24 @@ export class ProductService implements OnApplicationBootstrap {
       )
       .session(session)
       .exec();
+
+    const elasticQuery = { id: review.productId };
+    const elasticUpdateScript = `
+      ctx._source.${countProp} = ctx._source.${countProp} + 1;
+      if (ctx._source.${ratingProp} == null) {
+        ctx._source.${ratingProp} = ${review.rating};
+      } else {
+        ctx._source.${ratingProp} = (ctx._source.${ratingProp} + ${review.rating}) / 2;
+      }
+    `;
+    this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript).catch();
   }
 
   async removeReviewFromProduct(review: ProductReview, session?: ClientSession): Promise<any> {
     const countProp = getPropertyOf<Product>('reviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
 
-    return this.productModel
+    await this.productModel
       .updateOne(
         { _id: review.productId as any },
         [
@@ -656,6 +669,17 @@ export class ProductService implements OnApplicationBootstrap {
       )
       .session(session)
       .exec();
+
+    const elasticQuery = { id: review.productId };
+    const elasticUpdateScript = `
+      if (ctx._source.${countProp} == 0) {
+        ctx._source.${ratingProp} = null;
+      } else {
+        ctx._source.${countProp} = ctx._source.${countProp} - 1;
+        ctx._source.${ratingProp} = ctx._source.${ratingProp} - ((ctx._source.${ratingProp} * 2) - ${review.rating});
+      }
+    `;
+    this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript).catch();
   }
 
   async incrementSalesCount(productId: number, variantId: string, count: number, session: ClientSession): Promise<any> {
@@ -1028,6 +1052,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
+  @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_4AM)
   private async reindexAllSearchData() {
     await this.searchService.deleteCollection(Product.collectionName);
     this.logger.log('Deleted Products elastic collection');
@@ -1412,4 +1437,6 @@ export class ProductService implements OnApplicationBootstrap {
 
     return clientFilters;
   }
+
+
 }
