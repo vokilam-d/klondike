@@ -51,6 +51,7 @@ import { isNumber } from '../shared/helpers/is-number.function';
 import { AdminProductSelectedAttributeDto } from '../shared/dtos/admin/product-selected-attribute.dto';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
+import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -135,10 +136,20 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
+  async getClientProductListAutocomplete(query: string): Promise<ClientProductListResponseDto> {
+    const spf = new ClientSPFDto();
+    const variantsProp: keyof AdminProductListItemDto = 'variants';
+    const nameProp: keyof AdminProductVariantListItem = 'name';
+    spf[`${variantsProp}.${nameProp}`] = query;
+    spf.limit = 5;
+
+    return this.getClientProductList(spf);
+  }
+
   async getClientProductListWithFilters(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
-    const [ adminListItems ] = await this.findAllProductListItems(spf, true, spf.categoryId);
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { categoryId: spf.categoryId });
     const attributes = await this.attributeService.getAllAttributes();
     const spfFilters = spf
       .getNormalizedFilters()
@@ -798,16 +809,18 @@ export class ProductService implements OnApplicationBootstrap {
     await this.searchService.deleteDocument(Product.collectionName, productId);
   }
 
-  private async findAllProductListItems(spf: SortingPaginatingFilterDto, onlyEnabled: boolean, categoryId?: string) {
-    const filters: IFilter[] = [];
-    if (onlyEnabled) {
-      const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
-      filters.push({ fieldName: isEnabledProp, values: [true] })
-    }
+  private async findEnabledProductListItems(
+    spf: SortingPaginatingFilterDto,
+    { categoryId }: { categoryId?: string }
+  ) {
+
+    const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
+    const filters: IFilter[] = [{ fieldName: isEnabledProp, values: [true] }];
+
     if (categoryId) {
       const categoriesProp: keyof AdminProductListItemDto = 'categories';
       const categoryIdProp: keyof AdminProductCategoryDto = 'id';
-      filters.push({ fieldName: `${categoriesProp}.${categoryIdProp}`, values: [categoryId] })
+      filters.push({ fieldName: `${categoriesProp}.${categoryIdProp}`, values: [categoryId] });
     }
 
     return this.searchService.searchByFilters<AdminProductListItemDto>(
