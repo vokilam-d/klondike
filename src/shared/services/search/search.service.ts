@@ -138,7 +138,7 @@ export class SearchService {
         filter.values.forEach(value => {
           boolQuery.should.push({
             term: {
-              [filter.fieldName]: value
+              [filter.fieldName]: decodeURIComponent(value)
             }
           });
 
@@ -155,7 +155,7 @@ export class SearchService {
               path: parentField,
               query: {
                 'match_phrase_prefix': {
-                  [filter.fieldName]: value
+                  [filter.fieldName]: decodeURIComponent(value)
                 }
               }
             }
@@ -163,7 +163,7 @@ export class SearchService {
         } else {
           boolQuery.must.push({
             multi_match: {
-              query: value,
+              query: decodeURIComponent(value),
               type: 'phrase_prefix',
               fields: filter.fieldName.split('|')
             }
