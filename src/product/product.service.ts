@@ -182,7 +182,7 @@ export class ProductService implements OnApplicationBootstrap {
       }
     }
 
-    let possibleMinPrice = adminListItems[0].variants[0].price;
+    let possibleMinPrice = adminListItems?.[0]?.variants[0].price || 0;
     let possibleMaxPrice = possibleMinPrice;
 
     let filterMinPrice: number;
@@ -233,7 +233,7 @@ export class ProductService implements OnApplicationBootstrap {
               isProductAttributesSetInProductCount = true;
             }
           } else if (unmatchedSelectedAttributes.length === 1) {
-            incProductCount([unmatchedSelectedAttributes[0]]); // maybe this?
+            incProductCount([unmatchedSelectedAttributes[0]]);
           }
 
         }
@@ -258,7 +258,9 @@ export class ProductService implements OnApplicationBootstrap {
     const clientListItems = await this.transformToClientListDto(filteredAdminListItems, attributes);
 
     let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, spfFilters);
-    filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
+    if (itemsTotal > 0) {
+      filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
+    }
 
     return {
       data: clientListItems,
