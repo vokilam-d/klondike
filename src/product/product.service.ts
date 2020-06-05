@@ -138,17 +138,20 @@ export class ProductService implements OnApplicationBootstrap {
 
   async getClientProductListAutocomplete(query: string): Promise<ClientProductListResponseDto> {
     const spf = new ClientSPFDto();
-    const variantsProp: keyof AdminProductListItemDto = 'variants';
-    const nameProp: keyof AdminProductVariantListItem = 'name';
-    spf[`${variantsProp}.${nameProp}`] = query;
     spf.limit = 5;
 
-    return this.getClientProductList(spf);
-  }
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { name: query });
+    const attributes = await this.attributeService.getAllAttributes();
+    const clientListItems = await this.transformToClientListDto(adminListItems, attributes);
 
+    return {
+      data: clientListItems
+    };
+  }
   async getClientProductListWithFilters(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
+    spf.limit = 100000;
     const [ adminListItems ] = await this.findEnabledProductListItems(spf, { categoryId: spf.categoryId });
     const attributes = await this.attributeService.getAllAttributes();
     const spfFilters = spf
@@ -811,7 +814,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   private async findEnabledProductListItems(
     spf: SortingPaginatingFilterDto,
-    { categoryId }: { categoryId?: string }
+    { categoryId, name }: { categoryId?: string, name?: string }
   ) {
 
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
@@ -822,12 +825,17 @@ export class ProductService implements OnApplicationBootstrap {
       const categoryIdProp: keyof AdminProductCategoryDto = 'id';
       filters.push({ fieldName: `${categoriesProp}.${categoryIdProp}`, values: [categoryId] });
     }
+    if (name) {
+      const variantsProp: keyof AdminProductListItemDto = 'variants';
+      const nameProp: keyof AdminProductVariantListItem = 'name';
+      filters.push({ fieldName: `${variantsProp}.${nameProp}`, values: [name] });
+    }
 
     return this.searchService.searchByFilters<AdminProductListItemDto>(
       Product.collectionName,
       filters,
       undefined,
-      10000,
+      spf.limit,
       spf.getSortAsObj(),
       spf.sortFilter
     );
