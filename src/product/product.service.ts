@@ -151,7 +151,7 @@ export class ProductService implements OnApplicationBootstrap {
   async getClientProductListWithFilters(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
-    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { categoryId: spf.categoryId, limit: 10000 });
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { categoryId: spf.categoryId, name: spf.name, limit: 10000 });
     const attributes = await this.attributeService.getAllAttributes();
     const spfFilters = spf
       .getNormalizedFilters()
