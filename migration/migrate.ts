@@ -683,13 +683,13 @@ export class Migrate {
       dto.customerFirstName = order.customer_firstname || '';
       dto.customerLastName = order.customer_lastname || '';
       dto.customerEmail = order.customer_email;
-      dto.customerPhoneNumber = order.customer_email;
+      dto.customerPhoneNumber = '';
 
       dto.address = {} as ShippingAddressDto;
       const foundAddress = addresses.find(address => address.entity_id === order.shipping_address_id);
       dto.address.firstName = foundAddress.firstname;
       dto.address.lastName = foundAddress.lastname;
-      dto.address.phoneNumber = foundAddress.telephone;
+      dto.customerPhoneNumber = dto.address.phoneNumber = foundAddress.telephone;
       dto.address.city = foundAddress.city;
       dto.address.novaposhtaOffice = '';
       if (foundAddress.postcode !== '-') { dto.address.novaposhtaOffice = foundAddress.postcode; }
