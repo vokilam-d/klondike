@@ -52,6 +52,7 @@ import { AdminProductSelectedAttributeDto } from '../shared/dtos/admin/product-s
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
+import { PageTypeEnum } from '../shared/enums/page-type.enum';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -590,14 +591,14 @@ export class ProductService implements OnApplicationBootstrap {
   private createProductPageRegistry(slug: string, session: ClientSession) {
     return this.pageRegistryService.createPageRegistry({
       slug,
-      type: 'product'
+      type: PageTypeEnum.Product
     }, session);
   }
 
   private updateProductPageRegistry(oldSlug: string, newSlug: string, session: ClientSession) {
     return this.pageRegistryService.updatePageRegistry(oldSlug, {
       slug: newSlug,
-      type: 'product'
+      type: PageTypeEnum.Product
     }, session);
   }
 

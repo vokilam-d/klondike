@@ -1,4 +1,5 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
+import { PageTypeEnum } from '../../shared/enums/page-type.enum';
 
 export class PageRegistry {
 
@@ -6,7 +7,7 @@ export class PageRegistry {
   slug: string;
 
   @prop({ required: true })
-  type: 'category' | 'product' | 'content' | 'blog-category' | 'blog-post';
+  type: PageTypeEnum;
 
   static collectionName: string = 'page-registry';
 }

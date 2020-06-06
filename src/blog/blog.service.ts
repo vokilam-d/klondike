@@ -15,6 +15,7 @@ import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { FilterQuery } from 'mongoose';
 import { LinkedBlogCategory } from './models/linked-blog-category.model';
 import { PageRegistryService } from '../page-registry/page-registry.service';
+import { PageTypeEnum } from '../shared/enums/page-type.enum';
 
 @Injectable()
 export class BlogService {
@@ -39,7 +40,7 @@ export class BlogService {
         created.id = await this.counterService.getCounter(BlogCategory.collectionName, session);
       }
       await created.save({ session });
-      await this.pageRegistryService.createPageRegistry({ slug: created.slug, type: 'blog-category' }, session);
+      await this.pageRegistryService.createPageRegistry({ slug: created.slug, type: PageTypeEnum.BlogCategory }, session);
 
       await session.commitTransaction();
       return created.toJSON();
@@ -61,7 +62,7 @@ export class BlogService {
         created.id = await this.counterService.getCounter(BlogPost.collectionName, session);
       }
       await created.save({ session });
-      await this.pageRegistryService.createPageRegistry({ slug: created.slug, type: 'blog-post' }, session);
+      await this.pageRegistryService.createPageRegistry({ slug: created.slug, type: PageTypeEnum.BlogPost }, session);
 
       await session.commitTransaction();
       return created.toJSON();
