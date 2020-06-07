@@ -1,9 +1,9 @@
-import { ShippingAddressDto } from '../shared-dtos/shipping-address.dto';
-import { ArrayMinSize, IsArray, IsBoolean, IsDate, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
 import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { Order } from '../../../order/models/order.model';
 import { OrderStatusEnum } from '../../enums/order-status.enum';
+import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 
 export class ClientAddOrderDto {
   @Expose()
@@ -13,8 +13,8 @@ export class ClientAddOrderDto {
 
   @Expose()
   @ValidateNested()
-  @Type(() => ShippingAddressDto)
-  address: ShippingAddressDto;
+  @Type(() => ShipmentAddressDto)
+  address: ShipmentAddressDto;
 
   @Expose()
   @IsString()

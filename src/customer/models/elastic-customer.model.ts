@@ -1,10 +1,10 @@
 import { AdminCustomerDto } from '../../shared/dtos/admin/customer.dto';
-import { ElasticShippingAddressModel } from '../../shared/models/elastic-shipping-address.model';
 import { elasticBooleanType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
+import { ElasticShipmentAddressModel } from '../../shared/models/elastic-shipment-address.model';
 
 export class ElasticCustomerModel implements Record<keyof AdminCustomerDto, any> {
   addresses = {
-    properties: new ElasticShippingAddressModel()
+    properties: new ElasticShipmentAddressModel()
   };
   createdAt = elasticDateType;
   discountPercent = elasticTextType;

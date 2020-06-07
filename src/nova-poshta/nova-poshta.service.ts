@@ -6,11 +6,11 @@ import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
 import { StreetDto } from '../shared/dtos/shared-dtos/street.dto';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { ShipmentSenderDto } from '../shared/dtos/admin/shipment-sender.dto';
-import { ShipmentTypeEnum } from '../shared/enums/shipment-type.enum';
+import { AddressTypeEnum } from '../shared/enums/address-type.enum';
 import { ShipmentPayerEnum } from '../shared/enums/shipment-payer.enum';
 import { PaymentMethodEnum } from '../shared/enums/payment-method.enum';
 import { ShipmentPaymentMethodEnum } from '../shared/enums/shipment-payment-method.enum';
-import { ShipmentParticipantDto } from '../shared/dtos/admin/shipment-participant.dto';
+import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
 
 @Injectable()
 export class NovaPoshtaService {
@@ -21,7 +21,7 @@ export class NovaPoshtaService {
   constructor(private readonly http: HttpService) {
   }
 
-  public async shipmentRecipient(spf: ClientSPFDto): Promise<ShipmentParticipantDto> {
+  public async shipmentRecipient(spf: ClientSPFDto): Promise<ShipmentAddressDto> {
 
     const response = await this.http.post('http://api.novaposhta.ua/v2.0/json/',
       {
@@ -52,15 +52,16 @@ export class NovaPoshtaService {
                                       orderPaymentMetod: PaymentMethodEnum): Promise<ShipmentDto> {
 
 
+    const recipient = shipment.recipient;
     const saveContactRequestBody = {
       modelName: 'ContactPerson',
       calledMethod: 'save',
       methodProperties: {
-        FirstName: shipment.recipient.firstName,
-        LastName: shipment.recipient.lastName,
-        MiddleName: shipment.recipient.middleName,
+        FirstName: recipient.firstName,
+        LastName: recipient.lastName,
+        MiddleName: recipient.middleName,
         CounterpartyRef: sender.counterpartyRef,
-        Phone: shipment.recipient.phone
+        Phone: recipient.phone
       },
       apiKey: process.env.NOVA_POSHTA_API_KEY
     };
@@ -75,26 +76,23 @@ export class NovaPoshtaService {
       calledMethod: 'save',
       methodProperties: {
         ContactPersonRef: contactPersonRef,
-        SettlementRef: shipment.recipient.settlementId,
-        AddressRef: shipment.recipient.addressId
+        SettlementRef: recipient.settlementId,
+        AddressRef: recipient.addressId,
+        AddressType: recipient.addressType
       },
       apiKey: process.env.NOVA_POSHTA_API_KEY
     };
 
-    if (shipment.shipmentType === ShipmentTypeEnum.WAREHOUSE_WAREHOUSE) {
-      saveAddressRequestBody.methodProperties.AddressType = 'Warehouse';
-    } else if (shipment.shipmentType === ShipmentTypeEnum.WAREHOUSE_DOORS) {
-      saveAddressRequestBody.methodProperties.AddressType = 'Doors';
-      saveAddressRequestBody.methodProperties.BuildingNumber = shipment.recipient.buildingNumber;
-      saveAddressRequestBody.methodProperties.Flat = shipment.recipient.flat;
-      saveAddressRequestBody.methodProperties.Note = shipment.recipient.note;
+    if (recipient.addressType === AddressTypeEnum.DOORS) {
+      saveAddressRequestBody.methodProperties.BuildingNumber = recipient.buildingNumber;
+      saveAddressRequestBody.methodProperties.Flat = recipient.flat;
+      saveAddressRequestBody.methodProperties.Note = recipient.note;
     }
 
     const saveAddressResponse = await this.http.post('http://api.novaposhta.ua/v2.0/json/', saveAddressRequestBody)
       .toPromise();
     const recipientAddress = saveAddressResponse.data.data[0].Ref;
     const cityRef = saveAddressResponse.data.data[0].CityRef;
-
 
     const today = new Date();
     let saveInternetDocumentRequestBody: any = {
@@ -110,8 +108,8 @@ export class NovaPoshtaService {
         CityRecipient: cityRef,
         RecipientAddress: recipientAddress,
         ContactRecipient: contactPersonRef,
-        RecipientsPhone: shipment.recipient.phone,
-        ServiceType: shipment.shipmentType,
+        RecipientsPhone: recipient.phone,
+        ServiceType: sender.addressType + recipient.addressType,
         CargoType: 'Cargo',
         ParamsOptionsSeats: false,
         Cost: orderItemsCost,
@@ -221,11 +219,11 @@ export class NovaPoshtaService {
       case '14':
         return ShipmentStatusEnum.UNDER_INSPECTION;
       case '101':
-        return ShipmentStatusEnum.HEADING_TO_RECEPIENT
+        return ShipmentStatusEnum.HEADING_TO_RECIPIENT
       case '102':
       case '103':
       case '108':
-        return ShipmentStatusEnum.RECEPIENT_DENIED;
+        return ShipmentStatusEnum.RECIPIENT_DENIED;
       case '104':
         return ShipmentStatusEnum.ADDRESS_CHANGED;
       case '105':

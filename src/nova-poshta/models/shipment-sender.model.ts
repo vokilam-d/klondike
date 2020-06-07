@@ -1,7 +1,5 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
-import { Types } from "mongoose";
-import { ShipmentStatusEnum } from '../../shared/enums/shipment-status.enum';
-import { Order } from '../../order/models/order.model';
+import { AddressTypeEnum } from '../../shared/enums/address-type.enum';
 
 export class ShipmentSender {
 
@@ -18,10 +16,19 @@ export class ShipmentSender {
   cityId?: string;
 
   @prop()
+  city?: string;
+
+  @prop()
   contactId?: string;
 
   @prop()
   addressId?: string;
+
+  @prop()
+  address?: string;
+
+  @prop()
+  addressType?: AddressTypeEnum;
 
   @prop()
   counterpartyRef?: string;
@@ -30,10 +37,10 @@ export class ShipmentSender {
   phone?: string;
 
   @prop()
-  name?: string;
+  firstName?: string;
 
   @prop()
-  address?: string;
+  lastName?: string;
 
   @prop()
   isDefault?: boolean;

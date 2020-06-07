@@ -10,12 +10,17 @@ export class ShipmentSenderDto {
   @Expose()
   @IsString()
   @IsOptional()
-  cityId?: string;
+  addressType?: string;
 
   @Expose()
   @IsString()
   @IsOptional()
-  settlementId?: string;
+  city?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  cityId?: string;
 
   @Expose()
   @IsString()
@@ -45,7 +50,12 @@ export class ShipmentSenderDto {
   @Expose()
   @IsString()
   @IsOptional()
-  name?: string;
+  firstName?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  lastName?: string;
 
   @Expose()
   @IsString()

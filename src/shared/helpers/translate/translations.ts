@@ -142,5 +142,9 @@ export const TRANSLATIONS = {
   'Reset password link is invalid or expired': {
     en: 'Reset password link is invalid or expired',
     ru: 'Ссылка для восстановления пароля неверна или устарела'
+  },
+  'Shipment sender not provided': {
+    en: 'Shipment sender not provided',
+    ru: 'Не указан отправитель'
   }
 }

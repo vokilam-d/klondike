@@ -119,11 +119,11 @@ export class EmailService {
       orderId: order.idForCustomer,
       orderDateTime: readableDate(order.createdAt),
       totalOrderCost: order.totalCost,
-      addressName: `${order.address.lastName} ${order.address.firstName}`,
-      addressPhone: order.address.phoneNumber,
-      addressCity: order.address.city,
-      addressPost: order.address.novaposhtaOffice,
-      addressStreet: order.address.streetName,
+      addressName: `${order.shipment.recipient.lastName} ${order.shipment.recipient.firstName}`,
+      addressPhone: order.shipment.recipient.phone,
+      addressCity: order.shipment.recipient.settlement,
+      addressPost: order.shipment.recipient.address,
+      //TODO Denis fix email to new flow please
       shipping: order.shippingMethodClientName,
       payment: order.paymentMethodClientName,
       products: order.items.map(item => ({

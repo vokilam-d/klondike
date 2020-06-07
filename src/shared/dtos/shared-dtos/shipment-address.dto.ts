@@ -1,21 +1,18 @@
-import { IsOptional, IsString } from 'class-validator';
-import { Expose } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
-export class ShipmentParticipantDto {
+export class ShipmentAddressDto {
+
+  @Exclude()
+  _id?: any;
+
+  @Expose()
+  @Transform(((value, obj) => obj._id || value))
+  id?: string;
 
   @Expose()
   @IsOptional()
-  id?: number;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  cityId?: string;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  city?: string;
+  addressType?: string;
 
   @Expose()
   @IsString()
@@ -25,12 +22,7 @@ export class ShipmentParticipantDto {
   @Expose()
   @IsString()
   @IsOptional()
-  senderId?: string;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  contactId?: string;
+  settlement?: string;
 
   @Expose()
   @IsString()
@@ -76,5 +68,10 @@ export class ShipmentParticipantDto {
   @IsString()
   @IsOptional()
   note?: string;
+
+  @Expose()
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
 
 }

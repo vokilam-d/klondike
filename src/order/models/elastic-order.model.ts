@@ -1,5 +1,5 @@
 import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
-import { ElasticShippingAddressModel } from '../../shared/models/elastic-shipping-address.model';
+import { ElasticShipmentAddressModel } from '../../shared/models/elastic-shipment-address.model';
 import {
   elasticAutocompleteType,
   elasticBooleanType,
@@ -9,7 +9,6 @@ import {
   elasticTextType
 } from '../../shared/constants';
 import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 
 class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'crossSellProducts'> {
   cost = elasticFloatType;
@@ -34,7 +33,7 @@ class ElasticShipmentModel {
 
 export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   address = {
-    properties: new ElasticShippingAddressModel()
+    properties: new ElasticShipmentAddressModel()
   };
   adminNote = elasticTextType;
   clientNote = elasticTextType;

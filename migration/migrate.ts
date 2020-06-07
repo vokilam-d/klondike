@@ -17,12 +17,12 @@ import { AdminProductReviewDto } from '../src/shared/dtos/admin/product-review.d
 import { CurrencyCodeEnum } from '../src/shared/enums/currency.enum';
 import { stripHtmlTags } from '../src/shared/helpers/strip-html-tags.function';
 import { MetaTagsDto } from '../src/shared/dtos/shared-dtos/meta-tags.dto';
-import { ShippingAddressDto } from '../src/shared/dtos/shared-dtos/shipping-address.dto';
 import { AdminProductCategoryDto } from '../src/shared/dtos/admin/product-category.dto';
 import { AdminBlogPostCreateDto } from '../src/shared/dtos/admin/blog-post.dto';
 import { AdminBlogCategoryCreateDto } from '../src/shared/dtos/admin/blog-category.dto';
 import { AttributeTypeEnum } from '../src/shared/enums/attribute-type.enum';
 import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/product-selected-attribute.dto';
+import { ShipmentAddressDto } from '../src/shared/dtos/shared-dtos/shipment-address.dto';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3000';
@@ -597,19 +597,19 @@ export class Migrate {
       }
 
       dto.addresses = [];
-      for (const address of addresses) {
-        if (address.parent_id === customer.entity_id) {
-          const addressDto = {} as ShippingAddressDto;
-          addressDto.firstName = address.firstname || '';
-          addressDto.lastName = address.lastname || '';
-          addressDto.phoneNumber = address.telephone || '';
-          addressDto.city = address.city || '';
-          addressDto.novaposhtaOffice = address.street || '';
-          addressDto.streetName = '';
 
-          dto.addresses.push(addressDto);
-        }
-      }
+      //TODO for Yurii: migrate to valid NovaPoshta address if have time
+
+      // for (const address of addresses) {
+      //   if (address.parent_id === customer.entity_id) {
+      //     const addressDto = {} as ShipmentAddressDto;
+      //     addressDto.firstName = address.firstname || '';
+      //     addressDto.lastName = address.lastname || '';
+      //     addressDto.phone = address.telephone || '';
+      //
+      //     dto.addresses.push(addressDto);
+      //   }
+      // }
 
       dto.reviewIds = [];
       for (const reviewDetail of reviewDetails) {
@@ -685,15 +685,15 @@ export class Migrate {
       dto.customerEmail = order.customer_email;
       dto.customerPhoneNumber = '';
 
-      dto.address = {} as ShippingAddressDto;
+      dto.shipment.recipient = {} as ShipmentAddressDto;
       const foundAddress = addresses.find(address => address.entity_id === order.shipping_address_id);
-      dto.address.firstName = foundAddress.firstname;
-      dto.address.lastName = foundAddress.lastname;
-      dto.customerPhoneNumber = dto.address.phoneNumber = foundAddress.telephone;
-      dto.address.city = foundAddress.city;
-      dto.address.novaposhtaOffice = '';
-      if (foundAddress.postcode !== '-') { dto.address.novaposhtaOffice = foundAddress.postcode; }
-      if (foundAddress.street !== '-') { dto.address.novaposhtaOffice = foundAddress.street; }
+      dto.shipment.recipient.firstName = foundAddress.firstname;
+      dto.shipment.recipient.lastName = foundAddress.lastname;
+      dto.customerPhoneNumber = dto.shipment.recipient.phone = foundAddress.telephone;
+      dto.shipment.recipient.settlement = foundAddress.city;
+      dto.shipment.recipient.address = '';
+      if (foundAddress.postcode !== '-') { dto.shipment.recipient.address = foundAddress.postcode; }
+      if (foundAddress.street !== '-') { dto.shipment.recipient.address = foundAddress.street; }
 
       dto.shouldSaveAddress = false;
       dto.createdAt = order.created_at;

@@ -24,7 +24,6 @@ import { plainToClass } from 'class-transformer';
 import { ClientRegisterDto } from '../shared/dtos/client/register.dto';
 import { AuthService } from '../auth/services/auth.service';
 import { EmailService } from '../email/email.service';
-import { ShippingAddressDto } from '../shared/dtos/shared-dtos/shipping-address.dto';
 import { ClientUpdateCustomerDto } from '../shared/dtos/client/update-customer.dto';
 import { ClientUpdatePasswordDto } from '../shared/dtos/client/update-password.dto';
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
@@ -32,6 +31,7 @@ import { OrderItem } from '../order/models/order-item.model';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { InitResetPasswordDto } from '../shared/dtos/client/init-reset-password.dto';
 import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
+import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -195,7 +195,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async addCustomerAddressById(customerId: number, address: ShippingAddressDto, session: ClientSession): Promise<Customer> {
+  async addCustomerAddressById(customerId: number, address: ShipmentAddressDto, session: ClientSession): Promise<Customer> {
     const found = await this.customerModel.findById(customerId).session(session).exec();
     if (!found) {
       throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
@@ -204,7 +204,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return this.addCustomerAddress(found, address, session);
   }
 
-  async addCustomerAddress(customer: DocumentType<Customer>, address: ShippingAddressDto, session: ClientSession): Promise<Customer> {
+  async addCustomerAddress(customer: DocumentType<Customer>, address: ShipmentAddressDto, session: ClientSession): Promise<Customer> {
     customer.addresses.push(address);
     await customer.save({ session });
     this.updateSearchData(customer);
@@ -335,7 +335,7 @@ export class CustomerService implements OnApplicationBootstrap {
     await this.emailService.sendEmailConfirmationEmail(customer, token);
   }
 
-  async addShippingAddress(customer: DocumentType<Customer>, addressDto: ShippingAddressDto): Promise<Customer> {
+  async addShippingAddress(customer: DocumentType<Customer>, addressDto: ShipmentAddressDto): Promise<Customer> {
     if (addressDto.isDefault) {
       customer.addresses.forEach(address => address.isDefault = false);
     }
@@ -344,7 +344,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer.toJSON();
   }
 
-  async editShippingAddress(customer: DocumentType<Customer>, addressId: string, addressDto: ShippingAddressDto): Promise<Customer> {
+  async editShippingAddress(customer: DocumentType<Customer>, addressId: string, addressDto: ShipmentAddressDto): Promise<Customer> {
     const foundAddressIdx = customer.addresses.findIndex(address => address._id.equals(addressId));
     if (foundAddressIdx === -1) {
       throw new BadRequestException(__('No address with id "$1"', 'ru', addressId));

@@ -1,5 +1,4 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { ShippingAddress } from '../../customer/models/customer.model';
 import { OrderItem } from './order-item.model';
 import { OrderStatusEnum } from '../../shared/enums/order-status.enum';
 import { Shipment } from './shipment.model';
@@ -29,9 +28,6 @@ export class Order {
 
   @prop({ default: '' })
   customerPhoneNumber: string;
-
-  @prop()
-  address: ShippingAddress;
 
   @prop()
   shouldSaveAddress: boolean;
@@ -70,7 +66,7 @@ export class Order {
   isCallbackNeeded: boolean;
 
   @prop()
-  shipment: Shipment = {};
+  shipment: Shipment = new Shipment();
 
   @arrayProp({ items: OrderItem })
   items: OrderItem[];

@@ -20,17 +20,15 @@ import { OrderActionEnum } from '../../shared/enums/order-action.enum';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
-import { ShippingAddressDto } from '../../shared/dtos/shared-dtos/shipping-address.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
-import { OrderShipmentService } from '../order-shipment.service';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/orders')
 export class AdminOrderController {
 
-  constructor(private orderService: OrderService, private orderShipmentService: OrderShipmentService) {
+  constructor(private orderService: OrderService) {
   }
 
   @Get()
@@ -75,29 +73,10 @@ export class AdminOrderController {
     };
   }
 
-  @Put(':id/address')
-  async editOrderAddress(@Param('id') orderId: number, @Body() addressDto: ShippingAddressDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderService.editOrderAddress(orderId, addressDto);
-
-    return {
-      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
-    };
-  }
-
   @Put(':id/shipment')
   async editOrderShipment(@Param('id') orderId: number,
                           @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderShipmentService.updateOrderShipment(orderId, shipmentDto);
-
-    return {
-      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
-    };
-  }
-
-  @Post(':id/shipment/internet-document')
-  async createInternetDocument(@Param('id') orderId: number,
-                               @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderShipmentService.createInternetDocument(orderId, shipmentDto);
+    const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
@@ -106,7 +85,7 @@ export class AdminOrderController {
 
   @Get('/latest-shipment-statuses')
   async fetchShipmentStatuses(): Promise<ResponseDto<AdminOrderDto[]>> {
-    const updated = await this.orderShipmentService.getOrdersWithLatestShipmentStatuses();
+    const updated = await this.orderService.getOrdersWithLatestShipmentStatuses();
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
@@ -119,7 +98,8 @@ export class AdminOrderController {
   }
 
   @Post(':id/actions/:actionName')
-  async performAction(@Param() params: OrderActionDto): Promise<ResponseDto<AdminOrderDto>> {
+  async performAction(@Param() params: OrderActionDto,
+                      @Body() actionBody?: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
     let order;
 
     switch (params.actionName) {
@@ -130,7 +110,7 @@ export class AdminOrderController {
         order = await this.orderService.startOrder(params.id);
         break;
       case OrderActionEnum.SHIP:
-        order = await this.orderService.shipOrder(params.id);
+        order = await this.orderService.shipOrder(params.id, actionBody);
         break;
     }
 

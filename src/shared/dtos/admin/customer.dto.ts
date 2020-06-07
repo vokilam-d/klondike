@@ -1,6 +1,15 @@
 import { Expose, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsEmail, IsNumber, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
-import { ShippingAddressDto } from '../shared-dtos/shipping-address.dto';
+import {
+  IsBoolean,
+  IsDate,
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  ValidateNested
+} from 'class-validator';
+import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 
 export class AdminAddOrUpdateCustomerDto {
   @Expose()
@@ -64,8 +73,8 @@ export class AdminAddOrUpdateCustomerDto {
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => ShippingAddressDto)
-  addresses: ShippingAddressDto[];
+  @Type(() => ShipmentAddressDto)
+  addresses: ShipmentAddressDto[];
 
   @Expose()
   @IsNumber(undefined, { each: true })

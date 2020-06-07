@@ -1,23 +1,18 @@
+import { Types } from 'mongoose';
 import { prop } from '@typegoose/typegoose';
-import { Types } from "mongoose";
-import { ShipmentStatusEnum } from '../../shared/enums/shipment-status.enum';
 
-export class ShipmentParticipant {
+export class ShipmentAddress {
 
-  @prop()
-  id?: number;
+  _id?: Types.ObjectId;
 
   @prop()
-  cityId?: string;
-
-  @prop()
-  city?: string;
+  addressType?: string;
 
   @prop()
   settlementId?: string;
 
   @prop()
-  contactId?: string;
+  settlement?: string;
 
   @prop()
   addressId?: string;
@@ -45,5 +40,8 @@ export class ShipmentParticipant {
 
   @prop()
   note?: string;
+
+  @prop()
+  isDefault?: boolean;
 
 }

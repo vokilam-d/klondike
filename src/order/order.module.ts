@@ -15,7 +15,6 @@ import { ClientOrderController } from './controllers/client-order.controller';
 import { AuthModule } from '../auth/auth.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { NovaPoshtaModule } from '../nova-poshta/nova-poshta.module';
-import { OrderShipmentService } from './order-shipment.service';
 
 const orderModel = {
   name: OrderModel.modelName,
@@ -37,7 +36,7 @@ const orderModel = {
     NovaPoshtaModule
   ],
   controllers: [AdminOrderController, AdminOrderItemController, ClientOrderController],
-  providers: [OrderService, OrderItemService, OrderShipmentService],
+  providers: [OrderService, OrderItemService],
   exports: [OrderService, OrderItemService]
 })
 export class OrderModule {}

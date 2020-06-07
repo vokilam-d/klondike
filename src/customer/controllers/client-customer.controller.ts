@@ -28,7 +28,6 @@ import { ClientDetailedCustomerDto } from '../../shared/dtos/client/detailed-cus
 import { ClientUpdateCustomerDto } from '../../shared/dtos/client/update-customer.dto';
 import { DocumentType } from '@typegoose/typegoose';
 import { ClientUpdatePasswordDto } from '../../shared/dtos/client/update-password.dto';
-import { ShippingAddressDto } from '../../shared/dtos/shared-dtos/shipping-address.dto';
 import { CustomerJwtGuard } from '../../auth/guards/customer-jwt.guard';
 import { CustomerLocalGuard } from '../../auth/guards/customer-local.guard';
 import { InitResetPasswordDto } from '../../shared/dtos/client/init-reset-password.dto';
@@ -36,6 +35,7 @@ import { ResetPasswordDto } from '../../shared/dtos/client/reset-password.dto';
 import { OrderService } from '../../order/order.service';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ClientOrderDto } from '../../shared/dtos/client/order.dto';
+import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -161,7 +161,7 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Post('address')
-  async addShippingAddress(@Req() req, @Body() addressDto: ShippingAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
+  async addShippingAddress(@Req() req, @Body() addressDto: ShipmentAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.addShippingAddress(customer, addressDto);
 
@@ -172,7 +172,7 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Put('address/:id')
-  async editShippingAddress(@Req() req, @Param('id') addressId: string, @Body() addressDto: ShippingAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
+  async editShippingAddress(@Req() req, @Param('id') addressId: string, @Body() addressDto: ShipmentAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.editShippingAddress(customer, addressId, addressDto);
 

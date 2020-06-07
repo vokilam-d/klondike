@@ -47,11 +47,11 @@ export class PdfGeneratorService {
       orderId: order.idForCustomer,
       orderDateTime: readableDate(order.createdAt),
       totalOrderCost: order.totalCost,
-      addressName: `${order.address.firstName} ${order.address.lastName}`,
-      addressPhone: order.address.phoneNumber,
-      addressCity: order.address.city,
-      addressPost: order.address.novaposhtaOffice,
-      addressStreet: order.address.streetName,
+      addressName: `${order.shipment.recipient.firstName} ${order.shipment.recipient.lastName}`,
+      addressPhone: order.shipment.recipient.phone,
+      addressCity: order.shipment.recipient.settlement,
+      //TODO Denis fix pdf to new flow please
+      addressPost: order.shipment.recipient.address,
       shipping: order.shippingMethodClientName,
       payment: order.paymentMethodClientName,
       products: order.items.map(item => ({

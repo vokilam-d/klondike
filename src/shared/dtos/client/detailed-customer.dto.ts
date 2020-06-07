@@ -1,13 +1,13 @@
 import { ClientCustomerDto } from './customer.dto';
 import { Customer } from '../../../customer/models/customer.model';
-import { ShippingAddressDto } from '../shared-dtos/shipping-address.dto';
 import { Expose, Type } from 'class-transformer';
+import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 
 export class ClientDetailedCustomerDto extends ClientCustomerDto implements Pick<Customer, 'addresses' | 'isEmailConfirmed' | 'totalOrdersCount' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'reviewIds' | 'wishlistProductIds'> {
 
   @Expose()
-  @Type(() => ShippingAddressDto)
-  addresses: ShippingAddressDto[];
+  @Type(() => ShipmentAddressDto)
+  addresses: ShipmentAddressDto[];
 
   @Expose()
   isEmailConfirmed: boolean;

@@ -10,7 +10,6 @@ import {
   ValidateNested
 } from 'class-validator';
 import { OrderItemDto } from '../shared-dtos/order-item.dto';
-import { ShippingAddressDto } from '../shared-dtos/shipping-address.dto';
 import { ShipmentDto } from './shipment.dto';
 
 export class AdminAddOrUpdateOrderDto {
@@ -47,11 +46,6 @@ export class AdminAddOrUpdateOrderDto {
   @IsOptional()
   @IsString()
   customerPhoneNumber: string;
-
-  @Expose()
-  @ValidateNested()
-  @Type(() => ShippingAddressDto)
-  address: ShippingAddressDto;
 
   @Expose()
   @IsBoolean()
@@ -100,7 +94,7 @@ export class AdminAddOrUpdateOrderDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => ShipmentDto)
-  shipment?: ShipmentDto;
+  shipment: ShipmentDto;
 
   @Expose()
   @IsArray()

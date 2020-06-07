@@ -1,31 +1,6 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
-import { Types } from 'mongoose';
 import { OrderItem } from '../../order/models/order-item.model';
-
-export class ShippingAddress {
-  _id?: Types.ObjectId;
-
-  @prop({ required: true })
-  firstName: string;
-
-  @prop({ default: '' })
-  lastName: string;
-
-  @prop({ default: '' })
-  phoneNumber: string;
-
-  @prop({ required: true })
-  city: string;
-
-  @prop({ default: '' })
-  streetName: string;
-
-  @prop({ default: '' })
-  novaposhtaOffice: any;
-
-  @prop({ default: false })
-  isDefault: boolean;
-}
+import { ShipmentAddress } from '../../shared/models/shipment-address.model';
 
 export class Customer {
   @prop()
@@ -67,8 +42,8 @@ export class Customer {
   @prop({ default: '' })
   note: string;
 
-  @arrayProp({ items: ShippingAddress })
-  addresses: ShippingAddress[];
+  @arrayProp({ items: ShipmentAddress })
+  addresses: ShipmentAddress[];
 
   @arrayProp({ items: Number, default: [] })
   reviewIds: number[];

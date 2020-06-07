@@ -1,6 +1,6 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 import { Expose, Type } from 'class-transformer';
-import { ShipmentParticipantDto } from './shipment-participant.dto';
+import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 
 export class ShipmentDto {
 
@@ -22,16 +22,13 @@ export class ShipmentDto {
   statusDescription?: string;
 
   @Expose()
-  @Type(() => ShipmentParticipantDto)
-  sender?: ShipmentParticipantDto;
-
-  @Expose()
-  @Type(() => ShipmentParticipantDto)
-  recipient?: ShipmentParticipantDto;
-
-  @Expose()
+  @IsInt()
   @IsOptional()
-  shipmentType?: any;
+  senderId?: number;
+
+  @Expose()
+  @Type(() => ShipmentAddressDto)
+  recipient?: ShipmentAddressDto;
 
   @Expose()
   @IsOptional()
