@@ -4,6 +4,7 @@ import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { Order } from '../../../order/models/order.model';
 import { OrderStatusEnum } from '../../enums/order-status.enum';
 import { ShipmentDto } from '../admin/shipment.dto';
+import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 
 export class ClientAddOrderDto {
   @Expose()
@@ -13,8 +14,8 @@ export class ClientAddOrderDto {
 
   @Expose()
   @ValidateNested()
-  @Type(() => ShipmentDto)
-  shipment: ShipmentDto;
+  @Type(() => ShipmentAddressDto)
+  address: ShipmentAddressDto;
 
   @Expose()
   @IsString()

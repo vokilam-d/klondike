@@ -1,6 +1,9 @@
 import { IsInt, IsOptional, IsString } from 'class-validator';
 import { Expose, Type } from 'class-transformer';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
+import { ShipmentStatusEnum } from '../../enums/shipment-status.enum';
+import { ShipmentPayerEnum } from '../../enums/shipment-payer.enum';
+import { ShipmentPaymentMethodEnum } from '../../enums/shipment-payment-method.enum';
 
 export class ShipmentDto {
 
@@ -14,7 +17,7 @@ export class ShipmentDto {
 
   @Expose()
   @IsOptional()
-  status?: any;
+  status?: ShipmentStatusEnum;
 
   @Expose()
   @IsString()
@@ -32,11 +35,11 @@ export class ShipmentDto {
 
   @Expose()
   @IsOptional()
-  payerType?: any;
+  payerType?: ShipmentPayerEnum;
 
   @Expose()
   @IsOptional()
-  paymentMethod?: any;
+  paymentMethod?: ShipmentPaymentMethodEnum;
 
   @Expose()
   @IsOptional()
