@@ -168,19 +168,19 @@ export class NovaPoshtaService {
     }));
   }
 
-  public async fetchShipment(shipmentDto: ShipmentDto): Promise<ShipmentDto> {
-    const shipments = await this.fetchShipments([shipmentDto]);
+  public async fetchShipment(trackingNumber: string): Promise<ShipmentDto> {
+    const shipments = await this.fetchShipments([trackingNumber]);
     return shipments[0];
   }
 
-  public async fetchShipments(shipmentDtos: ShipmentDto[]): Promise<ShipmentDto[]> {
+  public async fetchShipments(trackingNumbers: string[]): Promise<ShipmentDto[]> {
     const response = await this.http.post('http://testapi.novaposhta.ua/v2.0/en/documentsTracking/json',
       {
         modelName: 'TrackingDocument',
         calledMethod: 'getStatusDocuments',
         methodProperties: {
-          Documents: shipmentDtos.map(shipment =>
-            ({ DocumentNumber: shipment.trackingNumber }))
+          Documents: trackingNumbers.map(trackingNumber =>
+            ({ DocumentNumber: trackingNumber }))
         },
         apiKey: process.env.NOVA_POSHTA_API_KEY
       }).toPromise();

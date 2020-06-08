@@ -188,6 +188,9 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const newOrder = await this.createOrder(orderDto, customer, session, migrate);
+
+      await this.fetchShipmentStatus(newOrder);
+
       await session.commitTransaction();
 
       await this.addSearchData(newOrder);
@@ -213,28 +216,28 @@ export class OrderService implements OnApplicationBootstrap {
 
         if (customer) {
           const hasSameAddress = customer.addresses.find(address => (
-            address.addressType === orderDto.address.addressType
-            && address.firstName === orderDto.address.firstName
-            && address.middleName === orderDto.address.middleName
-            && address.lastName === orderDto.address.lastName
-            && address.phone === orderDto.address.phone
-            && address.settlementId === orderDto.address.settlementId
-            && address.addressId === orderDto.address.addressId
-            && address.flat === orderDto.address.flat
-            && address.buildingNumber === orderDto.address.buildingNumber
+            address.addressType === orderDto.shipment.recipient.addressType
+            && address.firstName === orderDto.shipment.recipient.firstName
+            && address.middleName === orderDto.shipment.recipient.middleName
+            && address.lastName === orderDto.shipment.recipient.lastName
+            && address.phone === orderDto.shipment.recipient.phone
+            && address.settlementId === orderDto.shipment.recipient.settlementId
+            && address.addressId === orderDto.shipment.recipient.addressId
+            && address.flat === orderDto.shipment.recipient.flat
+            && address.buildingNumber === orderDto.shipment.recipient.buildingNumber
           ));
 
           if (!hasSameAddress) {
-            await this.customerService.addCustomerAddress(customer, orderDto.address, session);
+            await this.customerService.addCustomerAddress(customer, orderDto.shipment.recipient, session);
           }
 
         } else {
           const customerDto = new AdminAddOrUpdateCustomerDto();
-          customerDto.firstName = orderDto.address.firstName;
-          customerDto.lastName = orderDto.address.lastName;
+          customerDto.firstName = orderDto.shipment.recipient.firstName;
+          customerDto.lastName = orderDto.shipment.recipient.lastName;
           customerDto.email = orderDto.email;
-          customerDto.phoneNumber = orderDto.address.phone;
-          customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
+          customerDto.phoneNumber = orderDto.shipment.recipient.phone;
+          customerDto.addresses = [{ ...orderDto.shipment, isDefault: true }];
 
           customer = await this.customerService.adminCreateCustomer(customerDto, session, false) as any;
         }
@@ -315,7 +318,12 @@ export class OrderService implements OnApplicationBootstrap {
       for (const item of orderDto.items) {
         await this.inventoryService.addToOrdered(item.sku, item.qty, orderId, session);
       }
+      const oldTrackingNumber = order.shipment.trackingNumber;
+      const newTrackingNumber = orderDto.shipment.trackingNumber;
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
+      if (oldTrackingNumber !== newTrackingNumber) {
+        await this.fetchShipmentStatus(order);
+      }
       this.setOrderPrices(order);
       return order;
     });
@@ -441,11 +449,9 @@ x
       const ordersWithShipments: Order[] = orders
         .filter(order => order.shipment && order.shipment.trackingNumber);
 
-      let shipments: ShipmentDto[] = ordersWithShipments.map(order => ({
-        trackingNumber: order.shipment.trackingNumber
-      }));
+      const trackingNumbers: string[] = ordersWithShipments.map(order => order.shipment.trackingNumber);
 
-      shipments = await this.novaPoshtaService.fetchShipments(shipments);
+      const shipments: ShipmentDto[] = await this.novaPoshtaService.fetchShipments(trackingNumbers);
 
       ordersWithShipments.forEach(order => {
         const shipment: ShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
@@ -460,18 +466,28 @@ x
 
   public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
     return await this.updateOrderById(orderId, async order => {
+      const oldTrackingNumber = order.shipment.trackingNumber;
+      const newTrackingNumber = shipmentDto.trackingNumber;
       OrderService.updateShipmentData(order.shipment, shipmentDto);
-      if (shipmentDto.trackingNumber && (order.shipment.trackingNumber !== shipmentDto.trackingNumber)) {
-        const novaPoshtaShipmentDto: ShipmentDto = await this.novaPoshtaService.fetchShipment(shipmentDto);
-        if (novaPoshtaShipmentDto) {
-          order.shipment.statusDescription = novaPoshtaShipmentDto.statusDescription;
-          order.shipment.status = novaPoshtaShipmentDto.status;
-        }
-        order.shipment.sender = {};
-        OrderService.updateOrderStatus(order);
+      if (oldTrackingNumber !== newTrackingNumber) {
+        await this.fetchShipmentStatus(order);
       }
       return order;
     });
+  }
+
+  private async fetchShipmentStatus(order) {
+    let trackingNumber = order.shipment.trackingNumber;
+    if (!trackingNumber) {
+      return;
+    }
+    const shipmentDto: ShipmentDto = await this.novaPoshtaService.fetchShipment(trackingNumber);
+    if (shipmentDto) {
+      order.shipment.statusDescription = shipmentDto.statusDescription;
+      order.shipment.status = shipmentDto.status;
+    }
+    order.shipment.sender = {};
+    OrderService.updateOrderStatus(order);
   }
 
   private static updateShipmentData(shipment: Shipment, shipmentDto: ShipmentDto) {

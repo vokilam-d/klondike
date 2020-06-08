@@ -3,7 +3,7 @@ import { Expose, Transform, Type } from 'class-transformer';
 import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { Order } from '../../../order/models/order.model';
 import { OrderStatusEnum } from '../../enums/order-status.enum';
-import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
+import { ShipmentDto } from '../admin/shipment.dto';
 
 export class ClientAddOrderDto {
   @Expose()
@@ -13,8 +13,8 @@ export class ClientAddOrderDto {
 
   @Expose()
   @ValidateNested()
-  @Type(() => ShipmentAddressDto)
-  address: ShipmentAddressDto;
+  @Type(() => ShipmentDto)
+  shipment: ShipmentDto;
 
   @Expose()
   @IsString()
