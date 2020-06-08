@@ -42,7 +42,7 @@ export class Customer {
   @prop({ default: '' })
   note: string;
 
-  @arrayProp({ items: ShipmentAddress })
+  @arrayProp({ items: ShipmentAddress, default: [] })
   addresses: ShipmentAddress[];
 
   @arrayProp({ items: Number, default: [] })

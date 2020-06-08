@@ -18,11 +18,11 @@ export class Shipment {
   @prop()
   statusDescription?: string;
 
-  @prop()
-  sender?: ShipmentAddress = new ShipmentAddress();
+  @prop({ default: new ShipmentAddress() })
+  sender?: ShipmentAddress;
 
-  @prop()
-  recipient?: ShipmentAddress = new ShipmentAddress();
+  @prop({ default: new ShipmentAddress() })
+  recipient?: ShipmentAddress;
 
   @prop()
   payerType?: ShipmentPayerEnum;

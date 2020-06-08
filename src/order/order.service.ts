@@ -97,12 +97,8 @@ export class OrderService implements OnApplicationBootstrap {
     };
   }
 
-  async getOrderById(orderId: number, session?: ClientSession): Promise<DocumentType<Order>> {
-    let documentQuery = this.orderModel.findById(orderId);
-    if (session) {
-      documentQuery = documentQuery.session(session);
-    }
-    const found = await documentQuery.exec();
+  async getOrderById(orderId: number, session: ClientSession = null): Promise<DocumentType<Order>> {
+    const found = await this.orderModel.findById(orderId).session(session).exec();
     if (!found) {
       throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
     }
@@ -422,7 +418,7 @@ export class OrderService implements OnApplicationBootstrap {
     const orderDto = plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true });
     await this.searchService.addDocument(Order.collectionName, order.id, orderDto);
   }
-x
+
   public updateSearchData(order: Order): Promise<any> {
     const orderDto = plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true });
     return this.searchService.updateDocument(Order.collectionName, order.id, orderDto);

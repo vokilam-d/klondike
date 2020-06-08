@@ -1,5 +1,6 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { AddressTypeEnum } from '../../enums/address-type.enum';
 
 export class ShipmentAddressDto {
 
@@ -11,8 +12,9 @@ export class ShipmentAddressDto {
   id?: string;
 
   @Expose()
+  @IsEnum(AddressTypeEnum)
   @IsOptional()
-  addressType?: string;
+  addressType?: AddressTypeEnum;
 
   @Expose()
   @IsString()

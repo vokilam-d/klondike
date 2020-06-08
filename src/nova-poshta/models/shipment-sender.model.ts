@@ -27,7 +27,7 @@ export class ShipmentSender {
   @prop()
   address?: string;
 
-  @prop()
+  @prop({ enum: AddressTypeEnum })
   addressType?: AddressTypeEnum;
 
   @prop()

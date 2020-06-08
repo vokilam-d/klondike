@@ -65,8 +65,8 @@ export class Order {
   @prop()
   isCallbackNeeded: boolean;
 
-  @prop()
-  shipment: Shipment = new Shipment();
+  @prop({ default: new Shipment() })
+  shipment: Shipment;
 
   @arrayProp({ items: OrderItem })
   items: OrderItem[];

@@ -1,12 +1,13 @@
 import { Types } from 'mongoose';
 import { prop } from '@typegoose/typegoose';
+import { AddressTypeEnum } from '../enums/address-type.enum';
 
 export class ShipmentAddress {
 
   _id?: Types.ObjectId;
 
-  @prop()
-  addressType?: string;
+  @prop({ enum: AddressTypeEnum })
+  addressType?: AddressTypeEnum;
 
   @prop()
   settlementId?: string;
