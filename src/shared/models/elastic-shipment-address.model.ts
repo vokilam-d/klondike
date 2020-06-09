@@ -16,5 +16,7 @@ export class ElasticShipmentAddressModel implements Record<keyof ShipmentAddress
   buildingNumber = elasticTextType;
   flat = elasticTextType;
   note = elasticTextType;
+  warehouseId = elasticTextType;
+  warehouse = elasticTextType;
   isDefault = elasticBooleanType;
 }

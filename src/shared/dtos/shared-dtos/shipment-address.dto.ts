@@ -29,6 +29,16 @@ export class ShipmentAddressDto {
   @Expose()
   @IsString()
   @IsOptional()
+  warehouseId?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  warehouse?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
   addressId?: string;
 
   @Expose()
