@@ -1,3 +1,5 @@
+import { AddressTypeEnum } from '../../enums/address-type.enum';
+
 export const TRANSLATIONS = {
   'Your password is outdated, we sent you an email with the instruction on how to update your password': {
     en: 'Your password is outdated, we sent you an email with the instruction on how to update your password',
@@ -146,5 +148,13 @@ export const TRANSLATIONS = {
   'Shipment sender not provided': {
     en: 'Shipment sender not provided',
     ru: 'Не указан отправитель'
+  },
+  [AddressTypeEnum.WAREHOUSE]: {
+    en: 'To the Nova Poshta post office',
+    ru: 'В отделение Новой Почты'
+  },
+  [AddressTypeEnum.DOORS]: {
+    en: 'Courier delivery',
+    ru: 'Доставка курьером'
   }
 }

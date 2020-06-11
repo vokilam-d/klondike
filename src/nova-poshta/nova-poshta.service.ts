@@ -15,6 +15,7 @@ import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.
 @Injectable()
 export class NovaPoshtaService {
 
+  private apiUrl = 'http://api.novaposhta.ua/v2.0/json/';
   private static settlementPriority = new Map([['Киев', 1], ['Харьков', 2], ['Одесса', 3], ['Днепр', 4],
     ['Запорожье', 5], ['Львов', 6], ['Кривой Рог', 7], ['Николаев', 8], ['Мариуполь', 9]]);
 
@@ -23,7 +24,7 @@ export class NovaPoshtaService {
 
   public async shipmentRecipient(spf: ClientSPFDto): Promise<ShipmentAddressDto> {
 
-    const response = await this.http.post('http://api.novaposhta.ua/v2.0/json/',
+    const response = await this.http.post(this.apiUrl,
       {
         modelName: 'Counterparty',
         calledMethod: 'getCatalogCounterparty',
@@ -65,10 +66,9 @@ export class NovaPoshtaService {
       },
       apiKey: process.env.NOVA_POSHTA_API_KEY
     };
-    await this.http.post('http://api.novaposhta.ua/v2.0/json/', saveContactRequestBody).toPromise();
+    await this.http.post(this.apiUrl, saveContactRequestBody).toPromise(); // todo Yurii is this line neccessary?
     saveContactRequestBody.modelName = 'ContactPersonGeneral';
-    const contactPersonSaveResponse = await this.http.post('http://api.novaposhta.ua/v2.0/json/',
-      saveContactRequestBody).toPromise();
+    const contactPersonSaveResponse = await this.http.post(this.apiUrl, saveContactRequestBody).toPromise();
     const contactPersonRef = contactPersonSaveResponse.data.data[0].Ref;
 
     const saveAddressRequestBody: any = {
@@ -89,7 +89,7 @@ export class NovaPoshtaService {
       saveAddressRequestBody.methodProperties.Note = recipient.note;
     }
 
-    const saveAddressResponse = await this.http.post('http://api.novaposhta.ua/v2.0/json/', saveAddressRequestBody)
+    const saveAddressResponse = await this.http.post(this.apiUrl, saveAddressRequestBody)
       .toPromise();
     const recipientAddress = saveAddressResponse.data.data[0].Ref;
     const cityRef = saveAddressResponse.data.data[0].CityRef;
@@ -139,8 +139,7 @@ export class NovaPoshtaService {
       }];
     }
 
-    const internetDocumentSaveResponse = await this.http.post('http://api.novaposhta.ua/v2.0/json/',
-      saveInternetDocumentRequestBody).toPromise();
+    const internetDocumentSaveResponse = await this.http.post(this.apiUrl, saveInternetDocumentRequestBody).toPromise();
     const responseData = internetDocumentSaveResponse.data.data[0];
 
     shipment.trackingNumber = responseData.IntDocNumber;
@@ -150,7 +149,7 @@ export class NovaPoshtaService {
   }
 
   public async fetchStreets(spf: ClientSPFDto): Promise<StreetDto[]> {
-    const response = await this.http.post('http://api.novaposhta.ua/v2.0/json/',
+    const response = await this.http.post(this.apiUrl,
       {
         modelName: 'Address',
         calledMethod: 'searchSettlementStreets',

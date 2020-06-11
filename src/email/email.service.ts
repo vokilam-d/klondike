@@ -124,7 +124,7 @@ export class EmailService {
       addressCity: order.shipment.recipient.settlement,
       addressPost: order.shipment.recipient.address,
       //TODO Denis fix email to new flow please
-      shipping: order.shippingMethodClientName,
+      shipping: order.shippingMethodName,
       payment: order.paymentMethodClientName,
       products: order.items.map(item => ({
         name: item.name,

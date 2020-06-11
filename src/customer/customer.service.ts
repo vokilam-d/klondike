@@ -15,7 +15,6 @@ import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../shared/dtos/admin/customer.dto';
 import { CounterService } from '../shared/services/counter/counter.service';
 import { ClientSession } from 'mongoose';
-import { Order } from '../order/models/order.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { SearchService } from '../shared/services/search/search.service';
 import { ElasticCustomerModel } from './models/elastic-customer.model';
@@ -237,25 +236,25 @@ export class CustomerService implements OnApplicationBootstrap {
       .catch(_ => {});
   }
 
-  async addOrderToCustomer(customerId: number, order: Order, session: ClientSession): Promise<Customer> {
+  async addOrderToCustomer(customerId: number, orderId, session: ClientSession): Promise<Customer> {
     const orderIdsProp = getPropertyOf<Customer>('orderIds');
 
     const customer = await this.customerModel.findByIdAndUpdate(
       customerId,
-      { $push: { [orderIdsProp]: order.id } },
+      { $push: { [orderIdsProp]: orderId } },
       { new: true }
     ).session(session).exec();
 
     return customer;
   }
 
-  async incrementTotalOrdersCost(customerId: number, order: Order, session: ClientSession): Promise<Customer> {
+  async incrementTotalOrdersCost(customerId: number, totalItemsCost: number, session: ClientSession): Promise<Customer> {
     const totalCostProp: keyof Customer = 'totalOrdersCost';
     const totalCountProp: keyof Customer = 'totalOrdersCount';
 
     const customer = await this.customerModel.findByIdAndUpdate(
       customerId,
-      { $inc: { [totalCostProp]: order.totalItemsCost, [totalCountProp]: 1 } },
+      { $inc: { [totalCostProp]: totalItemsCost, [totalCountProp]: 1 } },
       { new: true }
     ).session(session).exec();
 

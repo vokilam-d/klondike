@@ -54,13 +54,7 @@ export class Order {
   paymentMethodAdminName: string;
 
   @prop()
-  shippingMethodId: string;
-
-  @prop()
-  shippingMethodClientName: string;
-
-  @prop()
-  shippingMethodAdminName: string;
+  shippingMethodName: string;
 
   @prop()
   isCallbackNeeded: boolean;

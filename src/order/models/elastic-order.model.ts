@@ -58,9 +58,7 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   paymentMethodAdminName = elasticTextType;
   paymentMethodClientName = elasticTextType;
   paymentMethodId = elasticTextType;
-  shippingMethodAdminName = elasticTextType;
-  shippingMethodClientName = elasticTextType;
-  shippingMethodId = elasticTextType;
+  shippingMethodName = elasticTextType;
   shouldSaveAddress = elasticTextType;
   state = elasticTextType;
   status = elasticTextType;

@@ -52,7 +52,7 @@ export class ClientOrderDto extends ClientAddOrderDto {
   id: string;
 
   @Expose()
-  @Transform(((value, obj: Order) => value ? value : obj.shippingMethodClientName))
+  @Transform(((value, obj: Order) => value ? value : obj.shippingMethodName))
   shippingMethodName: string;
 
   @Expose()

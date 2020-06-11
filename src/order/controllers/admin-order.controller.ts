@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  Res,
-  UseGuards,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from '../order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
@@ -36,21 +24,21 @@ export class AdminOrderController {
     return this.orderService.getOrdersList(spf);
   }
 
+  @Get('/latest-shipment-statuses')
+  async fetchShipmentStatuses(): Promise<ResponseDto<AdminOrderDto[]>> {
+    const updated = await this.orderService.getOrdersWithLatestShipmentStatuses();
+
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+    };
+  }
+
   @Get(':id')
   async getOrder(@Param('id') id: string): Promise<ResponseDto<AdminOrderDto>> {
     const order = await this.orderService.getOrderById(parseInt(id));
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
-    };
-  }
-
-  @Post()
-  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminOrderDto>> {
-    const created = await this.orderService.createOrderAdmin(orderDto, migrate);
-
-    return {
-      data: plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true })
     };
   }
 
@@ -64,31 +52,12 @@ export class AdminOrderController {
       .send(pdf);
   }
 
-  @Put(':id')
-  async editOrder(@Param('id') orderId: string, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderService.editOrder(parseInt(orderId), orderDto);
+  @Post()
+  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminOrderDto>> {
+    const created = await this.orderService.createOrderAdmin(orderDto, migrate);
 
     return {
-      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
-    };
-  }
-
-  @Put(':id/shipment')
-  async editOrderShipment(@Param('id') orderId: number,
-                          @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto);
-
-    return {
-      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
-    };
-  }
-
-  @Get('/latest-shipment-statuses')
-  async fetchShipmentStatuses(): Promise<ResponseDto<AdminOrderDto[]>> {
-    const updated = await this.orderService.getOrdersWithLatestShipmentStatuses();
-
-    return {
-      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+      data: plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true })
     };
   }
 
@@ -116,6 +85,25 @@ export class AdminOrderController {
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Put(':id')
+  async editOrder(@Param('id') orderId: string, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
+    const updated = await this.orderService.editOrder(parseInt(orderId), orderDto);
+
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Patch(':id/shipment')
+  async editOrderShipment(@Param('id') orderId: number,
+                          @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
+    const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto);
+
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
     };
   }
 }

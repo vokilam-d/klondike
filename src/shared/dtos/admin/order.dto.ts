@@ -20,7 +20,7 @@ export class AdminAddOrUpdateOrderDto {
   @Expose()
   @IsOptional()
   @IsString()
-  idForCustomer: string; // todo remove after migration
+  idForCustomer: string; // todo move to AdminOrderDto after migration
 
   @Expose()
   @IsOptional()
@@ -68,23 +68,15 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsString()
-  paymentMethodClientName: string; // todo remove after migration
+  paymentMethodClientName: string; // todo move to AdminOrderDto after migration
 
   @Expose()
   @IsString()
-  paymentMethodAdminName: string; // todo remove after migration
+  paymentMethodAdminName: string; // todo move to AdminOrderDto after migration
 
   @Expose()
   @IsString()
-  shippingMethodId: string;
-
-  @Expose()
-  @IsString()
-  shippingMethodClientName: string; // todo remove after migration
-
-  @Expose()
-  @IsString()
-  shippingMethodAdminName: string; // todo remove after migration
+  shippingMethodName: string; // todo move to AdminOrderDto after migration
 
   @Expose()
   @IsBoolean()
@@ -156,16 +148,4 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   @IsOptional()
   @IsString()
   idForCustomer: string;
-
-  @Expose()
-  shippingMethodClientName: string;
-
-  @Expose()
-  shippingMethodAdminName: string;
-
-  @Expose()
-  paymentMethodClientName: string;
-
-  @Expose()
-  paymentMethodAdminName: string;
 }

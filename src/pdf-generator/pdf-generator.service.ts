@@ -52,7 +52,7 @@ export class PdfGeneratorService {
       addressCity: order.shipment.recipient.settlement,
       //TODO Denis fix pdf to new flow please
       addressPost: order.shipment.recipient.address,
-      shipping: order.shippingMethodClientName,
+      shipping: order.shippingMethodName,
       payment: order.paymentMethodClientName,
       products: order.items.map(item => ({
         name: item.name,

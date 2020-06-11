@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-  OnApplicationBootstrap
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
@@ -25,7 +19,6 @@ import { SearchService } from '../shared/services/search/search.service';
 import { ElasticOrderModel } from './models/elastic-order.model';
 import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
 import { ClientSession, FilterQuery } from 'mongoose';
-import { ShippingMethodService } from '../shipping-method/shipping-method.service';
 import { PaymentMethodService } from '../payment-method/payment-method.service';
 import { ClientAddOrderDto } from '../shared/dtos/client/order.dto';
 import { TasksService } from '../tasks/tasks.service';
@@ -46,7 +39,6 @@ export class OrderService implements OnApplicationBootstrap {
 
   constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
               private readonly counterService: CounterService,
-              private readonly shippingMethodService: ShippingMethodService,
               private readonly paymentMethodService: PaymentMethodService,
               private readonly tasksService: TasksService,
               private readonly pdfGeneratorService: PdfGeneratorService,
@@ -212,34 +204,37 @@ export class OrderService implements OnApplicationBootstrap {
 
         if (customer) {
           const hasSameAddress = customer.addresses.find(address => (
-            address.addressType === orderDto.shipment.recipient.addressType
-            && address.firstName === orderDto.shipment.recipient.firstName
-            && address.middleName === orderDto.shipment.recipient.middleName
-            && address.lastName === orderDto.shipment.recipient.lastName
-            && address.phone === orderDto.shipment.recipient.phone
-            && address.settlementId === orderDto.shipment.recipient.settlementId
-            && address.addressId === orderDto.shipment.recipient.addressId
-            && address.flat === orderDto.shipment.recipient.flat
-            && address.buildingNumber === orderDto.shipment.recipient.buildingNumber
+            address.addressType === orderDto.address.addressType
+            && address.firstName === orderDto.address.firstName
+            && address.middleName === orderDto.address.middleName
+            && address.lastName === orderDto.address.lastName
+            && address.phone === orderDto.address.phone
+            && address.settlementId === orderDto.address.settlementId
+            && address.addressId === orderDto.address.addressId
+            && address.flat === orderDto.address.flat
+            && address.buildingNumber === orderDto.address.buildingNumber
           ));
 
           if (!hasSameAddress) {
-            await this.customerService.addCustomerAddress(customer, orderDto.shipment.recipient, session);
+            await this.customerService.addCustomerAddress(customer, orderDto.address, session);
           }
 
         } else {
           const customerDto = new AdminAddOrUpdateCustomerDto();
-          customerDto.firstName = orderDto.shipment.recipient.firstName;
-          customerDto.lastName = orderDto.shipment.recipient.lastName;
+          customerDto.firstName = orderDto.address.firstName;
+          customerDto.lastName = orderDto.address.lastName;
           customerDto.email = orderDto.email;
-          customerDto.phoneNumber = orderDto.shipment.recipient.phone;
-          customerDto.addresses = [{ ...orderDto.shipment, isDefault: true }];
+          customerDto.phoneNumber = orderDto.address.phone;
+          customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
 
           customer = await this.customerService.adminCreateCustomer(customerDto, session, false) as any;
         }
       }
 
-      const newOrder = await this.createOrder(orderDto, customer, session);
+      const shipment = new ShipmentDto();
+      shipment.recipient = orderDto.address;
+
+      const newOrder = await this.createOrder({ ...orderDto, shipment }, customer, session);
       await session.commitTransaction();
 
       await this.addSearchData(newOrder);
@@ -287,11 +282,9 @@ export class OrderService implements OnApplicationBootstrap {
         await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
       }
 
-      await this.customerService.addOrderToCustomer(customer.id, newOrder, session);
+      await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
 
-      const shippingMethod = await this.shippingMethodService.getShippingMethodById(orderDto.shippingMethodId);
-      newOrder.shippingMethodAdminName = shippingMethod.adminName;
-      newOrder.shippingMethodClientName = shippingMethod.clientName;
+      newOrder.shippingMethodName = __(newOrder.shipment.recipient.addressType, 'ru');
 
       const paymentMethod = await this.paymentMethodService.getPaymentMethodById(orderDto.paymentMethodId);
       newOrder.paymentType = paymentMethod.paymentType;
@@ -366,7 +359,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async shipOrder(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
-    return await this.updateOrderById(orderId, async order => {
+    return await this.updateOrderById(orderId, async (order, session) => {
       OrderService.updateShipmentData(order.shipment, shipmentDto);
       shipmentDto = plainToClass(ShipmentDto, order.shipment, { excludeExtraneousValues: true });
 
@@ -384,7 +377,13 @@ export class OrderService implements OnApplicationBootstrap {
       order.shipment.estimatedDeliveryDate = shipmentDto.estimatedDeliveryDate;
       order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
       order.shipment.statusDescription = 'Готово к отправке';
-      OrderService.updateOrderStatus(order)
+      OrderService.updateOrderStatus(order);
+
+      await this.customerService.incrementTotalOrdersCost(order.customerId, order.totalItemsCost, session);
+      for (const item of order.items) {
+        await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
+      }
+
       return order;
     });
   }
