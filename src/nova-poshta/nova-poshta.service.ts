@@ -1,4 +1,4 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpService, Injectable } from '@nestjs/common';
 import { SettlementDto } from '../shared/dtos/shared-dtos/settlement.dto';
 import { WarehouseDto } from '../shared/dtos/shared-dtos/warehouse.dto';
 import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
@@ -24,7 +24,7 @@ export class NovaPoshtaService {
 
   public async shipmentRecipient(spf: ClientSPFDto): Promise<ShipmentAddressDto> {
 
-    const response = await this.http.post(this.apiUrl,
+    const { data: response } = await this.http.post(this.apiUrl,
       {
         modelName: 'Counterparty',
         calledMethod: 'getCatalogCounterparty',
@@ -35,8 +35,12 @@ export class NovaPoshtaService {
         apiKey: process.env.NOVA_POSHTA_API_KEY
       }).toPromise();
 
-    if (response.data.data.length === 1) {
-      const counterparty = response.data.data[0];
+    if (response.success === false) {
+      throw new BadRequestException(response.errors.join(', '));
+    }
+
+    if (response.data.length === 1) {
+      const counterparty = response.data[0];
       return {
         lastName: counterparty.LastName,
         firstName: counterparty.FirstName,
@@ -68,8 +72,13 @@ export class NovaPoshtaService {
     };
     await this.http.post(this.apiUrl, saveContactRequestBody).toPromise(); // todo Yurii is this line neccessary?
     saveContactRequestBody.modelName = 'ContactPersonGeneral';
-    const contactPersonSaveResponse = await this.http.post(this.apiUrl, saveContactRequestBody).toPromise();
-    const contactPersonRef = contactPersonSaveResponse.data.data[0].Ref;
+    const { data: contactPersonSaveResponse } = await this.http.post(this.apiUrl, saveContactRequestBody).toPromise();
+
+    if (contactPersonSaveResponse.success === false) {
+      throw new BadRequestException(contactPersonSaveResponse.errors.join(', '));
+    }
+
+    const contactPersonRef = contactPersonSaveResponse.data[0].Ref;
 
     const saveAddressRequestBody: any = {
       modelName: 'AddressContactPersonGeneral',
@@ -89,9 +98,14 @@ export class NovaPoshtaService {
       saveAddressRequestBody.methodProperties.Note = recipient.note;
     }
 
-    const saveAddressResponse = await this.http.post(this.apiUrl, saveAddressRequestBody).toPromise();
-    const recipientAddress = saveAddressResponse.data.data[0].Ref;
-    const cityRef = saveAddressResponse.data.data[0].CityRef;
+    const { data: saveAddressResponse } = await this.http.post(this.apiUrl, saveAddressRequestBody).toPromise();
+
+    if (saveAddressResponse.success === false) {
+      throw new BadRequestException(saveAddressResponse.errors.join(', '));
+    }
+
+    const recipientAddress = saveAddressResponse.data[0].Ref;
+    const cityRef = saveAddressResponse.data[0].CityRef;
 
     const today = new Date();
     let saveInternetDocumentRequestBody: any = {
@@ -138,8 +152,13 @@ export class NovaPoshtaService {
       }];
     }
 
-    const internetDocumentSaveResponse = await this.http.post(this.apiUrl, saveInternetDocumentRequestBody).toPromise();
-    const responseData = internetDocumentSaveResponse.data.data[0];
+    const { data: internetDocumentSaveResponse } = await this.http.post(this.apiUrl, saveInternetDocumentRequestBody).toPromise();
+
+    if (internetDocumentSaveResponse.success === false) {
+      throw new BadRequestException(internetDocumentSaveResponse.errors.join(', '));
+    }
+
+    const responseData = internetDocumentSaveResponse.data[0];
 
     shipment.trackingNumber = responseData.IntDocNumber;
     shipment.estimatedDeliveryDate = responseData.EstimatedDeliveryDate;
@@ -148,7 +167,7 @@ export class NovaPoshtaService {
   }
 
   public async fetchStreets(spf: ClientSPFDto): Promise<StreetDto[]> {
-    const response = await this.http.post(this.apiUrl,
+    const { data: response } = await this.http.post(this.apiUrl,
       {
         modelName: 'Address',
         calledMethod: 'searchSettlementStreets',
@@ -160,7 +179,11 @@ export class NovaPoshtaService {
         apiKey: process.env.NOVA_POSHTA_API_KEY
       }).toPromise();
 
-    return response.data.data.flatMap(resp => resp.Addresses).map(street => ({
+    if (response.success === false) {
+      throw new BadRequestException(response.errors.join(', '));
+    }
+
+    return response.data.flatMap(resp => resp.Addresses).map(street => ({
       id: street.SettlementStreetRef,
       name: street.Present
     }));
@@ -172,7 +195,7 @@ export class NovaPoshtaService {
   }
 
   public async fetchShipments(trackingNumbers: string[]): Promise<ShipmentDto[]> {
-    const response = await this.http.post('http://testapi.novaposhta.ua/v2.0/en/documentsTracking/json',
+    const { data: response } = await this.http.post('http://testapi.novaposhta.ua/v2.0/en/documentsTracking/json',
       {
         modelName: 'TrackingDocument',
         calledMethod: 'getStatusDocuments',
@@ -183,7 +206,11 @@ export class NovaPoshtaService {
         apiKey: process.env.NOVA_POSHTA_API_KEY
       }).toPromise();
 
-    return response.data.data.map(shipment => ({
+    if (response.success === false) {
+      throw new BadRequestException(response.errors.join(', '));
+    }
+
+    return response.data.map(shipment => ({
       trackingNumber: shipment.Number,
       status: NovaPoshtaService.toShipmentStatus(shipment.StatusCode),
       statusDescription: shipment.Status
@@ -234,7 +261,7 @@ export class NovaPoshtaService {
   }
 
   public async fetchSettlementCatalogPage(settlementBulkNumber: number): Promise<SettlementDto[]> {
-    const response = await this.http.post(`${this.apiUrl}Address/searchSettlements/`,
+    const { data: response } = await this.http.post(`${this.apiUrl}Address/searchSettlements/`,
       {
         modelName: 'AddressGeneral',
         calledMethod: 'getSettlements',
@@ -245,7 +272,7 @@ export class NovaPoshtaService {
         apiKey: process.env.NOVA_POSHTA_API_KEY
       }).toPromise();
 
-    return response.data.data.map(settlement => NovaPoshtaService.toSettlementDto(settlement));
+    return response.data.map(settlement => NovaPoshtaService.toSettlementDto(settlement));
   }
 
   private static toSettlementDto(settlement): SettlementDto {
@@ -279,7 +306,7 @@ export class NovaPoshtaService {
   }
 
   public async fetchWarehouseCatalogPage(warehouseBulkNumber: number): Promise<WarehouseDto[]> {
-    const response = await this.http.post(`${this.apiUrl}AddressGeneral/getWarehouses`,
+    const { data: response } = await this.http.post(`${this.apiUrl}AddressGeneral/getWarehouses`,
       {
         modelName: 'AddressGeneral',
         calledMethod: 'getWarehouses',
@@ -290,7 +317,11 @@ export class NovaPoshtaService {
         apiKey: process.env.NOVA_POSHTA_API_KEY
       }).toPromise();
 
-    return response.data.data.map(warehouse => NovaPoshtaService.toWarehouseDto(warehouse));
+    if (response.success === false) {
+      throw new BadRequestException(response.errors.join(', '));
+    }
+
+    return response.data.map(warehouse => NovaPoshtaService.toWarehouseDto(warehouse));
   }
 
   private static toWarehouseDto(warehouse): WarehouseDto {
