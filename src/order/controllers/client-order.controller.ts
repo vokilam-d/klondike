@@ -5,9 +5,9 @@ import { ClientAddOrderDto, ClientOrderDto } from '../../shared/dtos/client/orde
 import { AuthService } from '../../auth/services/auth.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
 import { OnlinePaymentDetailsDto } from '../../shared/dtos/client/online-payment-details.dto';
 import { stripLeadingZeros } from '../../shared/helpers/strip-leading-zeros.function';
+import { PaymentMethodEnum } from '../../shared/enums/payment-method.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('order')
@@ -32,7 +32,7 @@ export class ClientOrderController {
     const customer = await this.authService.getCustomerFromReq(req);
     const order = await this.orderService.createOrderClient(addOrderDto, customer);
     const orderDto = plainToClass(ClientOrderDto, order, { excludeExtraneousValues: true });
-    orderDto.isOnlinePayment = order.paymentType === PaymentTypeEnum.ONLINE_PAYMENT;
+    orderDto.isOnlinePayment = order.paymentType === PaymentMethodEnum.ONLINE_PAYMENT;
 
     return {
       data: orderDto

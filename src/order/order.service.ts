@@ -25,7 +25,7 @@ import { TasksService } from '../tasks/tasks.service';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { NovaPoshtaService } from '../nova-poshta/nova-poshta.service';
 import { ShipmentSenderService } from '../nova-poshta/shipment-sender.service';
-import { ProdPrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
+import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
@@ -442,7 +442,7 @@ export class OrderService implements OnApplicationBootstrap {
     );
   }
 
-  @ProdPrimaryInstanceCron(CronExpression.EVERY_HOUR)
+  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
   public async getOrdersWithLatestShipmentStatuses(): Promise<Order[]> {
     return await this.updateOrdersByStatus(OrderStatusEnum.SHIPPED, async orders => {
       const ordersWithShipments: Order[] = orders
@@ -555,7 +555,7 @@ export class OrderService implements OnApplicationBootstrap {
       clientFirstName: order.customerFirstName,
       clientLastName: order.customerLastName,
       clientEmail: order.customerEmail,
-      clientPhone: order.customerPhoneNumber || order.address.phoneNumber,
+      clientPhone: order.customerPhoneNumber || order.shipment.recipient.phone,
       language: 'RU'
     }
   }
