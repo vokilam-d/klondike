@@ -2,7 +2,7 @@
   "apps": [
     {
       "name": "tCommerce-backend",
-      "script": "./dist/src/main.js",
+      "script": "./dist/main.js",
       "merge_logs": true,
       "max_restarts": 15,
       "instance_var": "INSTANCE_ID",
