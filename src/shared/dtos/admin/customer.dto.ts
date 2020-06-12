@@ -10,6 +10,7 @@ import {
   ValidateNested
 } from 'class-validator';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
+import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
 
 export class AdminAddOrUpdateCustomerDto {
   @Expose()
@@ -33,6 +34,7 @@ export class AdminAddOrUpdateCustomerDto {
   @Expose()
   @IsOptional()
   @IsString()
+  @Transform(value => normalizePhoneNumber(value))
   phoneNumber: string;
 
   @Expose()

@@ -22,12 +22,6 @@ export class ShipmentAddress {
   address?: string;
 
   @prop()
-  warehouseId?: string;
-
-  @prop()
-  warehouse?: string;
-
-  @prop()
   phone?: string;
 
   @prop()

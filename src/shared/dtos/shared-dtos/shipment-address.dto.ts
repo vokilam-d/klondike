@@ -1,6 +1,7 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { AddressTypeEnum } from '../../enums/address-type.enum';
+import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
 
 export class ShipmentAddressDto {
 
@@ -29,16 +30,6 @@ export class ShipmentAddressDto {
   @Expose()
   @IsString()
   @IsOptional()
-  warehouseId?: string;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  warehouse?: string;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
   addressId?: string;
 
   @Expose()
@@ -49,6 +40,7 @@ export class ShipmentAddressDto {
   @Expose()
   @IsString()
   @IsOptional()
+  @Transform(value => normalizePhoneNumber(value))
   phone?: string;
 
   @Expose()

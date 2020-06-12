@@ -12,18 +12,11 @@ export class ShipmentSenderService {
   constructor(@InjectModel(ShipmentSender.name) private readonly shipmentSenderModel: ReturnModelType<typeof ShipmentSender>) {
   }
 
-  public async getAll() : Promise<ShipmentSenderDto[]> {
-    let shipmentSenders = await this.shipmentSenderModel.find().exec();
-    return shipmentSenders.map(shipmentSender => ({
-      "id": shipmentSender.id,
-      "phone": shipmentSender.phone,
-      "name": shipmentSender.firstName + ' ' + shipmentSender.lastName,
-      "address": shipmentSender.address,
-      "isDefault": shipmentSender.isDefault
-    }));
+  public async getAll(): Promise<ShipmentSenderDto[]> {
+    return this.shipmentSenderModel.find().exec();
   }
 
-  public async getById(senderId: number) : Promise<ShipmentSenderDto> {
+  public async getById(senderId: number): Promise<ShipmentSenderDto> {
     if (!senderId) {
       throw new BadRequestException(__('Shipment sender not provided', 'ru'));
     }

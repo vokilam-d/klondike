@@ -76,6 +76,7 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsString()
+  @IsOptional()
   shippingMethodName: string; // todo move to AdminOrderDto after migration
 
   @Expose()

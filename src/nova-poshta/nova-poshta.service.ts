@@ -89,8 +89,7 @@ export class NovaPoshtaService {
       saveAddressRequestBody.methodProperties.Note = recipient.note;
     }
 
-    const saveAddressResponse = await this.http.post(this.apiUrl, saveAddressRequestBody)
-      .toPromise();
+    const saveAddressResponse = await this.http.post(this.apiUrl, saveAddressRequestBody).toPromise();
     const recipientAddress = saveAddressResponse.data.data[0].Ref;
     const cityRef = saveAddressResponse.data.data[0].CityRef;
 
@@ -235,7 +234,7 @@ export class NovaPoshtaService {
   }
 
   public async fetchSettlementCatalogPage(settlementBulkNumber: number): Promise<SettlementDto[]> {
-    const response = await this.http.post('http://api.novaposhta.ua/v2.0/json/Address/searchSettlements/',
+    const response = await this.http.post(`${this.apiUrl}Address/searchSettlements/`,
       {
         modelName: 'AddressGeneral',
         calledMethod: 'getSettlements',
@@ -280,7 +279,7 @@ export class NovaPoshtaService {
   }
 
   public async fetchWarehouseCatalogPage(warehouseBulkNumber: number): Promise<WarehouseDto[]> {
-    const response = await this.http.post('http://api.novaposhta.ua/v2.0/json/AddressGeneral/getWarehouses',
+    const response = await this.http.post(`${this.apiUrl}AddressGeneral/getWarehouses`,
       {
         modelName: 'AddressGeneral',
         calledMethod: 'getWarehouses',
