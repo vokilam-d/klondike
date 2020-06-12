@@ -54,8 +54,12 @@ export class AuthService {
               private readonly jwtService: JwtService) {
   }
 
-  getCustomerIdFromReq(req: FastifyRequest): Promise<number | undefined> {
-    return this.getEntityIdFromReq(req, authConstants.JWT_COOKIE_NAME).then(id => parseInt(id));
+  async getCustomerIdFromReq(req: FastifyRequest): Promise<number | undefined> {
+    const id = await this.getEntityIdFromReq(req, authConstants.JWT_COOKIE_NAME);
+    const parsed = parseInt(id);
+    if (Number.isNaN(parsed)) { return; }
+
+    return parsed;
   }
 
   async getCustomerFromReq(req: FastifyRequest): Promise<DocumentType<Customer> | undefined> {
@@ -191,7 +195,7 @@ export class AuthService {
     const resetModel = await this.resetPasswordService.create(customer);
     await this.emailService.sendResetPasswordEmail(customer, resetModel.token);
 
-    return;
+    return true;
   }
 
   async getCustomerIdByResetPasswordToken(token: string): Promise<number> {

@@ -13,6 +13,7 @@ import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ReorderPositionEnum } from '../shared/enums/reoder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { PageTypeEnum } from '../shared/enums/page-type.enum';
 
 @Injectable()
 export class CategoryService {
@@ -193,14 +194,14 @@ export class CategoryService {
   private createCategoryPageRegistry(slug: string, session: ClientSession) {
     return this.pageRegistryService.createPageRegistry({
       slug,
-      type: 'category'
+      type: PageTypeEnum.Category
     }, session);
   }
 
   private updateCategoryPageRegistry(oldSlug: string, newSlug: string, session: ClientSession) {
     return this.pageRegistryService.updatePageRegistry(oldSlug, {
       slug: newSlug,
-      type: 'category'
+      type: PageTypeEnum.Category
     }, session);
   }
 

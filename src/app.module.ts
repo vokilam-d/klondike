@@ -4,7 +4,6 @@ import { GlobalExceptionFilter } from './shared/filters/global-exception.filter'
 import { SharedModule } from './shared/shared.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProductModule } from './product/product.module';
-import { CartModule } from './cart/cart.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { AttributeModule } from './attribute/attribute.module';
 import { CustomerModule } from './customer/customer.module';
@@ -46,7 +45,6 @@ import { BlogModule } from './blog/blog.module';
 
     CategoryModule,
     ProductModule,
-    CartModule,
     InventoryModule,
     AttributeModule,
     CustomerModule,

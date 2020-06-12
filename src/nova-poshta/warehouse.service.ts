@@ -4,7 +4,7 @@ import { SearchService } from '../shared/services/search/search.service';
 import { ElasticWarehouse } from './models/elastic-warehouse.model';
 import { autocompleteSettings } from '../shared/constants';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
-import { ProdPrimaryInstanceCron } from '../shared/decorators/primary-instance-cron.decorator';
+import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { WarehouseDto } from '../shared/dtos/shared-dtos/warehouse.dto';
 import { plainToClass } from 'class-transformer';
 import { NovaPoshtaService } from './nova-poshta.service';
@@ -48,7 +48,7 @@ export class WarehouseService implements OnApplicationBootstrap {
     return plainToClass(WarehouseDto, warehouses, { excludeExtraneousValues: true });
   }
 
-  @ProdPrimaryInstanceCron(CronExpression.EVERY_DAY_AT_4AM)
+  @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_4AM)
   public async loadWarehousesToElastic() {
     let warehouseCount = 0;
     try {

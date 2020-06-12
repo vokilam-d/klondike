@@ -31,6 +31,8 @@ import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
 import { Shipment } from './models/shipment.model';
 import { PaymentMethodEnum } from '../shared/enums/payment-method.enum';
+import { OnlinePaymentDetailsDto } from '../shared/dtos/client/online-payment-details.dto';
+import { createHmac } from 'crypto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -183,7 +185,9 @@ export class OrderService implements OnApplicationBootstrap {
 
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
-      this.tasksService.sendLeaveReviewEmail(newOrder);
+      if (!migrate) {
+        this.tasksService.sendLeaveReviewEmail(newOrder);
+      }
       return newOrder;
 
     } catch (ex) {
@@ -427,7 +431,7 @@ export class OrderService implements OnApplicationBootstrap {
     const filters = spf.getNormalizedFilters();
     if (spf.customerId) {
       const customerIdProp = getPropertyOf<AdminOrderDto>('customerId');
-      filters.push({ fieldName: customerIdProp, value: `${spf.customerId}` });
+      filters.push({ fieldName: customerIdProp, values: [spf.customerId] });
     }
 
     return this.searchService.searchByFilters<AdminOrderDto>(
@@ -510,4 +514,49 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
+
+  async getPaymentDetails(orderId: number): Promise<OnlinePaymentDetailsDto> {
+    const order = await this.getOrderById(orderId);
+
+    const merchantAccount = process.env.MERCHANT_ACCOUNT;
+    const merchantDomainName = process.env.MERCHANT_DOMAIN;
+    const orderReference = order.idForCustomer + '#' + new Date().getTime();
+    const orderDate = order.createdAt.getTime() + '';
+    const amount = order.totalCost;
+    const currency = 'UAH';
+
+    const itemNames: string[] = [];
+    const itemPrices: number[] = [];
+    const itemCounts: number[] = [];
+    for (const item of order.items) {
+      itemNames.push(item.name);
+      itemPrices.push(item.price);
+      itemCounts.push(item.qty);
+    }
+
+    const secretKey = process.env.MERCHANT_SECRET_KEY;
+    const merchantSignature = createHmac('md5', secretKey)
+      .update([ merchantAccount, merchantDomainName, orderReference, orderDate, amount, currency, ...itemNames, ...itemCounts, ...itemPrices ].join(';'))
+      .digest('hex');
+
+    return {
+      merchantAccount,
+      merchantAuthType: 'SimpleSignature',
+      merchantDomainName,
+      merchantSignature,
+      orderReference,
+      orderDate,
+      orderNo: order.idForCustomer,
+      amount,
+      currency,
+      productName: itemNames,
+      productPrice: itemPrices,
+      productCount: itemCounts,
+      clientFirstName: order.customerFirstName,
+      clientLastName: order.customerLastName,
+      clientEmail: order.customerEmail,
+      clientPhone: order.customerPhoneNumber || order.address.phoneNumber,
+      language: 'RU'
+    }
+  }
 }
