@@ -54,7 +54,9 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
     properties: new ElasticOrderItemModel()
   };
   logs = elasticTextType;
-  shipment = new ElasticShipmentModel();
+  shipment = {
+    properties: new ElasticShipmentModel()
+  };
   paymentMethodAdminName = elasticTextType;
   paymentMethodClientName = elasticTextType;
   paymentMethodId = elasticTextType;
