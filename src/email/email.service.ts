@@ -123,7 +123,6 @@ export class EmailService {
       addressPhone: order.shipment.recipient.phone,
       addressCity: order.shipment.recipient.settlement,
       addressPost: order.shipment.recipient.address,
-      //TODO Denis fix email to new flow please
       shipping: order.shippingMethodName,
       payment: order.paymentMethodClientName,
       products: order.items.map(item => ({

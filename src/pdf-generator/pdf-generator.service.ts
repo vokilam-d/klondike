@@ -50,7 +50,6 @@ export class PdfGeneratorService {
       addressName: `${order.shipment.recipient.firstName} ${order.shipment.recipient.lastName}`,
       addressPhone: order.shipment.recipient.phone,
       addressCity: order.shipment.recipient.settlement,
-      //TODO Denis fix pdf to new flow please
       addressPost: order.shipment.recipient.address,
       shipping: order.shippingMethodName,
       payment: order.paymentMethodClientName,

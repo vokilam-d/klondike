@@ -16,9 +16,6 @@ export class ClientAddOrderDto {
   @ValidateNested()
   @Type(() => ShipmentAddressDto)
   address: ShipmentAddressDto;
-  // TODO Denis: Check current OrderService logic. Below in particular:
-  //private async createOrder(orderDto: AdminAddOrUpdateOrderDto | ClientAddOrderDto, customer: Customer, session: ClientSession, migrate?: any) {
-  //     const newOrder = new this.orderModel(orderDto);
 
   @Expose()
   @IsString()
