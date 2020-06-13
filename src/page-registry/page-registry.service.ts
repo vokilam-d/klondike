@@ -67,7 +67,7 @@ export class PageRegistryService {
   }
 
   async deletePageRegistryByType(type: PageRegistry['type']) {
-    const deleted = await this.registryModel.findOneAndDelete({ type: type }).exec();
+    const deleted = await this.registryModel.deleteMany({ type: type }).exec();
 
     if (deleted) {
       this.logger.log(`Deleted all '${type}' pages from page-registry.`);
