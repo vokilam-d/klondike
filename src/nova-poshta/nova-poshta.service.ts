@@ -16,8 +16,10 @@ import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.
 export class NovaPoshtaService {
 
   private apiUrl = 'http://api.novaposhta.ua/v2.0/json/';
-  private static settlementPriority = new Map([['Киев', 1], ['Харьков', 2], ['Одесса', 3], ['Днепр', 4],
-    ['Запорожье', 5], ['Львов', 6], ['Кривой Рог', 7], ['Николаев', 8], ['Мариуполь', 9]]);
+  private static settlementPriority = new Map([
+    ['Киев', 1], ['Харьков', 2], ['Одесса', 3], ['Днепр', 4],
+    ['Запорожье', 5], ['Львов', 6], ['Кривой Рог', 7], ['Николаев', 8], ['Мариуполь', 9]
+  ]);
 
   constructor(private readonly http: HttpService) {
   }
@@ -195,22 +197,35 @@ export class NovaPoshtaService {
   }
 
   public async fetchShipments(trackingNumbers: string[]): Promise<ShipmentDto[]> {
-    const { data: response } = await this.http.post(`${this.apiUrl}en/documentsTracking/json`,
-      {
-        modelName: 'TrackingDocument',
-        calledMethod: 'getStatusDocuments',
-        methodProperties: {
-          Documents: trackingNumbers.map(trackingNumber =>
-            ({ DocumentNumber: trackingNumber }))
-        },
-        apiKey: process.env.NOVA_POSHTA_API_KEY
-      }).toPromise();
+    if (!trackingNumbers?.length) { return []; }
 
-    if (response.success === false) {
-      throw new BadRequestException(response.errors.join(', '));
+    const maxDocumentsCountInRequest = 100;
+    const responseDocuments: any[] = [];
+
+    for (let i = 0; i < Math.ceil(trackingNumbers.length / maxDocumentsCountInRequest); i++) {
+      const startIdx = i * maxDocumentsCountInRequest;
+      const Documents = trackingNumbers
+        .slice(startIdx, startIdx + maxDocumentsCountInRequest)
+        .map(trackingNumber => ({ DocumentNumber: trackingNumber }))
+
+      const { data: response } = await this.http.post(`${this.apiUrl}en/documentsTracking/json`,
+        {
+          modelName: 'TrackingDocument',
+          calledMethod: 'getStatusDocuments',
+          methodProperties: {
+            Documents
+          },
+          apiKey: process.env.NOVA_POSHTA_API_KEY
+        }).toPromise();
+
+      if (response.success === false) {
+        throw new BadRequestException(response.errors.join(', '));
+      }
+
+      responseDocuments.push(...response.data);
     }
 
-    return response.data.map(shipment => ({
+    return responseDocuments.map(shipment => ({
       trackingNumber: shipment.Number,
       status: NovaPoshtaService.toShipmentStatus(shipment.StatusCode),
       statusDescription: shipment.Status
