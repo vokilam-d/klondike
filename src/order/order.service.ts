@@ -33,6 +33,7 @@ import { Shipment } from './models/shipment.model';
 import { PaymentMethodEnum } from '../shared/enums/payment-method.enum';
 import { OnlinePaymentDetailsDto } from '../shared/dtos/client/online-payment-details.dto';
 import { createHmac } from 'crypto';
+import { isObject } from 'src/shared/helpers/is-object.function';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -364,7 +365,7 @@ export class OrderService implements OnApplicationBootstrap {
 
   async shipOrder(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
     return await this.updateOrderById(orderId, async (order, session) => {
-      OrderService.updateShipmentData(order.shipment, shipmentDto);
+      OrderService.patchShipmentData(order.shipment, shipmentDto);
       shipmentDto = plainToClass(ShipmentDto, order.shipment, { excludeExtraneousValues: true });
 
       const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
@@ -473,7 +474,7 @@ export class OrderService implements OnApplicationBootstrap {
     return await this.updateOrderById(orderId, async order => {
       const oldTrackingNumber = order.shipment.trackingNumber;
       const newTrackingNumber = shipmentDto.trackingNumber;
-      OrderService.updateShipmentData(order.shipment, shipmentDto);
+      OrderService.patchShipmentData(order.shipment, shipmentDto);
       if (oldTrackingNumber !== newTrackingNumber) {
         await this.fetchShipmentStatus(order);
       }
@@ -495,19 +496,20 @@ export class OrderService implements OnApplicationBootstrap {
     OrderService.updateOrderStatus(order);
   }
 
-  private static updateShipmentData(shipment: Shipment, shipmentDto: ShipmentDto) {
-    this.copyValues(shipmentDto, shipment);
-    this.copyValues(shipmentDto.recipient, shipment.recipient);
-  }
+  private static patchShipmentData(shipment: Shipment, shipmentDto: ShipmentDto) {
+    const copyValues = (fromObject: any, toObject: any) => {
+      for (const key of Object.keys(fromObject)) {
+        if (fromObject[key] === undefined) { continue;}
 
-  private static copyValues(fromObject, toObject) {
-    if (fromObject) {
-      Object.keys(fromObject).forEach(key => {
-        if (fromObject[key]) {
+        if (isObject(fromObject[key])) {
+          copyValues(fromObject[key], toObject[key]);
+        } else {
           toObject[key] = fromObject[key];
         }
-      });
+      }
     }
+
+    copyValues(shipmentDto, shipment);
   }
 
   private static updateOrderStatus(order) {
