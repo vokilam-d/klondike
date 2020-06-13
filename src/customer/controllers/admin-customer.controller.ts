@@ -73,4 +73,9 @@ export class AdminCustomerController {
   updateCounter() {
     return this.customerService.updateCounter();
   }
+
+  @Post('clear-collection') // todo remove this and all counter updates
+  clearCollection() {
+    return this.customerService.clearCollection();
+  }
 }

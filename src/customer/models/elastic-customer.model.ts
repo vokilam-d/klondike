@@ -7,6 +7,7 @@ export class ElasticCustomerModel implements Record<keyof AdminCustomerDto, any>
     properties: new ElasticShipmentAddressModel()
   };
   createdAt = elasticDateType;
+  deprecatedAddresses = elasticTextType;
   discountPercent = elasticTextType;
   email = elasticTextType;
   firstName = elasticTextType;

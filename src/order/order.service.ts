@@ -412,9 +412,14 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async updateCounter() {
+  async updateCounter() { // todo remove this after migrate
     const lastOrder = await this.orderModel.findOne().sort('-_id').exec();
     return this.counterService.setCounter(Order.collectionName, lastOrder.id);
+  }
+
+  async clearCollection() { // todo remove this after migrate
+    await this.orderModel.deleteMany({}).exec();
+    await this.searchService.deleteCollection(Order.collectionName);
   }
 
   private async addSearchData(order: Order) {

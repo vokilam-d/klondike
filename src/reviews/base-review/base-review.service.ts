@@ -249,9 +249,14 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     });
   }
 
-  async updateCounter() {
+  async updateCounter() { // todo remove this after migrate
     const lastReview = await this.reviewModel.findOne().sort('-_id').exec();
     return this.counterService.setCounter(this.collectionName, lastReview.id);
+  }
+
+  async clearCollection() { // todo remove this after migrate
+    await this.reviewModel.deleteMany({}).exec();
+    await this.searchService.deleteCollection(this.collectionName);
   }
 
   private async addSearchData(review: DocumentType<T>) {

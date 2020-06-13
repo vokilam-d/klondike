@@ -66,6 +66,11 @@ export class AdminOrderController {
     return this.orderService.updateCounter();
   }
 
+  @Post('clear-collection') // todo remove this and all counter updates
+  clearCollection() {
+    return this.orderService.clearCollection();
+  }
+
   @Post(':id/actions/:actionName')
   async performAction(@Param() params: OrderActionDto,
                       @Body() actionBody?: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {

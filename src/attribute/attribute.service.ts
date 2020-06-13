@@ -177,4 +177,9 @@ export class AttributeService implements OnApplicationBootstrap {
       spf.limit
     );
   }
+
+  async clearCollection() { // todo remove this after migrate
+    await this.attributeModel.deleteMany({}).exec();
+    await this.searchService.deleteCollection(Attribute.collectionName);
+  }
 }

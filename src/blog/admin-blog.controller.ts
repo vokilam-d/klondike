@@ -49,7 +49,12 @@ export class AdminBlogController {
     return this.blogService.updateCounter();
   }
 
-  @Post('migrate-linked') // todo remove after migrate this and IMPORT PRODUCT MODULE FROM THIS MODULE
+  @Post('clear-collection') // todo remove this and all counter updates
+  clearCollection() {
+    return this.blogService.clearCollection();
+  }
+
+  @Post('migrate-linked') // todo remove after migrate this and REMOVE IMPORT PRODUCT MODULE FROM THIS MODULE
   async migrateLinked() {
     return this.blogService.migrateLinked();
   }

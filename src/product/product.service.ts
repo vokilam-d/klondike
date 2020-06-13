@@ -620,9 +620,14 @@ export class ProductService implements OnApplicationBootstrap {
       .catch(_ => { });
   }
 
-  async updateCounter() {
+  async updateCounter() { // todo remove this after migrate
     const lastProduct = await this.productModel.findOne().sort('-_id').exec();
     return this.counterService.setCounter(Product.collectionName, lastProduct.id);
+  }
+
+  async clearCollection() { // todo remove this after migrate
+    await this.productModel.deleteMany({}).exec();
+    await this.searchService.deleteCollection(Product.collectionName);
   }
 
   async addReviewToProduct(review: ProductReview, session?: ClientSession): Promise<any> {

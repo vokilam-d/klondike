@@ -45,6 +45,9 @@ export class Customer {
   @arrayProp({ items: ShipmentAddress, default: [] })
   addresses: ShipmentAddress[];
 
+  @arrayProp({ items: String, default: [] })
+  deprecatedAddresses: string[];
+
   @arrayProp({ items: Number, default: [] })
   reviewIds: number[];
 

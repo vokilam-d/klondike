@@ -584,7 +584,7 @@ export class Migrate {
         dto.phoneNumber = billingAddress.telephone
       }
 
-      dto.password = null; // todo handle password;
+      dto.password = null;
 
       dto.createdAt = new Date(customer.created_at);
       dto.lastLoggedIn = dto.createdAt;
@@ -599,19 +599,14 @@ export class Migrate {
       }
 
       dto.addresses = [];
+      dto.deprecatedAddresses = [];
 
-      //TODO for Yurii: migrate to valid NovaPoshta address if have time
-
-      // for (const address of addresses) {
-      //   if (address.parent_id === customer.entity_id) {
-      //     const addressDto = {} as ShipmentAddressDto;
-      //     addressDto.firstName = address.firstname || '';
-      //     addressDto.lastName = address.lastname || '';
-      //     addressDto.phone = address.telephone || '';
-      //
-      //     dto.addresses.push(addressDto);
-      //   }
-      // }
+      for (const address of addresses) {
+        if (address.parent_id === customer.entity_id) {
+          let deprecatedAddress = `${address.firstname || ''} ${address.lastname || ''}, ${address.telephone || ''}, ${address.city || ''}, ${address.street || ''}`;
+          dto.deprecatedAddresses.push(deprecatedAddress);
+        }
+      }
 
       dto.reviewIds = [];
       for (const reviewDetail of reviewDetails) {
@@ -711,9 +706,7 @@ export class Migrate {
       dto.paymentMethodId = '';
       dto.paymentMethodAdminName = dto.paymentMethodClientName;
 
-      dto.shippingMethodId = '';
-      dto.shippingMethodClientName = order.shipping_description;
-      dto.shippingMethodAdminName = order.shipping_description;
+      dto.shippingMethodName = order.shipping_description;
 
       dto.isCallbackNeeded = false;
       const foundAttrEntity = orderAttrEntities.find(entity => entity.parent_entity_type === 1 && entity.parent_id === order.entity_id);
@@ -1174,9 +1167,13 @@ export class Migrate {
 
 
   async updateCounter(entity: string) {
-    await axios.post(
-      `${this.apiHostname}/api/v1/admin/${entity}/counter`);
+    await axios.post(`${this.apiHostname}/api/v1/admin/${entity}/counter`);
   }
+
+  async clearCollection(entity: string) {
+    await axios.post(`${this.apiHostname}/api/v1/admin/${entity}/clear-collection`);
+  }
+
 
 
 

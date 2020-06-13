@@ -56,6 +56,11 @@ export class AdminProductReviewController {
     return this.productReviewService.updateCounter();
   }
 
+  @Post('clear-collection') // todo remove this and all counter updates
+  clearCollection() {
+    return this.productReviewService.clearCollection();
+  }
+
   @Post('media')
   async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
     const media = await this.productReviewService.uploadMedia(request);

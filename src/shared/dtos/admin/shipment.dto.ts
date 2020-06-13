@@ -31,6 +31,7 @@ export class ShipmentDto {
 
   @Expose()
   @Type(() => ShipmentAddressDto)
+  @IsOptional()
   recipient?: ShipmentAddressDto;
 
   @Expose()

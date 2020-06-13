@@ -85,6 +85,11 @@ export class AdminProductController {
     return this.productsService.updateCounter();
   }
 
+  @Post('clear-collection') // todo remove this and all counter updates
+  clearCollection() {
+    return this.productsService.clearCollection();
+  }
+
   @Post('action/reorder')
   async reorderProduct(@Body() reorderDto: ProductReorderDto,
                        @Query() spf: AdminSPFDto

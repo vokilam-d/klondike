@@ -261,9 +261,14 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async updateCounter() {
+  async updateCounter() { // todo remove this after migrate
     const lastCustomer = await this.customerModel.findOne().sort('-_id').exec();
     return this.counterService.setCounter(Customer.collectionName, lastCustomer.id);
+  }
+
+  async clearCollection() { // todo remove this after migrate
+    await this.customerModel.deleteMany({}).exec();
+    await this.searchService.deleteCollection(Customer.collectionName);
   }
 
   private async addSearchData(customer: Customer) {

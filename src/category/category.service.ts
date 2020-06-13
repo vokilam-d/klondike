@@ -214,6 +214,10 @@ export class CategoryService {
     return this.counterService.setCounter(Category.collectionName, lastCategory.id);
   }
 
+  async clearCollection() {
+    await this.categoryModel.deleteMany({}).exec();
+  }
+
   private async buildBreadcrumbs(category: Category, allCategories?: Category[]): Promise<Breadcrumb[]> {
     if (!category.parentId) { return []; }
 

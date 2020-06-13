@@ -86,6 +86,11 @@ export class BlogService {
     await this.counterService.setCounter(BlogPost.collectionName, lastPost.id);
   }
 
+  async clearCollection() { // todo remove this after migrate
+    await this.blogCategoryModel.deleteMany({}).exec();
+    await this.postModel.deleteMany({}).exec();
+  }
+
   async migrateLinked() { // todo remove after migrate
     const spf = new AdminSPFDto();
     spf.limit = 10000;

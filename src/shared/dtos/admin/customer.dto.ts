@@ -79,6 +79,9 @@ export class AdminAddOrUpdateCustomerDto {
   addresses: ShipmentAddressDto[];
 
   @Expose()
+  deprecatedAddresses: string[];
+
+  @Expose()
   @IsNumber(undefined, { each: true })
   reviewIds: number[];
 

@@ -53,6 +53,11 @@ export class AdminAttributeController {
     };
   }
 
+  @Post('clear-collection') // todo remove this and all counter updates
+  clearCollection() {
+    return this.attributeService.clearCollection();
+  }
+
   @Put(':id')
   async updateAttribute(@Param('id') attributeId: string,
                         @Body() attributeDto: AdminUpdateAttributeDto
