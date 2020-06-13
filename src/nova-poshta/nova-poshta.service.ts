@@ -195,7 +195,7 @@ export class NovaPoshtaService {
   }
 
   public async fetchShipments(trackingNumbers: string[]): Promise<ShipmentDto[]> {
-    const { data: response } = await this.http.post('http://testapi.novaposhta.ua/v2.0/en/documentsTracking/json',
+    const { data: response } = await this.http.post(`${this.apiUrl}en/documentsTracking/json`,
       {
         modelName: 'TrackingDocument',
         calledMethod: 'getStatusDocuments',
