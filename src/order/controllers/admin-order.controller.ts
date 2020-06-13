@@ -86,6 +86,9 @@ export class AdminOrderController {
       case OrderActionEnum.SHIP:
         order = await this.orderService.shipOrder(params.id, actionBody);
         break;
+      case OrderActionEnum.UPDATE_STATUS:
+        order = await this.orderService.updateShipmentStatus(params.id);
+        break;
     }
 
     return {

@@ -25,6 +25,7 @@ import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/produ
 import { ShipmentAddressDto } from '../src/shared/dtos/shared-dtos/shipment-address.dto';
 import { transliterate } from '../src/shared/helpers/transliterate.function';
 import { ShipmentDto } from '../src/shared/dtos/admin/shipment.dto';
+import { OrderStatusEnum } from '../src/shared/enums/order-status.enum';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3000';
@@ -676,7 +677,7 @@ export class Migrate {
     const addOrder = async (order) => {
       const dto = {} as AdminAddOrUpdateOrderDto;
       dto.id = order.entity_id;
-      // if (dto.id !== 1442) { return; }
+      // if (dto.id !== 2555) { return; }
       dto.idForCustomer = order.increment_id;
       dto.customerId = order.customer_id;
       dto.customerFirstName = order.customer_firstname || '';
@@ -772,7 +773,22 @@ export class Migrate {
 
       if (!dto.items.length) { return; }
 
-      dto.status = order.status;
+      switch (order.status) {
+        case 'canceled':
+          dto.status = OrderStatusEnum.CANCELED;
+          break;
+        case 'complete_shipednp':
+        case 'holded':
+          dto.status = OrderStatusEnum.FINISHED;
+          break;
+        case 'complete':
+          dto.status = OrderStatusEnum.SHIPPED;
+          break;
+        case 'pending':
+        case 'processing':
+          dto.status = OrderStatusEnum.NEW;
+          break;
+      }
       dto.state = order.state;
 
       dto.clientNote = '';

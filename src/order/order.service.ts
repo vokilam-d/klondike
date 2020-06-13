@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
@@ -38,6 +38,7 @@ import { isObject } from 'src/shared/helpers/is-object.function';
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
 
+  private logger = new Logger(OrderService.name);
   private cachedOrderCount: number;
 
   constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
@@ -100,18 +101,18 @@ export class OrderService implements OnApplicationBootstrap {
     return found;
   }
 
-  async updateOrdersByStatus(orderStatus: OrderStatusEnum,
-                             updateOrdersFunction: (orders) => Promise<Order[]>): Promise<Order[]> {
+  async updateOrdersByStatuses(orderStatuses: OrderStatusEnum[],
+                               updateOrdersFunction: (orders: DocumentType<Order>[]) => Promise<DocumentType<Order>[]>): Promise<Order[]> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
-      let orders = await this.orderModel.find({ status: orderStatus }).session(session).exec();
+      let orders = await this.orderModel.find({ status: { $in: orderStatuses } }).session(session).exec();
 
       const updatedOrders = await updateOrdersFunction(orders);
 
-      for (let order of orders) {
+      for (let order of updatedOrders) {
         await order.save({ session });
-        await this.updateSearchData(order);
+        this.updateSearchData(order).catch();
       }
       await session.commitTransaction();
       return updatedOrders;
@@ -123,17 +124,21 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async updateOrderById(orderId: number, updateOrderFunction: (order, session?) => Promise<Order>): Promise<Order> {
+  async updateOrderById(
+    orderId: number,
+    updateOrderFunction: (order: DocumentType<Order>, session?: ClientSession) => Promise<DocumentType<Order>>
+  ): Promise<DocumentType<Order>> {
+
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
-      let order = await this.getOrderById(orderId, session);
-
+      const order = await this.getOrderById(orderId, session);
       const updatedOrder = await updateOrderFunction(order, session);
 
-      await order.save({ session });
-      await this.updateSearchData(order);
+      await updatedOrder.save({ session });
+      await this.updateSearchData(updatedOrder);
       await session.commitTransaction();
+
       return updatedOrder;
     } catch (ex) {
       await session.abortTransaction();
@@ -244,7 +249,10 @@ export class OrderService implements OnApplicationBootstrap {
 
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
-      this.tasksService.sendLeaveReviewEmail(newOrder);
+
+      this.tasksService.sendLeaveReviewEmail(newOrder)
+        .catch(err => this.logger.error(`Could not send "Leave a review" email: `, err));
+
       return newOrder;
 
     } catch (ex) {
@@ -331,6 +339,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
+  @CronProdPrimaryInstance(CronExpression.EVERY_30_MINUTES)
   private updateCachedOrderCount() {
     this.orderModel.estimatedDocumentCount().exec()
       .then(count => this.cachedOrderCount = count)
@@ -382,7 +391,7 @@ export class OrderService implements OnApplicationBootstrap {
       order.shipment.estimatedDeliveryDate = shipmentDto.estimatedDeliveryDate;
       order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
       order.shipment.statusDescription = 'Готово к отправке';
-      OrderService.updateOrderStatus(order);
+      OrderService.updateOrderStatusByShipment(order);
 
       await this.customerService.incrementTotalOrdersCost(order.customerId, order.totalItemsCost, session);
       for (const item of order.items) {
@@ -451,9 +460,8 @@ export class OrderService implements OnApplicationBootstrap {
 
   @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
   public async getOrdersWithLatestShipmentStatuses(): Promise<Order[]> {
-    return await this.updateOrdersByStatus(OrderStatusEnum.SHIPPED, async orders => {
-      const ordersWithShipments: Order[] = orders
-        .filter(order => order.shipment && order.shipment.trackingNumber);
+    return await this.updateOrdersByStatuses([OrderStatusEnum.SHIPPED], async orders => {
+      const ordersWithShipments = orders.filter(order => order.shipment?.trackingNumber);
 
       const trackingNumbers: string[] = ordersWithShipments.map(order => order.shipment.trackingNumber);
 
@@ -461,9 +469,11 @@ export class OrderService implements OnApplicationBootstrap {
 
       ordersWithShipments.forEach(order => {
         const shipment: ShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
-        order.shipment.status = shipment.status;
-        order.shipment.statusDescription = shipment.statusDescription;
-        OrderService.updateOrderStatus(order);
+        if (shipment) {
+          order.shipment.status = shipment.status;
+          order.shipment.statusDescription = shipment.statusDescription;
+          OrderService.updateOrderStatusByShipment(order);
+        }
       });
 
       return ordersWithShipments;
@@ -483,17 +493,19 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   private async fetchShipmentStatus(order) {
-    let trackingNumber = order.shipment.trackingNumber;
-    if (!trackingNumber) {
-      return;
+    let status: string = '';
+    let statusDescription: string = '';
+
+    if (order.shipment.trackingNumber) {
+      const shipmentDto: ShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
+      status = shipmentDto?.status || '';
+      statusDescription = shipmentDto?.statusDescription || '';
     }
-    const shipmentDto: ShipmentDto = await this.novaPoshtaService.fetchShipment(trackingNumber);
-    if (shipmentDto) {
-      order.shipment.statusDescription = shipmentDto.statusDescription;
-      order.shipment.status = shipmentDto.status;
-    }
-    order.shipment.sender = {};
-    OrderService.updateOrderStatus(order);
+
+    order.shipment.status = status;
+    order.shipment.statusDescription = statusDescription;
+
+    OrderService.updateOrderStatusByShipment(order);
   }
 
   private static patchShipmentData(shipment: Shipment, shipmentDto: ShipmentDto) {
@@ -512,18 +524,15 @@ export class OrderService implements OnApplicationBootstrap {
     copyValues(shipmentDto, shipment);
   }
 
-  private static updateOrderStatus(order) {
+  private static updateOrderStatusByShipment(order) {
     const isCashOnDelivery = order.paymentType === PaymentMethodEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
 
     if (isCashOnDelivery && isReceived || !isCashOnDelivery && isCashPickedUp) {
       order.status = OrderStatusEnum.FINISHED;
-    } else {
-      order.status = OrderStatusEnum.SHIPPED;
     }
   }
-
 
   async getPaymentDetails(orderId: number): Promise<OnlinePaymentDetailsDto> {
     const order = await this.getOrderById(orderId);
@@ -568,5 +577,40 @@ export class OrderService implements OnApplicationBootstrap {
       clientPhone: order.customerPhoneNumber || order.shipment.recipient.phone,
       language: 'RU'
     }
+  }
+
+  @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_5AM)
+  private async reindexAllSearchData() {
+    this.logger.log(`Start reindex all search data`);
+    const orders = await this.orderModel.find().exec();
+
+    for (const ordersBatch of getBatches(orders, 20)) {
+      await Promise.all(ordersBatch.map(order => this.updateSearchData(order)));
+      this.logger.log('Reindexed ids: ', ordersBatch.map(i => i.id).join());
+    }
+
+    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
+      const result = [];
+      for (let i = 0; i < arr.length; i++) {
+        if (i % size !== 0) {
+          continue;
+        }
+
+        const resultItem = [];
+        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
+          resultItem.push(arr[i + k]);
+        }
+        result.push(resultItem);
+      }
+
+      return result;
+    }
+  }
+
+  async updateShipmentStatus(orderId: number): Promise<Order> {
+    return this.updateOrderById(orderId, async order => {
+      await this.fetchShipmentStatus(order);
+      return order;
+    });
   }
 }

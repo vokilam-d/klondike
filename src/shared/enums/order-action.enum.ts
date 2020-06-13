@@ -1,5 +1,6 @@
 export enum OrderActionEnum {
   CANCEL = 'cancel',
   START = 'start',
-  SHIP = 'ship'
+  SHIP = 'ship',
+  UPDATE_STATUS = 'update-status'
 }

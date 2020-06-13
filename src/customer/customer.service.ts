@@ -31,6 +31,8 @@ import { __ } from '../shared/helpers/translate/translate.function';
 import { InitResetPasswordDto } from '../shared/dtos/client/init-reset-password.dto';
 import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
 import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
+import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
+import { CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -230,6 +232,7 @@ export class CustomerService implements OnApplicationBootstrap {
     }
   }
 
+  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
   private updateCachedCustomerCount() {
     this.customerModel.estimatedDocumentCount().exec()
       .then(count => this.cachedCustomerCount = count)

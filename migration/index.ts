@@ -15,7 +15,7 @@ async function migrate() {
   await migrate.clearCollection('categories');
   await migrate.populateCategories();
   await migrate.updateCounter('categories');
-  await migrate.clearCollection('categories');
+  await migrate.clearCollection('attributes');
   await migrate.populateProductAttributes();
   await migrate.clearCollection('products');
   await migrate.populateProducts();

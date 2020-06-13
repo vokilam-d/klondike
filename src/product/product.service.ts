@@ -614,6 +614,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
+  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
   updateCachedProductCount() {
     this.productModel.estimatedDocumentCount().exec()
       .then(count => this.cachedProductCount = count)
@@ -1085,8 +1086,9 @@ export class ProductService implements OnApplicationBootstrap {
 
   @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_4AM)
   private async reindexAllSearchData() {
+    this.logger.log('Start reindex all search data');
+
     await this.searchService.deleteCollection(Product.collectionName);
-    this.logger.log('Deleted Products elastic collection');
     await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
 
     const spf = new AdminSPFDto();
@@ -1096,7 +1098,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     for (const batch of getBatches(listItems, 20)) {
       await Promise.all(batch.map(listItem => this.searchService.addDocument(Product.collectionName, listItem.id, listItem)));
-      console.log('Reindexed ids: ', batch.map(i => i.id).join());
+      this.logger.log('Reindexed ids: ', batch.map(i => i.id).join());
     }
 
     function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
@@ -1115,7 +1117,6 @@ export class ProductService implements OnApplicationBootstrap {
 
       return result;
     }
-
   }
 
   private async setProductPrices(product: DocumentType<Product>): Promise<DocumentType<Product>> {
@@ -1468,6 +1469,4 @@ export class ProductService implements OnApplicationBootstrap {
 
     return clientFilters;
   }
-
-
 }

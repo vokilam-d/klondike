@@ -1,5 +1,5 @@
 import { IsInt, IsOptional, IsString } from 'class-validator';
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { ShipmentStatusEnum } from '../../enums/shipment-status.enum';
 import { ShipmentPayerEnum } from '../../enums/shipment-payer.enum';
@@ -9,6 +9,7 @@ export class ShipmentDto {
 
   @Expose()
   @IsOptional()
+  @Transform(value => value ? value.replace(/\D/g, '') : value)
   trackingNumber?: string;
 
   @Expose()
