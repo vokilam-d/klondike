@@ -206,7 +206,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async addCustomerAddress(customer: DocumentType<Customer>, address: ShipmentAddressDto, session: ClientSession): Promise<Customer> {
     customer.addresses.push(address);
     await customer.save({ session });
-    this.updateSearchData(customer);
+    this.updateSearchData(customer).catch();
 
     return customer;
   }
@@ -269,6 +269,7 @@ export class CustomerService implements OnApplicationBootstrap {
   async clearCollection() { // todo remove this after migrate
     await this.customerModel.deleteMany({}).exec();
     await this.searchService.deleteCollection(Customer.collectionName);
+    await this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
   }
 
   private async addSearchData(customer: Customer) {

@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
 import { IFilter, ISorting } from '../../dtos/shared-dtos/spf.dto';
+import { elasticTextType } from '../../constants';
 
 @Injectable()
 export class SearchService {
@@ -38,7 +39,7 @@ export class SearchService {
         }
       });
     } catch (ex) {
-      this.logger.error('Could not ensure collection:');
+      this.logger.error(`Could not ensure collection "${collection}":`);
       this.logger.error(ex.meta ? ex.meta.body : ex);
     }
   }
@@ -124,7 +125,8 @@ export class SearchService {
                                  from: number,
                                  size: number,
                                  sortObj: ISorting = {},
-                                 sortFilter?: any
+                                 sortFilter?: any,
+                                 schema?: any
   ): Promise<[T[], number]> {
 
     const boolQuery: any = {
@@ -160,11 +162,23 @@ export class SearchService {
             }
           });
         } else {
+          const fields = filter.fieldName.split('|');
+          let type = 'phrase_prefix';
+
+          if (schema) {
+            for (const field of fields) {
+              const fieldFromSchema = schema[field];
+              if (fieldFromSchema?.type !== elasticTextType.type) {
+                type = 'term';
+              }
+            }
+          }
+
           boolQuery.must.push({
             multi_match: {
               query: decodeURIComponent(value),
-              type: 'phrase_prefix',
-              fields: filter.fieldName.split('|')
+              type,
+              fields
             }
           });
         }
@@ -224,7 +238,7 @@ export class SearchService {
     } catch (ex) {
       this.logger.error('Could not search by filters:');
       this.logger.error(ex.meta ? ex.meta.body : ex);
-      throw new Error();
+      throw new InternalServerErrorException(ex.meta?.body.failed_shards?.map(shard => shard?.reason.caused_by));
     }
   }
 

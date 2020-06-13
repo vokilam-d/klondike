@@ -181,5 +181,6 @@ export class AttributeService implements OnApplicationBootstrap {
   async clearCollection() { // todo remove this after migrate
     await this.attributeModel.deleteMany({}).exec();
     await this.searchService.deleteCollection(Attribute.collectionName);
+    await this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttributeModel());
   }
 }

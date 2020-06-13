@@ -216,6 +216,7 @@ export class CategoryService {
 
   async clearCollection() {
     await this.categoryModel.deleteMany({}).exec();
+    await this.pageRegistryService.deletePageRegistryByType(PageTypeEnum.Category);
   }
 
   private async buildBreadcrumbs(category: Category, allCategories?: Category[]): Promise<Breadcrumb[]> {

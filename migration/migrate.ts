@@ -24,6 +24,7 @@ import { AttributeTypeEnum } from '../src/shared/enums/attribute-type.enum';
 import { AdminProductSelectedAttributeDto } from '../src/shared/dtos/admin/product-selected-attribute.dto';
 import { ShipmentAddressDto } from '../src/shared/dtos/shared-dtos/shipment-address.dto';
 import { transliterate } from '../src/shared/helpers/transliterate.function';
+import { ShipmentDto } from '../src/shared/dtos/admin/shipment.dto';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3000';
@@ -476,7 +477,7 @@ export class Migrate {
           dto,
           {
             params: { migrate: true },
-            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 10, retryDelay: 500 }
           }
         );
         console.log(`[Products]: Migrated id`, dto.id, `- '${dto.name}'`);
@@ -503,7 +504,7 @@ export class Migrate {
         {  },
         {
           params: { migrate: true },
-          raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+          raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 10, retryDelay: 500 }
         }
       );
       console.log(`[Products]: Updated Related and CrossSell products`);
@@ -541,7 +542,7 @@ export class Migrate {
           categories,
           {
             params: { migrate: true },
-            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 10, retryDelay: 500 }
           }
         );
         console.log(`[Products]: Migrated id`, product.entity_id);
@@ -675,6 +676,7 @@ export class Migrate {
     const addOrder = async (order) => {
       const dto = {} as AdminAddOrUpdateOrderDto;
       dto.id = order.entity_id;
+      // if (dto.id !== 1442) { return; }
       dto.idForCustomer = order.increment_id;
       dto.customerId = order.customer_id;
       dto.customerFirstName = order.customer_firstname || '';
@@ -682,6 +684,7 @@ export class Migrate {
       dto.customerEmail = order.customer_email;
       dto.customerPhoneNumber = '';
 
+      dto.shipment = {} as ShipmentDto;
       dto.shipment.recipient = {} as ShipmentAddressDto;
       const foundAddress = addresses.find(address => address.entity_id === order.shipping_address_id);
       dto.shipment.recipient.firstName = foundAddress.firstname;
@@ -689,8 +692,8 @@ export class Migrate {
       dto.customerPhoneNumber = dto.shipment.recipient.phone = foundAddress.telephone;
       dto.shipment.recipient.settlement = foundAddress.city;
       dto.shipment.recipient.address = '';
-      if (foundAddress.postcode !== '-') { dto.shipment.recipient.address = foundAddress.postcode; }
       if (foundAddress.street !== '-') { dto.shipment.recipient.address = foundAddress.street; }
+      if (foundAddress.postcode !== '-') { dto.shipment.recipient.address = foundAddress.postcode; }
 
       dto.shouldSaveAddress = false;
       dto.createdAt = order.created_at;
@@ -732,11 +735,12 @@ export class Migrate {
           orderItem.cost = magOrderItem.row_total;
           orderItem.totalCost = orderItem.cost - orderItem.discountValue;
 
+          const orderItemDto = {} as AdminCreateOrderItemDto;
+          orderItemDto.sku = magOrderItem.sku;
+          orderItemDto.qty = magOrderItem.qty_ordered;
+          orderItemDto.customerId = magOrderItem.customer_id;
+
           try {
-            const orderItemDto = {} as AdminCreateOrderItemDto;
-            orderItemDto.sku = magOrderItem.sku;
-            orderItemDto.qty = magOrderItem.qty_ordered;
-            orderItemDto.customerId = magOrderItem.customer_id;
             const response = await axios.post<{ data: OrderItemDto }>(
               `${this.apiHostname}/api/v1/admin/order-items`,
               orderItemDto,
@@ -759,6 +763,8 @@ export class Migrate {
             } else {
               console.error(`[Order Items ERROR]: '${dto.id}': `, ex.response ? ex.response.status : ex);
               console.error(this.buildErrorMessage(ex.response && ex.response.data));
+              console.log(`'${orderItemDto.sku}' dto: `);
+              console.log(orderItemDto);
             }
           }
         }
@@ -787,9 +793,7 @@ export class Migrate {
           novaposhtaTrackingId = regexMatch[0];
         }
       }
-      dto.shipment = {
-        trackingNumber: novaposhtaTrackingId
-      };
+      dto.shipment.trackingNumber = novaposhtaTrackingId;
 
       dto.logs = [];
       dto.totalItemsCost = order.subtotal;
@@ -971,7 +975,7 @@ export class Migrate {
           dto,
           {
             params: { migrate: true },
-            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 10, retryDelay: 500 }
           }
         );
         console.log(`[Blog Categorys]: Migrated id`, dto.id, `- '${dto.name}'`);
@@ -1125,7 +1129,7 @@ export class Migrate {
           dto,
           {
             params: { migrate: true },
-            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+            raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 10, retryDelay: 500 }
           }
         );
         console.log(`[Blog Posts]: Migrated id`, dto.id, `- '${dto.name}'`);
@@ -1151,7 +1155,7 @@ export class Migrate {
         {  },
         {
           params: { migrate: true },
-          raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 5 }
+          raxConfig: { httpMethodsToRetry: ['GET', 'POST', 'PUT'], onRetryAttempt: err => { console.log('retry!'); }, retry: 10, retryDelay: 500 }
         }
       );
       console.log(`[Blog Posts]: Updated Linked products`);

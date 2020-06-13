@@ -420,6 +420,7 @@ export class OrderService implements OnApplicationBootstrap {
   async clearCollection() { // todo remove this after migrate
     await this.orderModel.deleteMany({}).exec();
     await this.searchService.deleteCollection(Order.collectionName);
+    await this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
   }
 
   private async addSearchData(order: Order) {
@@ -511,8 +512,10 @@ export class OrderService implements OnApplicationBootstrap {
 
   private static updateOrderStatus(order) {
     const isCashOnDelivery = order.paymentType === PaymentMethodEnum.CASH_ON_DELIVERY;
-    if (isCashOnDelivery && order.shipment.status === ShipmentStatusEnum.RECEIVED
-      || !isCashOnDelivery && order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP) {
+    const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
+    const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
+
+    if (isCashOnDelivery && isReceived || !isCashOnDelivery && isCashPickedUp) {
       order.status = OrderStatusEnum.FINISHED;
     } else {
       order.status = OrderStatusEnum.SHIPPED;

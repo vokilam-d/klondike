@@ -6,6 +6,7 @@ import { __ } from '../shared/helpers/translate/translate.function';
 import { LinkedProduct } from '../product/models/linked-product.model';
 import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
 import { ClientProductSPFDto } from '../shared/dtos/client/product-spf.dto';
+import { queryParamArrayDelimiter } from '../shared/constants';
 
 @Injectable()
 export class OrderItemService {
@@ -47,7 +48,9 @@ export class OrderItemService {
     }
     orderItem.totalCost = orderItem.cost - orderItem.discountValue;
 
-    orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
+    if (!migrate) {
+      orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
+    }
 
     return orderItem;
   }
@@ -60,7 +63,7 @@ export class OrderItemService {
 
     const spf = new ClientProductSPFDto();
     spf.limit = crossSellProducts.length;
-    spf.id = idsArr.join('|');
+    spf.id = idsArr.join(queryParamArrayDelimiter);
     const { data: products } = await this.productService.getClientProductList(spf);
 
     products.sort((a, b) => {

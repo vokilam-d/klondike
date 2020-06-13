@@ -89,6 +89,8 @@ export class BlogService {
   async clearCollection() { // todo remove this after migrate
     await this.blogCategoryModel.deleteMany({}).exec();
     await this.postModel.deleteMany({}).exec();
+    await this.pageRegistryService.deletePageRegistryByType(PageTypeEnum.BlogCategory);
+    await this.pageRegistryService.deletePageRegistryByType(PageTypeEnum.BlogPost);
   }
 
   async migrateLinked() { // todo remove after migrate

@@ -627,7 +627,9 @@ export class ProductService implements OnApplicationBootstrap {
 
   async clearCollection() { // todo remove this after migrate
     await this.productModel.deleteMany({}).exec();
+    await this.pageRegistryService.deletePageRegistryByType(PageTypeEnum.Product);
     await this.searchService.deleteCollection(Product.collectionName);
+    await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
   }
 
   async addReviewToProduct(review: ProductReview, session?: ClientSession): Promise<any> {
@@ -855,7 +857,8 @@ export class ProductService implements OnApplicationBootstrap {
       spf.skip,
       spf.limit,
       spf.getSortAsObj(),
-      spf.sortFilter
+      spf.sortFilter,
+      new ElasticProduct()
     );
   }
 

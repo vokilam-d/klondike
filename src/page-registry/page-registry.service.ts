@@ -65,4 +65,16 @@ export class PageRegistryService {
 
     return deleted;
   }
+
+  async deletePageRegistryByType(type: PageRegistry['type']) {
+    const deleted = await this.registryModel.findOneAndDelete({ type: type }).exec();
+
+    if (deleted) {
+      this.logger.log(`Deleted all '${type}' pages from page-registry.`);
+    } else {
+      this.logger.error(`Could not delete all '${type}' from page-registry.`);
+    }
+
+    return deleted;
+  }
 }

@@ -257,6 +257,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   async clearCollection() { // todo remove this after migrate
     await this.reviewModel.deleteMany({}).exec();
     await this.searchService.deleteCollection(this.collectionName);
+    await this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());
   }
 
   private async addSearchData(review: DocumentType<T>) {
