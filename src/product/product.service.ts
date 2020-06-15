@@ -724,17 +724,15 @@ export class ProductService implements OnApplicationBootstrap {
 
     const categoryToRemove: Partial<ProductCategory> = { id: categoryId };
     const breadcrumbToRemove: Partial<Breadcrumb> = { id: categoryId };
-    const update: Partial<Record<keyof Product, any>> = {
-      categories: categoryToRemove,
-      breadcrumbs: breadcrumbToRemove
-    };
 
     const categoriesProp: keyof Product = 'categories';
     const categoryIdProp: keyof ProductCategory = 'id';
+    const breadcrumbsProp: keyof Product = 'breadcrumbs';
+
     return this.productModel
       .updateMany(
         { [`${categoriesProp}.${categoryIdProp}`]: categoryId },
-        { $pull: update }
+        { $pull: { [categoriesProp]: categoryToRemove, [breadcrumbsProp]: breadcrumbToRemove } }
       )
       .session(session)
       .exec();
