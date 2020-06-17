@@ -24,7 +24,6 @@ import { plainToClass } from 'class-transformer';
 import { ClientCustomerDto } from '../../shared/dtos/client/customer.dto';
 import { AuthService } from '../../auth/services/auth.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
-import { ClientDetailedCustomerDto } from '../../shared/dtos/client/detailed-customer.dto';
 import { ClientUpdateCustomerDto } from '../../shared/dtos/client/update-customer.dto';
 import { DocumentType } from '@typegoose/typegoose';
 import { ClientUpdatePasswordDto } from '../../shared/dtos/client/update-password.dto';
@@ -69,11 +68,11 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Get('details')
-  async getAccount(@Req() req): Promise<ResponseDto<ClientDetailedCustomerDto>> {
+  async getAccount(@Req() req): Promise<ResponseDto<ClientCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
 
     return {
-      data: plainToClass(ClientDetailedCustomerDto, customer, { excludeExtraneousValues: true })
+      data: plainToClass(ClientCustomerDto, customer, { excludeExtraneousValues: true })
     };
   }
 
@@ -161,23 +160,23 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Post('address')
-  async addShippingAddress(@Req() req, @Body() addressDto: ShipmentAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
+  async addShippingAddress(@Req() req, @Body() addressDto: ShipmentAddressDto): Promise<ResponseDto<ClientCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.addShippingAddress(customer, addressDto);
 
     return {
-      data: plainToClass(ClientDetailedCustomerDto, updated, { excludeExtraneousValues: true })
+      data: plainToClass(ClientCustomerDto, updated, { excludeExtraneousValues: true })
     };
   }
 
   @UseGuards(CustomerJwtGuard)
   @Put('address/:id')
-  async editShippingAddress(@Req() req, @Param('id') addressId: string, @Body() addressDto: ShipmentAddressDto): Promise<ResponseDto<ClientDetailedCustomerDto>> {
+  async editShippingAddress(@Req() req, @Param('id') addressId: string, @Body() addressDto: ShipmentAddressDto): Promise<ResponseDto<ClientCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.editShippingAddress(customer, addressId, addressDto);
 
     return {
-      data: plainToClass(ClientDetailedCustomerDto, updated, { excludeExtraneousValues: true })
+      data: plainToClass(ClientCustomerDto, updated, { excludeExtraneousValues: true })
     };
   }
 

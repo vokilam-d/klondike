@@ -394,4 +394,11 @@ export class CustomerService implements OnApplicationBootstrap {
     customer.isEmailConfirmed = true;
     await customer.save();
   }
+
+  async emptyCart(customer: DocumentType<Customer>, session: ClientSession): Promise<DocumentType<Customer>> {
+    customer.cart = [];
+    await customer.save({ session });
+
+    return customer;
+  }
 }

@@ -191,9 +191,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
-      if (!migrate) {
-        this.tasksService.sendLeaveReviewEmail(newOrder);
-      }
+
       return newOrder;
 
     } catch (ex) {
@@ -209,7 +207,9 @@ export class OrderService implements OnApplicationBootstrap {
     session.startTransaction();
     try {
 
-      if (!customer) {
+      if (customer) {
+        await this.customerService.emptyCart(customer, session);
+      } else {
         customer = await this.customerService.getCustomerByEmailOrPhoneNumber(orderDto.email);
 
         if (customer) {
