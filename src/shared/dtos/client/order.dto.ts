@@ -10,6 +10,7 @@ export class ClientAddOrderDto {
   @Expose()
   @IsOptional()
   @IsString()
+  @Transform(((value, obj: Order) => value ? value : obj.customerEmail))
   email: string;
 
   @Expose()
@@ -20,10 +21,6 @@ export class ClientAddOrderDto {
   @Expose()
   @IsString()
   paymentMethodId: string;
-
-  @Expose()
-  @IsString()
-  shippingMethodId: string;
 
   @Expose()
   @IsBoolean()
@@ -37,10 +34,9 @@ export class ClientAddOrderDto {
   items: OrderItemDto[];
 
   @Expose()
-  @Transform(((value, obj: Order) => value ? value : obj.clientNote))
   @IsOptional()
   @IsString()
-  note: string;
+  clientNote: string;
 }
 
 export class ClientOrderDto extends ClientAddOrderDto {
@@ -49,7 +45,6 @@ export class ClientOrderDto extends ClientAddOrderDto {
   id: string;
 
   @Expose()
-  @Transform(((value, obj: Order) => value ? value : obj.shippingMethodName))
   shippingMethodName: string;
 
   @Expose()
@@ -57,8 +52,8 @@ export class ClientOrderDto extends ClientAddOrderDto {
   paymentMethodName: string;
 
   @Expose()
-  @Transform(((value, obj: Order) => value ? value : obj.shipment?.trackingNumber))
-  novaposhtaTrackingId: string;
+  @Type(() => ShipmentDto)
+  shipment: ShipmentDto;
 
   @Expose()
   status: OrderStatusEnum;
