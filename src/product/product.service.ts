@@ -266,7 +266,7 @@ export class ProductService implements OnApplicationBootstrap {
     return {
       data: clientListItems,
       page: spf.page,
-      pagesTotal: Math.ceil(filteredAdminListItems.length / spf.limit),
+      pagesTotal: Math.ceil(itemsTotal / spf.limit),
       itemsTotal,
       itemsFiltered,
       filters
