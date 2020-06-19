@@ -1,7 +1,6 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
 import { IFilter, ISorting } from '../../dtos/shared-dtos/spf.dto';
-import { elasticTextType } from '../../constants';
 
 @Injectable()
 export class SearchService {
@@ -200,21 +199,31 @@ export class SearchService {
   ): Promise<[T[], number]> {
 
     const sort = [];
-    let nestedSort = [];
+    let nestedSortArr = [];
     Object.entries(sortObj).forEach(entry => {
       const [fieldName, value] = entry;
 
+      if (typeof value === 'object') {
+        nestedSortArr.push({ [fieldName]: value });
+        return;
+      }
+
       if (fieldName.includes('.')) {
         const [parentField] = fieldName.split('.');
-        nestedSort.push({
+        const nestedSort: any = {
           [fieldName]: {
-            order: value,
             nested: {
               path: parentField,
               ...(sortFilter ? { filter: { term: sortFilter } } : {})
             }
           }
-        });
+        };
+
+        if (typeof value === 'string') {
+          nestedSort[fieldName].order = value;
+        }
+
+        nestedSortArr.push(nestedSort);
 
       } else {
         sort.push(`${fieldName}:${value}`);
@@ -231,7 +240,7 @@ export class SearchService {
           query: {
             bool: boolQuery
           },
-          ...(nestedSort.length ? { sort: nestedSort } : {})
+          ...(nestedSortArr.length ? { sort: nestedSortArr } : {})
         }
       });
 

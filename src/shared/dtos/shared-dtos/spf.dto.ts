@@ -8,7 +8,7 @@ export interface IFilter {
 }
 
 export interface ISorting {
-  [fieldName: string]: 'asc' | 'desc';
+  [fieldName: string]: 'asc' | 'desc' | Object;
 }
 
 const defaultSorting: ISorting = { '_id': 'desc' };

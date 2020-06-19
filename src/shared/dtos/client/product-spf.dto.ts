@@ -36,15 +36,34 @@ export class ClientProductSPFDto extends ClientSPFDto {
     const priceProp: keyof AdminProductVariantListItem = 'priceInDefaultCurrency';
     const categoriesProp: keyof AdminProductListItemDto = 'categories';
     const sortOrderProp: keyof AdminProductCategoryDto = 'sortOrder';
+    const qtyProp: keyof AdminProductVariantListItem = 'sellableQty';
+
+    const sort: ISorting = {
+      '_script': {
+        nested: {
+          path: variantsProp
+        },
+        type: 'number',
+        script: {
+          lang: 'painless',
+          source: `def qty = doc['${variantsProp}.${qtyProp}'].value; return qty > 0 ? 0 : 1`
+        }
+      }
+    };
 
     switch (this.sort) {
       case ESort.Cheap:
-        return { [`${variantsProp}.${priceProp}`]: 'asc' };
+        sort[`${variantsProp}.${priceProp}`] = 'asc';
+        break;
       case ESort.Expensive:
-        return { [`${variantsProp}.${priceProp}`]: 'desc' };
+        sort[`${variantsProp}.${priceProp}`] = 'desc';
+        break;
       case ESort.Popularity:
       default:
-        return { [`${categoriesProp}.${sortOrderProp}`]: 'desc' };
+        sort[`${categoriesProp}.${sortOrderProp}`] = 'desc';
+        break;
     }
+
+    return sort;
   }
 }
