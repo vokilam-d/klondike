@@ -14,12 +14,12 @@ export class SearchService {
       node: process.env.ELASTICSEARCH_URI
     });
 
-    // this.client.on('response', (err, result) => {
-    //   if (err) {
-    //     delete result.meta.connection;
-    //     console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
-    //   }
-    // });
+    this.client.on('response', (err, result) => {
+      if (err) {
+        delete result.meta.connection;
+        console.dir({ 'on_type': 'response', err, result }, { depth: 10 });
+      }
+    });
   }
 
   async ensureCollection(collection: string, properties, customSettings?): Promise<any> {
@@ -129,60 +129,63 @@ export class SearchService {
                                  schema?: any
   ): Promise<[T[], number]> {
 
-    const boolQuery: any = {
-      must: [],
-      should: []
+    const boolQuery = {
+      must: []
     }
 
     filters.forEach(filter => {
-      if (filter.values.length > 1) {
-        filter.values.forEach(value => {
-          boolQuery.should.push({
-            term: {
-              [filter.fieldName]: decodeURIComponent(value)
+      filter.values.forEach(value => {
+        value = decodeURIComponent(value);
+
+        const mustQuery = {
+          bool: {
+            should: [],
+            minimum_should_match: 1
+          }
+        };
+
+        const fieldNames = filter.fieldName.split('|');
+        fieldNames.forEach(fieldName => {
+
+          let shouldQuery: any = {};
+
+          const isNested = fieldName.includes('.');
+          if (isNested) {
+
+            const fieldNameParts = fieldName.split('.');
+            for (let i = fieldNameParts.length - 1; i >= 0; i--) {
+              const isLast = i === fieldNameParts.length - 1;
+
+              if (isLast) {
+                shouldQuery = {
+                  'match_phrase_prefix': {
+                    [fieldName]: value
+                  }
+                };
+              } else {
+                shouldQuery = {
+                  nested: {
+                    path: fieldNameParts.filter((_, k) => k <= i).join('.'),
+                    query: shouldQuery
+                  }
+                };
+              }
             }
-          });
+
+          } else {
+            shouldQuery = {
+              'match_phrase_prefix': {
+                [fieldName]: value
+              }
+            };
+          }
+
+          mustQuery.bool.should.push(shouldQuery);
 
         });
 
-        boolQuery.minimum_should_match = 1;
-      } else {
-        const value = filter.values[0];
-
-        if (filter.fieldName.includes('.')) {
-          const [parentField] = filter.fieldName.split('.');
-          boolQuery.must.push({
-            'nested': {
-              path: parentField,
-              query: {
-                'match_phrase_prefix': {
-                  [filter.fieldName]: decodeURIComponent(value)
-                }
-              }
-            }
-          });
-        } else {
-          const fields = filter.fieldName.split('|');
-          let type = 'phrase_prefix';
-
-          if (schema) {
-            for (const field of fields) {
-              const fieldFromSchema = schema[field];
-              if (fieldFromSchema?.type !== elasticTextType.type) {
-                type = 'term';
-              }
-            }
-          }
-
-          boolQuery.must.push({
-            multi_match: {
-              query: decodeURIComponent(value),
-              type,
-              fields
-            }
-          });
-        }
-      }
+        boolQuery.must.push(mustQuery);
+      });
     });
 
     return await this.searchByQuery(collection, boolQuery, from, size, sortObj, sortFilter);

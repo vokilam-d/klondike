@@ -582,11 +582,13 @@ export class OrderService implements OnApplicationBootstrap {
   @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_5AM)
   private async reindexAllSearchData() {
     this.logger.log(`Start reindex all search data`);
+    await this.searchService.deleteCollection(Order.collectionName);
+    await this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
     const orders = await this.orderModel.find().exec();
 
     for (const ordersBatch of getBatches(orders, 20)) {
-      await Promise.all(ordersBatch.map(order => this.updateSearchData(order)));
-      this.logger.log('Reindexed ids: ', ordersBatch.map(i => i.id).join());
+      await Promise.all(ordersBatch.map(order => this.addSearchData(order)));
+      this.logger.log(`Reindexed ids: ${ordersBatch.map(i => i.id).join()}`);
     }
 
     function getBatches<T = any>(arr: T[], size: number = 2): T[][] {

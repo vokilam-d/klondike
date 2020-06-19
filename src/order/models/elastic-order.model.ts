@@ -9,6 +9,7 @@ import {
   elasticTextType
 } from '../../shared/constants';
 import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 
 class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'crossSellProducts'> {
   cost = elasticFloatType;
@@ -25,16 +26,17 @@ class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'cr
   variantId = elasticTextType;
 }
 
-class ElasticShipmentModel {
+class ElasticShipmentModel implements Record<keyof Pick<ShipmentDto, 'trackingNumber' | 'status' | 'statusDescription' | 'recipient'>, any>{
   trackingNumber = elasticTextType;
   status = elasticTextType;
   statusDescription = elasticTextType;
+  recipient = {
+    type: 'nested',
+    properties: new ElasticShipmentAddressModel()
+  };
 }
 
 export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
-  address = {
-    properties: new ElasticShipmentAddressModel()
-  };
   adminNote = elasticTextType;
   clientNote = elasticTextType;
   createdAt = elasticDateType;
@@ -51,10 +53,12 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   isCallbackNeeded = elasticBooleanType;
   isConfirmationEmailSent = elasticBooleanType;
   items = {
+    type: 'nested',
     properties: new ElasticOrderItemModel()
   };
   logs = elasticTextType;
   shipment = {
+    type: 'nested',
     properties: new ElasticShipmentModel()
   };
   paymentMethodAdminName = elasticTextType;
