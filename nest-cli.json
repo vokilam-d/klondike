@@ -5,9 +5,9 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "assets": [
-      { "include": "**/*.html", "outDir": "dist/src" },
-      { "include": "**/*.css", "outDir": "dist/src" },
-      { "include": "**/*.woff2", "outDir": "dist/src" }
+      { "include": "**/*.html", "outDir": "dist" },
+      { "include": "**/*.css", "outDir": "dist" },
+      { "include": "**/*.woff2", "outDir": "dist" }
     ]
   }
 }
