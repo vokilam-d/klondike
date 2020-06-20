@@ -59,7 +59,7 @@ function registerOAuth(fastifyAdapter: FastifyAdapter) { // todo research better
     },
     scope: ['profile email'],
     startRedirectPath: '/api/v1/customer/login/google',
-    callbackUri: `${process.env.DEPLOY_ORIGIN}/api/v1/customer/google/callback`
+    callbackUri: `${process.env.OAUTH_REDIRECT_ORIGIN}/api/v1/customer/google/callback`
   }
   fastifyAdapter.register(fastifyOauth2, googleOAuthOptions);
 
@@ -74,7 +74,7 @@ function registerOAuth(fastifyAdapter: FastifyAdapter) { // todo research better
     },
     scope: ['email public_profile'],
     startRedirectPath: '/api/v1/customer/login/facebook',
-    callbackUri: `${process.env.DEPLOY_ORIGIN}/api/v1/customer/facebook/callback`
+    callbackUri: `${process.env.OAUTH_REDIRECT_ORIGIN}/api/v1/customer/facebook/callback`
   }
   fastifyAdapter.register(fastifyOauth2, facebookOAuthOptions);
 }
