@@ -21,7 +21,7 @@ export class AdminSPFDto extends SortingPaginatingFilterDto {
         const split = filterStr.split(':');
         return {
           fieldName: split[0],
-          values: [split[1]]
+          values: split[1].split('|')
         };
       });
   }

@@ -1,6 +1,7 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
 import { IFilter, ISorting } from '../../dtos/shared-dtos/spf.dto';
+import { elasticAutocompleteType, elasticTextType } from '../../constants';
 
 @Injectable()
 export class SearchService {
@@ -133,6 +134,13 @@ export class SearchService {
     }
 
     filters.forEach(filter => {
+      const filterQuery = {
+        bool: {
+          should: [],
+          minimum_should_match: 1
+        }
+      }
+
       filter.values.forEach(value => {
         value = decodeURIComponent(value);
 
@@ -172,8 +180,18 @@ export class SearchService {
             }
 
           } else {
+
+            let queryType = 'match_phrase_prefix';
+
+            if (schema) {
+              const fieldFromSchema = schema[fieldName];
+              if (fieldFromSchema && fieldFromSchema.type !== elasticTextType.type && fieldFromSchema.type !== elasticAutocompleteType.type) {
+                queryType = 'term';
+              }
+            }
+
             shouldQuery = {
-              'match_phrase_prefix': {
+              [queryType]: {
                 [fieldName]: value
               }
             };
@@ -183,8 +201,10 @@ export class SearchService {
 
         });
 
-        boolQuery.must.push(mustQuery);
+        filterQuery.bool.should.push(mustQuery);
       });
+
+      boolQuery.must.push(filterQuery);
     });
 
     return await this.searchByQuery(collection, boolQuery, from, size, sortObj, sortFilter);
