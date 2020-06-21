@@ -1,4 +1,3 @@
-### Build stage
 FROM node:12-alpine
 
 RUN apk add --no-cache \
@@ -26,18 +25,3 @@ COPY . .
 RUN npm run build:prod
 
 CMD ["./node_modules/.bin/pm2-runtime", "pm2-main.json"]
-
-
-### Run stage
-#FROM node:12-alpine
-#
-#ENV TZ 'Europe/Kiev'
-#
-#WORKDIR /app
-#
-#COPY --from=builder /app/dist ./dist
-#COPY --from=builder /app/node_modules ./node_modules
-#
-#RUN npm install -g pm2
-#
-#CMD ["pm2-runtime", "dist/pm2-main.json"]
