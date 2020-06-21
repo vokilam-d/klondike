@@ -277,7 +277,7 @@ export class OrderService implements OnApplicationBootstrap {
       newOrder.createdAt = new Date();
       newOrder.status = OrderStatusEnum.NEW;
       newOrder.discountPercent = customer.discountPercent;
-      this.setOrderPrices(newOrder);
+      OrderService.setOrderPrices(newOrder);
 
       const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
       for (const item of orderDto.items) {
@@ -314,19 +314,22 @@ export class OrderService implements OnApplicationBootstrap {
       if (order.status !== OrderStatusEnum.NEW && order.status !== OrderStatusEnum.STARTED) {
         throw new ForbiddenException(__('Cannot edit order with status "$1"', 'ru', order.status));
       }
+
       for (const item of order.items) {
         await this.inventoryService.retrieveFromOrderedBackToStock(item.sku, orderId, session);
       }
       for (const item of orderDto.items) {
         await this.inventoryService.addToOrdered(item.sku, item.qty, orderId, session);
       }
+
       const oldTrackingNumber = order.shipment.trackingNumber;
       const newTrackingNumber = orderDto.shipment.trackingNumber;
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
       if (oldTrackingNumber !== newTrackingNumber) {
         await this.fetchShipmentStatus(order);
       }
-      this.setOrderPrices(order);
+
+      OrderService.setOrderPrices(order);
       return order;
     });
   }
@@ -408,18 +411,6 @@ export class OrderService implements OnApplicationBootstrap {
       fileName: `Заказ №${order.idForCustomer}.pdf`,
       pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON())
     };
-  }
-
-  private setOrderPrices(order: Order) {
-    if (!order.totalItemsCost) { order.totalItemsCost = 0; }
-    if (!order.totalCost) { order.totalCost = 0; }
-    if (!order.discountValue) { order.discountValue = 0; }
-
-    for (let item of order.items) {
-      order.totalItemsCost += item.cost;
-      order.totalCost += item.totalCost;
-      order.discountValue += item.discountValue;
-    }
   }
 
   async updateCounter() { // todo remove this after migrate
@@ -614,5 +605,17 @@ export class OrderService implements OnApplicationBootstrap {
       await this.fetchShipmentStatus(order);
       return order;
     });
+  }
+
+  private static setOrderPrices(order: Order) {
+    order.totalItemsCost = 0;
+    order.totalCost = 0;
+    order.discountValue = 0;
+
+    for (let item of order.items) {
+      order.totalItemsCost += item.cost;
+      order.totalCost += item.totalCost;
+      order.discountValue += item.discountValue;
+    }
   }
 }
