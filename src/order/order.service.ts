@@ -34,6 +34,7 @@ import { PaymentMethodEnum } from '../shared/enums/payment-method.enum';
 import { OnlinePaymentDetailsDto } from '../shared/dtos/client/online-payment-details.dto';
 import { createHmac } from 'crypto';
 import { isObject } from 'src/shared/helpers/is-object.function';
+import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -157,7 +158,7 @@ export class OrderService implements OnApplicationBootstrap {
       let address = orderDto.shipment.recipient;
       if (orderDto.customerId) {
         if (orderDto.shouldSaveAddress) {
-          customer = await this.customerService.addCustomerAddressById(orderDto.customerId, address, session);
+          customer = await this.customerService.addAddressByCustomerId(orderDto.customerId, address, session);
         } else {
           customer = await this.customerService.getCustomerById(orderDto.customerId);
         }
@@ -213,17 +214,7 @@ export class OrderService implements OnApplicationBootstrap {
         customer = await this.customerService.getCustomerByEmailOrPhoneNumber(orderDto.email);
 
         if (customer) {
-          const hasSameAddress = customer.addresses.find(address => (
-            address.addressType === orderDto.address.addressType
-            && address.firstName === orderDto.address.firstName
-            && address.middleName === orderDto.address.middleName
-            && address.lastName === orderDto.address.lastName
-            && address.phone === orderDto.address.phone
-            && address.settlementId === orderDto.address.settlementId
-            && address.addressId === orderDto.address.addressId
-            && address.flat === orderDto.address.flat
-            && address.buildingNumber === orderDto.address.buildingNumber
-          ));
+          const hasSameAddress = customer.addresses.find(address => areAddressesSame(address, orderDto.address));
 
           if (!hasSameAddress) {
             await this.customerService.addCustomerAddress(customer, orderDto.address, session);

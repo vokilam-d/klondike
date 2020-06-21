@@ -33,6 +33,7 @@ import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
 import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
+import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -196,7 +197,7 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async addCustomerAddressById(customerId: number, address: ShipmentAddressDto, session: ClientSession): Promise<Customer> {
+  async addAddressByCustomerId(customerId: number, address: ShipmentAddressDto, session: ClientSession): Promise<Customer> {
     const found = await this.customerModel.findById(customerId).session(session).exec();
     if (!found) {
       throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
@@ -206,9 +207,12 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async addCustomerAddress(customer: DocumentType<Customer>, address: ShipmentAddressDto, session: ClientSession): Promise<Customer> {
-    customer.addresses.push(address);
-    await customer.save({ session });
-    this.updateSearchData(customer).catch();
+    const hasSameAddress = customer.addresses.find(customerAddress => areAddressesSame(customerAddress, address));
+    if (!hasSameAddress) {
+      customer.addresses.push(address);
+      await customer.save({ session });
+      this.updateSearchData(customer).then();
+    }
 
     return customer;
   }
