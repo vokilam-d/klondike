@@ -55,8 +55,7 @@ export class NovaPoshtaService {
 
   public async createInternetDocument(shipment: ShipmentDto,
                                       sender: ShipmentSenderDto,
-                                      orderItemsCost: string,
-                                      orderPaymentMetod: PaymentMethodEnum): Promise<ShipmentDto> {
+                                      orderPaymentMethod: PaymentMethodEnum): Promise<ShipmentDto> {
 
 
     const recipient = shipment.recipient;
@@ -72,7 +71,6 @@ export class NovaPoshtaService {
       },
       apiKey: process.env.NOVA_POSHTA_API_KEY
     };
-    await this.http.post(this.apiUrl, saveContactRequestBody).toPromise(); // todo Yurii is this line neccessary?
     saveContactRequestBody.modelName = 'ContactPersonGeneral';
     const { data: contactPersonSaveResponse } = await this.http.post(this.apiUrl, saveContactRequestBody).toPromise();
 
@@ -127,7 +125,7 @@ export class NovaPoshtaService {
         ServiceType: sender.addressType + recipient.addressType,
         CargoType: 'Cargo',
         ParamsOptionsSeats: false,
-        Cost: orderItemsCost,
+        Cost: shipment.cost,
         Description: shipment.description,
         PayerType: ShipmentPayerEnum.RECIPIENT,
         PaymentMethod: ShipmentPaymentMethodEnum.CASH,
@@ -145,8 +143,8 @@ export class NovaPoshtaService {
       apiKey: process.env.NOVA_POSHTA_API_KEY
     };
 
-    if (orderPaymentMetod === PaymentMethodEnum.CASH_ON_DELIVERY) {
-      const redelivery = shipment.backwardMoneyDelivery ? shipment.backwardMoneyDelivery : orderItemsCost;
+    if (orderPaymentMethod === PaymentMethodEnum.CASH_ON_DELIVERY) {
+      const redelivery = shipment.backwardMoneyDelivery ? shipment.backwardMoneyDelivery : shipment.cost;
       saveInternetDocumentRequestBody.methodProperties.BackwardDeliveryData = [{
         PayerType: ShipmentPayerEnum.RECIPIENT,
         CargoType: 'Money',

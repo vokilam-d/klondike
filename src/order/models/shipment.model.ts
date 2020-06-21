@@ -49,6 +49,9 @@ export class Shipment {
   backwardMoneyDelivery?: string;
 
   @prop()
+  cost?: string;
+
+  @prop()
   description?: string;
 
 }

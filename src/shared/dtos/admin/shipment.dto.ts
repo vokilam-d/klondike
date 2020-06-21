@@ -69,6 +69,10 @@ export class ShipmentDto {
 
   @Expose()
   @IsOptional()
+  cost?: string;
+
+  @Expose()
+  @IsOptional()
   description?: string;
 
 }

@@ -379,13 +379,11 @@ export class OrderService implements OnApplicationBootstrap {
       order.shipment.sender.settlement = shipmentSender.city;
       order.shipment.sender.addressType = shipmentSender.addressType;
 
-      shipmentDto = await this.novaPoshtaService.createInternetDocument(shipmentDto, shipmentSender,
-        '' + order.totalItemsCost, order.paymentType);
+      shipmentDto = await this.novaPoshtaService.createInternetDocument(shipmentDto, shipmentSender, order.paymentType);
       order.shipment.trackingNumber = shipmentDto.trackingNumber;
       order.shipment.estimatedDeliveryDate = shipmentDto.estimatedDeliveryDate;
       order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
-      order.shipment.statusDescription = 'Готово к отправке';
-      OrderService.updateOrderStatusByShipment(order);
+      order.shipment.statusDescription = 'Новая почта ожидает поступление';
 
       await this.customerService.incrementTotalOrdersCost(order.customerId, order.totalItemsCost, session);
       for (const item of order.items) {
@@ -493,7 +491,7 @@ export class OrderService implements OnApplicationBootstrap {
   private static patchShipmentData(shipment: Shipment, shipmentDto: ShipmentDto) {
     const copyValues = (fromObject: any, toObject: any) => {
       for (const key of Object.keys(fromObject)) {
-        if (fromObject[key] === undefined) { continue;}
+        if (fromObject[key] === undefined) { continue; }
 
         if (isObject(fromObject[key])) {
           copyValues(fromObject[key], toObject[key]);
