@@ -214,4 +214,8 @@ export const TRANSLATIONS = {
     en: 'Refused to return',
     ru: 'Новый'
   },
+  [OrderStatusEnum.CANCELED]: {
+    en: 'Canceled',
+    ru: 'Отменён'
+  }
 }
