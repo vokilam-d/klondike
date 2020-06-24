@@ -64,10 +64,13 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   paymentMethodAdminName = elasticTextType;
   paymentMethodClientName = elasticTextType;
   paymentMethodId = elasticTextType;
+  paymentType = elasticTextType;
   shippingMethodName = elasticTextType;
   shouldSaveAddress = elasticTextType;
   state = elasticTextType;
   status = elasticTextType;
+  statusDescription = elasticTextType;
   totalCost = elasticAutocompleteType;
   totalItemsCost = elasticAutocompleteType;
+  isOrderPaid = elasticBooleanType;
 }

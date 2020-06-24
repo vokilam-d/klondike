@@ -3,6 +3,7 @@ import { OrderItem } from './order-item.model';
 import { OrderStatusEnum } from '../../shared/enums/order-status.enum';
 import { Shipment } from './shipment.model';
 import { PaymentMethodEnum } from '../../shared/enums/payment-method.enum';
+import { __ } from '../../shared/helpers/translate/translate.function';
 
 export class Order {
   @prop()
@@ -71,6 +72,8 @@ export class Order {
   @prop()
   status: OrderStatusEnum;
 
+  get statusDescription(): string { return __(this.status, 'ru'); }
+
   @prop()
   clientNote: string;
 
@@ -94,6 +97,9 @@ export class Order {
 
   @prop({ default: 0 })
   totalCost: number;
+
+  @prop({ required: true })
+  isOrderPaid: boolean;
 
 
   static collectionName: string = 'order';

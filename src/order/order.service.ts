@@ -7,7 +7,7 @@ import { CounterService } from '../shared/services/counter/counter.service';
 import { CustomerService } from '../customer/customer.service';
 import { AdminAddOrUpdateCustomerDto } from '../shared/dtos/admin/customer.dto';
 import { InventoryService } from '../inventory/inventory.service';
-import { OrderStatusEnum } from '../shared/enums/order-status.enum';
+import { FinalOrderStatuses, OrderStatusEnum } from '../shared/enums/order-status.enum';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
@@ -102,29 +102,6 @@ export class OrderService implements OnApplicationBootstrap {
     return found;
   }
 
-  async updateOrdersByStatuses(orderStatuses: OrderStatusEnum[],
-                               updateOrdersFunction: (orders: DocumentType<Order>[]) => Promise<DocumentType<Order>[]>): Promise<Order[]> {
-    const session = await this.orderModel.db.startSession();
-    session.startTransaction();
-    try {
-      let orders = await this.orderModel.find({ status: { $in: orderStatuses } }).session(session).exec();
-
-      const updatedOrders = await updateOrdersFunction(orders);
-
-      for (let order of updatedOrders) {
-        await order.save({ session });
-        this.updateSearchData(order).catch();
-      }
-      await session.commitTransaction();
-      return updatedOrders;
-    } catch (ex) {
-      await session.abortTransaction();
-      throw ex;
-    } finally {
-      session.endSession();
-    }
-  }
-
   async updateOrderById(
     orderId: number,
     updateOrderFunction: (order: DocumentType<Order>, session?: ClientSession) => Promise<DocumentType<Order>>
@@ -185,8 +162,11 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const newOrder = await this.createOrder(orderDto, customer, session, migrate);
-
+      if (!migrate) {
+        newOrder.status = OrderStatusEnum.PROCESSING;
+      }
       await this.fetchShipmentStatus(newOrder);
+      await newOrder.save({ session });
 
       await session.commitTransaction();
 
@@ -236,6 +216,8 @@ export class OrderService implements OnApplicationBootstrap {
       shipment.recipient = orderDto.address;
 
       const newOrder = await this.createOrder({ ...orderDto, shipment }, customer, session);
+      newOrder.status = OrderStatusEnum.NEW;
+      await newOrder.save({ session });
       await session.commitTransaction();
 
       await this.addSearchData(newOrder);
@@ -254,7 +236,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  private async createOrder(orderDto: AdminAddOrUpdateOrderDto | ClientAddOrderDto, customer: Customer, session: ClientSession, migrate?: any) {
+  private async createOrder(orderDto: AdminAddOrUpdateOrderDto | ClientAddOrderDto, customer: Customer, session: ClientSession, migrate?: any): Promise<DocumentType<Order>> {
     const newOrder = new this.orderModel(orderDto);
 
     if (!migrate) {
@@ -296,13 +278,12 @@ export class OrderService implements OnApplicationBootstrap {
       newOrder.paymentMethodClientName = paymentMethod.clientName;
     }
 
-    await newOrder.save({ session });
     return newOrder;
   }
 
   async editOrder(orderId: number, orderDto: AdminAddOrUpdateOrderDto): Promise<Order> {
     return await this.updateOrderById(orderId, async (order, session) => {
-      if (order.status !== OrderStatusEnum.NEW && order.status !== OrderStatusEnum.STARTED) {
+      if (FinalOrderStatuses.includes(order.status) || order.status === OrderStatusEnum.SHIPPED) {
         throw new ForbiddenException(__('Cannot edit order with status "$1"', 'ru', order.status));
       }
 
@@ -340,58 +321,19 @@ export class OrderService implements OnApplicationBootstrap {
       .catch(_ => {});
   }
 
-  async cancelOrder(orderId: number): Promise<Order> {
-    return await this.updateOrderById(orderId, async (order, session) => {
-      if (order.status !== OrderStatusEnum.NEW && order.status !== OrderStatusEnum.STARTED) {
-        throw new ForbiddenException(__('Cannot cancel order with status "$1"', 'ru', order.status));
-      }
-      for (const item of order.items) {
-        await this.inventoryService.retrieveFromOrderedBackToStock(item.sku, orderId, session);
-      }
-      order.status = OrderStatusEnum.CANCELED;
-      return order;
-    });
+  private async shippedOrderPostActions(order: Order, session: ClientSession): Promise<Order> {
+    for (const item of order.items) {
+      await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
+      await this.inventoryService.removeFromOrdered(item.sku, order.id, session);
+    }
+
+    return order;
   }
 
-  async startOrder(orderId: number): Promise<Order> {
-    return await this.updateOrderById(orderId, async (order, session) => {
-      if (order.status !== OrderStatusEnum.NEW) {
-        throw new ForbiddenException(__('Cannot start order with status "$1"', 'ru', order.status));
-      }
-      for (const item of order.items) {
-        await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
-      }
-      order.status = OrderStatusEnum.STARTED;
-      return order;
-    });
-  }
+  private async finishedOrderPostActions(order: Order, session: ClientSession): Promise<Order> {
+    await this.customerService.incrementTotalOrdersCost(order.customerId, order.totalItemsCost, session);
 
-  async shipOrder(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
-    return await this.updateOrderById(orderId, async (order, session) => {
-      OrderService.patchShipmentData(order.shipment, shipmentDto);
-      shipmentDto = plainToClass(ShipmentDto, order.shipment, { excludeExtraneousValues: true });
-
-      const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
-      order.shipment.sender.firstName = shipmentSender.firstName;
-      order.shipment.sender.lastName = shipmentSender.lastName;
-      order.shipment.sender.phone = shipmentSender.phone;
-      order.shipment.sender.address = shipmentSender.address;
-      order.shipment.sender.settlement = shipmentSender.city;
-      order.shipment.sender.addressType = shipmentSender.addressType;
-
-      shipmentDto = await this.novaPoshtaService.createInternetDocument(shipmentDto, shipmentSender, order.paymentType);
-      order.shipment.trackingNumber = shipmentDto.trackingNumber;
-      order.shipment.estimatedDeliveryDate = shipmentDto.estimatedDeliveryDate;
-      order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
-      order.shipment.statusDescription = 'Новая почта ожидает поступление';
-
-      await this.customerService.incrementTotalOrdersCost(order.customerId, order.totalItemsCost, session);
-      for (const item of order.items) {
-        await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
-      }
-
-      return order;
-    });
+    return order;
   }
 
   async printOrder(orderId: number) {
@@ -440,24 +382,55 @@ export class OrderService implements OnApplicationBootstrap {
 
   @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
   public async getOrdersWithLatestShipmentStatuses(): Promise<Order[]> {
-    return await this.updateOrdersByStatuses([OrderStatusEnum.SHIPPED], async orders => {
-      const ordersWithShipments = orders.filter(order => order.shipment?.trackingNumber);
+    const session = await this.orderModel.db.startSession();
+    session.startTransaction();
+    try {
 
-      const trackingNumbers: string[] = ordersWithShipments.map(order => order.shipment.trackingNumber);
+      const orders = await this.orderModel.find({
+        shipment: {
+          trackingNumber: { $exists: true } as any
+        },
+        status: {
+          $nin: FinalOrderStatuses
+        }
+      }).exec();
 
+      const trackingNumbers: string[] = orders.map(order => order.shipment.trackingNumber);
       const shipments: ShipmentDto[] = await this.novaPoshtaService.fetchShipments(trackingNumbers);
 
-      ordersWithShipments.forEach(order => {
+      for (const order of orders) {
         const shipment: ShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
         if (shipment) {
           order.shipment.status = shipment.status;
           order.shipment.statusDescription = shipment.statusDescription;
-          OrderService.updateOrderStatusByShipment(order);
-        }
-      });
 
-      return ordersWithShipments;
-    });
+          const oldOrderStatus = order.status;
+          OrderService.updateOrderStatusByShipment(order);
+          const newOrderStatus = order.status;
+
+          if (newOrderStatus !== oldOrderStatus) {
+            if (newOrderStatus === OrderStatusEnum.SHIPPED) {
+              await this.shippedOrderPostActions(order, session);
+            } else if (newOrderStatus === OrderStatusEnum.FINISHED) {
+              await this.finishedOrderPostActions(order, session);
+            }
+          }
+
+          await order.save({ session });
+          await this.updateSearchData(order);
+        }
+      }
+
+      await session.commitTransaction();
+
+      return orders;
+
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
+    }
   }
 
   public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
@@ -504,13 +477,16 @@ export class OrderService implements OnApplicationBootstrap {
     copyValues(shipmentDto, shipment);
   }
 
-  private static updateOrderStatusByShipment(order) {
+  private static updateOrderStatusByShipment(order: Order) {
     const isCashOnDelivery = order.paymentType === PaymentMethodEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
 
     if (isCashOnDelivery && isReceived || !isCashOnDelivery && isCashPickedUp) {
       order.status = OrderStatusEnum.FINISHED;
+      order.isOrderPaid = true;
+    } else if (order.shipment.status === ShipmentStatusEnum.RECIPIENT_DENIED) {
+      order.status = OrderStatusEnum.RECIPIENT_DENIED;
     }
   }
 
@@ -606,5 +582,107 @@ export class OrderService implements OnApplicationBootstrap {
       order.totalCost += item.totalCost;
       order.discountValue += item.discountValue;
     }
+  }
+
+  async changeStatus(orderId: number, status: OrderStatusEnum, shipmentDto?: ShipmentDto) {
+    return await this.updateOrderById(orderId, async (order, session) => {
+
+      const assertStatus = (statusToAssert: OrderStatusEnum) => {
+        if (order.status !== statusToAssert) {
+          throw new BadRequestException(__('Cannot change status to "$1": order must be with status "$2"', 'ru', status, statusToAssert));
+        }
+      }
+
+      switch (status) {
+        case OrderStatusEnum.PROCESSING:
+          assertStatus(OrderStatusEnum.NEW);
+          break;
+
+        case OrderStatusEnum.READY_TO_PACK:
+          assertStatus(OrderStatusEnum.PROCESSING);
+          break;
+
+        case OrderStatusEnum.PACKED:
+          assertStatus(OrderStatusEnum.READY_TO_PACK);
+          order.shipment = await this.createInternetDocument(order.shipment, shipmentDto, order.paymentType);
+          if (order.paymentType === PaymentMethodEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
+            status = OrderStatusEnum.READY_TO_SHIP;
+          }
+          break;
+
+        case OrderStatusEnum.READY_TO_SHIP:
+          assertStatus(OrderStatusEnum.PACKED);
+          if (order.paymentType !== PaymentMethodEnum.CASH_ON_DELIVERY && !order.isOrderPaid) {
+            throw new BadRequestException(__('Cannot change status to "$1": order is not paid', 'ru', status));
+          }
+          break;
+
+        case OrderStatusEnum.RETURNING:
+        case OrderStatusEnum.REFUSED_TO_RETURN:
+          assertStatus(OrderStatusEnum.RECIPIENT_DENIED);
+          break;
+        case OrderStatusEnum.RETURNED:
+          for (const item of order.items) {
+            await this.inventoryService.addToStock(item.sku, item.qty, session);
+          }
+          break;
+
+        case OrderStatusEnum.CANCELED:
+          if (FinalOrderStatuses.includes(status) || order.status === OrderStatusEnum.SHIPPED) {
+            throw new BadRequestException(__('Cannot cancel order with status "$1"', 'ru', status));
+          }
+          for (const item of order.items) {
+            await this.inventoryService.retrieveFromOrderedBackToStock(item.sku, orderId, session);
+          }
+          break;
+
+        default:
+          throw new BadRequestException(__('Cannot change status to "$1": disallowed status', 'ru', status));
+          break;
+      }
+
+      order.status = status;
+
+      return order;
+    });
+  }
+
+  async createInternetDocument(shipment: Shipment, shipmentDto: ShipmentDto, paymentType: PaymentMethodEnum): Promise<Shipment> {
+    OrderService.patchShipmentData(shipment, shipmentDto);
+    shipmentDto = plainToClass(ShipmentDto, shipment, { excludeExtraneousValues: true });
+
+    const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
+    shipment.sender.firstName = shipmentSender.firstName;
+    shipment.sender.lastName = shipmentSender.lastName;
+    shipment.sender.phone = shipmentSender.phone;
+    shipment.sender.address = shipmentSender.address;
+    shipment.sender.settlement = shipmentSender.city;
+    shipment.sender.addressType = shipmentSender.addressType;
+
+    shipmentDto = await this.novaPoshtaService.createInternetDocument(shipmentDto, shipmentSender, paymentType);
+    shipment.trackingNumber = shipmentDto.trackingNumber;
+    shipment.estimatedDeliveryDate = shipmentDto.estimatedDeliveryDate;
+    shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
+    shipment.statusDescription = 'Новая почта ожидает поступление';
+
+    return shipment;
+  }
+
+  async changeOrderPaymentStatus(id: number, isPaid: boolean): Promise<Order> {
+    return await this.updateOrderById(id, async order => {
+      order.isOrderPaid = isPaid;
+
+      if (order.isOrderPaid) {
+        if (order.status === OrderStatusEnum.PACKED) {
+          order.status = OrderStatusEnum.READY_TO_SHIP;
+        }
+      } else {
+        if (order.status === OrderStatusEnum.READY_TO_SHIP) {
+          order.status = OrderStatusEnum.PACKED;
+        }
+      }
+
+      return order;
+    });
   }
 }

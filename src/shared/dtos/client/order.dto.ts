@@ -2,9 +2,9 @@ import { ArrayMinSize, IsArray, IsBoolean, IsOptional, IsString, ValidateNested 
 import { Expose, Transform, Type } from 'class-transformer';
 import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { Order } from '../../../order/models/order.model';
-import { OrderStatusEnum } from '../../enums/order-status.enum';
 import { ShipmentDto } from '../admin/shipment.dto';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
+import { __ } from '../../helpers/translate/translate.function';
 
 export class ClientAddOrderDto {
   @Expose()
@@ -56,7 +56,8 @@ export class ClientOrderDto extends ClientAddOrderDto {
   shipment: ShipmentDto;
 
   @Expose()
-  status: OrderStatusEnum;
+  @Transform(((value, order: ClientOrderDto) => value || __(order.status, 'ru')))
+  status: string;
 
   @Expose()
   totalItemsCost: number;

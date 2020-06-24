@@ -1,4 +1,5 @@
 import { AddressTypeEnum } from '../../enums/address-type.enum';
+import { OrderStatusEnum } from '../../enums/order-status.enum';
 
 export const TRANSLATIONS = {
   'Your password is outdated, we sent you an email with the instruction on how to update your password': {
@@ -93,6 +94,18 @@ export const TRANSLATIONS = {
     en: 'Cannot cancel order with status "$1"',
     ru: 'Нельзя отменить заказ со статусом "$1"'
   },
+  'Cannot change status to "$1": order must be with status "$2"': {
+    en: 'Cannot change status to "$1": order must be with status "$2"',
+    ru: 'Нельзя сменить статус на "$1": заказ должен быть в статусе "$2"'
+  },
+  'Cannot change status to "$1": order is not paid': {
+    en: 'Cannot change status to "$1": order is not paid',
+    ru: 'Нельзя сменить статус на "$1": заказ не оплачен'
+  },
+  'Cannot change status to "$1": disallowed status': {
+    en: 'Cannot change status to "$1": disallowed status',
+    ru: 'Нельзя сменить статус на "$1": запрещённый статус'
+  },
   'Cannot start order with status "$1"': {
     en: 'Cannot start order with status "$1"',
     ru: 'Нельзя принять в работу заказ со статусом "$1"'
@@ -156,5 +169,49 @@ export const TRANSLATIONS = {
   [AddressTypeEnum.DOORS]: {
     en: 'Courier delivery',
     ru: 'Доставка курьером'
-  }
+  },
+  [OrderStatusEnum.NEW]: {
+    en: 'New',
+    ru: 'Новый'
+  },
+  [OrderStatusEnum.PROCESSING]: {
+    en: 'Processing',
+    ru: 'Обрабатывается'
+  },
+  [OrderStatusEnum.READY_TO_PACK]: {
+    en: 'Ready to pack',
+    ru: 'Готово к упаковке'
+  },
+  [OrderStatusEnum.PACKED]: {
+    en: 'Packed',
+    ru: 'Упакован'
+  },
+  [OrderStatusEnum.READY_TO_SHIP]: {
+    en: 'Ready to ship',
+    ru: 'Готово к отправке'
+  },
+  [OrderStatusEnum.SHIPPED]: {
+    en: 'Shipped',
+    ru: 'Отправлен'
+  },
+  [OrderStatusEnum.FINISHED]: {
+    en: 'Finished',
+    ru: 'Завершён'
+  },
+  [OrderStatusEnum.RECIPIENT_DENIED]: {
+    en: 'Recipient denied',
+    ru: 'Получатель отказался'
+  },
+  [OrderStatusEnum.RETURNING]: {
+    en: 'Returning',
+    ru: 'Возвращается'
+  },
+  [OrderStatusEnum.RETURNED]: {
+    en: 'Returned',
+    ru: 'Возвращён'
+  },
+  [OrderStatusEnum.REFUSED_TO_RETURN]: {
+    en: 'Refused to return',
+    ru: 'Новый'
+  },
 }

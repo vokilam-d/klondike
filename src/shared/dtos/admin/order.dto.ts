@@ -11,6 +11,9 @@ import {
 } from 'class-validator';
 import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { ShipmentDto } from './shipment.dto';
+import { OrderStatusEnum } from '../../enums/order-status.enum';
+import { __ } from '../../helpers/translate/translate.function';
+import { PaymentMethodEnum } from '../../enums/payment-method.enum';
 
 export class AdminAddOrUpdateOrderDto {
   @Expose()
@@ -67,6 +70,9 @@ export class AdminAddOrUpdateOrderDto {
   paymentMethodId: string;
 
   @Expose()
+  paymentType: PaymentMethodEnum;
+
+  @Expose()
   @IsString()
   paymentMethodClientName: string; // todo move to AdminOrderDto after migration
 
@@ -100,7 +106,7 @@ export class AdminAddOrUpdateOrderDto {
   state: any;
 
   @Expose()
-  status: any;
+  status: OrderStatusEnum;
 
   @Expose()
   @IsString()
@@ -138,6 +144,11 @@ export class AdminAddOrUpdateOrderDto {
   @IsOptional()
   @IsNumber()
   totalCost: number;
+
+  @Expose()
+  @IsOptional()
+  @IsBoolean()
+  isOrderPaid: boolean;
 }
 
 export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
@@ -149,4 +160,8 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   @IsOptional()
   @IsString()
   idForCustomer: string;
+
+  @Expose()
+  @Transform(((value, order: AdminOrderDto) => value || __(order.status, 'ru')))
+  statusDescription: string;
 }

@@ -47,6 +47,17 @@ export class InventoryService {
     return found;
   }
 
+  addToStock(sku: string, qty: number, session: ClientSession): Promise<DocumentType<Inventory>> {
+    return this.inventoryModel
+      .findOneAndUpdate(
+        { sku },
+        { $inc: { qtyInStock: qty } },
+        { new: true }
+      )
+      .session(session)
+      .exec();
+  }
+
   addToOrdered(sku: string, qty: number, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qtyInStock');

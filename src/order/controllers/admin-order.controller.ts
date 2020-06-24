@@ -10,6 +10,7 @@ import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { ChangeOrderStatusDto } from '../../shared/dtos/admin/change-order-status.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -72,21 +73,11 @@ export class AdminOrderController {
   }
 
   @Post(':id/actions/:actionName')
-  async performAction(@Param() params: OrderActionDto,
-                      @Body() actionBody?: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
-    let order;
+  async performAction(@Param() params: OrderActionDto): Promise<ResponseDto<AdminOrderDto>> {
+    let order: AdminOrderDto;
 
     switch (params.actionName) {
-      case OrderActionEnum.CANCEL:
-        order = await this.orderService.cancelOrder(params.id);
-        break;
-      case OrderActionEnum.START:
-        order = await this.orderService.startOrder(params.id);
-        break;
-      case OrderActionEnum.SHIP:
-        order = await this.orderService.shipOrder(params.id, actionBody);
-        break;
-      case OrderActionEnum.UPDATE_STATUS:
+      case OrderActionEnum.UPDATE_SHIPMENT_STATUS:
         order = await this.orderService.updateShipmentStatus(params.id);
         break;
     }
@@ -105,9 +96,31 @@ export class AdminOrderController {
     };
   }
 
+  @Put(':id/status/:status')
+  async changeStatus(@Param() params: ChangeOrderStatusDto,
+                     @Body() shipmentDto?: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
+
+    const order = await this.orderService.changeStatus(params.id, params.status, shipmentDto);
+
+    return {
+      data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Put(':id/is-paid/:isPaid')
+  async changePaymentStatus(@Param('id') id: number, @Param('isPaid') isPaid: boolean): Promise<ResponseDto<AdminOrderDto>> {
+
+    const order = await this.orderService.changeOrderPaymentStatus(id, isPaid);
+
+    return {
+      data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
+  }
+
   @Patch(':id/shipment')
   async editOrderShipment(@Param('id') orderId: number,
                           @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
+
     const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto);
 
     return {
