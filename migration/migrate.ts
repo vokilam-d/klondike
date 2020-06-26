@@ -26,6 +26,7 @@ import { ShipmentAddressDto } from '../src/shared/dtos/shared-dtos/shipment-addr
 import { transliterate } from '../src/shared/helpers/transliterate.function';
 import { ShipmentDto } from '../src/shared/dtos/admin/shipment.dto';
 import { OrderStatusEnum } from '../src/shared/enums/order-status.enum';
+import { PaymentMethodEnum } from '../src/shared/enums/payment-method.enum';
 
 export class Migrate {
   private apiHostname = 'http://localhost:3000';
@@ -703,8 +704,15 @@ export class Migrate {
       const foundPayment = orderPayments.find(payment => payment.parent_id === order.entity_id);
       if (foundPayment.method === 'wayforpay') {
         dto.paymentMethodClientName = 'Предоплата на карту. После оформления заказа Вам поступит сообщение с номером карты и суммой (комиссия по тарифам Вашего банка, для карт Привата 0,5% минимум 5 грн)';
+        dto.paymentType = PaymentMethodEnum.ONLINE_PAYMENT;
       } else {
         dto.paymentMethodClientName = JSON.parse(foundPayment.additional_information) && JSON.parse(foundPayment.additional_information).method_title;
+
+        if (dto.paymentMethodClientName.includes('Наложе')) {
+          dto.paymentType = PaymentMethodEnum.CASH_ON_DELIVERY;
+        } else if (dto.paymentMethodClientName.includes('карт')) {
+          dto.paymentType = PaymentMethodEnum.PAY_TO_CARD;
+        }
       }
 
       dto.paymentMethodId = '';
@@ -775,18 +783,20 @@ export class Migrate {
 
       switch (order.status) {
         case 'canceled':
+        case 'holded':
           dto.status = OrderStatusEnum.CANCELED;
           break;
         case 'complete_shipednp':
-        case 'holded':
           dto.status = OrderStatusEnum.FINISHED;
           break;
         case 'complete':
           dto.status = OrderStatusEnum.SHIPPED;
           break;
         case 'pending':
-        case 'processing':
           dto.status = OrderStatusEnum.NEW;
+          break;
+        case 'processing':
+          dto.status = OrderStatusEnum.PROCESSING;
           break;
       }
       dto.state = order.state;
