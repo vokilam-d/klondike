@@ -288,7 +288,7 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       for (const item of order.items) {
-        await this.inventoryService.retrieveFromOrderedBackToStock(item.sku, orderId, session);
+        await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
       }
       for (const item of orderDto.items) {
         await this.inventoryService.addToOrdered(item.sku, item.qty, orderId, session);
@@ -324,7 +324,7 @@ export class OrderService implements OnApplicationBootstrap {
   private async shippedOrderPostActions(order: Order, session: ClientSession): Promise<Order> {
     for (const item of order.items) {
       await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
-      await this.inventoryService.removeFromOrdered(item.sku, order.id, session);
+      await this.inventoryService.removeFromOrderedAndStock(item.sku, item.qty, order.id, session);
     }
 
     return order;
@@ -632,7 +632,7 @@ export class OrderService implements OnApplicationBootstrap {
             throw new BadRequestException(__('Cannot cancel order with status "$1"', 'ru', status));
           }
           for (const item of order.items) {
-            await this.inventoryService.retrieveFromOrderedBackToStock(item.sku, orderId, session);
+            await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
           }
           break;
 

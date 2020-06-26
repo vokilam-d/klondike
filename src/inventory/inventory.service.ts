@@ -59,69 +59,70 @@ export class InventoryService {
   }
 
   addToOrdered(sku: string, qty: number, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
-    const skuProp = getPropertyOf<Inventory>('sku');
-    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
-    const reservedProp = getPropertyOf<Inventory>('reserved');
     const orderedInventory = new ReservedInventory();
     orderedInventory.qty = qty;
     orderedInventory.orderId = orderId;
     orderedInventory.timestamp = new Date();
 
-    const query = {
-      [skuProp]: sku,
-      [qtyProp]: { '$gte': qty }
-    };
-    const update = {
-      '$inc': { [qtyProp]: -qty },
-      '$push': { [reservedProp]: orderedInventory }
-    };
-    const options = { 'new': true };
 
-    return this.inventoryModel.findOneAndUpdate(query, update, options).session(session).exec();
-  }
-
-  async retrieveFromOrderedBackToStock(sku: string, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
-    const skuProp = getPropertyOf<Inventory>('sku');
-    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
-    const reservedProp = getPropertyOf<Inventory>('reserved');
-    const orderIdProp = getPropertyOf<ReservedInventory>('orderId');
-    const query = {
-      [skuProp]: sku,
-      [reservedProp + '.' + orderIdProp]: orderId
-    };
-
-    const found = await this.inventoryModel.findOne(query).exec();
-    if (!found) {
-      // what is better? return or throw or log
-      throw new BadRequestException(__('Ordered inventory for sku "$1" and order id "$2" not found', 'ru', sku, orderId));
-    }
-
-    const orderedQty = found.reserved.find(ordered => ordered.orderId === orderId).qty;
-
-    const update = {
-      '$inc': { [qtyProp]: orderedQty },
-      '$pull': { [reservedProp]: { [orderIdProp]: orderId } }
-    };
-    const options = { 'new': true };
-
-    return this.inventoryModel.findOneAndUpdate(query, update, options).session(session).exec();
+    return this.inventoryModel
+      .findOneAndUpdate(
+        {
+          sku,
+          qtyInStock: { $gte: qty }
+        },
+        {
+          $push: { reserved: orderedInventory }
+        },
+        {
+          new: true
+        }
+      )
+      .session(session)
+      .exec();
   }
 
   async removeFromOrdered(sku: string, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
-    const skuProp = getPropertyOf<Inventory>('sku');
     const reservedProp = getPropertyOf<Inventory>('reserved');
     const orderIdProp = getPropertyOf<ReservedInventory>('orderId');
 
-    const query = {
-      [skuProp]: sku,
-      [reservedProp + '.' + orderIdProp]: orderId
-    };
-    const update = {
-      '$pull': { [reservedProp]: { [orderIdProp]: orderId } }
-    };
-    const options = { 'new': true };
+    return this.inventoryModel
+      .findOneAndUpdate(
+        {
+          sku,
+          [reservedProp + '.' + orderIdProp]: orderId
+        },
+        {
+          $pull: { reserved: { orderId } }
+        },
+        {
+          new: true
+        }
+      )
+      .session(session)
+      .exec();
+  }
 
-    return this.inventoryModel.findOneAndUpdate(query, update, options).session(session).exec();
+  async removeFromOrderedAndStock(sku: string, qty: number, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
+    const reservedProp = getPropertyOf<Inventory>('reserved');
+    const orderIdProp = getPropertyOf<ReservedInventory>('orderId');
+
+    return this.inventoryModel
+      .findOneAndUpdate(
+        {
+          sku,
+          [reservedProp + '.' + orderIdProp]: orderId
+        },
+        {
+          $inc: { qtyInStock: -qty },
+          $pull: { reserved: { orderId } }
+        },
+        {
+          new: true
+        }
+      )
+      .session(session)
+      .exec();
   }
 
   deleteInventory(sku: string, session: ClientSession) {
