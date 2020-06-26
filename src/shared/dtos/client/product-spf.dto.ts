@@ -22,6 +22,9 @@ export class ClientProductSPFDto extends ClientSPFDto {
   @IsNumberString()
   categoryId?: string;
 
+  @IsOptional()
+  id?: string;
+
   @Transform((value, obj: ClientProductSPFDto) => {
     if (obj.categoryId) {
       const categoriesProp: keyof Product = 'categories';

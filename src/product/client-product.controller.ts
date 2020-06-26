@@ -17,6 +17,8 @@ export class ClientProductController {
   async findProducts(@Query() spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
     if (spf[SEARCH_QUERY_PARAM]) {
       return this.productService.getClientProductListAutocomplete(spf.q);
+    } else if (spf.id) {
+      return this.productService.getClientProductList(spf);
     } else {
       return this.productService.getClientProductListWithFilters(spf);
     }
