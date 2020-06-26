@@ -98,7 +98,7 @@ export class Order {
   @prop({ default: 0 })
   totalCost: number;
 
-  @prop({ required: true })
+  @prop({ default: false })
   isOrderPaid: boolean;
 
 
