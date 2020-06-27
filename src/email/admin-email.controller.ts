@@ -43,7 +43,7 @@ export class AdminEmailController {
   }
 
   @Post('email-confirmation')
-  async sendEmailConfirmationEmail(@Param('orderId') orderId: number, @Body() body: any) {
+  async sendEmailConfirmationEmail(@Body() body: any) {
     if (!body.email) {
       throw new BadRequestException(__('No "email" in payload', 'ru'));
     }
@@ -58,7 +58,7 @@ export class AdminEmailController {
   }
 
   @Post('registration-success')
-  async sendRegisterSuccessEmail(@Param('orderId') orderId: number, @Body() body: any) {
+  async sendRegisterSuccessEmail(@Body() body: any) {
     if (!body.email) {
       throw new BadRequestException(__('No "email" in payload', 'ru'));
     }
@@ -70,5 +70,20 @@ export class AdminEmailController {
     };
 
     return this.emailService.sendRegisterSuccessEmail(customer, 'token');
+  }
+
+  @Post('reset-password')
+  async sendResetPasswordEmail(@Body() body: any) {
+    if (!body.email) {
+      throw new BadRequestException(__('No "email" in payload', 'ru'));
+    }
+
+    const customer: any = {
+      email: body.email,
+      firstName: this.testFirstName,
+      lastName: this.testLastName
+    };
+
+    return this.emailService.sendResetPasswordEmail(customer, 'token');
   }
 }
