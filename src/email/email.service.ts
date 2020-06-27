@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs';
@@ -18,6 +18,7 @@ enum EEmailType {
 @Injectable()
 export class EmailService {
 
+  private logger = new Logger(EmailService.name);
   private transportOptions = {
     host: process.env.SMTP_HOST,
     port: 465,
@@ -35,7 +36,7 @@ export class EmailService {
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
 
-  async sendOrderConfirmationEmail(order: Order) {
+  async sendOrderConfirmationEmail(order: Order, notifyManager: boolean) {
     const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
 
     const subject = `Ваш заказ №${order.idForCustomer} получен`;
@@ -47,6 +48,13 @@ export class EmailService {
       filename: `Заказ №${order.idForCustomer}.pdf`,
       content: await this.pdfGeneratorService.generateOrderPdf(order)
     };
+
+    if (notifyManager) {
+      const managerEmail = this.senderName;
+      const managerSubject = `Новый заказ №${order.idForCustomer}`;
+      this.sendEmail(managerEmail, managerSubject, html, attachment)
+        .catch(err => this.logger.error(`Could not send "Order Succes" email to manager: ${err.message}`));
+    }
 
     return this.sendEmail(to, subject, html, attachment);
   }

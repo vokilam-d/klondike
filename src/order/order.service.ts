@@ -35,6 +35,7 @@ import { OnlinePaymentDetailsDto } from '../shared/dtos/client/online-payment-de
 import { createHmac } from 'crypto';
 import { isObject } from 'src/shared/helpers/is-object.function';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -46,6 +47,7 @@ export class OrderService implements OnApplicationBootstrap {
               private readonly counterService: CounterService,
               private readonly paymentMethodService: PaymentMethodService,
               private readonly tasksService: TasksService,
+              private readonly emailService: EmailService,
               private readonly pdfGeneratorService: PdfGeneratorService,
               private readonly inventoryService: InventoryService,
               private readonly productService: ProductService,
@@ -173,6 +175,9 @@ export class OrderService implements OnApplicationBootstrap {
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
 
+      this.tasksService.sendLeaveReviewEmail(newOrder)
+        .catch(err => this.logger.error(`Could not send "Leave a review" email: ${err.message}`));
+
       return newOrder;
 
     } catch (ex) {
@@ -223,8 +228,10 @@ export class OrderService implements OnApplicationBootstrap {
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
 
+      this.emailService.sendOrderConfirmationEmail(newOrder, true)
+        .catch(err => this.logger.error(`Could not "Success Order" email to client: ${err.message}`));
       this.tasksService.sendLeaveReviewEmail(newOrder)
-        .catch(err => this.logger.error(`Could not send "Leave a review" email: `, err));
+        .catch(err => this.logger.error(`Could not send "Leave a review" email: ${err.message}`));
 
       return newOrder;
 

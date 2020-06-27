@@ -26,7 +26,7 @@ export class AdminEmailController {
     const order = await orderService.getOrderById(parseInt(orderId as any));
     order.customerEmail = body.email;
 
-    return this.emailService.sendOrderConfirmationEmail(order);
+    return this.emailService.sendOrderConfirmationEmail(order, false);
   }
 
   @Post('leave-review/:orderId')
