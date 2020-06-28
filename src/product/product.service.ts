@@ -628,6 +628,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   async clearCollection() { // todo remove this after migrate
     await this.productModel.deleteMany({}).exec();
+    await this.inventoryService.deleteAllInventory();
     await this.pageRegistryService.deletePageRegistryByType(PageTypeEnum.Product);
     await this.searchService.deleteCollection(Product.collectionName);
     await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());

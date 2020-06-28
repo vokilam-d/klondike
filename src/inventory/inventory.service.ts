@@ -128,4 +128,8 @@ export class InventoryService {
   deleteInventory(sku: string, session: ClientSession) {
     return this.inventoryModel.findOneAndDelete({ sku }).session(session).exec();
   }
+
+  deleteAllInventory() {
+    return this.inventoryModel.deleteMany({}).exec();
+  }
 }
