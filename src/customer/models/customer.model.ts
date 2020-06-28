@@ -24,6 +24,9 @@ export class Customer {
   @prop({ default: null })
   password: string;
 
+  @prop({ default: null })
+  deprecatedPasswordHash: string;
+
   @prop({ default: new Date() })
   createdAt: Date;
 

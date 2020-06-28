@@ -15,24 +15,31 @@ async function migrate() {
   await migrate.clearCollection('categories');
   await migrate.populateCategories();
   await migrate.updateCounter('categories');
+
   await migrate.clearCollection('attributes');
   await migrate.populateProductAttributes();
+
   await migrate.clearCollection('products');
   await migrate.populateProducts();
   await migrate.populateProductCategories();
   await migrate.updateCounter('products');
+
   await migrate.clearCollection('customers');
   await migrate.populateCustomers();
   await migrate.updateCounter('customers');
+
   await migrate.clearCollection('orders');
   await migrate.populateOrders();
   await migrate.updateCounter('orders');
+
   await migrate.clearCollection('store-reviews');
   await migrate.populateStoreReviews();
   await migrate.updateCounter('store-reviews');
+
   await migrate.clearCollection('product-reviews');
   await migrate.populateProductReviews();
   await migrate.updateCounter('product-reviews');
+
   await migrate.clearCollection('blog');
   await migrate.populateBlogCategories();
   await migrate.populateBlogPosts();

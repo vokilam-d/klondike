@@ -43,6 +43,10 @@ export class AdminAddOrUpdateCustomerDto {
 
   @Expose()
   @IsOptional()
+  deprecatedPasswordHash: any;
+
+  @Expose()
+  @IsOptional()
   @IsDate()
   @Type(() => Date)
   createdAt: Date;

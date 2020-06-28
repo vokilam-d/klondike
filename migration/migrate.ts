@@ -588,6 +588,7 @@ export class Migrate {
       }
 
       dto.password = null;
+      dto.deprecatedPasswordHash = customer.password_hash;
 
       dto.createdAt = new Date(customer.created_at);
       dto.lastLoggedIn = dto.createdAt;
