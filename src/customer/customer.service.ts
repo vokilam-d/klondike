@@ -185,13 +185,17 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async updatePassword(customer: DocumentType<Customer>, passwordDto: ClientUpdatePasswordDto): Promise<Customer> {
+  async checkAndUpdatePassword(customer: DocumentType<Customer>, passwordDto: ClientUpdatePasswordDto): Promise<Customer> {
     const isValidOldPassword = await this.encryptor.validate(passwordDto.currentPassword, customer.password);
     if (!isValidOldPassword) {
       throw new BadRequestException(__('Current password is not valid', 'ru'));
     }
 
-    customer.password = await this.encryptor.hash(passwordDto.newPassword);
+    return this.updatePassword(customer, passwordDto.newPassword);
+  }
+
+  async updatePassword(customer: DocumentType<Customer>, newPassword: string) {
+    customer.password = await this.encryptor.hash(newPassword);
     await customer.save();
 
     return customer;

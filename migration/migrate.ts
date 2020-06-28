@@ -29,7 +29,8 @@ import { OrderStatusEnum } from '../src/shared/enums/order-status.enum';
 import { PaymentMethodEnum } from '../src/shared/enums/payment-method.enum';
 
 export class Migrate {
-  private apiHostname = 'http://localhost:3000';
+  // private apiHostname = 'http://localhost:3000';
+  private apiHostname = 'http://173.249.23.253:3080';
   /**
    * Hold name of the models to be generated
    *

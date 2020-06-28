@@ -171,12 +171,19 @@ export class AuthService {
     if (!customer) { return null; }
 
     if (customer.password === null) {
-      await this.initResetCustomerPassword(customer);
-      throw new BadRequestException(__('Your password is outdated, we sent you an email with the instruction on how to update your password', 'ru'));
+      if (customer.deprecatedPasswordHash) {
+        const [ passwordHash, salt ] = customer.deprecatedPasswordHash.split(':');
+        const isValidDeprecatedPassword = this.encryptor.validateBySha256(`${salt}${password}`, passwordHash)
+        if (isValidDeprecatedPassword) {
+          await this.customerService.updatePassword(customer, password);
+        } else {
+          return null;
+        }
+      }
+    } else {
+      const isValidPassword = await this.encryptor.validate(password, customer.password);
+      if (!isValidPassword) { return null; }
     }
-
-    const isValidPassword = await this.encryptor.validate(password, customer.password);
-    if (!isValidPassword) { return null; }
 
     return customer;
   }

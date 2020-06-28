@@ -98,7 +98,7 @@ export class ClientCustomerController {
   @Post('password')
   async updatePassword(@Req() req, @Body() dto: ClientUpdatePasswordDto, @Res() res: FastifyReply<ServerResponse>) {
     const customer: DocumentType<Customer> = req.user;
-    const updated = await this.customerService.updatePassword(customer, dto);
+    const updated = await this.customerService.checkAndUpdatePassword(customer, dto);
     const customerDto = plainToClass(ClientCustomerDto, updated, { excludeExtraneousValues: true });
 
     return this.authService.loginCustomerByDto(customerDto, res);

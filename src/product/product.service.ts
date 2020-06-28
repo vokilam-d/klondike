@@ -53,6 +53,7 @@ import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-c
 import { CronExpression } from '@nestjs/schedule';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
+// import { Category } from '../category/models/category.model';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -157,6 +158,14 @@ export class ProductService implements OnApplicationBootstrap {
     const spfFilters = spf
       .getNormalizedFilters()
       .filter(spfFilter => !!attributes.find(attribute => attribute.id === spfFilter.fieldName)); // leave only valid attributes
+    //
+    // let childCategoryIds: number[] = [];
+    // if (spf.categoryId) {
+    //   const allCategories = await this.categoryService.getAllCategories()
+    //   childCategoryIds = allCategories
+    //     .filter(category => category.parentId === parseInt(spf.categoryId))
+    //     .map(category => category.id);
+    // }
 
     const allSelectedAttributesProductCountMap: AttributeProductCountMap = { };
 
@@ -182,6 +191,15 @@ export class ProductService implements OnApplicationBootstrap {
         }
       }
     }
+    //
+    // const addPossibleCategory = (adminListItem: AdminProductListItemDto) => {
+    //   if (!childCategoryIds.length) { return; }
+    //
+    //   for (const itemCategory of adminListItem.categories) {
+    //     if (childCategoryIds.includes(itemCategory.id)) {
+    //     }
+    //   }
+    // }
 
     let possibleMinPrice = adminListItems?.[0]?.variants[0].price || 0;
     let possibleMaxPrice = possibleMinPrice;
@@ -193,9 +211,14 @@ export class ProductService implements OnApplicationBootstrap {
     if (isNumber(split?.[1])) { filterMaxPrice = split[1]; }
 
     let filteredAdminListItems: AdminProductListItemDto[] = [];
+
+
+
     for (const adminListItem of adminListItems) {
       const filteredVariants: AdminProductVariantListItem[] = [];
       let isProductAttributesSetInProductCount = false;
+
+      // addPossibleCategory(adminListItem);
 
       for (const variant of adminListItem.variants) {
         const selectedAttributes = [ ...adminListItem.attributes, ...variant.attributes ];
