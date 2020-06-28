@@ -6,7 +6,7 @@
       "merge_logs": true,
       "max_restarts": 15,
       "instance_var": "INSTANCE_ID",
-      "instances": "2",
+      "instances": "4",
       "exec_mode": "cluster",
       "max_memory_restart": "8G"
     }
