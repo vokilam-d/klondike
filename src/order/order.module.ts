@@ -15,6 +15,7 @@ import { ClientOrderController } from './controllers/client-order.controller';
 import { AuthModule } from '../auth/auth.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { NovaPoshtaModule } from '../nova-poshta/nova-poshta.module';
+import { EmailModule } from '../email/email.module';
 
 const orderModel = {
   name: OrderModel.modelName,
@@ -28,6 +29,7 @@ const orderModel = {
     forwardRef(() => CustomerModule),
     forwardRef(() => AuthModule),
     ProductModule,
+    EmailModule,
     TasksModule,
     ShippingMethodModule,
     PaymentMethodModule,
