@@ -13,7 +13,6 @@ import { isProdEnv } from './shared/helpers/is-prod-env.function';
 import * as fastifyOauth2 from 'fastify-oauth2';
 import { authConstants } from './auth/auth-constants';
 import { CommonRequestInterceptor } from './shared/interceptors/common-request.interceptor';
-import { randomBytes } from 'crypto';
 
 declare const module: any;
 
@@ -49,7 +48,7 @@ async function bootstrap() {
 bootstrap();
 
 
-const oauthState = randomBytes(10).toString('hex');
+const oauthState = process.env.OAUTH_SECRET;
 function registerOAuth(fastifyAdapter: FastifyAdapter) { // todo research better way (nestjs-way)
   const googleOAuthOptions: fastifyOauth2.FastifyOAuth2Options = {
     name: authConstants.GOOGLE_OAUTH_NAMESPACE,
