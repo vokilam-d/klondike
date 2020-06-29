@@ -33,12 +33,14 @@ export class CategoryService {
     return categories;
   }
 
-  async getCategoriesTree(): Promise<CategoryTreeItem[]> {
+  async getCategoriesTree(onlyEnabled?: boolean): Promise<CategoryTreeItem[]> {
     const treeItems: CategoryTreeItem[] = [];
     const childrenMap: { [parentId: number]: CategoryTreeItem[] } = {};
 
     const found = await this.categoryModel.find().exec();
     found.forEach(category => {
+      if (onlyEnabled && category.isEnabled === false) { return; }
+
       const item: CategoryTreeItem = {
         id: category.id,
         name: category.name,

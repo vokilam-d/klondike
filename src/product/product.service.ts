@@ -53,7 +53,6 @@ import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-c
 import { CronExpression } from '@nestjs/schedule';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
-// import { Category } from '../category/models/category.model';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -85,7 +84,6 @@ export class ProductService implements OnApplicationBootstrap {
     this.handleCurrencyUpdates();
     this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
     // this.reindexAllSearchData();
-    // this.turnOverProductSortOrder();
   }
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
@@ -822,7 +820,7 @@ export class ProductService implements OnApplicationBootstrap {
     };
 
     if (!categoryTreeItems) {
-      categoryTreeItems = await this.categoryService.getCategoriesTree();
+      categoryTreeItems = await this.categoryService.getCategoriesTree(true);
     }
     populate(categoryTreeItems);
 
