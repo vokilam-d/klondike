@@ -5,6 +5,7 @@ import { Order } from '../../../order/models/order.model';
 import { ShipmentDto } from '../admin/shipment.dto';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { __ } from '../../helpers/translate/translate.function';
+import { AdminOrderDto } from '../admin/order.dto';
 
 export class ClientAddOrderDto {
   @Expose()
@@ -56,7 +57,7 @@ export class ClientOrderDto extends ClientAddOrderDto {
   shipment: ShipmentDto;
 
   @Expose()
-  @Transform(((value, order: ClientOrderDto) => value || __(order.status, 'ru')))
+  @Transform(((value, order: AdminOrderDto) => order.statusDescription || __(order.status, 'ru') || value))
   status: string;
 
   @Expose()
