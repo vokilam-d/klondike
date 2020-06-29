@@ -12,8 +12,7 @@ export class UserJwtStrategy extends PassportStrategy(Strategy, authConstants.US
   constructor(private userService: UserService) {
     super({
       jwtFromRequest: (req: FastifyRequest) => {
-        return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZTg4OGI5NTUyYzA2NDBmZTUzYWU4ZmMiLCJpYXQiOjE1OTEzODI3NDYsImV4cCI6MTU5Mzk3NDc0Nn0.LbeL5Gqp2vwpLwD3P_8mSswRkLqv7uIfuNpeTPf9hIw';
-        // return req?.cookies?.[authConstants.JWT_ADMIN_COOKIE_NAME];
+        return req?.cookies?.[authConstants.JWT_ADMIN_COOKIE_NAME];
       },
       ignoreExpiration: false,
       secretOrKey: authConstants.JWT_SECRET
