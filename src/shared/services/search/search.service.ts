@@ -164,8 +164,17 @@ export class SearchService {
               const isLast = i === fieldNameParts.length - 1;
 
               if (isLast) {
+                let queryType = 'match_phrase_prefix';
+
+                if (schema) {
+                  const fieldFromSchema = schema[fieldName];
+                  if (fieldFromSchema && fieldFromSchema.type !== elasticTextType.type && fieldFromSchema.type !== elasticAutocompleteType.type) {
+                    queryType = 'term';
+                  }
+                }
+
                 shouldQuery = {
-                  'match_phrase_prefix': {
+                  [queryType]: {
                     [fieldName]: value
                   }
                 };
