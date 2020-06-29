@@ -14,5 +14,5 @@ export class ProductSelectedAttribute {
   valueIds: string[];
 
   @prop()
-  valueId: string;
+  valueId?: string; // todo remove this
 }
