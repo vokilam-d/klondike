@@ -52,6 +52,7 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsBoolean()
+  @IsOptional()
   shouldSaveAddress: boolean;
 
   @Expose()
@@ -74,10 +75,12 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsString()
+  @IsOptional()
   paymentMethodClientName: string; // todo move to AdminOrderDto after migration
 
   @Expose()
   @IsString()
+  @IsOptional()
   paymentMethodAdminName: string; // todo move to AdminOrderDto after migration
 
   @Expose()
@@ -87,6 +90,7 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsBoolean()
+  @IsOptional()
   isCallbackNeeded: boolean;
 
   @Expose()
@@ -110,14 +114,17 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   @IsString()
+  @IsOptional()
   clientNote: string;
 
   @Expose()
   @IsString()
+  @IsOptional()
   adminNote: string;
 
   @Expose()
   @IsString({ each: true })
+  @IsOptional()
   logs: string[];
 
   @Expose()
