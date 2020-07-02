@@ -4,14 +4,13 @@ import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 
-@UseGuards(UserJwtGuard)
-@Controller('admin/google') // todo rename to "admin/feed"
-export class AdminGoogleController { // todo rename to AdminFeedController
+@Controller('feed')
+export class FeedController { // todo rename to AdminFeedController
 
   constructor(private readonly googleShoppingFeedService: GoogleShoppingFeedService) {
   }
 
-  @Get('shopping-feed')
+  @Get('shopping')
   async getShoppingAdsFeed(@Res() reply: FastifyReply<ServerResponse>) {
     const feed = await this.googleShoppingFeedService.generateShoppingAdsFeed();
 
@@ -21,7 +20,7 @@ export class AdminGoogleController { // todo rename to AdminFeedController
       .send(feed);
   }
 
-  @Get('reviews-feed')
+  @Get('reviews')
   async getProductReviewsFeed(@Res() reply: FastifyReply<ServerResponse>) {
     const feed = await this.googleShoppingFeedService.generateProductReviewsFeed();
 
