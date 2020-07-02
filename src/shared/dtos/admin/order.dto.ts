@@ -14,6 +14,7 @@ import { ShipmentDto } from './shipment.dto';
 import { OrderStatusEnum } from '../../enums/order-status.enum';
 import { __ } from '../../helpers/translate/translate.function';
 import { PaymentMethodEnum } from '../../enums/payment-method.enum';
+import { Log } from '../../models/log.model';
 
 export class AdminAddOrUpdateOrderDto {
   @Expose()
@@ -123,9 +124,8 @@ export class AdminAddOrUpdateOrderDto {
   adminNote: string;
 
   @Expose()
-  @IsString({ each: true })
   @IsOptional()
-  logs: string[];
+  logs: Log[];
 
   @Expose()
   @IsOptional()

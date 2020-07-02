@@ -413,8 +413,15 @@ export class OrderService implements OnApplicationBootstrap {
         const shipment: ShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
         if (!shipment) { continue; }
 
+        const oldShipmentStatus = order.shipment.status;
         order.shipment.status = shipment.status;
         order.shipment.statusDescription = shipment.statusDescription;
+        const newShipmentStatus = order.shipment.status;
+
+        if (newShipmentStatus !== oldShipmentStatus) {
+          order.logs.push({ time: new Date(), text: `Updated shipment status to "${order.shipment.status}" - ${order.shipment.statusDescription}` });
+        }
+
         const oldOrderStatus = order.status;
         OrderService.updateOrderStatusByShipment(order);
         const newOrderStatus = order.status;
@@ -424,13 +431,15 @@ export class OrderService implements OnApplicationBootstrap {
           } else if (newOrderStatus === OrderStatusEnum.FINISHED) {
             await this.finishedOrderPostActions(order, session);
           }
+
+          order.logs.push({ time: new Date(), text: `Updated order status to "${order.status}" - ${order.statusDescription}` });
         }
+
         await order.save({ session });
         await this.updateSearchData(order);
       }
 
       await session.commitTransaction();
-      this.logger.log(`Updated ${shipments.length} orders based on shipment status`);
       return orders;
 
     } catch (ex) {

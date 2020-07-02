@@ -4,6 +4,7 @@ import { OrderStatusEnum } from '../../shared/enums/order-status.enum';
 import { Shipment } from './shipment.model';
 import { PaymentMethodEnum } from '../../shared/enums/payment-method.enum';
 import { __ } from '../../shared/helpers/translate/translate.function';
+import { Log } from '../../shared/models/log.model';
 
 export class Order {
   @prop()
@@ -80,8 +81,8 @@ export class Order {
   @prop()
   adminNote: string;
 
-  @arrayProp({ items: String })
-  logs: string[];
+  @arrayProp({ items: Log, default: [] })
+  logs: Log[];
 
   @prop({ default: 0 })
   totalItemsCost: number;
