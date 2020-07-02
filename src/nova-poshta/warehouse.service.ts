@@ -8,6 +8,7 @@ import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-c
 import { WarehouseDto } from '../shared/dtos/shared-dtos/warehouse.dto';
 import { plainToClass } from 'class-transformer';
 import { NovaPoshtaService } from './nova-poshta.service';
+import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 
 @Injectable()
 export class WarehouseService implements OnApplicationBootstrap {
@@ -48,7 +49,7 @@ export class WarehouseService implements OnApplicationBootstrap {
     return plainToClass(WarehouseDto, warehouses, { excludeExtraneousValues: true });
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_4AM)
+  @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   public async loadWarehousesToElastic() {
     let warehouseCount = 0;
     try {

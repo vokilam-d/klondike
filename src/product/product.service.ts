@@ -53,6 +53,7 @@ import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-c
 import { CronExpression } from '@nestjs/schedule';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
+import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -1104,7 +1105,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_4AM)
+  @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
 

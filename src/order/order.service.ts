@@ -36,6 +36,7 @@ import { createHmac } from 'crypto';
 import { isObject } from 'src/shared/helpers/is-object.function';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
 import { EmailService } from '../email/email.service';
+import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -547,7 +548,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_5AM)
+  @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   private async reindexAllSearchData() {
     this.logger.log(`Start reindex all search data`);
     await this.searchService.deleteCollection(Order.collectionName);

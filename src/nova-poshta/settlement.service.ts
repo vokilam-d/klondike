@@ -10,6 +10,7 @@ import { SettlementDto } from '../shared/dtos/shared-dtos/settlement.dto';
 import { plainToClass } from 'class-transformer';
 
 import { NovaPoshtaService } from './nova-poshta.service';
+import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 
 @Injectable()
 export class SettlementService implements OnApplicationBootstrap {
@@ -43,7 +44,7 @@ export class SettlementService implements OnApplicationBootstrap {
     return plainToClass(SettlementDto, searchResponse[0], { excludeExtraneousValues: true });
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_3AM)
+  @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   public async loadSettlementsToElastic() {
     let settlementCount = 0;
     try {
