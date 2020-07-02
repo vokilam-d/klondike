@@ -60,7 +60,6 @@ export class OrderService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
-    this.findWithNotFinalStatusesAndUpate();
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
