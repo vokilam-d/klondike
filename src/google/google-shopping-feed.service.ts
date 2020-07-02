@@ -87,8 +87,11 @@ export class GoogleShoppingFeedService {
         brand = productBrandAttr.valueIds[0];
       }
 
+
       product.variants.forEach(variant => {
         if (!variant.isEnabled) { return; }
+
+        const description = variant.fullDescription || variant.shortDescription || '';
 
         let imageLink: string;
         let additionalImageLinks: string[] = [];
@@ -112,7 +115,7 @@ export class GoogleShoppingFeedService {
           'g:title': { $: variant.googleAdsProductTitle || variant.name },
           'g:link': { $: `http://klondike.com.ua/${variant.slug}.html` },
           'g:price': { $: `${variant.priceInDefaultCurrency} UAH` },
-          'g:description': { $: stripHtmlTags(variant.fullDescription).replace(/\r?\n|\n/g, ' ') },
+          'g:description': { $: stripHtmlTags(description).replace(/\r?\n|\n/g, ' ') },
           'g:product_type': { $: this.buildProductType(product.breadcrumbs) },
           ...(imageLink ? {'g:image_link': { $: imageLink }} : {}),
           ...(additionalImageLinks.length ? {'g:additional_image_link': { $: additionalImageLinks as any }}: {}),
