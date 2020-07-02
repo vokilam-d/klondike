@@ -17,7 +17,7 @@ interface IShoppingFeedItem {
   'g:price': cdata;
   'g:description': cdata;
   'g:product_type': cdata;
-  'g:image_link': cdata;
+  'g:image_link'?: cdata;
   'g:additional_image_link'?: cdata;
   'g:condition': string;
   'g:availability': string;
@@ -91,14 +91,13 @@ export class GoogleShoppingFeedService {
         if (!variant.isEnabled) { return; }
 
         let imageLink: string;
-        let additionalImageLinks: string[];
+        let additionalImageLinks: string[] = [];
         variant.medias.forEach((media, idx) => {
           const link = 'http://klondike.com.ua' + media.variantsUrls.original;
 
           if (idx === 0) {
             imageLink = link;
           } else {
-            additionalImageLinks = additionalImageLinks || [];
             additionalImageLinks.push(link);
           }
         });
@@ -115,8 +114,8 @@ export class GoogleShoppingFeedService {
           'g:price': { $: `${variant.priceInDefaultCurrency} UAH` },
           'g:description': { $: stripHtmlTags(variant.fullDescription).replace(/\r?\n|\n/g, ' ') },
           'g:product_type': { $: this.buildProductType(product.breadcrumbs) },
-          'g:image_link': { $: imageLink },
-          'g:additional_image_link': { $: additionalImageLinks as any },
+          ...(imageLink ? {'g:image_link': { $: imageLink }} : {}),
+          ...(additionalImageLinks.length ? {'g:additional_image_link': { $: additionalImageLinks as any }}: {}),
           'g:condition': 'new',
           'g:availability': 'in stock',
           'g:brand': { $: brand },
