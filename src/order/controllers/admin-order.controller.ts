@@ -25,15 +25,6 @@ export class AdminOrderController {
     return this.orderService.getOrdersList(spf);
   }
 
-  @Get('/latest-shipment-statuses')
-  async fetchShipmentStatuses(): Promise<ResponseDto<AdminOrderDto[]>> {
-    const updated = await this.orderService.getOrdersWithLatestShipmentStatuses();
-
-    return {
-      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
-    };
-  }
-
   @Get(':id')
   async getOrder(@Param('id') id: string): Promise<ResponseDto<AdminOrderDto>> {
     const order = await this.orderService.getOrderById(parseInt(id));

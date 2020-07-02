@@ -59,6 +59,7 @@ export class OrderService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
+    this.findWithNotFinalStatusesAndUpate();
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
@@ -388,14 +389,17 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
-  public async getOrdersWithLatestShipmentStatuses(): Promise<Order[]> {
+  public async findWithNotFinalStatusesAndUpate(): Promise<Order[]> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
 
+      const shipmentProp: keyof Order = 'shipment';
+      const numberProp: keyof Shipment = 'trackingNumber';
+
       const orders = await this.orderModel.find({
-        shipment: {
-          trackingNumber: { $exists: true } as any
+        [`${shipmentProp}.${numberProp}`]: {
+          $nin: ['', undefined, null]
         },
         status: {
           $nin: FinalOrderStatuses
@@ -407,29 +411,26 @@ export class OrderService implements OnApplicationBootstrap {
 
       for (const order of orders) {
         const shipment: ShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
-        if (shipment) {
-          order.shipment.status = shipment.status;
-          order.shipment.statusDescription = shipment.statusDescription;
+        if (!shipment) { continue; }
 
-          const oldOrderStatus = order.status;
-          OrderService.updateOrderStatusByShipment(order);
-          const newOrderStatus = order.status;
-
-          if (newOrderStatus !== oldOrderStatus) {
-            if (newOrderStatus === OrderStatusEnum.SHIPPED) {
-              await this.shippedOrderPostActions(order, session);
-            } else if (newOrderStatus === OrderStatusEnum.FINISHED) {
-              await this.finishedOrderPostActions(order, session);
-            }
+        order.shipment.status = shipment.status;
+        order.shipment.statusDescription = shipment.statusDescription;
+        const oldOrderStatus = order.status;
+        OrderService.updateOrderStatusByShipment(order);
+        const newOrderStatus = order.status;
+        if (newOrderStatus !== oldOrderStatus) {
+          if (newOrderStatus === OrderStatusEnum.SHIPPED) {
+            await this.shippedOrderPostActions(order, session);
+          } else if (newOrderStatus === OrderStatusEnum.FINISHED) {
+            await this.finishedOrderPostActions(order, session);
           }
-
-          await order.save({ session });
-          await this.updateSearchData(order);
         }
+        await order.save({ session });
+        await this.updateSearchData(order);
       }
 
       await session.commitTransaction();
-
+      this.logger.log(`Updated ${shipments.length} orders based on shipment status`);
       return orders;
 
     } catch (ex) {
@@ -488,12 +489,16 @@ export class OrderService implements OnApplicationBootstrap {
     const isCashOnDelivery = order.paymentType === PaymentMethodEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
+    const isJustSent = order.shipment.status !== ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER
+      && order.status === OrderStatusEnum.READY_TO_SHIP;
 
-    if (isCashOnDelivery && isReceived || !isCashOnDelivery && isCashPickedUp) {
+    if (!isCashOnDelivery && isReceived || isCashOnDelivery && isCashPickedUp) {
       order.status = OrderStatusEnum.FINISHED;
       order.isOrderPaid = true;
     } else if (order.shipment.status === ShipmentStatusEnum.RECIPIENT_DENIED) {
       order.status = OrderStatusEnum.RECIPIENT_DENIED;
+    } else if (isJustSent) {
+      order.status = OrderStatusEnum.SHIPPED;
     }
   }
 
