@@ -15,6 +15,14 @@ enum EEmailType {
   OrderConfirmation = 'order-confirmation'
 }
 
+interface SendEmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  attachment?: any;
+  emailType: EEmailType;
+}
+
 @Injectable()
 export class EmailService {
 
@@ -52,11 +60,11 @@ export class EmailService {
     if (notifyManager) {
       const managerEmail = this.senderName;
       const managerSubject = `Новый заказ №${order.idForCustomer}`;
-      this.sendEmail(managerEmail, managerSubject, html, attachment)
-        .catch(err => this.logger.error(`Could not send "Order Succes" email to manager: ${err.message}`));
+      this.sendEmail({ to: managerEmail, subject: managerSubject, html, attachment, emailType: EEmailType.OrderConfirmation })
+        .then();
     }
 
-    return this.sendEmail(to, subject, html, attachment);
+    return this.sendEmail({ to, subject, html, attachment, emailType: EEmailType.OrderConfirmation });
   }
 
   async sendLeaveReviewEmail(order: Order) {
@@ -67,7 +75,7 @@ export class EmailService {
     const context = this.getLeaveReviewTemplateContext(order);
     const html = this.getEmailHtml(EEmailType.LeaveReview, context);
 
-    return this.sendEmail(to, subject, html);
+    return this.sendEmail({ to, subject, html, emailType: EEmailType.LeaveReview });
   }
 
   sendRegisterSuccessEmail(customer: Customer, token: string) {
@@ -78,7 +86,7 @@ export class EmailService {
       { email: customer.email, firstName: customer.firstName, lastName: customer.lastName, token }
     );
 
-    return this.sendEmail(to, subject, html);
+    return this.sendEmail({ to, subject, html, emailType: EEmailType.RegistrationSuccess });
   }
 
   sendEmailConfirmationEmail(customer: Customer, token: string) {
@@ -89,7 +97,7 @@ export class EmailService {
       { email: customer.email, firstName: customer.firstName, lastName: customer.lastName, token }
     );
 
-    return this.sendEmail(to, subject, html);
+    return this.sendEmail({ to, subject, html, emailType: EEmailType.EmailConfirmation });
   }
 
   sendResetPasswordEmail(customer: Customer, token: string) {
@@ -97,21 +105,28 @@ export class EmailService {
     const subject = 'Восстановление пароля';
     const html = this.getEmailHtml(EEmailType.ResetPassword, { firstName: customer.firstName, lastName: customer.lastName, token });
 
-    return this.sendEmail(to, subject, html);
+    return this.sendEmail({ to, subject, html, emailType: EEmailType.ResetPassword });
   }
 
-  private async sendEmail(to: string, subject: string, html: string, attachment?: any) {
+  private async sendEmail({ to, subject, html, attachment, emailType }: SendEmailOptions) {
     const transport = await nodemailer.createTransport(this.transportOptions);
     const attachments = [];
     if (attachment) { attachments.push(attachment); }
 
-    return transport.sendMail({
-      from: this.senderName,
-      to: to,
-      subject: subject,
-      html,
-      attachments
-    });
+    try {
+      await transport.sendMail({
+        from: this.senderName,
+        to: to,
+        subject: subject,
+        html,
+        attachments
+      });
+
+      this.logger.log(`Sent email "${emailType}" email to "${to}"`);
+    } catch (e) {
+      this.logger.error(`Could not send "${emailType}" email to "${to}": ${e}`);
+      this.logger.error(e);
+    }
   }
 
   private getEmailHtml(emailType: EEmailType, templateContext: any = {}): string {
