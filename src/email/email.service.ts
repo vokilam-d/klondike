@@ -46,12 +46,13 @@ export class EmailService {
   }
 
   async sendOrderConfirmationEmail(order: Order, notifyManager: boolean) {
+    const emailType = EEmailType.OrderConfirmation;
     const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
 
     const subject = `Ваш заказ №${order.idForCustomer} получен`;
 
     const context = this.getOrderConfirmationTemplateContext(order);
-    const html = this.getEmailHtml(EEmailType.OrderConfirmation, context);
+    const html = this.getEmailHtml(emailType, context);
 
     const attachment = {
       filename: `Заказ №${order.idForCustomer}.pdf`,
@@ -61,52 +62,56 @@ export class EmailService {
     if (notifyManager) {
       const managerSubject = `Новый заказ №${order.idForCustomer}`;
       for (const managerEmail of this.managerEmails) {
-        this.sendEmail({ to: managerEmail, subject: managerSubject, html, attachment, emailType: EEmailType.OrderConfirmation }).then();
+        this.sendEmail({ to: managerEmail, subject: managerSubject, html, attachment, emailType }).then();
       }
     }
 
-    return this.sendEmail({ to, subject, html, attachment, emailType: EEmailType.OrderConfirmation });
+    return this.sendEmail({ to, subject, html, attachment, emailType });
   }
 
   async sendLeaveReviewEmail(order: Order) {
+    const emailType = EEmailType.LeaveReview;
     const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
 
     const subject = `${order.customerFirstName}, оставьте отзыв о товаре`;
 
     const context = this.getLeaveReviewTemplateContext(order);
-    const html = this.getEmailHtml(EEmailType.LeaveReview, context);
+    const html = this.getEmailHtml(emailType, context);
 
-    return this.sendEmail({ to, subject, html, emailType: EEmailType.LeaveReview });
+    return this.sendEmail({ to, subject, html, emailType });
   }
 
   sendRegisterSuccessEmail(customer: Customer, token: string) {
+    const emailType = EEmailType.RegistrationSuccess;
     const to = customer.email;
     const subject = 'Добро пожаловать';
     const html = this.getEmailHtml(
-      EEmailType.RegistrationSuccess,
+      emailType,
       { email: customer.email, firstName: customer.firstName, lastName: customer.lastName, token }
     );
 
-    return this.sendEmail({ to, subject, html, emailType: EEmailType.RegistrationSuccess });
+    return this.sendEmail({ to, subject, html, emailType });
   }
 
   sendEmailConfirmationEmail(customer: Customer, token: string) {
+    const emailType = EEmailType.EmailConfirmation;
     const to = customer.email;
     const subject = 'Подтвердите email';
     const html = this.getEmailHtml(
-      EEmailType.EmailConfirmation,
+      emailType,
       { email: customer.email, firstName: customer.firstName, lastName: customer.lastName, token }
     );
 
-    return this.sendEmail({ to, subject, html, emailType: EEmailType.EmailConfirmation });
+    return this.sendEmail({ to, subject, html, emailType });
   }
 
   sendResetPasswordEmail(customer: Customer, token: string) {
+    const emailType = EEmailType.ResetPassword;
     const to = customer.email;
     const subject = 'Восстановление пароля';
-    const html = this.getEmailHtml(EEmailType.ResetPassword, { firstName: customer.firstName, lastName: customer.lastName, token });
+    const html = this.getEmailHtml(emailType, { firstName: customer.firstName, lastName: customer.lastName, token });
 
-    return this.sendEmail({ to, subject, html, emailType: EEmailType.ResetPassword });
+    return this.sendEmail({ to, subject, html, emailType });
   }
 
   private async sendEmail({ to, subject, html, attachment, emailType }: SendEmailOptions) {
