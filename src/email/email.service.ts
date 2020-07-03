@@ -40,6 +40,7 @@ export class EmailService {
     }
   };
   private senderName = 'Клондайк <info@klondike.com.ua>';
+  private managerEmails = ['denis@klondike.com.ua', 'yurii@klondike.com.ua', 'elena@klondike.com.ua'];
 
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
@@ -58,10 +59,10 @@ export class EmailService {
     };
 
     if (notifyManager) {
-      const managerEmail = this.senderName;
       const managerSubject = `Новый заказ №${order.idForCustomer}`;
-      this.sendEmail({ to: managerEmail, subject: managerSubject, html, attachment, emailType: EEmailType.OrderConfirmation })
-        .then();
+      for (const managerEmail of this.managerEmails) {
+        this.sendEmail({ to: managerEmail, subject: managerSubject, html, attachment, emailType: EEmailType.OrderConfirmation }).then();
+      }
     }
 
     return this.sendEmail({ to, subject, html, attachment, emailType: EEmailType.OrderConfirmation });
