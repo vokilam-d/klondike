@@ -129,6 +129,36 @@ export class SearchService {
                                  schema?: any
   ): Promise<[T[], number]> {
 
+    const getQueryTypeForField = (fieldName: string, isNested: boolean) => {
+      let queryType = 'match_phrase_prefix';
+
+      if (!schema) { return queryType; }
+
+      let fieldFromSchema;
+
+      if (isNested) {
+        fieldFromSchema = schema;
+        fieldName.split('.').forEach((fieldNamePart, index, arr) => {
+          fieldFromSchema = fieldFromSchema?.[fieldNamePart];
+
+          const isLastPart = index === arr.length - 1;
+          if (!isLastPart) { fieldFromSchema = fieldFromSchema?.properties }
+        });
+
+      } else {
+        fieldFromSchema = schema[fieldName];
+      }
+
+      if (fieldFromSchema
+        && fieldFromSchema.type !== elasticTextType.type
+        && fieldFromSchema.type !== elasticAutocompleteType.type
+      ) {
+        queryType = 'term';
+      }
+
+      return queryType;
+    };
+
     const boolQuery = {
       must: []
     }
@@ -157,6 +187,8 @@ export class SearchService {
           let shouldQuery: any = {};
 
           const isNested = fieldName.includes('.');
+          const queryType = getQueryTypeForField(fieldName, isNested);
+
           if (isNested) {
 
             const fieldNameParts = fieldName.split('.');
@@ -164,20 +196,12 @@ export class SearchService {
               const isLast = i === fieldNameParts.length - 1;
 
               if (isLast) {
-                let queryType = 'match_phrase_prefix';
-
-                if (schema) {
-                  const fieldFromSchema = schema[fieldName];
-                  if (fieldFromSchema && fieldFromSchema.type !== elasticTextType.type && fieldFromSchema.type !== elasticAutocompleteType.type) {
-                    queryType = 'term';
-                  }
-                }
-
                 shouldQuery = {
                   [queryType]: {
                     [fieldName]: value
                   }
                 };
+
               } else {
                 shouldQuery = {
                   nested: {
@@ -189,16 +213,6 @@ export class SearchService {
             }
 
           } else {
-
-            let queryType = 'match_phrase_prefix';
-
-            if (schema) {
-              const fieldFromSchema = schema[fieldName];
-              if (fieldFromSchema && fieldFromSchema.type !== elasticTextType.type && fieldFromSchema.type !== elasticAutocompleteType.type) {
-                queryType = 'term';
-              }
-            }
-
             shouldQuery = {
               [queryType]: {
                 [fieldName]: value
