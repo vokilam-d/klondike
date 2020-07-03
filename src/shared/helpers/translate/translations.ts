@@ -217,5 +217,9 @@ export const TRANSLATIONS = {
   [OrderStatusEnum.CANCELED]: {
     en: 'Canceled',
     ru: 'Отменён'
-  }
+  },
+  'Confirm email link is invalid or expired': {
+    en: 'Confirm email link is invalid or expired',
+    ru: 'Ссылка для подтверждения пароля неверна или устарела'
+  },
 }

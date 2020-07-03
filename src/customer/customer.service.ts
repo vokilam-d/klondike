@@ -46,7 +46,7 @@ export class CustomerService implements OnApplicationBootstrap {
               private readonly searchService: SearchService,
               private readonly encryptor: EncryptorService,
               private readonly emailService: EmailService,
-              private counterService: CounterService) {
+              private readonly counterService: CounterService) {
   }
 
   onApplicationBootstrap(): any {
@@ -145,7 +145,7 @@ export class CustomerService implements OnApplicationBootstrap {
     const created = await this.createCustomer(adminCustomerDto);
 
     const token = await this.authService.createCustomerEmailConfirmToken(created);
-    this.emailService.sendRegisterSuccessEmail(created, token);
+    this.emailService.sendRegisterSuccessEmail(created, token).then();
 
     return created;
   }
@@ -322,6 +322,21 @@ export class CustomerService implements OnApplicationBootstrap {
     }
 
     return this.authService.initResetCustomerPassword(customer);
+  }
+
+  async initEmailConfirmation(token: string) {
+    const customerId = await this.authService.getCustomerIdByConfirmEmailToken(token);
+    if (!customerId) {
+      throw new BadRequestException(__('Confirm email link is invalid or expired', 'ru'));
+    }
+
+    const customer = await this.customerModel.findById(customerId).exec();
+    if (!customer) {
+      throw new BadRequestException(__('Confirm email link is invalid or expired', 'ru'));
+    }
+
+    await this.confirmCustomerEmail(customer);
+    await this.authService.deleteConfirmEmailToken(token);
   }
 
   async resetPassword(resetDto: ResetPasswordDto) {

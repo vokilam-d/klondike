@@ -21,7 +21,7 @@ export class ConfirmEmailService {
       .digest('hex');
 
     const expireDate = new Date();
-    expireDate.setDate(expireDate.getHours() + this.expirationDurationHours);
+    expireDate.setHours(expireDate.getHours() + this.expirationDurationHours);
 
     const confirmEmail: ConfirmEmail = {
       expireDate,
@@ -38,8 +38,16 @@ export class ConfirmEmailService {
     return resetModel.toJSON();
   }
 
-  async getByToken(token: string): Promise<ConfirmEmail> {
-    return this.confirmEmailModel.findOne({ token }).exec();
+  async getValidByToken(token: string): Promise<ConfirmEmail> {
+    const found = await this.confirmEmailModel.findOne({ token }).exec();
+    if (!found) { return; }
+
+    if (found.expireDate < new Date()) {
+      found.remove().catch();
+      return;
+    }
+
+    return found;
   }
 
   deleteByToken(token: string): Promise<ResetPassword> {

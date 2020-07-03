@@ -128,7 +128,7 @@ export class EmailService {
         attachments
       });
 
-      this.logger.log(`Sent email "${emailType}" email to "${to}"`);
+      this.logger.log(`Sent "${emailType}" email to "${to}"`);
     } catch (e) {
       this.logger.error(`Could not send "${emailType}" email to "${to}": ${e}`);
       this.logger.error(e);

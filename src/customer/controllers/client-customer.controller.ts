@@ -35,6 +35,7 @@ import { OrderService } from '../../order/order.service';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ClientOrderDto } from '../../shared/dtos/client/order.dto';
 import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
+import { ConfirmEmailDto } from '../../shared/dtos/client/confirm-email.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -155,6 +156,12 @@ export class ClientCustomerController {
     const customer: DocumentType<Customer> = req.user;
     await this.customerService.sendEmailConfirmationEmail(customer);
 
+    return { data: true };
+  }
+
+  @Post('confirm-email')
+  async confirmEmail(@Body() confirmEmailDto: ConfirmEmailDto): Promise<ResponseDto<boolean>> {
+    await this.customerService.initEmailConfirmation(confirmEmailDto.token);
     return { data: true };
   }
 

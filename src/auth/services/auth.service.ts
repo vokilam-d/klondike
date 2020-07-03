@@ -212,6 +212,13 @@ export class AuthService {
     return resetModel.customerId;
   }
 
+  async getCustomerIdByConfirmEmailToken(token: string): Promise<number> {
+    const resetModel = await this.confirmEmailService.getValidByToken(token);
+    if (!resetModel) { return; }
+
+    return resetModel.customerId;
+  }
+
   logoutCustomer(res: FastifyReply<ServerResponse>) {
     this.logout(res, authConstants.JWT_COOKIE_NAME);
   }
@@ -240,5 +247,9 @@ export class AuthService {
 
   deleteResetPasswordToken(token: string) {
     return this.resetPasswordService.deleteByToken(token);
+  }
+
+  deleteConfirmEmailToken(token: string) {
+    return this.confirmEmailService.deleteByToken(token);
   }
 }
