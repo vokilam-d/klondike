@@ -1425,6 +1425,7 @@ export class ProductService implements OnApplicationBootstrap {
 
       const values: ClientFilterValueDto[] = [];
       let valuesProductsCount = 0;
+      let isSortable: boolean = true;
       Object.entries(valuesMap).forEach(([ valueId, productsCount ]) => {
         const attributeValue = attribute.values.find(value => value.id === valueId);
         if (!attributeValue) { return; }
@@ -1432,6 +1433,10 @@ export class ProductService implements OnApplicationBootstrap {
         let isSelected = false;
         if (spfFilter) {
           isSelected = spfFilter.values.includes(valueId);
+        }
+
+        if (attributeValue.label.startsWith('№')) {
+          isSortable = false;
         }
 
         valuesProductsCount += productsCount;
@@ -1444,6 +1449,10 @@ export class ProductService implements OnApplicationBootstrap {
           isSelected
         });
       });
+
+      if (isSortable) {
+        values.sort(((a, b) => a.label > b.label ? 1 : -1));
+      }
 
       clientFilters.push({
         id: attribute.id,
