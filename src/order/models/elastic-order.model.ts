@@ -10,6 +10,7 @@ import {
 } from '../../shared/constants';
 import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { ElasticLog } from '../../shared/models/elastic-log.model';
 
 class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'crossSellProducts'> {
   cost = elasticFloatType;
@@ -56,7 +57,10 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
     type: 'nested',
     properties: new ElasticOrderItemModel()
   };
-  logs = elasticTextType;
+  logs = {
+    type: 'nested',
+    properties: new ElasticLog()
+  };
   shipment = {
     type: 'nested',
     properties: new ElasticShipmentModel()
