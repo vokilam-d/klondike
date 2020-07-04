@@ -19,6 +19,7 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   qtyInStock = elasticIntegerType;
   sellableQty = elasticIntegerType;
   sku = elasticTextType;
+  vendorCode = elasticTextType;
   attributes = {
     properties: new ElasticProductSelectedAttributeModel()
   };

@@ -141,7 +141,7 @@ export class ProductService implements OnApplicationBootstrap {
     const spf = new ClientSPFDto();
     spf.limit = 5;
 
-    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { name: query });
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { query });
     const attributes = await this.attributeService.getAllAttributes();
     const clientListItems = await this.transformToClientListDto(adminListItems, attributes);
 
@@ -152,7 +152,7 @@ export class ProductService implements OnApplicationBootstrap {
   async getClientProductListWithFilters(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
-    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { categoryId: spf.categoryId, name: spf.name, limit: 10000 });
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { categoryId: spf.categoryId, query: spf.q, limit: 10000 });
     const attributes = await this.attributeService.getAllAttributes();
     const spfFilters = spf
       .getNormalizedFilters()
@@ -845,7 +845,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   private async findEnabledProductListItems(
     spf: SortingPaginatingFilterDto,
-    { categoryId, name, limit }: { categoryId?: string, name?: string, limit?: number }
+    { categoryId, query, limit }: { categoryId?: string, query?: string, limit?: number }
   ) {
 
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
@@ -856,10 +856,21 @@ export class ProductService implements OnApplicationBootstrap {
       const categoryIdProp: keyof AdminProductCategoryDto = 'id';
       filters.push({ fieldName: `${categoriesProp}.${categoryIdProp}`, values: [categoryId] });
     }
-    if (name) {
+    if (query) {
       const variantsProp: keyof AdminProductListItemDto = 'variants';
       const nameProp: keyof AdminProductVariantListItem = 'name';
-      filters.push({ fieldName: `${variantsProp}.${nameProp}`, values: [name] });
+      const skuProp: keyof AdminProductVariantListItem = 'sku';
+      const vendorCodeProp: keyof AdminProductVariantListItem = 'vendorCode';
+
+      const namePropPath = `${variantsProp}.${nameProp}`;
+      const skuPropPath = `${variantsProp}.${skuProp}`;
+      const vendorCodePath = `${variantsProp}.${vendorCodeProp}`;
+
+      const fieldName = [namePropPath, skuPropPath, vendorCodePath].join('|');
+
+      filters.push({ fieldName, values: [query] });
+
+      console.log(filters);
     }
 
     return this.searchService.searchByFilters<AdminProductListItemDto>(
@@ -941,6 +952,7 @@ export class ProductService implements OnApplicationBootstrap {
           slug: variant.slug,
           attributes: variant.attributes,
           sku: variant.sku,
+          vendorCode: variant.vendorCode,
           price: variant.price,
           oldPrice: variant.oldPrice,
           currency: variant.currency,

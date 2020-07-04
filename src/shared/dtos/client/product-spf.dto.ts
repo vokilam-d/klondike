@@ -34,6 +34,10 @@ export class ClientProductSPFDto extends ClientSPFDto {
   })
   sortFilter: any;
 
+  q?: string;
+
+  autocomplete?: any;
+
   getSortAsObj(): ISorting {
     const variantsProp: keyof AdminProductListItemDto = 'variants';
     const priceProp: keyof AdminProductVariantListItem = 'priceInDefaultCurrency';

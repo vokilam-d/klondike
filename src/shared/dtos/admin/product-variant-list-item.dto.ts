@@ -1,9 +1,8 @@
 import { CurrencyCodeEnum } from '../../enums/currency.enum';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductVariantDto } from './product-variant.dto';
-import { AdminLinkedProductDto } from './linked-product.dto';
 
-export class AdminProductVariantListItem implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty'> {
+export class AdminProductVariantListItem implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty' | 'vendorCode'> {
   id: string;
   isEnabled: boolean;
   mediaUrl: string;
@@ -13,6 +12,7 @@ export class AdminProductVariantListItem implements Pick<AdminProductVariantDto,
   name: string;
   slug: string;
   sku: string;
+  vendorCode: string;
   price: number;
   oldPrice: number;
   currency: CurrencyCodeEnum;

@@ -4,7 +4,6 @@ import { ClientProductDto } from '../shared/dtos/client/product.dto';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { ClientProductSPFDto } from '../shared/dtos/client/product-spf.dto';
 import { ClientProductListResponseDto } from '../shared/dtos/client/product-list-response.dto';
-import { SEARCH_QUERY_PARAM } from '../shared/constants';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -15,7 +14,7 @@ export class ClientProductController {
 
   @Get()
   async findProducts(@Query() spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
-    if (spf[SEARCH_QUERY_PARAM]) {
+    if (spf.autocomplete) {
       return this.productService.getClientProductListAutocomplete(spf.q);
     } else if (spf.id) {
       return this.productService.getClientProductList(spf);
