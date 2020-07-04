@@ -599,6 +599,9 @@ export class OrderService implements OnApplicationBootstrap {
     order.discountValue = 0;
 
     for (let item of order.items) {
+      item.cost = item.price * item.qty;
+      item.totalCost = item.cost - item.discountValue;
+
       order.totalItemsCost += item.cost;
       order.totalCost += item.totalCost;
       order.discountValue += item.discountValue;
