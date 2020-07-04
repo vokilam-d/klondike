@@ -29,23 +29,31 @@ export class OrderItemService {
 
     const orderItem = new OrderItem();
     orderItem.name = variant.name;
+    orderItem.slug = variant.slug;
     orderItem.productId = foundProduct._id;
     orderItem.variantId = variant._id.toString();
     orderItem.sku = variant.sku;
     if (variant.medias[0]) {
       orderItem.imageUrl = variant.medias[0].variantsUrls.small;
     }
-    orderItem.originalPrice = variant.priceInDefaultCurrency;
-    orderItem.price = variant.priceInDefaultCurrency;
+
+    if (variant.oldPriceInDefaultCurrency) {
+      orderItem.price = variant.oldPriceInDefaultCurrency;
+      orderItem.discountValue = variant.oldPriceInDefaultCurrency - variant.priceInDefaultCurrency;
+    } else {
+      orderItem.price = variant.priceInDefaultCurrency;
+
+      if (variant.isDiscountApplicable && customerId) {
+        const customer = await this.customerService.getCustomerById(customerId);
+        orderItem.discountValue = Math.round(orderItem.cost * customer.discountPercent / 100);
+      } else {
+        orderItem.discountValue = 0;
+      }
+    }
+
+    orderItem.originalPrice = orderItem.price; // todo is this field necessary?
     orderItem.qty = qty;
     orderItem.cost = orderItem.price * orderItem.qty;
-    orderItem.discountValue = 0;
-    orderItem.slug = variant.slug;
-
-    if (variant.isDiscountApplicable && customerId) {
-      const customer = await this.customerService.getCustomerById(customerId);
-      orderItem.discountValue = Math.round(orderItem.cost * customer.discountPercent / 100);
-    }
     orderItem.totalCost = orderItem.cost - orderItem.discountValue;
 
     if (!migrate) {
