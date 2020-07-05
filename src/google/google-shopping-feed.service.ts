@@ -113,7 +113,7 @@ export class GoogleShoppingFeedService {
         const item: IShoppingFeedItem = {
           'g:id': { $: variant.sku },
           'g:title': { $: variant.googleAdsProductTitle || variant.name },
-          'g:link': { $: `http://klondike.com.ua/${variant.slug}.html` },
+          'g:link': { $: `http://klondike.com.ua/${variant.slug}` },
           'g:price': { $: `${variant.priceInDefaultCurrency} UAH` },
           'g:description': { $: stripHtmlTags(description).replace(/\r?\n|\n/g, ' ') },
           'g:product_type': { $: this.buildProductType(product.breadcrumbs) },
@@ -159,11 +159,11 @@ export class GoogleShoppingFeedService {
       const product = products.find(p => p._id === reviewDto.productId);
       if (!(product && product.isEnabled)) { return; }
 
-      const productUrl = `https://klondike.com.ua/${product.variants[0].slug}.html`;
+      const productUrl = `https://klondike.com.ua/${product.variants[0].slug}`;
       const reviewsProducts: IShoppingReviewProduct[] = [];
 
       product.variants.forEach(variant => {
-        const variantUrl = `https://klondike.com.ua/${variant.slug}.html`;
+        const variantUrl = `https://klondike.com.ua/${variant.slug}`;
 
         reviewsProducts.push({
           product_ids: {
