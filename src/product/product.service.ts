@@ -869,8 +869,6 @@ export class ProductService implements OnApplicationBootstrap {
       const fieldName = [namePropPath, skuPropPath, vendorCodePath].join('|');
 
       filters.push({ fieldName, values: [query] });
-
-      console.log(filters);
     }
 
     return this.searchService.searchByFilters<AdminProductListItemDto>(
