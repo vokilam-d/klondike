@@ -173,11 +173,10 @@ export class OrderService implements OnApplicationBootstrap {
 
       await session.commitTransaction();
 
+      this.logger.log(`Created order #${newOrder.id} by admin`);
+
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
-
-      this.tasksService.sendLeaveReviewEmail(newOrder)
-        .catch(err => this.logger.error(`Could not send "Leave a review" email: ${err.message}`));
 
       return newOrder;
 
@@ -226,13 +225,14 @@ export class OrderService implements OnApplicationBootstrap {
       await newOrder.save({ session });
       await session.commitTransaction();
 
+      this.logger.log(`Created order #${newOrder.id} by client`);
+
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
 
-      this.emailService.sendOrderConfirmationEmail(newOrder, true)
-        .catch(err => this.logger.error(`Could not "Success Order" email to client: ${err.message}`));
+      this.emailService.sendOrderConfirmationEmail(newOrder, true).then();
       this.tasksService.sendLeaveReviewEmail(newOrder)
-        .catch(err => this.logger.error(`Could not send "Leave a review" email: ${err.message}`));
+        .catch(err => this.logger.error(`Could not create task to send "Leave a review" email: ${err.message}`));
 
       return newOrder;
 
@@ -274,6 +274,7 @@ export class OrderService implements OnApplicationBootstrap {
         }
 
         await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
+        await this.productService.updateSearchDataById(item.productId);
       }
 
       await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
@@ -297,9 +298,11 @@ export class OrderService implements OnApplicationBootstrap {
 
       for (const item of order.items) {
         await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
+        await this.productService.updateSearchDataById(item.productId);
       }
       for (const item of orderDto.items) {
         await this.inventoryService.addToOrdered(item.sku, item.qty, orderId, session);
+        await this.productService.updateSearchDataById(item.productId);
       }
 
       const oldTrackingNumber = order.shipment.trackingNumber;
@@ -331,8 +334,9 @@ export class OrderService implements OnApplicationBootstrap {
 
   private async shippedOrderPostActions(order: Order, session: ClientSession): Promise<Order> {
     for (const item of order.items) {
-      await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
       await this.inventoryService.removeFromOrderedAndStock(item.sku, item.qty, order.id, session);
+      await this.productService.updateSearchDataById(item.productId);
+      await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
     }
 
     return order;
@@ -648,6 +652,7 @@ export class OrderService implements OnApplicationBootstrap {
         case OrderStatusEnum.RETURNED:
           for (const item of order.items) {
             await this.inventoryService.addToStock(item.sku, item.qty, session);
+            await this.productService.updateSearchDataById(item.productId);
           }
           break;
 
@@ -657,6 +662,7 @@ export class OrderService implements OnApplicationBootstrap {
           }
           for (const item of order.items) {
             await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
+            await this.productService.updateSearchDataById(item.productId);
           }
           break;
 

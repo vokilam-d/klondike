@@ -84,7 +84,6 @@ export class ProductService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     this.handleCurrencyUpdates();
     this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
-    // this.reindexAllSearchData();
   }
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
@@ -839,6 +838,11 @@ export class ProductService implements OnApplicationBootstrap {
     await this.searchService.updateDocument(Product.collectionName, adminListItem.id, adminListItem);
   }
 
+  async updateSearchDataById(productId: number): Promise<any> {
+    const product = await this.getProductWithQtyById(productId);
+    return this.updateSearchData(product);
+  }
+
   private async deleteSearchData(productId: number): Promise<any> {
     await this.searchService.deleteDocument(Product.collectionName, productId);
   }
@@ -1129,7 +1133,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     for (const batch of getBatches(listItems, 20)) {
       await Promise.all(batch.map(listItem => this.searchService.addDocument(Product.collectionName, listItem.id, listItem)));
-      this.logger.log('Reindexed ids: ', batch.map(i => i.id).join());
+      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
     }
 
     function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
