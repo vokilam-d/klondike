@@ -37,6 +37,7 @@ import { isObject } from 'src/shared/helpers/is-object.function';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
 import { EmailService } from '../email/email.service';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
+import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -230,7 +231,7 @@ export class OrderService implements OnApplicationBootstrap {
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
 
-      this.emailService.sendOrderConfirmationEmail(newOrder, true).then();
+      this.emailService.sendOrderConfirmationEmail(newOrder, isProdEnv()).then();
       this.tasksService.sendLeaveReviewEmail(newOrder)
         .catch(err => this.logger.error(`Could not create task to send "Leave a review" email: ${err.message}`));
 
