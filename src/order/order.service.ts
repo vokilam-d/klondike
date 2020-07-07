@@ -274,7 +274,7 @@ export class OrderService implements OnApplicationBootstrap {
         }
 
         await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
-        await this.productService.updateSearchDataById(item.productId);
+        await this.productService.updateSearchDataById(item.productId, session);
       }
 
       await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
@@ -298,11 +298,11 @@ export class OrderService implements OnApplicationBootstrap {
 
       for (const item of order.items) {
         await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
-        await this.productService.updateSearchDataById(item.productId);
+        await this.productService.updateSearchDataById(item.productId, session);
       }
       for (const item of orderDto.items) {
         await this.inventoryService.addToOrdered(item.sku, item.qty, orderId, session);
-        await this.productService.updateSearchDataById(item.productId);
+        await this.productService.updateSearchDataById(item.productId, session);
       }
 
       const oldTrackingNumber = order.shipment.trackingNumber;
@@ -332,11 +332,11 @@ export class OrderService implements OnApplicationBootstrap {
       .catch(_ => {});
   }
 
-  private async shippedOrderPostActions(order: Order, session: ClientSession): Promise<Order> {
+  private async shippedOrderPostActions(order: Order, session?: ClientSession): Promise<Order> {
     for (const item of order.items) {
       await this.inventoryService.removeFromOrderedAndStock(item.sku, item.qty, order.id, session);
-      await this.productService.updateSearchDataById(item.productId);
       await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
+      await this.productService.updateSearchDataById(item.productId, session);
     }
 
     return order;
@@ -393,7 +393,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
-  public async findWithNotFinalStatusesAndUpate(): Promise<Order[]> {
+  public async findWithNotFinalStatusesAndUpdate(): Promise<Order[]> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
@@ -430,10 +430,13 @@ export class OrderService implements OnApplicationBootstrap {
         OrderService.updateOrderStatusByShipment(order);
         const newOrderStatus = order.status;
         if (newOrderStatus !== oldOrderStatus) {
-          if (newOrderStatus === OrderStatusEnum.SHIPPED) {
-            await this.shippedOrderPostActions(order, session);
-          } else if (newOrderStatus === OrderStatusEnum.FINISHED) {
-            await this.finishedOrderPostActions(order, session);
+          switch (newOrderStatus) {
+            case OrderStatusEnum.SHIPPED:
+              await this.shippedOrderPostActions(order, session);
+              break;
+            case OrderStatusEnum.FINISHED:
+              await this.finishedOrderPostActions(order, session);
+              break;
           }
 
           order.logs.push({ time: new Date(), text: `Updated order status to "${order.status}" - ${order.statusDescription}` });
@@ -652,7 +655,7 @@ export class OrderService implements OnApplicationBootstrap {
         case OrderStatusEnum.RETURNED:
           for (const item of order.items) {
             await this.inventoryService.addToStock(item.sku, item.qty, session);
-            await this.productService.updateSearchDataById(item.productId);
+            await this.productService.updateSearchDataById(item.productId, session);
           }
           break;
 
@@ -662,7 +665,7 @@ export class OrderService implements OnApplicationBootstrap {
           }
           for (const item of order.items) {
             await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
-            await this.productService.updateSearchDataById(item.productId);
+            await this.productService.updateSearchDataById(item.productId, session);
           }
           break;
 

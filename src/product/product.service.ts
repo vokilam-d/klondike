@@ -321,7 +321,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  async getProductWithQtyById(id: number): Promise<ProductWithQty> {
+  async getProductWithQtyById(id: number, session?: ClientSession): Promise<ProductWithQty> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qtyInStock');
@@ -341,6 +341,7 @@ export class ProductService implements OnApplicationBootstrap {
       })
       .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
+      .session(session)
       .exec();
 
     if (!found) {
@@ -838,8 +839,8 @@ export class ProductService implements OnApplicationBootstrap {
     await this.searchService.updateDocument(Product.collectionName, adminListItem.id, adminListItem);
   }
 
-  async updateSearchDataById(productId: number): Promise<any> {
-    const product = await this.getProductWithQtyById(productId);
+  async updateSearchDataById(productId: number, session: ClientSession): Promise<any> {
+    const product = await this.getProductWithQtyById(productId, session);
     return this.updateSearchData(product);
   }
 
