@@ -54,6 +54,7 @@ import { CronExpression } from '@nestjs/schedule';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
+import { ReservedInventory } from '../inventory/models/reserved-inventory.model';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -1513,5 +1514,17 @@ export class ProductService implements OnApplicationBootstrap {
     });
 
     return clientFilters;
+  }
+
+  async getReservedInventory(productId: string, variantId: string): Promise<ReservedInventory[]> {
+    const product = await this.productModel.findById(productId).exec();
+    if (!product) { throw new BadRequestException(__('Product with id "$1" not found', 'ru')); }
+
+    const variant = product.variants.find(variant => variant.id.equals(variantId));
+    if (!variant) { throw new BadRequestException(`Variant with id "${variantId}" in product with id "${productId}" not found`); }
+
+    const inventory = await this.inventoryService.getInventory(variant.sku);
+
+    return inventory.reserved;
   }
 }

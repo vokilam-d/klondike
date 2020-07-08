@@ -30,6 +30,7 @@ import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { Product } from './models/product.model';
 import { ProductCategory } from './models/product-category.model';
 import { AdminProductCategoryDto } from '../shared/dtos/admin/product-category.dto';
+import { ReservedInventory } from '../inventory/models/reserved-inventory.model';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -54,6 +55,15 @@ export class AdminProductController {
     return {
       data: plainToClass(AdminProductDto, product, { excludeExtraneousValues: true })
     };
+  }
+
+  @Get(':id/variants/:variantId/reserved')
+  async getOrderIdsForReservedVariant(@Param('id') id: string, @Param('variantId') variantId: string): Promise<ResponseDto<number[]>> {
+    const reservedInventory: ReservedInventory[] = await this.productsService.getReservedInventory(id, variantId);
+
+    return {
+      data: reservedInventory.map(inventory => inventory.orderId)
+    }
   }
 
   @Post()

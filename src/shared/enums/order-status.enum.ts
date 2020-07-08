@@ -28,3 +28,8 @@ export const FinalOrderStatuses: OrderStatusEnum[] = [
   OrderStatusEnum.RETURNED,
   OrderStatusEnum.REFUSED_TO_RETURN
 ];
+
+export const ShippedOrderStatuses: OrderStatusEnum[] = [
+  OrderStatusEnum.SHIPPED,
+  ...FinalOrderStatuses
+];

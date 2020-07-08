@@ -7,7 +7,7 @@ import { CounterService } from '../shared/services/counter/counter.service';
 import { CustomerService } from '../customer/customer.service';
 import { AdminAddOrUpdateCustomerDto } from '../shared/dtos/admin/customer.dto';
 import { InventoryService } from '../inventory/inventory.service';
-import { FinalOrderStatuses, OrderStatusEnum } from '../shared/enums/order-status.enum';
+import { FinalOrderStatuses, OrderStatusEnum, ShippedOrderStatuses } from '../shared/enums/order-status.enum';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
@@ -293,7 +293,7 @@ export class OrderService implements OnApplicationBootstrap {
 
   async editOrder(orderId: number, orderDto: AdminAddOrUpdateOrderDto): Promise<Order> {
     return await this.updateOrderById(orderId, async (order, session) => {
-      if (FinalOrderStatuses.includes(order.status) || order.status === OrderStatusEnum.SHIPPED) {
+      if (ShippedOrderStatuses.includes(order.status)) {
         throw new ForbiddenException(__('Cannot edit order with status "$1"', 'ru', order.status));
       }
 
@@ -389,7 +389,10 @@ export class OrderService implements OnApplicationBootstrap {
       Order.collectionName,
       filters,
       spf.skip,
-      spf.limit
+      spf.limit,
+      {},
+      undefined,
+      new ElasticOrderModel()
     );
   }
 
@@ -661,7 +664,7 @@ export class OrderService implements OnApplicationBootstrap {
           break;
 
         case OrderStatusEnum.CANCELED:
-          if (FinalOrderStatuses.includes(status) || order.status === OrderStatusEnum.SHIPPED) {
+          if (ShippedOrderStatuses.includes(status)) {
             throw new BadRequestException(__('Cannot cancel order with status "$1"', 'ru', status));
           }
           for (const item of order.items) {
