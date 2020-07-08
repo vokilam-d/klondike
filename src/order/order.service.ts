@@ -344,7 +344,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   private async finishedOrderPostActions(order: Order, session: ClientSession): Promise<Order> {
-    await this.customerService.incrementTotalOrdersCost(order.customerId, order.totalItemsCost, session);
+    await this.customerService.incrementTotalOrdersCost(order.customerId, order.totalCost, session);
 
     return order;
   }
