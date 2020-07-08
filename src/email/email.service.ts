@@ -61,9 +61,8 @@ export class EmailService {
 
     if (notifyManager) {
       const managerSubject = `Новый заказ №${order.idForCustomer}`;
-      for (const managerEmail of this.managerEmails) {
-        this.sendEmail({ to: managerEmail, subject: managerSubject, html, attachment, emailType }).then();
-      }
+      const managerEmail = this.managerEmails.join(',');
+      this.sendEmail({ to: managerEmail, subject: managerSubject, html, attachment, emailType }).then();
     }
 
     return this.sendEmail({ to, subject, html, attachment, emailType });
