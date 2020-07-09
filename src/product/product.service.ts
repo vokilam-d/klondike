@@ -883,7 +883,8 @@ export class ProductService implements OnApplicationBootstrap {
       undefined,
       limit || spf.limit,
       spf.getSortAsObj(),
-      spf.sortFilter
+      spf.sortFilter,
+      new ElasticProduct()
     );
   }
 
