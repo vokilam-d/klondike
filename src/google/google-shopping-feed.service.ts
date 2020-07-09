@@ -89,7 +89,7 @@ export class GoogleShoppingFeedService {
 
 
       product.variants.forEach(variant => {
-        if (!variant.isEnabled) { return; }
+        if (!variant.isEnabled || !variant.isIncludedInShoppingFeed) { return; }
 
         const description = variant.fullDescription || variant.shortDescription || '';
 

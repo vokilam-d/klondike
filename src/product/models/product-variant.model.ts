@@ -67,6 +67,9 @@ export class ProductVariant {
   @prop({ default: 0 })
   salesCount: number;
 
+  @prop({ default: true })
+  isIncludedInShoppingFeed: boolean;
+
   @prop()
   googleAdsProductTitle: string;
 

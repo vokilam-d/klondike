@@ -110,6 +110,11 @@ export class AdminProductVariantDto {
 
   @Expose()
   @IsOptional()
+  @IsBoolean()
+  isIncludedInShoppingFeed: boolean;
+
+  @Expose()
+  @IsOptional()
   @IsString()
   googleAdsProductTitle: string;
 
