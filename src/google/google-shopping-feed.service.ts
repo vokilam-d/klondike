@@ -120,7 +120,7 @@ export class GoogleShoppingFeedService {
           ...(imageLink ? {'g:image_link': { $: imageLink }} : {}),
           ...(additionalImageLinks.length ? {'g:additional_image_link': { $: additionalImageLinks as any }}: {}),
           'g:condition': 'new',
-          'g:availability': 'in stock',
+          'g:availability': variant.qtyInStock > variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0) ? 'in_stock' : 'out_of_stock',
           'g:brand': { $: brand },
           'g:mpn': { $: variant.vendorCode || '' },
           'g:gtin': { $: variant.gtin || '' }
