@@ -85,6 +85,7 @@ export class ProductService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     this.handleCurrencyUpdates();
     this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
+    // this.reindexAllSearchData();
   }
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
@@ -149,6 +150,7 @@ export class ProductService implements OnApplicationBootstrap {
       data: clientListItems
     };
   }
+
   async getClientProductListWithFilters(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/

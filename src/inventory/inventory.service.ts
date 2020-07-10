@@ -39,7 +39,7 @@ export class InventoryService {
       throw new ForbiddenException(__('Cannot set quantity: more than "$1" items are ordered', 'ru', qty));
     }
 
-    found.qtyInStock = qty - qtyInOrders;
+    found.qtyInStock = qty;
     found.sku = newSku;
 
     await found.save({ session });
