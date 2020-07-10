@@ -937,13 +937,13 @@ export class ProductService implements OnApplicationBootstrap {
         variant.medias.forEach(media => {
           if (!productMediaUrl) { productMediaUrl = media.variantsUrls.small; }
 
-          if (!media.isHidden) {
-            if (primaryMediaUrl) {
-              secondaryMediaUrl = media.variantsUrls.small;
-            } else {
-              primaryMediaUrl = media.variantsUrls.small;
-              mediaAltText = media.altText;
-            }
+          if (media.isHidden) { return; }
+
+          if (!primaryMediaUrl) {
+            primaryMediaUrl = media.variantsUrls.small;
+            mediaAltText = media.altText;
+          } else if (!secondaryMediaUrl) {
+            secondaryMediaUrl = media.variantsUrls.small;
           }
         });
 
