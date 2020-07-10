@@ -138,7 +138,7 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async getClientProductListAutocomplete(query: string): Promise<ClientProductListResponseDto> {
-    const spf = new ClientSPFDto();
+    const spf = new ClientProductSPFDto();
     spf.limit = 5;
 
     const [ adminListItems ] = await this.findEnabledProductListItems(spf, { query });
@@ -850,7 +850,7 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   private async findEnabledProductListItems(
-    spf: SortingPaginatingFilterDto,
+    spf: ClientProductSPFDto,
     { categoryId, query, limit }: { categoryId?: string, query?: string, limit?: number }
   ) {
 

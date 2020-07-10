@@ -1,11 +1,29 @@
 import { IsOptional, IsString } from 'class-validator';
 import { queryParamArrayDelimiter } from '../../constants';
 import { IFilter, SortingPaginatingFilterDto } from '../shared-dtos/spf.dto';
+import { AdminProductListItemDto } from './product-list-item.dto';
+import { AdminProductCategoryDto } from './product-category.dto';
 
 export class AdminSPFDto extends SortingPaginatingFilterDto {
   @IsString()
   @IsOptional()
   filters: string;
+
+  get sortFilter(): any {
+    const categoriesProp: keyof AdminProductListItemDto = 'categories';
+    const sortOrderProp: keyof AdminProductCategoryDto = 'sortOrder';
+    const idProp: keyof AdminProductCategoryDto = 'id';
+    const categorySortOrderProp = `${categoriesProp}.${sortOrderProp}`;
+    const categoryIdProp = `${categoriesProp}.${idProp}`;
+
+    const categoryIdFilter = this.getNormalizedFilters().find(filter => filter.fieldName === categoryIdProp);
+    const sortObj = this.getSortAsObj();
+    if (categoryIdFilter && sortObj[categorySortOrderProp]) {
+      return {
+        [categoryIdProp]: categoryIdFilter.values[0]
+      };
+    }
+  }
 
   hasFilters(): boolean {
     return !!this.filters;

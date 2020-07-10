@@ -25,14 +25,13 @@ export class ClientProductSPFDto extends ClientSPFDto {
   @IsOptional()
   id?: string;
 
-  @Transform((value, obj: ClientProductSPFDto) => {
-    if (obj.categoryId) {
+  get sortFilter(): any {
+    if (this.categoryId && this.sort === ESort.Popularity) {
       const categoriesProp: keyof Product = 'categories';
       const categoryIdProp: keyof ProductCategory = 'id';
-      return { [`${categoriesProp}.${categoryIdProp}`]: obj.categoryId };
+      return { [`${categoriesProp}.${categoryIdProp}`]: this.categoryId };
     }
-  })
-  sortFilter: any;
+  }
 
   q?: string;
 
@@ -67,7 +66,9 @@ export class ClientProductSPFDto extends ClientSPFDto {
         break;
       case ESort.Popularity:
       default:
-        sort[`${categoriesProp}.${sortOrderProp}`] = 'desc';
+        if (this.categoryId) {
+          sort[`${categoriesProp}.${sortOrderProp}`] = 'desc';
+        }
         break;
     }
 

@@ -106,10 +106,6 @@ export class AdminProductController {
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
     await this.productsService.reorderProduct(reorderDto);
-
-    const categoriesProp: keyof Product = 'categories';
-    const categoryIdProp: keyof ProductCategory = 'id';
-    spf.sortFilter = { [`${categoriesProp}.${categoryIdProp}`]: reorderDto.categoryId };
     return this.productsService.getAdminProductsList(spf, false);
   }
 

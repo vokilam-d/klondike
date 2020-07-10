@@ -19,7 +19,7 @@ export abstract class SortingPaginatingFilterDto {
   @IsOptional()
   sort?: string = '';
 
-  sortFilter: any;
+  sortFilter?: any;
 
   getSortAsObj(): ISorting {
     let obj = { };
