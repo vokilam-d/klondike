@@ -7,6 +7,7 @@ import { CronJob } from 'cron';
 import { Order } from '../order/models/order.model';
 import { EmailService } from '../email/email.service';
 import { TaskTypeEnum } from '../shared/enums/task-type.enum';
+import { isPropPrimaryInstance } from '../shared/helpers/is-prod-primary-instance.function';
 
 @Injectable()
 export class TasksService implements OnApplicationBootstrap {
@@ -22,7 +23,9 @@ export class TasksService implements OnApplicationBootstrap {
   }
 
   onApplicationBootstrap() {
-    this.setupSavedTasks();
+    if (isPropPrimaryInstance()) {
+      this.setupSavedTasks();
+    }
   }
 
   async sendLeaveReviewEmail(order: Order) {
