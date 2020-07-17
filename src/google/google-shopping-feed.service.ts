@@ -7,6 +7,7 @@ import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductWithQty } from '../product/models/product-with-qty.model';
+import { AttributeService } from '../attribute/attribute.service';
 
 type cdata = { $: string };
 
@@ -71,10 +72,15 @@ export class GoogleShoppingFeedService {
   reviewsFeedFileName = 'google_shopping_review.xml';
 
   constructor(private readonly productService: ProductService,
+              private readonly attributeService: AttributeService,
               private readonly reviewService: ProductReviewService) {
   }
 
   async generateShoppingAdsFeed(): Promise<string> {
+    const manufacturerAttrId = 'manufacturer';
+    const attributes = await this.attributeService.getAllAttributes();
+    const manufacturerAttr = attributes.find(attr => attr.id === manufacturerAttrId);
+
     const products = await this.getAllProducts();
     const items: IShoppingFeedItem[] = [];
 
@@ -82,9 +88,9 @@ export class GoogleShoppingFeedService {
       if (!product.isEnabled) { return; }
 
       let brand = '';
-      const productBrandAttr = product.attributes.find(attr => attr.attributeId === 'manufacturer');
+      const productBrandAttr = product.attributes.find(attr => attr.attributeId === manufacturerAttrId);
       if (productBrandAttr) {
-        brand = productBrandAttr.valueIds[0];
+        brand = manufacturerAttr.label;
       }
 
 

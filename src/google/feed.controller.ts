@@ -1,8 +1,7 @@
-import { Controller, Get, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
 import { GoogleShoppingFeedService } from './google-shopping-feed.service';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
-import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 
 @Controller('feed')
 export class FeedController { // todo rename to AdminFeedController
