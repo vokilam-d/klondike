@@ -10,12 +10,10 @@ import { Subject } from 'rxjs';
 import { __ } from '../shared/helpers/translate/translate.function';
 
 type ExchangeRate = {
-  bid: number;
-  ask: number;
-  bidCount: number;
-  askCount: number;
-  bidSum: number;
-  askSum: number;
+  bid: string;
+  ask: string;
+  trendAsk: number;
+  trendBid: number;
 }
 
 type ExchangeRates = {
@@ -26,7 +24,7 @@ type ExchangeRates = {
 export class CurrencyService {
 
   private logger = new Logger(CurrencyService.name);
-  private auctionExchangeRateUrl = 'http://api.minfin.com.ua/auction/info/58ec1c89d7ea9221853cf7b777a02c686c455a03/';
+  private exchangeRateUrl = 'https://api.minfin.com.ua/summary/58ec1c89d7ea9221853cf7b777a02c686c455a03/';
   echangeRatesUpdated$: Subject<Currency[]> = new Subject();
 
   constructor(@InjectModel(Currency.name) private readonly currencyModel: ReturnModelType<typeof Currency>,
@@ -39,13 +37,13 @@ export class CurrencyService {
     return currencies.map(currency => currency.toJSON());
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_30_MINUTES)
+  @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_3PM)
   async updateExchangeRates(): Promise<Currency[]> {
     const currencies = await this.currencyModel.find().exec();
     let exchangeRates: ExchangeRates;
 
     try {
-      const response = await this.http.get(this.auctionExchangeRateUrl).toPromise();
+      const response = await this.http.get(this.exchangeRateUrl).toPromise();
       exchangeRates = response.data;
     } catch (ex) {
       this.logger.error('Could not fetch exchange rates:');
@@ -58,7 +56,7 @@ export class CurrencyService {
         continue;
       }
 
-      currency.exchangeRate = rate.bid;
+      currency.exchangeRate = +rate.bid;
       currency = await currency.save();
 
       this.logger.log(`Updated currency '${currency.id}' exchange rate to ${currency.exchangeRate}`);
