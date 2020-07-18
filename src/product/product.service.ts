@@ -51,7 +51,6 @@ import { isNumber } from '../shared/helpers/is-number.function';
 import { AdminProductSelectedAttributeDto } from '../shared/dtos/admin/product-selected-attribute.dto';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
-import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 import { ReservedInventory } from '../inventory/models/reserved-inventory.model';

@@ -31,9 +31,12 @@ export abstract class SortingPaginatingFilterDto {
       }
 
       const sortOrder = matches[1] === '-' ? 'desc' : 'asc';
-      const sortField = matches[2] === 'id' ? '_id' : matches[2];
-
+      const sortField = matches[2];
       obj[sortField] = sortOrder;
+
+      if (sortField === 'id') {
+        obj['_id'] = sortOrder;
+      }
     });
 
     if (Object.keys(obj).length === 0) {

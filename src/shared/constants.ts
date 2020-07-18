@@ -4,20 +4,28 @@ export const notEmptyStringRegex = new RegExp('.+');
 export const isEmailRegex = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}/;
 export const validPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})/;
 export const queryParamArrayDelimiter = ',';
+
+export const elasticKeywordFieldName = 'keyword';
+export const elasticKeywordType = {
+  "type": "keyword"
+};
 export const elasticAutocompleteType = {
+  "fields" : {
+    [elasticKeywordFieldName] : {
+      ...elasticKeywordType,
+      "ignore_above" : 255
+    }
+  },
   "type": "search_as_you_type"
 };
 export const elasticTextType = {
   "fields" : {
-    "keyword" : {
-      "type" : "keyword",
-      "ignore_above" : 256
+    [elasticKeywordFieldName] : {
+      ...elasticKeywordType,
+      "ignore_above" : 254
     }
   },
   "type" : "text"
-};
-export const elasticKeywordType = {
-  "type": "keyword"
 };
 export const elasticDateType = {
   "type": "date"

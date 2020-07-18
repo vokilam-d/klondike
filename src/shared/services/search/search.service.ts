@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
 import { IFilter, ISorting } from '../../dtos/shared-dtos/spf.dto';
-import { elasticAutocompleteType, elasticTextType } from '../../constants';
+import { elasticAutocompleteType, elasticKeywordFieldName, elasticTextType } from '../../constants';
 
 @Injectable()
 export class SearchService {
@@ -230,7 +230,7 @@ export class SearchService {
       boolQuery.must.push(filterQuery);
     });
 
-    return await this.searchByQuery(collection, boolQuery, from, size, sortObj, sortFilter);
+    return await this.searchByQuery(collection, boolQuery, from, size, sortObj, sortFilter, schema);
   }
 
   public async searchByQuery<T = any>(collection: string,
@@ -238,23 +238,52 @@ export class SearchService {
                                       from: number,
                                       size: number,
                                       sortObj: ISorting = {},
-                                      sortFilter?: any
+                                      sortFilter?: any,
+                                      schema?: any
   ): Promise<[T[], number]> {
 
     const sort = [];
     let nestedSortArr = [];
+    const getSortFieldForFieldName = (fieldName: string, isNested: boolean): string => {
+      let sortField = fieldName;
+
+      if (!schema) { return sortField; }
+
+      let fieldFromSchema;
+
+      if (isNested) {
+        fieldFromSchema = schema;
+        fieldName.split('.').forEach((fieldNamePart, index, arr) => {
+          fieldFromSchema = fieldFromSchema?.[fieldNamePart];
+
+          const isLastPart = index === arr.length - 1;
+          if (!isLastPart) { fieldFromSchema = fieldFromSchema?.properties }
+        });
+
+      } else {
+        fieldFromSchema = schema[fieldName];
+      }
+
+      if (fieldFromSchema.fields[elasticKeywordFieldName]) {
+        sortField += `.${elasticKeywordFieldName}`;
+      }
+
+      return sortField;
+    };
+
     Object.entries(sortObj).forEach(entry => {
       const [fieldName, value] = entry;
+      const sortField = getSortFieldForFieldName(fieldName, fieldName.includes('.'));
 
       if (typeof value === 'object') {
-        nestedSortArr.push({ [fieldName]: value });
+        nestedSortArr.push({ [sortField]: value });
         return;
       }
 
       if (fieldName.includes('.')) {
         const [parentField] = fieldName.split('.');
         const nestedSort: any = {
-          [fieldName]: {
+          [sortField]: {
             nested: {
               path: parentField,
               ...(sortFilter ? { filter: { term: sortFilter } } : {})
@@ -263,13 +292,13 @@ export class SearchService {
         };
 
         if (typeof value === 'string') {
-          nestedSort[fieldName].order = value;
+          nestedSort[sortField].order = value;
         }
 
         nestedSortArr.push(nestedSort);
 
       } else {
-        sort.push(`${fieldName}:${value}`);
+        sort.push(`${sortField}:${value}`);
       }
     });
 
