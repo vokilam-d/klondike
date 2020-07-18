@@ -264,7 +264,7 @@ export class SearchService {
         fieldFromSchema = schema[fieldName];
       }
 
-      if (fieldFromSchema.fields[elasticKeywordFieldName]) {
+      if (fieldFromSchema.fields?.[elasticKeywordFieldName]) {
         sortField += `.${elasticKeywordFieldName}`;
       }
 
