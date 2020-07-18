@@ -247,7 +247,7 @@ export class SearchService {
     const getSortFieldForFieldName = (fieldName: string, isNested: boolean): string => {
       let sortField = fieldName;
 
-      if (!schema) { return sortField; }
+      if (!schema || sortField === '_script') { return sortField; }
 
       let fieldFromSchema;
 
