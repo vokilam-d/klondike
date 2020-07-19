@@ -1,4 +1,13 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from './models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
@@ -46,6 +55,7 @@ export class OrderService implements OnApplicationBootstrap {
   private cachedOrderCount: number;
 
   constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
+              @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
               private readonly counterService: CounterService,
               private readonly paymentMethodService: PaymentMethodService,
               private readonly tasksService: TasksService,
@@ -54,7 +64,6 @@ export class OrderService implements OnApplicationBootstrap {
               private readonly inventoryService: InventoryService,
               private readonly productService: ProductService,
               private readonly searchService: SearchService,
-              private readonly customerService: CustomerService,
               private readonly novaPoshtaService: NovaPoshtaService,
               private readonly shipmentSenderService: ShipmentSenderService) {
   }
@@ -721,5 +730,12 @@ export class OrderService implements OnApplicationBootstrap {
 
       return order;
     });
+  }
+
+  async changeCustomerEmail(oldEmail: string, newEmail: string, session: ClientSession): Promise<void> {
+    await this.orderModel.updateMany(
+      { customerEmail: oldEmail },
+      { customerEmail: newEmail }
+    ).session(session).exec();
   }
 }

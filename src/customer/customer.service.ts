@@ -34,6 +34,7 @@ import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
+import { OrderService } from '../order/order.service';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -43,6 +44,7 @@ export class CustomerService implements OnApplicationBootstrap {
 
   constructor(@InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
               @Inject(forwardRef(() => AuthService)) private authService: AuthService,
+              @Inject(forwardRef(() => OrderService)) private orderService: OrderService,
               private readonly searchService: SearchService,
               private readonly encryptor: EncryptorService,
               private readonly emailService: EmailService,
@@ -165,24 +167,53 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async updateCustomerById(customerId: number, customerDto: AdminAddOrUpdateCustomerDto): Promise<Customer> {
-    const found = await this.customerModel.findById(customerId).exec();
-    if (!found) {
-      throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
+    const session = await this.customerModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const found = await this.customerModel.findById(customerId).session(session).exec();
+      if (!found) {
+        throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
+      }
+
+      await this.processEmailChange(found.email, customerDto.email, session);
+
+      Object.keys(customerDto).forEach(key => found[key] = customerDto[key]);
+      await found.save({ session });
+      await session.commitTransaction();
+
+      this.updateSearchData(found).then();
+
+      return found;
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
     }
 
-    Object.keys(customerDto).forEach(key => found[key] = customerDto[key]);
-    await found.save();
-    this.updateSearchData(found);
-
-    return found;
   }
 
   async updateCustomerByClientDto(customer: DocumentType<Customer>, customerDto: ClientUpdateCustomerDto): Promise<Customer> {
-    Object.keys(customerDto).forEach(key => customer[key] = customerDto[key]);
-    await customer.save();
-    this.updateSearchData(customer);
+    const session = await this.customerModel.db.startSession();
+    session.startTransaction();
 
-    return customer;
+    try {
+      await this.processEmailChange(customer.email, customerDto.email, session);
+
+      Object.keys(customerDto).forEach(key => customer[key] = customerDto[key]);
+      await customer.save({ session });
+      await session.commitTransaction();
+
+      this.updateSearchData(customer).then();
+
+      return customer;
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   }
 
   async checkAndUpdatePassword(customer: DocumentType<Customer>, passwordDto: ClientUpdatePasswordDto): Promise<Customer> {
@@ -423,5 +454,11 @@ export class CustomerService implements OnApplicationBootstrap {
     await customer.save({ session });
 
     return customer;
+  }
+
+  private async processEmailChange(oldEmail: string, newEmail: string, session: ClientSession): Promise<void> {
+    if (oldEmail === newEmail) { return; }
+
+    await this.orderService.changeCustomerEmail(oldEmail, newEmail, session);
   }
 }
