@@ -262,6 +262,10 @@ export class SearchService {
 
       } else {
         fieldFromSchema = schema[fieldName];
+
+        if (!fieldFromSchema && fieldName === '_id') {
+          fieldFromSchema = schema['id'];
+        }
       }
 
       if (fieldFromSchema.fields?.[elasticKeywordFieldName]) {
