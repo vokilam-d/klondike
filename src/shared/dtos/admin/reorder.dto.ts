@@ -1,4 +1,4 @@
-import { ReorderPositionEnum } from '../../enums/reoder-position.enum';
+import { ReorderPositionEnum } from '../../enums/reorder-position.enum';
 import { IsDefined, IsEnum, IsNumber } from 'class-validator';
 
 export class ReorderDto {

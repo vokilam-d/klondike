@@ -41,7 +41,7 @@ import { CurrencyService } from '../currency/currency.service';
 import { ProductCategory } from './models/product-category.model';
 import { AdminProductCategoryDto } from '../shared/dtos/admin/product-category.dto';
 import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
-import { ReorderPositionEnum } from '../shared/enums/reoder-position.enum';
+import { ReorderPositionEnum } from '../shared/enums/reorder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { AttributeTypeEnum } from '../shared/enums/attribute-type.enum';
 import { ClientProductListResponseDto } from '../shared/dtos/client/product-list-response.dto';
@@ -1259,7 +1259,7 @@ export class ProductService implements OnApplicationBootstrap {
       let filterOperator;
       let elasticComparisonOperator;
       let newOrder;
-      if (reorderDto.position === ReorderPositionEnum.Start || targetProductOrder === 0) {
+      if (reorderDto.position === ReorderPositionEnum.Start) {
         filterOperator = '$gt';
         elasticComparisonOperator = '>';
         newOrder = targetProductOrder + 1;

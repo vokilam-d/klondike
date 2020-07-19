@@ -11,7 +11,7 @@ import { plainToClass } from 'class-transformer';
 import { ClientSession } from 'mongoose';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
-import { ReorderPositionEnum } from '../shared/enums/reoder-position.enum';
+import { ReorderPositionEnum } from '../shared/enums/reorder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
 
