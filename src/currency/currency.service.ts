@@ -56,7 +56,7 @@ export class CurrencyService {
         continue;
       }
 
-      currency.exchangeRate = +rate.bid;
+      currency.exchangeRate = +rate.ask;
       currency = await currency.save();
 
       this.logger.log(`Updated currency '${currency.id}' exchange rate to ${currency.exchangeRate}`);
