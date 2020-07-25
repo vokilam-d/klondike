@@ -150,6 +150,22 @@ export class ProductService implements OnApplicationBootstrap {
     };
   }
 
+  async getClientProductListLastAdded(): Promise<ClientProductListResponseDto> {
+    const spf = new ClientProductSPFDto();
+    spf.limit = 5;
+
+    const createdAtProp: keyof Product = 'createdAt';
+    spf.sort = `-${createdAtProp}`;
+
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf);
+    const attributes = await this.attributeService.getAllAttributes();
+    const clientListItems = await this.transformToClientListDto(adminListItems, attributes);
+
+    return {
+      data: clientListItems
+    };
+  }
+
   async getClientProductListWithFilters(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
@@ -852,7 +868,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   private async findEnabledProductListItems(
     spf: ClientProductSPFDto,
-    { categoryId, query, limit }: { categoryId?: string, query?: string, limit?: number }
+    { categoryId, query, limit }: { categoryId?: string, query?: string, limit?: number } = { }
   ) {
 
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';

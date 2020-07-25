@@ -36,6 +36,9 @@ export class Product {
   @prop({ min: 1, max: 5, default: null })
   reviewsAvgRating: number;
 
+  createdAt: Date;
+  updatedAt: Date;
+
   static collectionName: string = 'product';
 }
 
