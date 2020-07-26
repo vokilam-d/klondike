@@ -52,6 +52,9 @@ export class AdminAddOrUpdateOrderDto {
   customerPhoneNumber: string;
 
   @Expose()
+  customerNote: string;
+
+  @Expose()
   @IsBoolean()
   @IsOptional()
   shouldSaveAddress: boolean;

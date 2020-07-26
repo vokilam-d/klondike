@@ -265,6 +265,7 @@ export class OrderService implements OnApplicationBootstrap {
       newOrder.customerFirstName = customer.firstName;
       newOrder.customerLastName = customer.lastName;
       newOrder.customerPhoneNumber = customer.phoneNumber;
+      newOrder.customerNote = customer.note;
       newOrder.createdAt = new Date();
       newOrder.status = OrderStatusEnum.NEW;
       newOrder.discountPercent = customer.discountPercent;

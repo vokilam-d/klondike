@@ -12,7 +12,4 @@ export class ProductSelectedAttribute {
    */
   @arrayProp({ items: String })
   valueIds: string[];
-
-  @prop()
-  valueId?: string; // todo remove this
 }

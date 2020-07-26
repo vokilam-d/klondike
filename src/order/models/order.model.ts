@@ -31,6 +31,9 @@ export class Order {
   @prop({ default: '' })
   customerPhoneNumber: string;
 
+  @prop({ default: '' })
+  customerNote: string;
+
   @prop()
   shouldSaveAddress: boolean;
 
