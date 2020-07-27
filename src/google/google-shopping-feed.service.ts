@@ -87,10 +87,15 @@ export class GoogleShoppingFeedService {
     products.forEach(product => {
       if (!product.isEnabled) { return; }
 
-      let brand = '';
+      let brand: string = '';
       const productBrandAttr = product.attributes.find(attr => attr.attributeId === manufacturerAttrId);
       if (productBrandAttr) {
-        brand = manufacturerAttr.label;
+        brand = productBrandAttr.valueIds.reduce((acc, valueId) => {
+          const value = manufacturerAttr.values.find(value => value.id === valueId);
+          const label = value.label.match(/\((.+)\)/)?.[1] || value.label; // get everything from inside "()", if any
+
+          return acc ? `${acc}, ${label}` : label;
+        }, '');
       }
 
 
