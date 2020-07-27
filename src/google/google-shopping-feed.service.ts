@@ -8,6 +8,7 @@ import { ProductReviewService } from '../reviews/product-review/product-review.s
 import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductWithQty } from '../product/models/product-with-qty.model';
 import { AttributeService } from '../attribute/attribute.service';
+import { ProductSelectedAttribute } from '../product/models/product-selected-attribute.model';
 
 type cdata = { $: string };
 
@@ -84,20 +85,22 @@ export class GoogleShoppingFeedService {
     const products = await this.getAllProducts();
     const items: IShoppingFeedItem[] = [];
 
+    const getBrand = (attributes: ProductSelectedAttribute[]): string => {
+      const selectedBrandAttr = attributes.find(attr => attr.attributeId === manufacturerAttrId);
+      if (!selectedBrandAttr) { return ''; }
+
+      return selectedBrandAttr.valueIds.reduce((acc, valueId) => {
+        const value = manufacturerAttr.values.find(value => value.id === valueId);
+        const label = value.label.match(/\((.+)\)/)?.[1] || value.label; // get everything from inside "()", if any
+
+        return acc ? `${acc}, ${label}` : label;
+      }, '');
+    }
+
     products.forEach(product => {
       if (!product.isEnabled) { return; }
 
-      let brand: string = '';
-      const productBrandAttr = product.attributes.find(attr => attr.attributeId === manufacturerAttrId);
-      if (productBrandAttr) {
-        brand = productBrandAttr.valueIds.reduce((acc, valueId) => {
-          const value = manufacturerAttr.values.find(value => value.id === valueId);
-          const label = value.label.match(/\((.+)\)/)?.[1] || value.label; // get everything from inside "()", if any
-
-          return acc ? `${acc}, ${label}` : label;
-        }, '');
-      }
-
+      let brand: string = getBrand(product.attributes);
 
       product.variants.forEach(variant => {
         if (!variant.isEnabled || !variant.isIncludedInShoppingFeed) { return; }
@@ -116,9 +119,8 @@ export class GoogleShoppingFeedService {
           }
         });
 
-        const variantBrandAttr = variant.attributes.find(attr => attr.attributeId === 'manufacturer');
-        if (variantBrandAttr) {
-          brand = variantBrandAttr.valueIds[0];
+        if (!brand) {
+          brand = getBrand(variant.attributes);
         }
 
         const item: IShoppingFeedItem = {
