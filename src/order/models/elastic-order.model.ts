@@ -46,6 +46,7 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   customerId = elasticIntegerType;
   customerLastName = elasticTextType;
   customerPhoneNumber = elasticTextType;
+  customerNote = elasticTextType;
   discountLabel = elasticTextType;
   discountPercent = elasticFloatType;
   discountValue = elasticFloatType;
