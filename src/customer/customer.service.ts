@@ -76,7 +76,7 @@ export class CustomerService implements OnApplicationBootstrap {
     }
 
     const itemsTotal = await this.countCustomers();
-    const pagesTotal = Math.ceil(itemsTotal / spf.limit);
+    const pagesTotal = Math.ceil(itemsFiltered ?? itemsTotal / spf.limit);
     return {
       data: customers,
       itemsTotal,

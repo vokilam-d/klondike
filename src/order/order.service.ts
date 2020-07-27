@@ -98,7 +98,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
 
     const itemsTotal = await this.countOrders();
-    const pagesTotal = Math.ceil(itemsTotal / spf.limit);
+    const pagesTotal = Math.ceil(itemsFiltered ?? itemsTotal / spf.limit);
     return {
       data: orderDtos,
       itemsTotal,

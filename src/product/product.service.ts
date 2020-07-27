@@ -112,7 +112,7 @@ export class ProductService implements OnApplicationBootstrap {
     return {
       data: products,
       page: spf.page,
-      pagesTotal: Math.ceil((itemsFiltered === undefined ? itemsTotal : itemsFiltered) / spf.limit),
+      pagesTotal: Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit),
       itemsTotal,
       itemsFiltered
     }
@@ -305,7 +305,7 @@ export class ProductService implements OnApplicationBootstrap {
     return {
       data: clientListItems,
       page: spf.page,
-      pagesTotal: Math.ceil((itemsFiltered || itemsTotal) / spf.limit),
+      pagesTotal: Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit),
       itemsTotal,
       itemsFiltered,
       filters
