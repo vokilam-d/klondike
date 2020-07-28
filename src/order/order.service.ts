@@ -207,24 +207,24 @@ export class OrderService implements OnApplicationBootstrap {
         await this.customerService.emptyCart(customer, session);
       } else {
         customer = await this.customerService.getCustomerByEmailOrPhoneNumber(orderDto.email);
+      }
 
-        if (customer) {
-          const hasSameAddress = customer.addresses.find(address => areAddressesSame(address, orderDto.address));
+      if (customer) {
+        const hasSameAddress = customer.addresses.find(address => areAddressesSame(address, orderDto.address));
 
-          if (!hasSameAddress) {
-            await this.customerService.addCustomerAddress(customer, orderDto.address, session);
-          }
-
-        } else {
-          const customerDto = new AdminAddOrUpdateCustomerDto();
-          customerDto.firstName = orderDto.address.firstName;
-          customerDto.lastName = orderDto.address.lastName;
-          customerDto.email = orderDto.email;
-          customerDto.phoneNumber = orderDto.address.phone;
-          customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
-
-          customer = await this.customerService.adminCreateCustomer(customerDto, session, false) as any;
+        if (!hasSameAddress) {
+          await this.customerService.addCustomerAddress(customer, orderDto.address, session);
         }
+
+      } else {
+        const customerDto = new AdminAddOrUpdateCustomerDto();
+        customerDto.firstName = orderDto.address.firstName;
+        customerDto.lastName = orderDto.address.lastName;
+        customerDto.email = orderDto.email;
+        customerDto.phoneNumber = orderDto.address.phone;
+        customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
+
+        customer = await this.customerService.adminCreateCustomer(customerDto, session, false) as any;
       }
 
       const shipment = new ShipmentDto();
