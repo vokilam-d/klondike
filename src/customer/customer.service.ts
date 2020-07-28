@@ -333,7 +333,8 @@ export class CustomerService implements OnApplicationBootstrap {
       Customer.collectionName,
       spf.getNormalizedFilters(),
       spf.skip,
-      spf.limit
+      spf.limit,
+      spf.getSortAsObj()
     );
   }
 

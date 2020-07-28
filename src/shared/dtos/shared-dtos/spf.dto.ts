@@ -11,7 +11,7 @@ export interface ISorting {
   [fieldName: string]: 'asc' | 'desc' | Object;
 }
 
-const defaultSorting: ISorting = { '_id': 'desc' };
+const defaultSorting: ISorting = { 'id': 'desc' };
 
 export abstract class SortingPaginatingFilterDto {
 
@@ -33,14 +33,16 @@ export abstract class SortingPaginatingFilterDto {
       const sortOrder = matches[1] === '-' ? 'desc' : 'asc';
       const sortField = matches[2];
       obj[sortField] = sortOrder;
-
-      if (sortField === 'id') {
-        obj['_id'] = sortOrder;
-      }
     });
 
     if (Object.keys(obj).length === 0) {
       obj = defaultSorting;
+    }
+
+    for (const key of Object.keys(obj)) {
+      if (key === 'id') {
+        obj['_id'] = obj[key];
+      }
     }
 
     return obj;

@@ -172,7 +172,8 @@ export class AttributeService implements OnApplicationBootstrap {
       Attribute.collectionName,
       spf.getNormalizedFilters(),
       spf.skip,
-      spf.limit
+      spf.limit,
+      spf.getSortAsObj()
     );
   }
 

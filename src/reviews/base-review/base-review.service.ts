@@ -279,7 +279,8 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       this.collectionName,
       spf.getNormalizedFilters(),
       spf.skip,
-      spf.limit
+      spf.limit,
+      spf.getSortAsObj()
     );
   }
 }

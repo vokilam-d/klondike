@@ -400,7 +400,7 @@ export class OrderService implements OnApplicationBootstrap {
       filters,
       spf.skip,
       spf.limit,
-      {},
+      spf.getSortAsObj(),
       undefined,
       new ElasticOrderModel()
     );
