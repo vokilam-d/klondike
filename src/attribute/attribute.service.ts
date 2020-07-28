@@ -27,7 +27,7 @@ export class AttributeService implements OnApplicationBootstrap {
     this.updateCachedAttributes();
   }
 
-  async getAttributesResponse(spf: AdminSPFDto): Promise<ResponseDto<AdminAttributeDto[]>> {
+  async getAttributesResponseDto(spf: AdminSPFDto): Promise<ResponseDto<AdminAttributeDto[]>> {
     let attributes: AdminAttributeDto[];
     let itemsFiltered: number;
 
@@ -95,10 +95,7 @@ export class AttributeService implements OnApplicationBootstrap {
 
     this.checkDtoForErrors(attributeDto);
 
-    Object.keys(attributeDto)
-      .forEach(key => {
-        attribute[key] = attributeDto[key];
-      });
+    Object.keys(attributeDto).forEach(key => attribute[key] = attributeDto[key]);
 
     await attribute.save();
     this.updateSearchData(attribute);
@@ -125,6 +122,7 @@ export class AttributeService implements OnApplicationBootstrap {
   @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
   updateCachedAttributes() {
     this.attributeModel.find()
+      .exec()
       .then(attributes => this.cachedAttrbiutes = attributes.map(a => a.toJSON()))
       .catch(err => this.logger.warn(`Could not update cached attributes`, err));
   }

@@ -31,7 +31,7 @@ export class AdminAttributeController {
 
   @Get()
   async getAttributes(@Query() spf: AdminSPFDto): Promise<ResponseDto<AdminAttributeDto[]>> {
-    return this.attributeService.getAttributesResponse(spf);
+    return this.attributeService.getAttributesResponseDto(spf);
   }
 
   @Get(':id')
