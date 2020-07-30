@@ -212,7 +212,7 @@ export const TRANSLATIONS = {
   },
   [OrderStatusEnum.REFUSED_TO_RETURN]: {
     en: 'Refused to return',
-    ru: 'Новый'
+    ru: 'Отказ от возврата'
   },
   [OrderStatusEnum.CANCELED]: {
     en: 'Canceled',
