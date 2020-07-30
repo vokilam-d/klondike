@@ -175,3 +175,8 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   @Transform(((value, order: AdminOrderDto) => value || __(order.status, 'ru')))
   statusDescription: string;
 }
+
+export class UpdateOrderAdminNote {
+  @IsString()
+  adminNote: string;
+}

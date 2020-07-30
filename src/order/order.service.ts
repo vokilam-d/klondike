@@ -733,6 +733,13 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
+  async updateOrderAdminNote(id: number, adminNote: string): Promise<Order> {
+    return await this.updateOrderById(id, async order => {
+      order.adminNote = adminNote;
+      return order;
+    });
+  }
+
   async changeCustomerEmail(oldEmail: string, newEmail: string, session: ClientSession): Promise<void> {
     await this.orderModel.updateMany(
       { customerEmail: oldEmail },

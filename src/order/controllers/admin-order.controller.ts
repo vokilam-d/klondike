@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, Res, UseGuards, 
 import { OrderService } from '../order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../../shared/dtos/admin/order.dto';
+import { AdminAddOrUpdateOrderDto, AdminOrderDto, UpdateOrderAdminNote } from '../../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../../shared/dtos/admin/order-action.dto';
 import { OrderActionEnum } from '../../shared/enums/order-action.enum';
 import { FastifyReply } from 'fastify';
@@ -102,6 +102,16 @@ export class AdminOrderController {
   async changePaymentStatus(@Param('id') id: number, @Param('isPaid') isPaid: boolean): Promise<ResponseDto<AdminOrderDto>> {
 
     const order = await this.orderService.changeOrderPaymentStatus(id, isPaid);
+
+    return {
+      data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Put(':id/note')
+  async changeAdminNote(@Param('id') id: number, @Body() noteDto: UpdateOrderAdminNote): Promise<ResponseDto<AdminOrderDto>> {
+
+    const order = await this.orderService.updateOrderAdminNote(id, noteDto.adminNote);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
