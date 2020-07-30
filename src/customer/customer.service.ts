@@ -290,6 +290,15 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
+  async removeOrderFromCustomer(orderId: number, session: ClientSession): Promise<void> {
+    const orderIdsProp = getPropertyOf<Customer>('orderIds');
+
+    await this.customerModel.findOneAndUpdate(
+      { [orderIdsProp]: orderId },
+      { $pull: { [orderIdsProp]: orderId } }
+    ).session(session).exec();
+  }
+
   async incrementTotalOrdersCost(customerId: number, totalItemsCost: number, session: ClientSession): Promise<Customer> {
     const totalCostProp: keyof Customer = 'totalOrdersCost';
     const totalCountProp: keyof Customer = 'totalOrdersCount';

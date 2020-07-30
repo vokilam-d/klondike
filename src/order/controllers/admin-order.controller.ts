@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from '../order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
@@ -126,6 +126,15 @@ export class AdminOrderController {
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Delete(':id')
+  async deleteOrder(@Param('id') orderId: number) {
+    const deleted = await this.orderService.deleteOrder(orderId);
+
+    return {
+      data: plainToClass(AdminOrderDto, deleted, { excludeExtraneousValues: true })
     };
   }
 }

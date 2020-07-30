@@ -330,6 +330,34 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
+  async deleteOrder(orderId: number): Promise<Order> {
+    const session = await this.orderModel.db.startSession();
+    session.startTransaction();
+    try {
+
+      const order = await this.orderModel.findByIdAndDelete(orderId).exec();
+      if (!order) {
+        throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
+      }
+      await this.customerService.removeOrderFromCustomer(order.id, session);
+
+      await session.commitTransaction();
+
+      this.logger.log(`Deleted order #${order.id}`);
+
+      await this.deleteSearchData(order.id);
+      this.updateCachedOrderCount();
+
+      return order;
+
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
+    }
+  }
+
   async countOrders(): Promise<number> {
     if (this.cachedOrderCount >= 0) {
       return this.cachedOrderCount;
@@ -388,6 +416,10 @@ export class OrderService implements OnApplicationBootstrap {
   public updateSearchData(order: Order): Promise<any> {
     const orderDto = plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true });
     return this.searchService.updateDocument(Order.collectionName, order.id, orderDto);
+  }
+
+  public deleteSearchData(orderId: number): Promise<any> {
+    return this.searchService.deleteDocument(Order.collectionName, orderId);
   }
 
   private async searchByFilters(spf: OrderFilterDto) {
