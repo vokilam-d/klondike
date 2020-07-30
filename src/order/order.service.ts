@@ -292,10 +292,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       newOrder.shippingMethodName = __(newOrder.shipment.recipient.addressType, 'ru');
 
-      const paymentMethod = await this.paymentMethodService.getPaymentMethodById(orderDto.paymentMethodId);
-      newOrder.paymentType = paymentMethod.paymentType;
-      newOrder.paymentMethodAdminName = paymentMethod.adminName;
-      newOrder.paymentMethodClientName = paymentMethod.clientName;
+      await this.setPaymentInfoByMethodId(newOrder, orderDto.paymentMethodId);
     }
 
     return newOrder;
@@ -318,9 +315,14 @@ export class OrderService implements OnApplicationBootstrap {
 
       const oldTrackingNumber = order.shipment.trackingNumber;
       const newTrackingNumber = orderDto.shipment.trackingNumber;
+      const oldPaymentMethodId = order.paymentMethodId;
+      const newPaymentMethodId = orderDto.paymentMethodId;
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
       if (oldTrackingNumber !== newTrackingNumber) {
         await this.fetchShipmentStatus(order);
+      }
+      if (oldPaymentMethodId !== newPaymentMethodId) {
+        await this.setPaymentInfoByMethodId(order, newPaymentMethodId);
       }
 
       OrderService.setOrderPrices(order);
@@ -745,5 +747,14 @@ export class OrderService implements OnApplicationBootstrap {
       { customerEmail: oldEmail },
       { customerEmail: newEmail }
     ).session(session).exec();
+  }
+
+  private async setPaymentInfoByMethodId(order: Order, paymentMethodId: string) {
+    const paymentMethod = await this.paymentMethodService.getPaymentMethodById(paymentMethodId);
+    order.paymentType = paymentMethod.paymentType;
+    order.paymentMethodAdminName = paymentMethod.adminName;
+    order.paymentMethodClientName = paymentMethod.clientName;
+
+    return;
   }
 }
