@@ -11,6 +11,8 @@ import { ElasticAttributeModel } from './models/elastic-attribute.model';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
+import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
+import { Product } from '../product/models/product.model';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {
@@ -167,13 +169,45 @@ export class AttributeService implements OnApplicationBootstrap {
     return this.searchService.deleteDocument(Attribute.collectionName, attribute.id);
   }
 
+  @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
+  private async reindexAllSearchData() {
+    this.logger.log('Start reindex all search data');
+    const attributes = await this.attributeModel.find().exec();
+
+    await this.searchService.deleteCollection(Attribute.collectionName);
+    await this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttributeModel());
+
+    for (const batch of getBatches(attributes, 20)) {
+      await Promise.all(batch.map(attribute => this.addSearchData(attribute)));
+      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
+    }
+
+    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
+      const result = [];
+      for (let i = 0; i < arr.length; i++) {
+        if (i % size !== 0) {
+          continue;
+        }
+
+        const resultItem = [];
+        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
+          resultItem.push(arr[i + k]);
+        }
+        result.push(resultItem);
+      }
+
+      return result;
+    }
+  }
+
   private async searchByFilters(spf: AdminSPFDto) {
     return this.searchService.searchByFilters<AdminAttributeDto>(
       Attribute.collectionName,
       spf.getNormalizedFilters(),
       spf.skip,
       spf.limit,
-      spf.getSortAsObj()
+      spf.getSortAsObj(),
+      new ElasticAttributeModel()
     );
   }
 

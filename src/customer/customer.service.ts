@@ -343,7 +343,8 @@ export class CustomerService implements OnApplicationBootstrap {
       spf.getNormalizedFilters(),
       spf.skip,
       spf.limit,
-      spf.getSortAsObj()
+      spf.getSortAsObj(),
+      new ElasticCustomerModel()
     );
   }
 

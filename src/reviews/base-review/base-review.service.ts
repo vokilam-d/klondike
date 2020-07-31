@@ -280,7 +280,8 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       spf.getNormalizedFilters(),
       spf.skip,
       spf.limit,
-      spf.getSortAsObj()
+      spf.getSortAsObj(),
+      new this.ElasticReview()
     );
   }
 }
