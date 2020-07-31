@@ -207,6 +207,7 @@ export class AttributeService implements OnApplicationBootstrap {
       spf.skip,
       spf.limit,
       spf.getSortAsObj(),
+      undefined,
       new ElasticAttributeModel()
     );
   }

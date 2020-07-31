@@ -344,6 +344,7 @@ export class CustomerService implements OnApplicationBootstrap {
       spf.skip,
       spf.limit,
       spf.getSortAsObj(),
+      undefined,
       new ElasticCustomerModel()
     );
   }

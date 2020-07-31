@@ -281,6 +281,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       spf.skip,
       spf.limit,
       spf.getSortAsObj(),
+      undefined,
       new this.ElasticReview()
     );
   }

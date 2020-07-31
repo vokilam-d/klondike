@@ -264,7 +264,8 @@ export class SearchService {
         fieldFromSchema = schema[fieldName];
 
         if (!fieldFromSchema && fieldName === '_id') {
-          fieldFromSchema = schema['id'];
+          sortField = 'id';
+          fieldFromSchema = schema[sortField];
         }
       }
 
