@@ -22,6 +22,7 @@ class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'cr
   productId = elasticIntegerType;
   qty = elasticIntegerType;
   sku = elasticTextType;
+  vendorCode = elasticTextType;
   slug = elasticTextType;
   totalCost = elasticIntegerType;
   variantId = elasticTextType;

@@ -15,6 +15,9 @@ export class OrderItem {
   sku: string;
 
   @prop()
+  vendorCode: string;
+
+  @prop()
   originalPrice: number;
 
   @prop()

@@ -33,6 +33,7 @@ export class OrderItemService {
     orderItem.productId = foundProduct._id;
     orderItem.variantId = variant._id.toString();
     orderItem.sku = variant.sku;
+    orderItem.vendorCode = variant.vendorCode;
     if (variant.medias[0]) {
       orderItem.imageUrl = variant.medias[0].variantsUrls.small;
     }

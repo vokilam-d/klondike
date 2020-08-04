@@ -20,6 +20,10 @@ export class OrderItemDto {
   sku: string;
 
   @Expose()
+  @IsString()
+  vendorCode: string;
+
+  @Expose()
   @IsNumber()
   originalPrice: number;
 
