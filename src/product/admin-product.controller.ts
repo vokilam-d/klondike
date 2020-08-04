@@ -109,7 +109,7 @@ export class AdminProductController {
     return this.productsService.getAdminProductsList(spf, false);
   }
 
-  @Patch(':id/categories') // temp method
+  @Patch(':id/categories') // temp method, todo remove after migrate
   async updateCategories(@Param('id') productId: number, @Body() productDto: AdminProductCategoryDto[]) {
     return this.productsService.migrateProductCategories(productId, productDto);
   }
