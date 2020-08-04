@@ -150,7 +150,9 @@ export class EmailService {
       addressName: `${order.shipment.recipient.lastName} ${order.shipment.recipient.firstName}`,
       addressPhone: order.shipment.recipient.phone,
       addressCity: order.shipment.recipient.settlement,
-      addressPost: order.shipment.recipient.address,
+      address: order.shipment.recipient.address,
+      addressBuildingNumber: order.shipment.recipient.buildingNumber,
+      addressFlatNumber: order.shipment.recipient.flat,
       shipping: order.shippingMethodName,
       payment: order.paymentMethodClientName,
       products: order.items.map(item => ({

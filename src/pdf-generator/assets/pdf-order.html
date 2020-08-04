@@ -36,10 +36,13 @@
                 {{ addressName }}<br>
                 {{ addressPhone }}<br>
                 {{ addressCity }}<br>
-                {{#if addressPost}}
-                {{ addressPost }} отд. Новой Почты<br>
+                {{ address }}<br>
+                {{#if addressBuildingNumber}}
+                    {{ addressBuildingNumber }}<br>
                 {{/if}}
-                {{ addressStreet }}
+                {{#if addressFlatNumber}}
+                    {{ addressFlatNumber }}
+                {{/if}}
             </div>
         </div>
 
