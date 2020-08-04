@@ -54,6 +54,7 @@ import { CronExpression } from '@nestjs/schedule';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 import { ReservedInventory } from '../inventory/models/reserved-inventory.model';
+import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -460,6 +461,11 @@ export class ProductService implements OnApplicationBootstrap {
     try {
       const tmpMediasToDelete: AdminMediaDto[] = [];
       const inventories: Inventory[] = [];
+
+      for (const dtoVariant of productDto.variants) {
+        const skuCounter = await this.counterService.getCounter('sku', session);
+        dtoVariant.sku = addLeadingZeros(skuCounter, 5);
+      }
 
       const newProductModel = new this.productModel(productDto);
       if (!migrate) {

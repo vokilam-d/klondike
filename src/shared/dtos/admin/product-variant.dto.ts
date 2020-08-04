@@ -21,7 +21,6 @@ export class AdminProductVariantDto {
   name: string;
 
   @Expose()
-  @IsString()
   sku: string;
 
   @Expose()
