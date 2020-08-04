@@ -20,6 +20,7 @@ export class OrderItemDto {
   sku: string;
 
   @Expose()
+  @IsOptional()
   @IsString()
   vendorCode: string;
 
