@@ -553,8 +553,7 @@ export class OrderService implements OnApplicationBootstrap {
     const isCashOnDelivery = order.paymentType === PaymentMethodEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
-    const isJustSent = order.shipment.status !== ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER
-      && order.status === OrderStatusEnum.READY_TO_SHIP;
+    const isJustSent = order.status === OrderStatusEnum.READY_TO_SHIP && order.shipment.status === ShipmentStatusEnum.HEADING_TO_CITY;
 
     if (!isCashOnDelivery && isReceived || isCashOnDelivery && isCashPickedUp) {
       order.status = OrderStatusEnum.FINISHED;
