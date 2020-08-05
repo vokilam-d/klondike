@@ -17,6 +17,7 @@ interface IShoppingFeedItem {
   'g:title': cdata;
   'g:link': cdata;
   'g:price': cdata;
+  'g:sale_price'?: cdata;
   'g:description': cdata;
   'g:product_type': cdata;
   'g:image_link'?: cdata;
@@ -123,11 +124,21 @@ export class GoogleShoppingFeedService {
           brand = getBrand(variant.attributes);
         }
 
+        let price: number;
+        let salePrice: number;
+        if (variant.oldPriceInDefaultCurrency) {
+          price = variant.oldPriceInDefaultCurrency;
+          salePrice = variant.priceInDefaultCurrency;
+        } else {
+          price = variant.priceInDefaultCurrency;
+        }
+
         const item: IShoppingFeedItem = {
           'g:id': { $: variant.sku },
           'g:title': { $: variant.googleAdsProductTitle || variant.name },
           'g:link': { $: `http://klondike.com.ua/${variant.slug}` },
-          'g:price': { $: `${variant.priceInDefaultCurrency} UAH` },
+          'g:price': { $: `${price} UAH` },
+          ...(salePrice ? { 'g:sale_price': { $: `${salePrice} UAH` } } : {}),
           'g:description': { $: stripHtmlTags(description).replace(/\r?\n|\n/g, ' ') },
           'g:product_type': { $: this.buildProductType(product.breadcrumbs) },
           ...(imageLink ? {'g:image_link': { $: imageLink }} : {}),
