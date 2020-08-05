@@ -10,6 +10,7 @@ export class AdminProductListItemDto {
   mediaUrl: string;
   name: string;
   skus: string;
+  vendorCodes: string;
   prices: string;
   quantitiesInStock: string;
   sellableQuantities: string;

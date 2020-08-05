@@ -20,6 +20,7 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
   quantitiesInStock = elasticTextType;
   sellableQuantities = elasticTextType;
   skus = elasticTextType;
+  vendorCodes = elasticTextType;
   variants = {
     type: 'nested',
     properties: new ElasticProductVariant()

@@ -942,6 +942,7 @@ export class ProductService implements OnApplicationBootstrap {
   private transformToAdminListDto(products: ProductWithQty[]): AdminProductListItemDto[] {
     return products.map(product => {
       const skus: string[] = [];
+      const vendorCodes: string[] = [];
       const prices: string[] = [];
       const quantitiesInStock: number[] = [];
       const sellableQuantities: number[] = [];
@@ -950,6 +951,7 @@ export class ProductService implements OnApplicationBootstrap {
 
       product.variants.forEach(variant => {
         skus.push(variant.sku);
+        if (variant.vendorCode) { vendorCodes.push(variant.vendorCode); }
         prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
         quantitiesInStock.push(variant.qtyInStock);
         sellableQuantities.push(variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0));
@@ -998,6 +1000,7 @@ export class ProductService implements OnApplicationBootstrap {
         attributes: product.attributes,
         isEnabled: product.isEnabled,
         skus: skus.join(', '),
+        vendorCodes: vendorCodes.join(', '),
         prices: prices.join(', '),
         quantitiesInStock: quantitiesInStock.join(', '),
         sellableQuantities: sellableQuantities.join(', '),
