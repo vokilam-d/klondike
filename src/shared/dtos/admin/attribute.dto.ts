@@ -1,10 +1,12 @@
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { AttributeTypeEnum } from '../../enums/attribute-type.enum';
+import { transliterate } from '../../helpers/transliterate.function';
 
 export class AdminAttributeValueDto {
   @Expose()
   @IsString()
+  @Transform((id, value: AdminAttributeValueDto) => id === '' ? transliterate(value.label) : id)
   id: string;
 
   @Expose()
