@@ -6,6 +6,7 @@ import { transliterate } from '../../helpers/transliterate.function';
 export class AdminAttributeValueDto {
   @Expose()
   @IsString()
+  @IsOptional()
   @Transform((id, value: AdminAttributeValueDto) => id === '' ? transliterate(value.label) : id)
   id: string;
 
