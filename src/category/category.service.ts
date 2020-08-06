@@ -45,6 +45,7 @@ export class CategoryService {
         id: category.id,
         name: category.name,
         slug: category.slug,
+        parentId: category.parentId,
         reversedSortOrder: category.reversedSortOrder,
         children: []
       };
