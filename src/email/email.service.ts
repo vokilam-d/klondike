@@ -118,20 +118,27 @@ export class EmailService {
     const attachments = [];
     if (attachment) { attachments.push(attachment); }
 
-    try {
-      await transport.sendMail({
-        from: this.senderName,
-        to: to,
-        subject: subject,
-        html,
-        attachments
-      });
+    const send = async (tryCount: number = 0) => {
+      const delayTime = tryCount * 3.5 * 1000;
 
-      this.logger.log(`Sent "${emailType}" email to "${to}"`);
-    } catch (e) {
-      this.logger.error(`Could not send "${emailType}" email to "${to}": ${e}`);
-      this.logger.error(e);
-    }
+      setTimeout(async () => {
+        try {
+          await transport.sendMail({ from: this.senderName, to, subject, html, attachments });
+
+          this.logger.log(`Sent "${emailType}" email to "${to}"`);
+        } catch (e) {
+          this.logger.error(`Could not send "${emailType}" email to "${to}": ${e}`);
+          this.logger.error(e);
+
+          if (tryCount <= 4) {
+            this.logger.warn(`Retrying in ${tryCount + 1}...`);
+            await send(tryCount + 1);
+          }
+        }
+      }, delayTime);
+    };
+
+    await send();
   }
 
   private getEmailHtml(emailType: EEmailType, templateContext: any = {}): string {
