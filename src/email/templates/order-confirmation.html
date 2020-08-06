@@ -298,7 +298,8 @@
                                                             <td align="left"
                                                                 style="padding:0;Margin:0;padding-left:10px;"> Ваша
                                                                 заявка принята. Мы свяжемся с вами в ближайшее время для
-                                                                подтверждения заказа №{{orderId}} или отправим сообщение.
+                                                                подтверждения заказа №{{orderId}} или отправим
+                                                                сообщение.
                                                             </td>
                                                         </tr>
                                                         <tr style="border-collapse:collapse;">
@@ -359,91 +360,6 @@
                                         </table>
                                         <!--[if mso]></td></tr></table><![endif]--></td>
                                 </tr>
-                                <tr style="border-collapse:collapse;">
-                                    <td align="left"
-                                        style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;">
-                                        <table cellpadding="0" cellspacing="0" width="100%"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="560" align="center" valign="top" style="padding:0;Margin:0;">
-                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="center" style="padding:0;Margin:0;">
-                                                                <table border="0" width="100%" height="100%"
-                                                                       cellpadding="0" cellspacing="0"
-                                                                       style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                    <tr style="border-collapse:collapse;">
-                                                                        <td style="padding:0;Margin:0px 0px 0px 0px;border-bottom:1px solid #CCCCCC;background:none;height:1px;width:100%;margin:0px;"></td>
-                                                                    </tr>
-                                                                </table>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                                {{#each products}}
-                                <tr class="product" style="border-collapse:collapse;">
-                                    <td style="Margin:0;padding-bottom:5px;padding-top:15px;padding-left:20px;padding-right:20px;background-color:transparent;"
-                                        bgcolor="transparent" align="left"> <!--[if mso]>
-                                        <table width="560" cellpadding="0" cellspacing="0">
-                                            <tr>
-                                                <td width="120" valign="top"><![endif]-->
-                                        <table class="es-left" cellspacing="0" cellpadding="0" align="left"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td class="es-m-p20b" width="120" align="left"
-                                                    style="padding:0;Margin:0;">
-                                                    <table width="100%" cellspacing="0" cellpadding="0"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td class="es-m-txt-c" align="center"
-                                                                style="padding:0;Margin:0;padding-top:10px;"><img
-                                                                    src="https://klondike.com.ua{{ this.imageUrl }}"
-                                                                    alt
-                                                                    style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;"
-                                                                    height="61"></td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <!--[if mso]></td>
-                                        <td width="20"></td>
-                                        <td width="420" valign="top"><![endif]-->
-                                        <table class="es-right" cellspacing="0" cellpadding="0" align="right"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:right;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="420" align="left" style="padding:0;Margin:0;">
-                                                    <table width="100%" cellspacing="0" cellpadding="0"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="left" style="padding:0;Margin:0;"><p
-                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:15px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:23px;color:#999999;">
-                                                                <a target="_blank"
-                                                                   style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:15px;text-decoration:none;color:#3E77AA;"
-                                                                   href="https://klondike.com.ua/{{ this.slug }}">{{ this.name }}</a>&nbsp;<span
-                                                                    style="font-size:12px;white-space:nowrap;">Код: {{ this.sku }}</span>
-                                                            </p></td>
-                                                        </tr>
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="left" class="es-m-txt-l"
-                                                                style="padding:0;Margin:0;padding-top:5px;"><p
-                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:15px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:23px;color:#313131;">
-                                                                Цена: <strong>{{ this.price }} грн</strong></p>
-                                                                <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:15px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:23px;color:#313131;">
-                                                                    Количество: <strong>{{ this.qty }}</strong></p></td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <!--[if mso]></td></tr></table><![endif]--></td>
-                                </tr>
-                                {{/each}}
                                 <tr style="border-collapse:collapse;">
                                     <td align="left"
                                         style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;">
@@ -676,6 +592,126 @@
                                         </table>
                                     </td>
                                 </tr>
+                                {{#if clientNote}}
+                                <tr style="border-collapse:collapse;">
+                                    <td align="left"
+                                        style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;">
+                                        <!--[if mso]>
+                                        <table width="560" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td width="270" valign="top"><![endif]-->
+                                        <table cellpadding="0" cellspacing="0" class="es-left" align="left"
+                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left;">
+                                            <tr style="border-collapse:collapse;">
+                                                <td width="270" align="left" style="padding:0;Margin:0;">
+                                                    <table cellpadding="0" cellspacing="0" width="100%"
+                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
+                                                        <tr style="border-collapse:collapse;">
+                                                            <td align="left" style="padding:0;Margin:0;"><p
+                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131; font-style: italic;">
+                                                                Комментарий клиента</p></td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <!--[if mso]></td>
+                                    <td width="20"></td>
+                                    <td width="270" valign="top"><![endif]-->
+                                        <table cellpadding="0" cellspacing="0" class="es-right" align="right"
+                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:right;">
+                                            <tr style="border-collapse:collapse;">
+                                                <td width="270" align="left" style="padding:0;Margin:0;">
+                                                    <table cellpadding="0" cellspacing="0" width="100%"
+                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
+                                                        <tr style="border-collapse:collapse;">
+                                                            <td align="right" class="es-m-txt-l"
+                                                                style="padding:0;Margin:0;"><p
+                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131;">
+                                                                {{ clientNote }}</p></td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <!--[if mso]></td></tr></table><![endif]--></td>
+                                </tr>
+                                {{/if}}
+                                <tr style="border-collapse:collapse;">
+                                    <td align="left"
+                                        style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;">
+                                        <!--[if mso]>
+                                        <table width="560" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td width="270" valign="top"><![endif]-->
+                                        <table cellpadding="0" cellspacing="0" class="es-left" align="left"
+                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left;">
+                                            <tr style="border-collapse:collapse;">
+                                                <td width="270" align="left" style="padding:0;Margin:0;">
+                                                    <table cellpadding="0" cellspacing="0" width="100%"
+                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
+                                                        <tr style="border-collapse:collapse;">
+                                                            <td align="left" style="padding:0;Margin:0;"><p
+                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131; font-style: italic;">
+                                                                Менеджеру связаться с Вами для уточнения заказа?</p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <!--[if mso]></td>
+                                    <td width="20"></td>
+                                    <td width="270" valign="top"><![endif]-->
+                                        <table cellpadding="0" cellspacing="0" class="es-right" align="right"
+                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:right;">
+                                            <tr style="border-collapse:collapse;">
+                                                <td width="270" align="left" style="padding:0;Margin:0;">
+                                                    <table cellpadding="0" cellspacing="0" width="100%"
+                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
+                                                        <tr style="border-collapse:collapse;">
+                                                            <td align="right" class="es-m-txt-l"
+                                                                style="padding:0;Margin:0;"><p
+                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131;">
+                                                                {{#if isCallbackNeeded}}
+                                                                Да
+                                                                {{else}}
+                                                                Нет
+                                                                {{/if}}
+                                                            </p></td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <!--[if mso]></td></tr></table><![endif]--></td>
+                                </tr>
+                                <tr style="border-collapse:collapse;">
+                                    <td align="left"
+                                        style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;">
+                                        <table cellpadding="0" cellspacing="0" width="100%"
+                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
+                                            <tr style="border-collapse:collapse;">
+                                                <td width="560" align="center" valign="top" style="padding:0;Margin:0;">
+                                                    <table cellpadding="0" cellspacing="0" width="100%"
+                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
+                                                        <tr style="border-collapse:collapse;">
+                                                            <td align="center" style="padding:0;Margin:0;">
+                                                                <table border="0" width="100%" height="100%"
+                                                                       cellpadding="0" cellspacing="0"
+                                                                       style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
+                                                                    <tr style="border-collapse:collapse;">
+                                                                        <td style="padding:0;Margin:0px 0px 0px 0px;border-bottom:1px solid #CCCCCC;background:none;height:1px;width:100%;margin:0px;"></td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
                                 <tr style="border-collapse:collapse;">
                                     <td align="left"
                                         style="padding:0;Margin:0;padding-top:20px;padding-left:20px;padding-right:20px;">
@@ -844,100 +880,71 @@
                                         </table>
                                     </td>
                                 </tr>
-                                {{#if clientNote}}
-                                <tr style="border-collapse:collapse;">
-                                    <td align="left"
-                                        style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;">
-                                        <!--[if mso]>
-                                        <table width="560" cellpadding="0" cellspacing="0">
-                                            <tr>
-                                                <td width="270" valign="top"><![endif]-->
-                                        <table cellpadding="0" cellspacing="0" class="es-left" align="left"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="270" align="left" style="padding:0;Margin:0;">
-                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="left" style="padding:0;Margin:0;"><p
-                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131; font-style: italic;">
-                                                                Комментарий клиента</p></td>
+                                {{#each products}}
+                                <tr class="product" style="border-collapse:collapse">
+                                    <td style="Margin:0;padding-bottom:5px;padding-top:15px;padding-left:20px;padding-right:20px;background-color:transparent"
+                                        bgcolor="transparent" align="left">
+                                        <table cellpadding="0" cellspacing="0"
+                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;width:560px">
+                                            <tr style="border-collapse:collapse">
+                                                <td valign="top" style="padding:0;Margin:0">
+                                                    <table class="es-left" cellspacing="0" cellpadding="0" align="left"
+                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left">
+                                                        <tr style="border-collapse:collapse">
+                                                            <td align="left" style="padding:0;Margin:0;width:120px">
+                                                                <table width="100%" cellspacing="0" cellpadding="0"
+                                                                       role="presentation"
+                                                                       style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
+                                                                    <tr style="border-collapse:collapse">
+                                                                        <td class="es-m-txt-c" align="center"
+                                                                            style="padding:0;Margin:0;padding-top:10px;"><img
+                                                                                src="https://klondike.com.ua{{ this.imageUrl }}"
+                                                                                alt
+                                                                                style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;max-width: 60px;max-height: 60px;"></td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                            <td style="padding:0;Margin:0;width:20px"></td>
                                                         </tr>
                                                     </table>
                                                 </td>
-                                            </tr>
-                                        </table>
-                                        <!--[if mso]></td>
-                                    <td width="20"></td>
-                                    <td width="270" valign="top"><![endif]-->
-                                        <table cellpadding="0" cellspacing="0" class="es-right" align="right"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:right;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="270" align="left" style="padding:0;Margin:0;">
-                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="right" class="es-m-txt-l"
-                                                                style="padding:0;Margin:0;"><p
-                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131;">
-                                                                {{ clientNote }}</p></td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <!--[if mso]></td></tr></table><![endif]--></td>
-                                </tr>
-                                {{/if}}
-                                <tr style="border-collapse:collapse;">
-                                    <td align="left"
-                                        style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;">
-                                        <!--[if mso]>
-                                        <table width="560" cellpadding="0" cellspacing="0">
-                                            <tr>
-                                                <td width="270" valign="top"><![endif]-->
-                                        <table cellpadding="0" cellspacing="0" class="es-left" align="left"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="270" align="left" style="padding:0;Margin:0;">
-                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="left" style="padding:0;Margin:0;"><p
-                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131; font-style: italic;">
-                                                                Менеджеру связаться с Вами для уточнения заказа?</p>
+                                                <td valign="top" style="padding:0;Margin:0">
+                                                    <table class="es-right" cellspacing="0" cellpadding="0"
+                                                           align="right"
+                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:right">
+                                                        <tr style="border-collapse:collapse">
+                                                            <td align="left" style="padding:0;Margin:0;width:420px">
+                                                                <table width="100%" cellspacing="0" cellpadding="0"
+                                                                       role="presentation"
+                                                                       style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
+                                                                    <tr style="border-collapse:collapse;">
+                                                                        <td align="left" style="padding:0;Margin:0;"><p
+                                                                                style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:15px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:23px;color:#999999;">
+                                                                            <a target="_blank"
+                                                                               style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:15px;text-decoration:none;color:#3E77AA;line-height: 16px;font-size:15px !important;"
+                                                                               href="https://klondike.com.ua/{{ this.slug }}">{{
+                                                                                this.name }}</a>&nbsp;<span
+                                                                                style="font-size:12px;white-space:nowrap;">Код: {{ this.sku }}</span>
+                                                                        </p></td>
+                                                                    </tr>
+                                                                    <tr style="border-collapse:collapse;">
+                                                                        <td align="left" class="es-m-txt-l"
+                                                                            style="padding:0;Margin:0;padding-top:5px;"><p
+                                                                                style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:15px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:16px;font-size:14px !important;color:#313131;">
+                                                                            Цена: <strong>{{ this.price }} грн</strong></p>
+                                                                            <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:15px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:16px;font-size:14px !important;color:#313131;">
+                                                                                Количество: <strong>{{ this.qty }}</strong></p></td>
+                                                                    </tr>
+                                                                </table>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
                                             </tr>
                                         </table>
-                                        <!--[if mso]></td>
-                                    <td width="20"></td>
-                                    <td width="270" valign="top"><![endif]-->
-                                        <table cellpadding="0" cellspacing="0" class="es-right" align="right"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:right;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="270" align="left" style="padding:0;Margin:0;">
-                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="right" class="es-m-txt-l"
-                                                                style="padding:0;Margin:0;"><p
-                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131;">
-                                                                {{#if isCallbackNeeded}}
-                                                                Да
-                                                                {{else}}
-                                                                Нет
-                                                                {{/if}}
-                                                            </p></td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <!--[if mso]></td></tr></table><![endif]--></td>
+                                    </td>
                                 </tr>
+                                {{/each}}
                                 <tr style="border-collapse:collapse;">
                                     <td align="left"
                                         style="padding:0;Margin:0;padding-left:20px;padding-right:20px;padding-top:80px;">
