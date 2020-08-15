@@ -116,18 +116,16 @@ export class EmailService {
     return this.sendEmail({ to, subject, html, emailType });
   }
 
-  sendNewProductReviewEmail(productReview: AdminProductReviewDto, adminEmail: string = this.managerEmails) {
+  sendNewProductReviewEmail(productReview: AdminProductReviewDto, to: string = this.managerEmails) {
     const emailType = EEmailType.NewProductReview;
-    const to = this.managerEmails;
     const subject = 'Новый отзыв о товаре';
     const html = this.getEmailHtml(emailType, this.getNewProductReviewTemplateContext(productReview));
 
     return this.sendEmail({ to, subject, html, emailType });
   }
 
-  sendNewStoreReviewEmail(storeReview: AdminStoreReviewDto, adminEmail: string = this.managerEmails) {
+  sendNewStoreReviewEmail(storeReview: AdminStoreReviewDto, to: string = this.managerEmails) {
     const emailType = EEmailType.NewStoreReview;
-    const to = this.managerEmails;
     const subject = 'Новый отзыв о магазине';
     const html = this.getEmailHtml(emailType, this.getNewStoreReviewTemplateContext(storeReview));
 
