@@ -19,10 +19,13 @@ export class ClientProductCategoryDto {
   slug: string;
 }
 
-type PickedProduct = Pick<Product, 'breadcrumbs' | 'reviewsCount' | 'reviewsAvgRating'>;
+type PickedProduct = Pick<Product, 'breadcrumbs' | 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating'>;
 type PickedVariant = Pick<ProductVariant, 'name' | 'sku' | 'vendorCode' | 'slug' | 'price' | 'oldPrice' | 'fullDescription' | 'shortDescription'>;
 
 export class ClientProductDto implements PickedProduct, PickedVariant {
+  @Expose()
+  id: string;
+
   @Expose()
   productId: number;
 
@@ -71,7 +74,10 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
   reviewsAvgRating: number;
 
   @Expose()
-  reviewsCount: number;
+  allReviewsCount: number;
+
+  @Expose()
+  textReviewsCount: number;
 
   @Expose()
   sku: string;

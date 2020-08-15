@@ -146,6 +146,10 @@ export const TRANSLATIONS = {
     en: 'You have already voted for this review',
     ru: 'Вы уже голосовали за этот отзыв'
   },
+  'You have already rated this product': {
+    en: 'You have already rated this product',
+    ru: 'Вы уже оценили этот товар'
+  },
   'Unknown OAuth provider': {
     en: 'Unknown OAuth provider',
     ru: 'Неизвестный тип OAuth'

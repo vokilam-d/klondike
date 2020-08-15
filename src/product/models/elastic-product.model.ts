@@ -26,5 +26,6 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
     properties: new ElasticProductVariant()
   };
   reviewsAvgRating = elasticFloatType;
-  reviewsCount = elasticIntegerType;
+  allReviewsCount = elasticIntegerType;
+  textReviewsCount = elasticIntegerType;
 }

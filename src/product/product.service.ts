@@ -12,9 +12,8 @@ import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { Inventory } from '../inventory/models/inventory.model';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
-import { ClientSession } from 'mongoose';
+import { ClientSession, UpdateQuery } from 'mongoose';
 import { AdminProductVariantDto } from '../shared/dtos/admin/product-variant.dto';
-import { ProductReview } from '../reviews/product-review/models/product-review.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { ProductVariant } from './models/product-variant.model';
 import { MediaService } from '../shared/services/media/media.service';
@@ -55,6 +54,7 @@ import { PageTypeEnum } from '../shared/enums/page-type.enum';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 import { ReservedInventory } from '../inventory/models/reserved-inventory.model';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
+import { createClientProductId } from '../shared/helpers/client-product-id';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -680,49 +680,59 @@ export class ProductService implements OnApplicationBootstrap {
     await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
   }
 
-  async addReviewToProduct(review: ProductReview, session?: ClientSession): Promise<any> {
-    const countProp = getPropertyOf<Product>('reviewsCount');
+  async addReviewRatingToProduct(productId: number, rating: number, isQuickRating: boolean, session?: ClientSession): Promise<any> {
+    const allReviewsCountProp = getPropertyOf<Product>('allReviewsCount');
+    const textReviewsCountProp = getPropertyOf<Product>('textReviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
 
-    await this.productModel
-      .updateOne(
-        { _id: review.productId as any },
-        [
-          { $set: { [countProp]: { $toInt: { $add: [ `$${countProp}`, 1 ] } } } },
-          {
-            $set: {
-              [ratingProp]: {
-                $ifNull: [
-                  { $divide: [{ $add: [`$${ratingProp}`, review.rating] }, 2] },
-                  review.rating
-                ]
-              }
-            }
+    const mongoUpdateQuery: UpdateQuery<Product> = [
+      { $set: { [allReviewsCountProp]: { $toInt: { $add: [ `$${allReviewsCountProp}`, 1 ] } } } },
+      {
+        $set: {
+          [ratingProp]: {
+            $ifNull: [
+              { $divide: [{ $add: [`$${ratingProp}`, rating] }, 2] },
+              rating
+            ]
           }
-        ]
-      )
+        }
+      }
+    ];
+    if (isQuickRating === false) {
+      mongoUpdateQuery.push({
+        $set: { [textReviewsCountProp]: { $toInt: { $add: [ `$${textReviewsCountProp}`, 1 ] } } }
+      });
+    }
+
+    await this.productModel
+      .updateOne({ _id: productId as any }, mongoUpdateQuery)
       .session(session)
       .exec();
 
-    const elasticQuery = { term: { id: review.productId } };
-    const elasticUpdateScript = `
-      ctx._source.${countProp} = ctx._source.${countProp} + 1;
+    const elasticQuery = { term: { id: productId } };
+    let elasticUpdateScript = `
+      ctx._source.${allReviewsCountProp} = ctx._source.${allReviewsCountProp} + 1;
       if (ctx._source.${ratingProp} == null) {
-        ctx._source.${ratingProp} = ${review.rating};
+        ctx._source.${ratingProp} = ${rating};
       } else {
-        ctx._source.${ratingProp} = (ctx._source.${ratingProp} + ${review.rating}) / 2;
+        ctx._source.${ratingProp} = (ctx._source.${ratingProp} + ${rating}) / 2;
       }
     `;
+    if (isQuickRating === false) {
+      elasticUpdateScript += `
+        ctx._source.${textReviewsCountProp} = ctx._source.${textReviewsCountProp} + 1;
+      `;
+    }
     this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript).catch();
   }
 
-  async removeReviewFromProduct(review: ProductReview, session?: ClientSession): Promise<any> {
-    const countProp = getPropertyOf<Product>('reviewsCount');
+  async removeReviewRatingFromProduct(productId: number, rating: number, session?: ClientSession): Promise<any> {
+    const countProp = getPropertyOf<Product>('allReviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
 
     await this.productModel
       .updateOne(
-        { _id: review.productId as any },
+        { _id: productId as any },
         [
           { $set: { [countProp]: { $toInt: { $subtract: [ `$${countProp}`, 1 ] } } } },
           {
@@ -731,7 +741,7 @@ export class ProductService implements OnApplicationBootstrap {
                 $cond: {
                   if: { $lte: [`$${countProp}`, 0]},
                   then: null,
-                  else: { $subtract: [{ $multiply: [`$${ratingProp}`, 2] }, review.rating] }
+                  else: { $subtract: [{ $multiply: [`$${ratingProp}`, 2] }, rating] }
                 }
               }
             }
@@ -741,13 +751,13 @@ export class ProductService implements OnApplicationBootstrap {
       .session(session)
       .exec();
 
-    const elasticQuery = { term: { id: review.productId } };
+    const elasticQuery = { term: { id: productId } };
     const elasticUpdateScript = `
       if (ctx._source.${countProp} == 0) {
         ctx._source.${ratingProp} = null;
       } else {
         ctx._source.${countProp} = ctx._source.${countProp} - 1;
-        ctx._source.${ratingProp} = ctx._source.${ratingProp} - ((ctx._source.${ratingProp} * 2) - ${review.rating});
+        ctx._source.${ratingProp} = ctx._source.${ratingProp} - ((ctx._source.${ratingProp} * 2) - ${rating});
       }
     `;
     this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript).catch();
@@ -1005,7 +1015,8 @@ export class ProductService implements OnApplicationBootstrap {
         quantitiesInStock: quantitiesInStock.join(', '),
         sellableQuantities: sellableQuantities.join(', '),
         mediaUrl: productMediaUrl,
-        reviewsCount: product.reviewsCount,
+        allReviewsCount: product.allReviewsCount,
+        textReviewsCount: product.textReviewsCount,
         reviewsAvgRating: product.reviewsAvgRating,
         variants
       };
@@ -1052,6 +1063,7 @@ export class ProductService implements OnApplicationBootstrap {
       }
 
       return {
+        id: createClientProductId(product.id, variant.id.toString()),
         productId: product.id,
         variantId: variant.id,
         sku: variant.sku,
@@ -1064,13 +1076,14 @@ export class ProductService implements OnApplicationBootstrap {
         mediaUrl: variant.mediaUrl,
         mediaHoverUrl: variant.mediaHoverUrl,
         mediaAltText: variant.mediaAltText,
-        reviewsCount: product.reviewsCount,
+        allReviewsCount: product.allReviewsCount,
+        textReviewsCount: product.textReviewsCount,
         reviewsAvgRating: product.reviewsAvgRating
       }
     });
   }
 
-  private async transformToClientProductDto(productWithQty: ProductWithQty, slug: string): Promise<ClientProductDto> {
+  async transformToClientProductDto(productWithQty: ProductWithQty, slug: string): Promise<ClientProductDto> {
     const variant = productWithQty.variants.find(v => v.slug === slug);
 
     const categories: ClientProductCategoryDto[] = productWithQty.categories.map(category => {
@@ -1122,6 +1135,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
 
     return {
+      id: createClientProductId(productWithQty._id, variant._id.toString()),
       productId: productWithQty._id,
       variantId: variant._id.toString(),
       isInStock: variant.qtyInStock > variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0),
@@ -1141,7 +1155,8 @@ export class ProductService implements OnApplicationBootstrap {
       price: variant.priceInDefaultCurrency,
       oldPrice: variant.oldPriceInDefaultCurrency,
       reviewsAvgRating: productWithQty.reviewsAvgRating,
-      reviewsCount: productWithQty.reviewsCount,
+      allReviewsCount: productWithQty.allReviewsCount,
+      textReviewsCount: productWithQty.textReviewsCount,
       relatedProducts: variant.relatedProducts
         .sort(((a, b) => b.sortOrder - a.sortOrder))
         .map(p => ({ productId: p.productId, variantId: p.variantId.toString() }))

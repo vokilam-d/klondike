@@ -44,7 +44,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   }
 
   async createReview(reviewDto: AdminProductReviewDto | ClientAddProductReviewDto, migrate?): Promise<AdminProductReviewDto> {
-    return super.createReview(reviewDto, (review, session) => this.productService.addReviewToProduct(review, session), migrate);
+    return super.createReview(reviewDto, (review: ProductReview, session) => this.productService.addReviewRatingToProduct(review.productId, review.rating, false, session), migrate);
   }
 
   async createReviewFromEmail(reviewDto: ClientAddProductReviewDto): Promise<string> {
@@ -54,14 +54,14 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   }
 
   async updateReview(reviewId: string, reviewDto: AdminProductReviewDto): Promise<AdminProductReviewDto> {
-    const onEnable = (review, session) => this.productService.addReviewToProduct(review, session);
-    const onDisable = (review, session) => this.productService.removeReviewFromProduct(review, session);
+    const onEnable = (review: ProductReview, session) => this.productService.addReviewRatingToProduct(review.productId, review.rating, false, session);
+    const onDisable = (review: ProductReview, session) => this.productService.removeReviewRatingFromProduct(review.productId, review.rating, session);
 
     return super.updateReview(reviewId, reviewDto, { onEnable, onDisable });
   }
 
   async deleteReview(reviewId: string): Promise<AdminProductReviewDto> {
-    return super.deleteReview(reviewId, (review, session) => this.productService.removeReviewFromProduct(review, session));
+    return super.deleteReview(reviewId, (review: ProductReview, session) => this.productService.removeReviewRatingFromProduct(review.productId, review.rating, session));
   }
 
   async deleteReviewsByProductId(productId: number, session: ClientSession) {

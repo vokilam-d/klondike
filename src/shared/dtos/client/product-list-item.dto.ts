@@ -23,10 +23,13 @@ export class ClientProductVariantGroupDto {
   variants: ClientProductVariantDto[];
 }
 
-type PickedProduct = Pick<Product, 'reviewsCount' | 'reviewsAvgRating'>;
+type PickedProduct = Pick<Product, 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating'>;
 type PickedVariant = Record<keyof Pick<ProductVariant, 'slug' | 'sku' | 'name' | 'price'>, any>;
 
 export class ClientProductListItemDto implements PickedProduct, PickedVariant {
+  @Expose()
+  id: string;
+
   @Expose()
   productId: number;
 
@@ -68,5 +71,8 @@ export class ClientProductListItemDto implements PickedProduct, PickedVariant {
   reviewsAvgRating: number;
 
   @Expose()
-  reviewsCount: number;
+  allReviewsCount: number;
+
+  @Expose()
+  textReviewsCount: number;
 }

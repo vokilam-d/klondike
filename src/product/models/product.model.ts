@@ -31,7 +31,10 @@ export class Product {
   variants: ProductVariant[];
 
   @prop({ default: 0 })
-  reviewsCount: number;
+  allReviewsCount: number;
+
+  @prop({ default: 0 })
+  textReviewsCount: number;
 
   @prop({ min: 1, max: 5, default: null })
   reviewsAvgRating: number;

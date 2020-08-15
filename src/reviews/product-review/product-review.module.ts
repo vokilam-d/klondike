@@ -2,9 +2,11 @@ import { forwardRef, Module } from '@nestjs/common';
 import { ProductReviewService } from './product-review.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProductReview, ProductReviewModel } from './models/product-review.model';
+import { ProductQuickReview, ProductQuickReviewModel } from './models/product-quick-review.model';
 import { AdminProductReviewController } from './admin-product-review.controller';
 import { ProductModule } from '../../product/product.module';
 import { ClientProductReviewController } from './client-product-review.controller';
+import { ProductQuickReviewService } from './product-quick-review.service';
 
 const productReviewModel = {
   name: ProductReviewModel.modelName,
@@ -12,13 +14,19 @@ const productReviewModel = {
   collection: ProductReview.collectionName
 };
 
+const productQuickReviewModel = {
+  name: ProductQuickReviewModel.modelName,
+  schema: ProductQuickReviewModel.schema,
+  collection: ProductQuickReview.collectionName
+};
+
 @Module({
   imports: [
-    MongooseModule.forFeature([productReviewModel]),
+    MongooseModule.forFeature([productReviewModel, productQuickReviewModel]),
     forwardRef(() => ProductModule)
   ],
-  providers: [ProductReviewService],
+  providers: [ProductReviewService, ProductQuickReviewService],
   controllers: [AdminProductReviewController, ClientProductReviewController],
-  exports: [ProductReviewService]
+  exports: [ProductReviewService, ProductQuickReviewService]
 })
 export class ProductReviewModule {}
