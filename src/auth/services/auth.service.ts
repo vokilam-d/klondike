@@ -111,7 +111,7 @@ export class AuthService {
 
     console.log({googleIDToken, token});
 
-    return this.callbackOAuth(googleIDToken.given_name, googleIDToken.family_name, googleIDToken.email, res);
+    return this.callbackOAuth(googleIDToken.sub, googleIDToken.given_name, googleIDToken.family_name, googleIDToken.email, res);
   }
 
   async callbackOAuthFacebook(req: FastifyRequest, res: FastifyReply<ServerResponse>) {
@@ -129,11 +129,16 @@ export class AuthService {
 
     console.log({facebookIDToken, token});
 
-    return this.callbackOAuth(facebookIDToken.first_name, facebookIDToken.last_name, facebookIDToken.email, res);
+    return this.callbackOAuth(facebookIDToken.id, facebookIDToken.first_name, facebookIDToken.last_name, facebookIDToken.email, res);
   }
 
-  private async callbackOAuth(firstName: string, lastName: string, email: string, res: FastifyReply<ServerResponse>) {
+  private async callbackOAuth(oauthId: string, firstName: string, lastName: string, email: string, res: FastifyReply<ServerResponse>) {
     let customer: DocumentType<Customer> = await this.customerService.getCustomerByEmailOrPhoneNumber(email);
+
+    if (customer) {
+      customer = await this.customerService.getCustomerByOauthId(oauthId);
+    }
+
     if (customer) {
       try {
         await this.customerService.confirmCustomerEmail(customer);
@@ -141,7 +146,7 @@ export class AuthService {
         this.logger.error(`Could not confirm customer email:`, e);
       }
     } else {
-      customer = await this.customerService.createCustomerByThirdParty(firstName, lastName, email) as any;
+      customer = await this.customerService.createCustomerByThirdParty(oauthId, firstName, lastName, email) as any;
     }
 
     const frontendOrigin = isProdEnv() ? '' : 'http://localhost:4002';

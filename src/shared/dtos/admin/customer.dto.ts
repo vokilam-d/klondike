@@ -107,6 +107,8 @@ export class AdminAddOrUpdateCustomerDto {
   @IsNumber()
   totalOrdersCost: number;
 
+  oauthId?: string;
+
   isRegisteredByThirdParty?: boolean;
 }
 

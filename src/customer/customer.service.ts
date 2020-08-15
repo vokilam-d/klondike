@@ -95,6 +95,8 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async getCustomerByEmailOrPhoneNumber(emailOrPhone: string): Promise<DocumentType<Customer>> {
+    if (!emailOrPhone) { return; }
+
     return this.customerModel
       .findOne({
         $or: [
@@ -103,6 +105,10 @@ export class CustomerService implements OnApplicationBootstrap {
         ]
       })
       .exec();
+  }
+
+  async getCustomerByOauthId(oauthId: string): Promise<DocumentType<Customer>> {
+    return this.customerModel.findOne({ oauthId }).exec();
   }
 
   private async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession, migrate?): Promise<Customer> {
@@ -152,12 +158,14 @@ export class CustomerService implements OnApplicationBootstrap {
     return created;
   }
 
-  createCustomerByThirdParty(firstName: string, lastName: string, email: string): Promise<Customer> {
+  createCustomerByThirdParty(oauthId: string, firstName: string, lastName: string, email: string): Promise<Customer> {
     const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
+    adminCustomerDto.oauthId = oauthId;
     adminCustomerDto.firstName = firstName;
     adminCustomerDto.lastName = lastName;
-    console.log({ email });
-    adminCustomerDto.email = email;
+    if (email) {
+      adminCustomerDto.email = email;
+    }
     adminCustomerDto.password = '';
     adminCustomerDto.lastLoggedIn = new Date();
 
@@ -457,7 +465,8 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async confirmCustomerEmail(customer: DocumentType<Customer>) {
-    if (customer.isEmailConfirmed) { return; }
+    if (!customer.email || customer.isEmailConfirmed) { return; }
+
     customer.isEmailConfirmed = true;
     await customer.save();
   }

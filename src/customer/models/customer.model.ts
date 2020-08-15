@@ -15,7 +15,7 @@ export class Customer {
   @prop({ default: '' })
   lastName: string;
 
-  @prop({ index: true, unique: true, default: '' })
+  @prop({ index: true })
   email: string;
 
   @prop({ index: true, default: '' })
@@ -74,6 +74,9 @@ export class Customer {
 
   @prop({ default: false })
   isRegisteredByThirdParty: boolean;
+
+  @prop({ default: null })
+  oauthId: string;
 
 
   static collectionName: string = 'customer';
