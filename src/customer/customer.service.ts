@@ -156,6 +156,7 @@ export class CustomerService implements OnApplicationBootstrap {
     const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
     adminCustomerDto.firstName = firstName;
     adminCustomerDto.lastName = lastName;
+    console.log({ email });
     adminCustomerDto.email = email;
     adminCustomerDto.password = '';
     adminCustomerDto.lastLoggedIn = new Date();
