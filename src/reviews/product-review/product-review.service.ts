@@ -14,6 +14,7 @@ import { plainToClass } from 'class-transformer';
 import { ClientAddProductReviewCommentDto } from '../../shared/dtos/client/product-review-comment.dto';
 import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
+import { EmailService } from '../../email/email.service';
 
 @Injectable()
 export class ProductReviewService extends BaseReviewService<ProductReview, AdminProductReviewDto> {
@@ -25,6 +26,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
               @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
               protected readonly searchService: SearchService,
               protected readonly counterService: CounterService,
+              protected readonly emailService: EmailService,
               protected readonly mediaService: MediaService) {
     super();
   }
@@ -44,7 +46,9 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   }
 
   async createReview(reviewDto: AdminProductReviewDto | ClientAddProductReviewDto, migrate?): Promise<AdminProductReviewDto> {
-    return super.createReview(reviewDto, (review: ProductReview, session) => this.productService.addReviewRatingToProduct(review.productId, review.rating, false, session), migrate);
+    const review = await super.createReview(reviewDto, (review: ProductReview, session) => this.productService.addReviewRatingToProduct(review.productId, review.rating, false, session), migrate);
+    this.emailService.sendNewProductReviewEmail(review).then();
+    return review;
   }
 
   async createReviewFromEmail(reviewDto: ClientAddProductReviewDto): Promise<string> {

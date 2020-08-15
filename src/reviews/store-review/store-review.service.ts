@@ -9,6 +9,7 @@ import { MediaService } from '../../shared/services/media/media.service';
 import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticStoreReviewModel } from './models/elastic-store-review.model';
 import { plainToClass } from 'class-transformer';
+import { EmailService } from '../../email/email.service';
 
 @Injectable()
 export class StoreReviewService extends BaseReviewService<StoreReview, AdminStoreReviewDto> implements OnApplicationBootstrap {
@@ -19,8 +20,15 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
   constructor(@InjectModel(StoreReview.name) protected readonly reviewModel: ReturnModelType<typeof StoreReview>,
               protected readonly counterService: CounterService,
               protected readonly searchService: SearchService,
+              protected readonly emailService: EmailService,
               protected readonly mediaService: MediaService) {
     super();
+  }
+
+  async createReview(reviewDto: AdminStoreReviewDto): Promise<AdminStoreReviewDto> {
+    const review = await super.createReview(reviewDto);
+    this.emailService.sendNewStoreReviewEmail(review).then();
+    return review;
   }
 
   transformReviewToDto(review: DocumentType<StoreReview>, ipAddress?: string, userId?: string, customerId?: number): AdminStoreReviewDto {

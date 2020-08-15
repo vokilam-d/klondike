@@ -4,6 +4,7 @@ import { StoreReviewService } from './store-review.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { StoreReview, StoreReviewModel } from './models/store-review.model';
 import { ClientStoreReviewController } from './client-store-review.controller';
+import { EmailModule } from '../../email/email.module';
 
 const storeReviewModel = {
   name: StoreReviewModel.modelName,
@@ -12,7 +13,7 @@ const storeReviewModel = {
 };
 
 @Module({
-  imports: [MongooseModule.forFeature([storeReviewModel])],
+  imports: [MongooseModule.forFeature([storeReviewModel]), EmailModule],
   controllers: [AdminStoreReviewController, ClientStoreReviewController],
   providers: [StoreReviewService]
 })

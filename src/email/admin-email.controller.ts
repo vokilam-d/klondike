@@ -4,6 +4,8 @@ import { OrderService } from '../order/order.service';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { ModuleRef } from '@nestjs/core';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { ProductReviewService } from '../reviews/product-review/product-review.service';
+import { StoreReviewService } from '../reviews/store-review/store-review.service';
 
 @UseGuards(UserJwtGuard)
 @Controller('admin/email-test')
@@ -85,5 +87,29 @@ export class AdminEmailController {
     };
 
     return this.emailService.sendResetPasswordEmail(customer, 'token');
+  }
+
+  @Post('new-product-review/:reviewId')
+  async sendTestNewProductReviewEmail(@Param('reviewId') reviewId: string, @Body() body: any) {
+    if (!body.email) {
+      throw new BadRequestException(__('No "email" in payload', 'ru'));
+    }
+
+    const productReviewService = this.moduleRef.get(ProductReviewService, { strict: false });
+    const review = await productReviewService.findReview(reviewId);
+
+    return this.emailService.sendNewProductReviewEmail(review, body.email);
+  }
+
+  @Post('new-store-review/:reviewId')
+  async sendTestNewStoreReviewEmail(@Param('reviewId') reviewId: string, @Body() body: any) {
+    if (!body.email) {
+      throw new BadRequestException(__('No "email" in payload', 'ru'));
+    }
+
+    const storeReviewService = this.moduleRef.get(StoreReviewService, { strict: false });
+    const review = await storeReviewService.findReview(reviewId);
+
+    return this.emailService.sendNewStoreReviewEmail(review, body.email);
   }
 }

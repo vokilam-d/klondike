@@ -6,10 +6,14 @@ import { Order } from '../order/models/order.model';
 import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { readableDate } from '../shared/helpers/readable-date.function';
 import { Customer } from '../customer/models/customer.model';
+import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
+import { AdminStoreReviewDto } from '../shared/dtos/admin/store-review.dto';
 
 enum EEmailType {
   EmailConfirmation = 'email-confirmation',
   RegistrationSuccess = 'registration-success',
+  NewProductReview = 'new-product-review',
+  NewStoreReview = 'new-store-review',
   ResetPassword = 'password-reset',
   LeaveReview = 'leave-review',
   OrderConfirmation = 'order-confirmation'
@@ -40,7 +44,7 @@ export class EmailService {
     }
   };
   private senderName = 'Клондайк <info@klondike.com.ua>';
-  private managerEmails = ['denis@klondike.com.ua', 'yurii@klondike.com.ua', 'elena@klondike.com.ua'];
+  private managerEmails: string = ['denis@klondike.com.ua', 'yurii@klondike.com.ua', 'elena@klondike.com.ua'].join(',');
 
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
@@ -61,8 +65,7 @@ export class EmailService {
 
     if (notifyManager) {
       const managerSubject = `Новый заказ №${order.idForCustomer}`;
-      const managerEmail = this.managerEmails.join(',');
-      this.sendEmail({ to: managerEmail, subject: managerSubject, html, attachment, emailType }).then();
+      this.sendEmail({ to: this.managerEmails, subject: managerSubject, html, attachment, emailType }).then();
     }
 
     return this.sendEmail({ to, subject, html, attachment, emailType });
@@ -109,6 +112,24 @@ export class EmailService {
     const to = customer.email;
     const subject = 'Восстановление пароля';
     const html = this.getEmailHtml(emailType, { firstName: customer.firstName, lastName: customer.lastName, token });
+
+    return this.sendEmail({ to, subject, html, emailType });
+  }
+
+  sendNewProductReviewEmail(productReview: AdminProductReviewDto, adminEmail: string = this.managerEmails) {
+    const emailType = EEmailType.NewProductReview;
+    const to = this.managerEmails;
+    const subject = 'Новый отзыв о товаре';
+    const html = this.getEmailHtml(emailType, this.getNewProductReviewTemplateContext(productReview));
+
+    return this.sendEmail({ to, subject, html, emailType });
+  }
+
+  sendNewStoreReviewEmail(storeReview: AdminStoreReviewDto, adminEmail: string = this.managerEmails) {
+    const emailType = EEmailType.NewStoreReview;
+    const to = this.managerEmails;
+    const subject = 'Новый отзыв о магазине';
+    const html = this.getEmailHtml(emailType, this.getNewStoreReviewTemplateContext(storeReview));
 
     return this.sendEmail({ to, subject, html, emailType });
   }
@@ -201,6 +222,25 @@ export class EmailService {
       customerId: order.customerId,
       email: order.customerEmail,
       products
+    };
+  }
+
+  private getNewProductReviewTemplateContext(productReview: AdminProductReviewDto): any {
+    return {
+      id: productReview.id,
+      name: productReview.name,
+      text: productReview.text,
+      rating: productReview.rating,
+      product: productReview.productName
+    };
+  }
+
+  private getNewStoreReviewTemplateContext(storeReview: AdminStoreReviewDto): any {
+    return {
+      id: storeReview.id,
+      name: storeReview.name,
+      text: storeReview.text,
+      rating: storeReview.rating
     };
   }
 }
