@@ -109,8 +109,6 @@ export class AuthService {
       { headers: { 'Authorization': `Bearer ${token.access_token}` } }
     ).toPromise();
 
-    console.log({googleIDToken, token});
-
     return this.callbackOAuth(googleIDToken.sub, googleIDToken.given_name, googleIDToken.family_name, googleIDToken.email, res);
   }
 
@@ -126,8 +124,6 @@ export class AuthService {
       `https://graph.facebook.com/v6.0/me`,
       { headers: { 'Authorization': `Bearer ${token.access_token}` }, params: { fields: 'email,first_name,last_name' } }
     ).toPromise();
-
-    console.log({facebookIDToken, token});
 
     return this.callbackOAuth(facebookIDToken.id, facebookIDToken.first_name, facebookIDToken.last_name, facebookIDToken.email, res);
   }
