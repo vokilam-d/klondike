@@ -135,7 +135,7 @@ export class AuthService {
   private async callbackOAuth(oauthId: string, firstName: string, lastName: string, email: string, res: FastifyReply<ServerResponse>) {
     let customer: DocumentType<Customer> = await this.customerService.getCustomerByEmailOrPhoneNumber(email);
 
-    if (customer) {
+    if (!customer) {
       customer = await this.customerService.getCustomerByOauthId(oauthId);
     }
 
