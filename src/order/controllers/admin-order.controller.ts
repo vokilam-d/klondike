@@ -1,24 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from '../order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto, UpdateOrderAdminNote } from '../../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../../shared/dtos/admin/order-action.dto';
 import { OrderActionEnum } from '../../shared/enums/order-action.enum';
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { ChangeOrderStatusDto } from '../../shared/dtos/admin/change-order-status.dto';
+import { AuthService } from '../../auth/services/auth.service';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/orders')
 export class AdminOrderController {
 
-  constructor(private orderService: OrderService) {
-  }
+  constructor(private readonly orderService: OrderService,
+              private readonly authService: AuthService
+  ) { }
 
   @Get()
   async getOrdersList(@Query() spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
@@ -45,8 +47,9 @@ export class AdminOrderController {
   }
 
   @Post()
-  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
-    const created = await this.orderService.createOrderAdmin(orderDto);
+  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto, @Req() req: FastifyRequest): Promise<ResponseDto<AdminOrderDto>> {
+    const user = await this.authService.getUserFromReq(req);
+    const created = await this.orderService.createOrderAdmin(orderDto, user);
 
     return {
       data: plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true })

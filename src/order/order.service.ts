@@ -47,6 +47,7 @@ import { areAddressesSame } from '../shared/helpers/are-addresses-same.function'
 import { EmailService } from '../email/email.service';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 import { isProdEnv } from '../shared/helpers/is-prod-env.function';
+import { User } from '../user/models/user.model';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -139,7 +140,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async createOrderAdmin(orderDto: AdminAddOrUpdateOrderDto): Promise<Order> {
+  async createOrderAdmin(orderDto: AdminAddOrUpdateOrderDto, user: DocumentType<User>): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
@@ -181,7 +182,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       await session.commitTransaction();
 
-      this.logger.log(`Created order #${newOrder.id} by admin`);
+      this.logger.log(`Created order by admin, orderId=${newOrder.id}, userLogin=${user.login}`);
 
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
@@ -201,15 +202,14 @@ export class OrderService implements OnApplicationBootstrap {
     session.startTransaction();
     try {
 
-      if (customer) {
-        await this.customerService.emptyCart(customer, session);
-      } else {
+      if (!customer) {
         customer = await this.customerService.getCustomerByEmailOrPhoneNumber(orderDto.email);
       }
 
       if (customer) {
-        const hasSameAddress = customer.addresses.find(address => areAddressesSame(address, orderDto.address));
+        await this.customerService.emptyCart(customer, session);
 
+        const hasSameAddress = customer.addresses.find(address => areAddressesSame(address, orderDto.address));
         if (!hasSameAddress) {
           await this.customerService.addCustomerAddress(customer, orderDto.address, session);
         }
@@ -233,7 +233,7 @@ export class OrderService implements OnApplicationBootstrap {
       await newOrder.save({ session });
       await session.commitTransaction();
 
-      this.logger.log(`Created order #${newOrder.id} by client`);
+      this.logger.log(`Created order by client, orderId=${newOrder.id}, customerId=${customer.id}`);
 
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
