@@ -8,10 +8,6 @@ import { AdminProductCategoryDto } from './product-category.dto';
 
 export class AdminAddOrUpdateProductDto {
   @Expose()
-  @Transform(((value, obj) => obj._id || value))
-  id: number; // todo remove after migrate
-
-  @Expose()
   @IsBoolean()
   isEnabled: boolean;
 

@@ -14,10 +14,6 @@ import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.funct
 
 export class AdminAddOrUpdateCustomerDto {
   @Expose()
-  @Transform(((value, obj) => obj._id || value))
-  id: number; // todo remove after migrate
-
-  @Expose()
   @IsString()
   firstName: string;
 

@@ -95,7 +95,7 @@ export class CategoryService {
     return found.toJSON();
   }
 
-  async createCategory(category: AdminAddOrUpdateCategoryDto, migrate?: any): Promise<Category> {
+  async createCategory(category: AdminAddOrUpdateCategoryDto): Promise<Category> {
     category.slug = category.slug === '' ? transliterate(category.name) : category.slug;
 
     const session = await this.categoryModel.db.startSession();
@@ -103,9 +103,7 @@ export class CategoryService {
 
     try {
       const newCategoryModel = new this.categoryModel(category);
-      if (!migrate) {
-        newCategoryModel.id = await this.counterService.getCounter(Category.collectionName, session);
-      }
+      newCategoryModel.id = await this.counterService.getCounter(Category.collectionName, session);
 
       const lastSiblingOrder = await this.getLastSiblingOrder(category.parentId);
       if (lastSiblingOrder) {

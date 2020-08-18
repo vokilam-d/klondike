@@ -28,12 +28,10 @@ export class LinkedBlogPostDto implements LinkedBlogPost {
   id: number;
 
   @Expose()
-  @IsOptional() // todo remove @IsOptional after migrate
   @IsString()
   name: string;
 
   @Expose()
-  @IsOptional() // todo remove @IsOptional after migrate
   @IsString()
   slug: string;
 
@@ -44,8 +42,6 @@ export class LinkedBlogPostDto implements LinkedBlogPost {
 }
 
 export class AdminBlogPostCreateDto implements Record<keyof Omit<BlogPost, '_id' | 'id'>, any> {
-  id?: any; // todo remove after migrate
-
   @Expose()
   @IsString()
   name: string;

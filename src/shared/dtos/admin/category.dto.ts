@@ -6,9 +6,6 @@ import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 
 export class AdminAddOrUpdateCategoryDto {
   @Expose()
-  id?: number; // todo remove after migrate
-
-  @Expose()
   @IsBoolean()
   isEnabled: boolean;
 

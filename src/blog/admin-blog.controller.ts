@@ -17,8 +17,8 @@ export class AdminBlogController {
   }
 
   @Post('categories')
-  async createCategory(@Body() createDto: AdminBlogCategoryCreateDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminBlogCategoryDto>> {
-    const created = await this.blogService.createBlogCategory(createDto, migrate);
+  async createCategory(@Body() createDto: AdminBlogCategoryCreateDto): Promise<ResponseDto<AdminBlogCategoryDto>> {
+    const created = await this.blogService.createBlogCategory(createDto);
 
     return {
       data: plainToClass(AdminBlogCategoryDto, created, { excludeExtraneousValues: true })
@@ -26,8 +26,8 @@ export class AdminBlogController {
   }
 
   @Post('posts')
-  async createPost(@Body() createDto: AdminBlogPostCreateDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminBlogPostDto>> {
-    const created = await this.blogService.createPost(createDto, migrate);
+  async createPost(@Body() createDto: AdminBlogPostCreateDto): Promise<ResponseDto<AdminBlogPostDto>> {
+    const created = await this.blogService.createPost(createDto);
 
     return {
       data: plainToClass(AdminBlogPostDto, created, { excludeExtraneousValues: true })
@@ -42,20 +42,5 @@ export class AdminBlogController {
     const media = await this.blogService.uploadMedia(request);
 
     reply.status(201).send(media);
-  }
-
-  @Post('counter') // todo remove this and all counter updates
-  updateCounterCategory() {
-    return this.blogService.updateCounter();
-  }
-
-  @Post('clear-collection') // todo remove this and all counter updates
-  clearCollection() {
-    return this.blogService.clearCollection();
-  }
-
-  @Post('migrate-linked') // todo remove after migrate this and REMOVE IMPORT PRODUCT MODULE FROM THIS MODULE
-  async migrateLinked() {
-    return this.blogService.migrateLinked();
   }
 }

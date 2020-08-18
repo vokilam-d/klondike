@@ -59,15 +59,14 @@ export class ClientProductReviewController {
 
   @Post()
   async createProductReview(@Req() req,
-                            @Body() productReviewDto: ClientAddProductReviewDto,
-                            @Query('migrate') migrate: any
+                            @Body() productReviewDto: ClientAddProductReviewDto
   ): Promise<ResponseDto<ClientProductReviewDto>> {
 
     if (!productReviewDto.customerId) {
       const authService = this.moduleRef.get(AuthService, { strict: false });
       productReviewDto.customerId = await authService.getCustomerIdFromReq(req);
     }
-    const review = await this.productReviewService.createReview(productReviewDto, migrate);
+    const review = await this.productReviewService.createReview(productReviewDto);
 
     return {
       data: plainToClass(ClientProductReviewDto, review, { excludeExtraneousValues: true })

@@ -50,16 +50,6 @@ export class AdminStoreReviewController {
     reply.status(201).send(media);
   }
 
-  @Post('counter') // todo remove this and all counter updates after migrate
-  updateCounter() {
-    return this.storeReviewService.updateCounter();
-  }
-
-  @Post('clear-collection') // todo remove this and all counter updates
-  clearCollection() {
-    return this.storeReviewService.clearCollection();
-  }
-
   @Post()
   async createStoreReview(@Body() storeReviewDto: AdminStoreReviewDto): Promise<ResponseDto<AdminStoreReviewDto>> {
     const review = await this.storeReviewService.createReview(storeReviewDto);

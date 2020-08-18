@@ -23,8 +23,7 @@ const blogCategoryModel = {
 @Module({
   imports: [
     MongooseModule.forFeature([blogPostModel, blogCategoryModel]),
-    PageRegistryModule,
-    ProductModule // todo remove this import after migrate
+    PageRegistryModule
   ],
   controllers: [AdminBlogController, ClientBlogController],
   providers: [BlogService]

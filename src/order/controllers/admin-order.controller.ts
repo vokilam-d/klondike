@@ -45,22 +45,12 @@ export class AdminOrderController {
   }
 
   @Post()
-  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminOrderDto>> {
-    const created = await this.orderService.createOrderAdmin(orderDto, migrate);
+  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
+    const created = await this.orderService.createOrderAdmin(orderDto);
 
     return {
       data: plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true })
     };
-  }
-
-  @Post('counter') // todo remove this and all counter updates after migrate
-  updateCounter() {
-    return this.orderService.updateCounter();
-  }
-
-  @Post('clear-collection') // todo remove this and all counter updates
-  clearCollection() {
-    return this.orderService.clearCollection();
   }
 
   @Post(':id/actions/:actionName')

@@ -14,17 +14,15 @@ export class OrderItemService {
               private readonly customerService: CustomerService) {
   }
 
-  async createOrderItem(sku: string, qty: number, customerId?: number, migrate?): Promise<OrderItem> {
+  async createOrderItem(sku: string, qty: number, customerId?: number): Promise<OrderItem> {
     const foundProduct = await this.productService.getProductWithQtyBySku(sku);
     if (!foundProduct) {
       throw new BadRequestException(__('Product with sku "$1" not found', 'ru', sku));
     }
     const variant = foundProduct.variants.find(v => v.sku === sku);
 
-    if (!migrate) { // todo remove this line after migrate
-      if (variant.qtyInStock < qty) {
-        throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, variant.qtyInStock));
-      }
+    if (variant.qtyInStock < qty) {
+      throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, variant.qtyInStock));
     }
 
     const orderItem = new OrderItem();
@@ -57,9 +55,7 @@ export class OrderItemService {
     orderItem.cost = orderItem.price * orderItem.qty;
     orderItem.totalCost = orderItem.cost - orderItem.discountValue;
 
-    if (!migrate) {
-      orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
-    }
+    orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
 
     return orderItem;
   }

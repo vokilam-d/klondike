@@ -454,7 +454,7 @@ export class ProductService implements OnApplicationBootstrap {
     return this.transformToClientProductDto(found, slug);
   }
 
-  async createProduct(productDto: AdminAddOrUpdateProductDto, migrate?: any): Promise<Product> {
+  async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
@@ -468,9 +468,7 @@ export class ProductService implements OnApplicationBootstrap {
       }
 
       const newProductModel = new this.productModel(productDto);
-      if (!migrate) {
-        newProductModel.id = await this.counterService.getCounter(Product.collectionName);
-      }
+      newProductModel.id = await this.counterService.getCounter(Product.collectionName);
       await this.populateProductCategoriesAndBreadcrumbs(newProductModel);
 
       for (const dtoVariant of productDto.variants) {
@@ -665,19 +663,6 @@ export class ProductService implements OnApplicationBootstrap {
     this.productModel.estimatedDocumentCount().exec()
       .then(count => this.cachedProductCount = count)
       .catch(_ => { });
-  }
-
-  async updateCounter() { // todo remove this after migrate
-    const lastProduct = await this.productModel.findOne().sort('-_id').exec();
-    return this.counterService.setCounter(Product.collectionName, lastProduct.id);
-  }
-
-  async clearCollection() { // todo remove this after migrate
-    await this.productModel.deleteMany({}).exec();
-    await this.inventoryService.deleteAllInventory();
-    await this.pageRegistryService.deletePageRegistryByType(PageTypeEnum.Product);
-    await this.searchService.deleteCollection(Product.collectionName);
-    await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
   }
 
   async addReviewRatingToProduct(productId: number, rating: number, isQuickRating: boolean, session?: ClientSession): Promise<any> {
@@ -1418,48 +1403,6 @@ export class ProductService implements OnApplicationBootstrap {
       throw ex;
     } finally {
       await session.endSession();
-    }
-  }
-
-  async migrateProductCategories(productId: number, productDto: AdminProductCategoryDto[]) {
-    const found = await this.productModel.findById(productId).exec();
-
-    for (let category of found.categories) {
-      const foundCatDtoIdx = productDto.findIndex(catDto => catDto.id === category.id);
-      if (foundCatDtoIdx !== -1) {
-        category.sortOrder = productDto[foundCatDtoIdx].sortOrder;
-      }
-    }
-
-    await found.save();
-  }
-
-  async migrateLinked() {
-    const found = await this.productModel.find().exec();
-
-    for (const product of found) {
-      let needToSave: boolean = false;
-      for (let i = 0; i < product.variants.length; i++){
-        const variant = product.variants[i];
-
-        for (let relatedProduct of variant.relatedProducts) {
-          needToSave = true;
-
-          const linkedProduct = found.find(p => p._id === relatedProduct.productId);
-          relatedProduct.variantId = linkedProduct?.variants[i]._id.toString();
-        }
-
-        for (let crossSellProduct of variant.crossSellProducts) {
-          needToSave = true;
-
-          const linkedProduct = found.find(p => p._id === crossSellProduct.productId);
-          crossSellProduct.variantId = linkedProduct?.variants[i]._id.toString();
-        }
-      }
-
-      if (needToSave) {
-        await product.save();
-      }
     }
   }
 

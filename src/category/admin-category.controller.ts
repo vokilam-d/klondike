@@ -45,8 +45,8 @@ export class AdminCategoryController {
   }
 
   @Post()
-  async addCategory(@Body() category: AdminAddOrUpdateCategoryDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminResponseCategoryDto>> {
-    const created = await this.categoryService.createCategory(category, migrate);
+  async addCategory(@Body() category: AdminAddOrUpdateCategoryDto): Promise<ResponseDto<AdminResponseCategoryDto>> {
+    const created = await this.categoryService.createCategory(category);
     return {
       data: plainToClass(AdminResponseCategoryDto, created, { excludeExtraneousValues: true })
     };

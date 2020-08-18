@@ -111,11 +111,9 @@ export class CustomerService implements OnApplicationBootstrap {
     return this.customerModel.findOne({ oauthId }).exec();
   }
 
-  private async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession, migrate?): Promise<Customer> {
+  private async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
     const newCustomer = new this.customerModel(customerDto);
-    if (!migrate || (migrate && !customerDto.id)) { // todo remove line after migrate
-      newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
-    }
+    newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
 
     await newCustomer.save({ session });
     this.addSearchData(newCustomer);
@@ -124,17 +122,13 @@ export class CustomerService implements OnApplicationBootstrap {
     return newCustomer.toJSON();
   }
 
-  async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession, migrate?): Promise<Customer> {
+  async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
     const foundByEmail = await this.customerModel.findOne({ email: customerDto.email }).exec();
     if (foundByEmail) {
-      if (migrate) { // todo just throw err after migrate
-        return foundByEmail;
-      } else {
-        throw new ConflictException(__('Customer with email "$1" already exists', 'ru', customerDto.email));
-      }
+      throw new ConflictException(__('Customer with email "$1" already exists', 'ru', customerDto.email));
     }
 
-    return this.createCustomer(customerDto, session, migrate);
+    return this.createCustomer(customerDto, session);
   }
 
   async clientRegisterCustomer(registerDto: ClientRegisterDto): Promise<Customer> {
@@ -319,17 +313,6 @@ export class CustomerService implements OnApplicationBootstrap {
     ).session(session).exec();
 
     return customer;
-  }
-
-  async updateCounter() { // todo remove this after migrate
-    const lastCustomer = await this.customerModel.findOne().sort('-_id').exec();
-    return this.counterService.setCounter(Customer.collectionName, lastCustomer.id);
-  }
-
-  async clearCollection() { // todo remove this after migrate
-    await this.customerModel.deleteMany({}).exec();
-    await this.searchService.deleteCollection(Customer.collectionName);
-    await this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
   }
 
   private async addSearchData(customer: Customer) {

@@ -4,7 +4,7 @@ export class LinkedProduct {
   @prop({ required: true })
   productId: number;
 
-  @prop() // todo add { required: true } after migrate
+  @prop({ required: true })
   variantId: string;
 
   @prop({ default: 0 })

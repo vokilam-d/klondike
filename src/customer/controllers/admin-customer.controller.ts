@@ -43,8 +43,8 @@ export class AdminCustomerController {
   }
 
   @Post()
-  async addCustomer(@Body() customerDto: AdminAddOrUpdateCustomerDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminCustomerDto>> {
-    const created = await this.customerService.adminCreateCustomer(customerDto, undefined, migrate);
+  async addCustomer(@Body() customerDto: AdminAddOrUpdateCustomerDto): Promise<ResponseDto<AdminCustomerDto>> {
+    const created = await this.customerService.adminCreateCustomer(customerDto);
 
     return {
       data: plainToClass(AdminCustomerDto, created, { excludeExtraneousValues: true })
@@ -67,15 +67,5 @@ export class AdminCustomerController {
     return {
       data: plainToClass(AdminCustomerDto, deleted, { excludeExtraneousValues: true })
     };
-  }
-
-  @Post('counter') // todo remove this and all counter updates
-  updateCounter() {
-    return this.customerService.updateCounter();
-  }
-
-  @Post('clear-collection') // todo remove this and all counter updates
-  clearCollection() {
-    return this.customerService.clearCollection();
   }
 }

@@ -18,15 +18,6 @@ import { Log } from '../../models/log.model';
 
 export class AdminAddOrUpdateOrderDto {
   @Expose()
-  @Transform(((value, obj) => obj._id || value))
-  id: number; // todo remove after migration
-
-  @Expose()
-  @IsOptional()
-  @IsString()
-  idForCustomer: string; // todo move to AdminOrderDto after migration
-
-  @Expose()
   @IsOptional()
   @IsNumber()
   customerId: number;
@@ -76,21 +67,6 @@ export class AdminAddOrUpdateOrderDto {
 
   @Expose()
   paymentType: PaymentMethodEnum;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  paymentMethodClientName: string; // todo move to AdminOrderDto after migration
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  paymentMethodAdminName: string; // todo move to AdminOrderDto after migration
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  shippingMethodName: string; // todo move to AdminOrderDto after migration
 
   @Expose()
   @IsBoolean()
@@ -174,6 +150,21 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   @Expose()
   @Transform(((value, order: AdminOrderDto) => value || __(order.status, 'ru')))
   statusDescription: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  paymentMethodClientName: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  paymentMethodAdminName: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  shippingMethodName: string;
 }
 
 export class UpdateOrderAdminNote {

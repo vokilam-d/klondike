@@ -67,17 +67,12 @@ export class AdminProductController {
   }
 
   @Post()
-  async addProduct(@Body() productDto: AdminAddOrUpdateProductDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminProductDto>> {
-    const created = await this.productsService.createProduct(productDto, migrate);
+  async addProduct(@Body() productDto: AdminAddOrUpdateProductDto): Promise<ResponseDto<AdminProductDto>> {
+    const created = await this.productsService.createProduct(productDto);
 
     return {
       data: plainToClass(AdminProductDto, created, { excludeExtraneousValues: true })
     };
-  }
-
-  @Post('migrate-linked') // todo remove this after migrate
-  async migrateLinked() {
-    return this.productsService.migrateLinked();
   }
 
   /**
@@ -90,16 +85,6 @@ export class AdminProductController {
     reply.status(201).send(media);
   }
 
-  @Post('counter') // todo remove this and all counter updates after migrate
-  updateCounter() {
-    return this.productsService.updateCounter();
-  }
-
-  @Post('clear-collection') // todo remove this and all counter updates
-  clearCollection() {
-    return this.productsService.clearCollection();
-  }
-
   @Post('action/reorder')
   async reorderProduct(@Body() reorderDto: ProductReorderDto,
                        @Query() spf: AdminSPFDto
@@ -107,11 +92,6 @@ export class AdminProductController {
 
     await this.productsService.reorderProduct(reorderDto);
     return this.productsService.getAdminProductsList(spf, false);
-  }
-
-  @Patch(':id/categories') // temp method, todo remove after migrate
-  async updateCategories(@Param('id') productId: number, @Body() productDto: AdminProductCategoryDto[]) {
-    return this.productsService.migrateProductCategories(productId, productDto);
   }
 
   @Put(':id')

@@ -139,7 +139,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async createOrderAdmin(orderDto: AdminAddOrUpdateOrderDto, migrate: any): Promise<Order> {
+  async createOrderAdmin(orderDto: AdminAddOrUpdateOrderDto): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
@@ -168,16 +168,14 @@ export class OrderService implements OnApplicationBootstrap {
           customerDto.phoneNumber = orderDto.customerPhoneNumber;
           customerDto.addresses = [{ ...address, isDefault: true }];
 
-          customer = await this.customerService.adminCreateCustomer(customerDto, session, migrate);
+          customer = await this.customerService.adminCreateCustomer(customerDto, session);
         }
 
         orderDto.customerId = customer.id;
       }
 
-      const newOrder = await this.createOrder(orderDto, customer, session, migrate);
-      if (!migrate) {
-        newOrder.status = OrderStatusEnum.PROCESSING;
-      }
+      const newOrder = await this.createOrder(orderDto, customer, session);
+      newOrder.status = OrderStatusEnum.PROCESSING;
       await this.fetchShipmentStatus(newOrder);
       await newOrder.save({ session });
 
@@ -224,7 +222,7 @@ export class OrderService implements OnApplicationBootstrap {
         customerDto.phoneNumber = orderDto.address.phone;
         customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
 
-        customer = await this.customerService.adminCreateCustomer(customerDto, session, false) as any;
+        customer = await this.customerService.adminCreateCustomer(customerDto, session) as any;
       }
 
       const shipment = new ShipmentDto();
@@ -254,46 +252,44 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  private async createOrder(orderDto: AdminAddOrUpdateOrderDto | ClientAddOrderDto, customer: Customer, session: ClientSession, migrate?: any): Promise<DocumentType<Order>> {
+  private async createOrder(orderDto: AdminAddOrUpdateOrderDto | ClientAddOrderDto, customer: Customer, session: ClientSession): Promise<DocumentType<Order>> {
     const newOrder = new this.orderModel(orderDto);
 
-    if (!migrate) {
-      newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
-      newOrder.idForCustomer = addLeadingZeros(newOrder.id);
-      newOrder.customerId = customer.id;
-      newOrder.customerEmail = customer.email;
-      newOrder.customerFirstName = customer.firstName;
-      newOrder.customerLastName = customer.lastName;
-      newOrder.customerPhoneNumber = customer.phoneNumber;
-      newOrder.customerNote = customer.note;
-      newOrder.createdAt = new Date();
-      newOrder.status = OrderStatusEnum.NEW;
-      newOrder.discountPercent = customer.discountPercent;
-      OrderService.setOrderPrices(newOrder);
+    newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
+    newOrder.idForCustomer = addLeadingZeros(newOrder.id);
+    newOrder.customerId = customer.id;
+    newOrder.customerEmail = customer.email;
+    newOrder.customerFirstName = customer.firstName;
+    newOrder.customerLastName = customer.lastName;
+    newOrder.customerPhoneNumber = customer.phoneNumber;
+    newOrder.customerNote = customer.note;
+    newOrder.createdAt = new Date();
+    newOrder.status = OrderStatusEnum.NEW;
+    newOrder.discountPercent = customer.discountPercent;
+    OrderService.setOrderPrices(newOrder);
 
-      const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
-      for (const item of orderDto.items) {
-        const product = products.find(product => product._id === item.productId);
-        const variant = product && product.variants.find(variant => variant._id.equals(item.variantId));
+    const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
+    for (const item of orderDto.items) {
+      const product = products.find(product => product._id === item.productId);
+      const variant = product && product.variants.find(variant => variant._id.equals(item.variantId));
 
-        if (!product || !variant) {
-          throw new BadRequestException(__('Product with sku "$1" not found', 'ru', item.sku));
-        }
-
-        if (variant.qtyInStock < item.qty) {
-          throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', item.qty, variant.qtyInStock));
-        }
-
-        await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
-        await this.productService.updateSearchDataById(item.productId, session);
+      if (!product || !variant) {
+        throw new BadRequestException(__('Product with sku "$1" not found', 'ru', item.sku));
       }
 
-      await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
+      if (variant.qtyInStock < item.qty) {
+        throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', item.qty, variant.qtyInStock));
+      }
 
-      newOrder.shippingMethodName = __(newOrder.shipment.recipient.addressType, 'ru');
-
-      await this.setPaymentInfoByMethodId(newOrder, orderDto.paymentMethodId);
+      await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
+      await this.productService.updateSearchDataById(item.productId, session);
     }
+
+    await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
+
+    newOrder.shippingMethodName = __(newOrder.shipment.recipient.addressType, 'ru');
+
+    await this.setPaymentInfoByMethodId(newOrder, orderDto.paymentMethodId);
 
     return newOrder;
   }
@@ -395,17 +391,6 @@ export class OrderService implements OnApplicationBootstrap {
       fileName: `Заказ №${order.idForCustomer}.pdf`,
       pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON())
     };
-  }
-
-  async updateCounter() { // todo remove this after migrate
-    const lastOrder = await this.orderModel.findOne().sort('-_id').exec();
-    return this.counterService.setCounter(Order.collectionName, lastOrder.id);
-  }
-
-  async clearCollection() { // todo remove this after migrate
-    await this.orderModel.deleteMany({}).exec();
-    await this.searchService.deleteCollection(Order.collectionName);
-    await this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
   }
 
   private async addSearchData(order: Order) {

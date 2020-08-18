@@ -51,16 +51,6 @@ export class AdminProductReviewController {
     };
   }
 
-  @Post('counter') // todo remove this and all counter updates after migrate
-  updateCounter() {
-    return this.productReviewService.updateCounter();
-  }
-
-  @Post('clear-collection') // todo remove this and all counter updates
-  clearCollection() {
-    return this.productReviewService.clearCollection();
-  }
-
   @Post('media')
   async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
     const media = await this.productReviewService.uploadMedia(request);
@@ -69,8 +59,8 @@ export class AdminProductReviewController {
   }
 
   @Post()
-  async createProductReview(@Body() productReviewDto: AdminProductReviewDto, @Query('migrate') migrate: any): Promise<ResponseDto<AdminProductReviewDto>> {
-    const review = await this.productReviewService.createReview(productReviewDto, migrate);
+  async createProductReview(@Body() productReviewDto: AdminProductReviewDto): Promise<ResponseDto<AdminProductReviewDto>> {
+    const review = await this.productReviewService.createReview(productReviewDto);
     return {
       data: plainToClass(AdminProductReviewDto, review, { excludeExtraneousValues: true })
     }

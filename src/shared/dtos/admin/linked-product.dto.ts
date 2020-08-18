@@ -8,7 +8,6 @@ export class AdminLinkedProductDto implements Record<keyof LinkedProduct, any> {
   productId: number;
 
   @Expose()
-  @IsOptional() // todo remove @IsOptional after migrate
   @IsString()
   variantId: string;
 

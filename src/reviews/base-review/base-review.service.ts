@@ -84,16 +84,14 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     return this.transformReviewToDto(review, ipAddress, userId, customerId);
   }
 
-  async createReview(reviewDto: U, callback?: IReviewCallback<T>, migrate?): Promise<U> {
+  async createReview(reviewDto: U, callback?: IReviewCallback<T>): Promise<U> {
     const session = await this.reviewModel.db.startSession();
     session.startTransaction();
 
     try {
       const tmpMedias: AdminMediaDto[] = [];
       const review = new this.reviewModel(reviewDto);
-      if (!migrate) {
-        review.id = await this.counterService.getCounter(this.collectionName, session);
-      }
+      review.id = await this.counterService.getCounter(this.collectionName, session);
 
       const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(reviewDto.medias, this.collectionName);
       review.medias = savedMedias;
@@ -247,17 +245,6 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
 
       return ipHit || userIdHit || customerIdHit;
     });
-  }
-
-  async updateCounter() { // todo remove this after migrate
-    const lastReview = await this.reviewModel.findOne().sort('-_id').exec();
-    return this.counterService.setCounter(this.collectionName, lastReview.id);
-  }
-
-  async clearCollection() { // todo remove this after migrate
-    await this.reviewModel.deleteMany({}).exec();
-    await this.searchService.deleteCollection(this.collectionName);
-    await this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());
   }
 
   private async addSearchData(review: DocumentType<T>) {
