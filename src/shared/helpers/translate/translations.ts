@@ -172,7 +172,7 @@ export const TRANSLATIONS = {
   },
   [AddressTypeEnum.DOORS]: {
     en: 'Courier delivery',
-    ru: 'Доставка курьером'
+    ru: 'Адресная доставка Новой Почтой'
   },
   [OrderStatusEnum.NEW]: {
     en: 'New',
