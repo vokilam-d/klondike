@@ -1,6 +1,6 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
-import { PaymentMethodEnum } from '../../shared/enums/payment-method.enum';
+import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
 
 export class PaymentMethod {
   _id: Types.ObjectId;
@@ -9,7 +9,7 @@ export class PaymentMethod {
   isEnabled: boolean;
 
   @prop()
-  paymentType: PaymentMethodEnum;
+  paymentType: PaymentTypeEnum;
 
   @prop()
   adminName: string;

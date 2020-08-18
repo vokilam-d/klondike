@@ -1,4 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
+import { PaymentTypeEnum } from '../../enums/payment-type.enum';
 
 export class ClientPaymentMethodDto {
   @Expose()
@@ -11,4 +12,7 @@ export class ClientPaymentMethodDto {
 
   @Expose()
   price: number;
+
+  @Expose()
+  paymentType: PaymentTypeEnum;
 }

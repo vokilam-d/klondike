@@ -2,7 +2,7 @@ import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { OrderItem } from './order-item.model';
 import { OrderStatusEnum } from '../../shared/enums/order-status.enum';
 import { Shipment } from './shipment.model';
-import { PaymentMethodEnum } from '../../shared/enums/payment-method.enum';
+import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { Log } from '../../shared/models/log.model';
 
@@ -50,7 +50,7 @@ export class Order {
   paymentMethodId: string;
 
   @prop()
-  paymentType: PaymentMethodEnum;
+  paymentType: PaymentTypeEnum;
 
   @prop()
   paymentMethodClientName: string;

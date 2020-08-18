@@ -13,7 +13,7 @@ import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { ShipmentDto } from './shipment.dto';
 import { OrderStatusEnum } from '../../enums/order-status.enum';
 import { __ } from '../../helpers/translate/translate.function';
-import { PaymentMethodEnum } from '../../enums/payment-method.enum';
+import { PaymentTypeEnum } from '../../enums/payment-type.enum';
 import { Log } from '../../models/log.model';
 
 export class AdminAddOrUpdateOrderDto {
@@ -66,7 +66,7 @@ export class AdminAddOrUpdateOrderDto {
   paymentMethodId: string;
 
   @Expose()
-  paymentType: PaymentMethodEnum;
+  paymentType: PaymentTypeEnum;
 
   @Expose()
   @IsBoolean()

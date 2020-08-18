@@ -8,7 +8,7 @@ import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { ShipmentSenderDto } from '../shared/dtos/admin/shipment-sender.dto';
 import { AddressTypeEnum } from '../shared/enums/address-type.enum';
 import { ShipmentPayerEnum } from '../shared/enums/shipment-payer.enum';
-import { PaymentMethodEnum } from '../shared/enums/payment-method.enum';
+import { PaymentTypeEnum } from '../shared/enums/payment-type.enum';
 import { ShipmentPaymentMethodEnum } from '../shared/enums/shipment-payment-method.enum';
 import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
 
@@ -55,7 +55,7 @@ export class NovaPoshtaService {
 
   public async createInternetDocument(shipment: ShipmentDto,
                                       sender: ShipmentSenderDto,
-                                      orderPaymentMethod: PaymentMethodEnum): Promise<ShipmentDto> {
+                                      orderPaymentMethod: PaymentTypeEnum): Promise<ShipmentDto> {
 
 
     const recipient = shipment.recipient;
@@ -143,7 +143,7 @@ export class NovaPoshtaService {
       apiKey: process.env.NOVA_POSHTA_API_KEY
     };
 
-    if (orderPaymentMethod === PaymentMethodEnum.CASH_ON_DELIVERY) {
+    if (orderPaymentMethod === PaymentTypeEnum.CASH_ON_DELIVERY) {
       const redelivery = shipment.backwardMoneyDelivery ? shipment.backwardMoneyDelivery : shipment.cost;
       saveInternetDocumentRequestBody.methodProperties.BackwardDeliveryData = [{
         PayerType: ShipmentPayerEnum.RECIPIENT,

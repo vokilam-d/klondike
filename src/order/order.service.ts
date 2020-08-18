@@ -39,7 +39,7 @@ import { CronExpression } from '@nestjs/schedule';
 import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
 import { Shipment } from './models/shipment.model';
-import { PaymentMethodEnum } from '../shared/enums/payment-method.enum';
+import { PaymentTypeEnum } from '../shared/enums/payment-type.enum';
 import { OnlinePaymentDetailsDto } from '../shared/dtos/client/online-payment-details.dto';
 import { createHmac } from 'crypto';
 import { isObject } from 'src/shared/helpers/is-object.function';
@@ -535,7 +535,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   private static updateOrderStatusByShipment(order: Order) {
-    const isCashOnDelivery = order.paymentType === PaymentMethodEnum.CASH_ON_DELIVERY;
+    const isCashOnDelivery = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
     const isJustSent = order.status === OrderStatusEnum.READY_TO_SHIP && order.shipment.status === ShipmentStatusEnum.HEADING_TO_CITY;
@@ -668,14 +668,14 @@ export class OrderService implements OnApplicationBootstrap {
         case OrderStatusEnum.PACKED:
           assertStatus(OrderStatusEnum.READY_TO_PACK);
           order.shipment = await this.createInternetDocument(order.shipment, shipmentDto, order.paymentType);
-          if (order.paymentType === PaymentMethodEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
+          if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
             status = OrderStatusEnum.READY_TO_SHIP;
           }
           break;
 
         case OrderStatusEnum.READY_TO_SHIP:
           assertStatus(OrderStatusEnum.PACKED);
-          if (order.paymentType !== PaymentMethodEnum.CASH_ON_DELIVERY && !order.isOrderPaid) {
+          if (order.paymentType !== PaymentTypeEnum.CASH_ON_DELIVERY && !order.isOrderPaid) {
             throw new BadRequestException(__('Cannot change status to "$1": order is not paid', 'ru', status));
           }
           break;
@@ -712,7 +712,7 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async createInternetDocument(shipment: Shipment, shipmentDto: ShipmentDto, paymentType: PaymentMethodEnum): Promise<Shipment> {
+  async createInternetDocument(shipment: Shipment, shipmentDto: ShipmentDto, paymentType: PaymentTypeEnum): Promise<Shipment> {
     OrderService.patchShipmentData(shipment, shipmentDto);
     shipmentDto = plainToClass(ShipmentDto, shipment, { excludeExtraneousValues: true });
 
