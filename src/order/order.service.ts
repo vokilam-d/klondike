@@ -48,6 +48,7 @@ import { EmailService } from '../email/email.service';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 import { User } from '../user/models/user.model';
+import { OrderItemService } from './order-item.service';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -63,6 +64,7 @@ export class OrderService implements OnApplicationBootstrap {
               private readonly emailService: EmailService,
               private readonly pdfGeneratorService: PdfGeneratorService,
               private readonly inventoryService: InventoryService,
+              private readonly orderItemService: OrderItemService,
               private readonly productService: ProductService,
               private readonly searchService: SearchService,
               private readonly novaPoshtaService: NovaPoshtaService,
@@ -265,13 +267,11 @@ export class OrderService implements OnApplicationBootstrap {
     newOrder.customerNote = customer.note;
     newOrder.createdAt = new Date();
     newOrder.status = OrderStatusEnum.NEW;
-    newOrder.discountPercent = customer.discountPercent;
-    OrderService.setOrderPrices(newOrder);
 
     const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
-    for (const item of orderDto.items) {
+    for (const item of newOrder.items) {
       const product = products.find(product => product._id === item.productId);
-      const variant = product && product.variants.find(variant => variant._id.equals(item.variantId));
+      const variant = product?.variants.find(variant => variant._id.equals(item.variantId));
 
       if (!product || !variant) {
         throw new BadRequestException(__('Product with sku "$1" not found', 'ru', item.sku));
@@ -281,9 +281,14 @@ export class OrderService implements OnApplicationBootstrap {
         throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', item.qty, variant.qtyInStock));
       }
 
+      await this.orderItemService.setOrderItemPrices(item, variant, customer);
+
       await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
       await this.productService.updateSearchDataById(item.productId, session);
     }
+
+    newOrder.discountPercent = customer.discountPercent;
+    OrderService.setOrderPrices(newOrder);
 
     await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
 

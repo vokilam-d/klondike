@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ProductService } from '../product/product.service';
 import { CustomerService } from '../customer/customer.service';
 import { OrderItem } from './models/order-item.model';
@@ -7,12 +7,14 @@ import { LinkedProduct } from '../product/models/linked-product.model';
 import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
 import { ClientProductSPFDto } from '../shared/dtos/client/product-spf.dto';
 import { queryParamArrayDelimiter } from '../shared/constants';
+import { Customer } from '../customer/models/customer.model';
+import { ProductVariant } from '../product/models/product-variant.model';
 
 @Injectable()
 export class OrderItemService {
   constructor(private readonly productService: ProductService,
-              private readonly customerService: CustomerService) {
-  }
+              @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService
+  ) { }
 
   async createOrderItem(sku: string, qty: number, customerId?: number): Promise<OrderItem> {
     const foundProduct = await this.productService.getProductWithQtyBySku(sku);
@@ -25,7 +27,7 @@ export class OrderItemService {
       throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, variant.qtyInStock));
     }
 
-    const orderItem = new OrderItem();
+    let orderItem = new OrderItem();
     orderItem.name = variant.name;
     orderItem.slug = variant.slug;
     orderItem.productId = foundProduct._id;
@@ -37,14 +39,24 @@ export class OrderItemService {
     }
 
     orderItem.qty = qty;
+
+    let customer: Customer;
+    if (customerId) { customer = await this.customerService.getCustomerById(customerId); }
+    orderItem = await this.setOrderItemPrices(orderItem, variant, customer);
+
+    orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
+
+    return orderItem;
+  }
+
+  async setOrderItemPrices(orderItem: OrderItem, variant: ProductVariant, customer: Customer): Promise<OrderItem> {
     if (variant.oldPriceInDefaultCurrency) {
       orderItem.price = variant.oldPriceInDefaultCurrency;
       orderItem.discountValue = (variant.oldPriceInDefaultCurrency - variant.priceInDefaultCurrency) * orderItem.qty;
     } else {
       orderItem.price = variant.priceInDefaultCurrency;
 
-      if (variant.isDiscountApplicable && customerId) {
-        const customer = await this.customerService.getCustomerById(customerId);
+      if (variant.isDiscountApplicable && customer) {
         orderItem.discountValue = Math.round(orderItem.price * orderItem.qty * customer.discountPercent / 100);
       } else {
         orderItem.discountValue = 0;
@@ -54,8 +66,6 @@ export class OrderItemService {
     orderItem.originalPrice = orderItem.price; // todo is this field necessary?
     orderItem.cost = orderItem.price * orderItem.qty;
     orderItem.totalCost = orderItem.cost - orderItem.discountValue;
-
-    orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
 
     return orderItem;
   }

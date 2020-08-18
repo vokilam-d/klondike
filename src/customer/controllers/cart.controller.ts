@@ -18,9 +18,9 @@ export class CartController {
 
   @Put()
   async createOrderItem(@Req() req: FastifyRequest, @Body() body: ClientAddOrUpdateOrderItemDto): Promise<ResponseDto<OrderItemDto>> {
-    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty);
-
     const customer = await this.authService.getCustomerFromReq(req);
+    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty, customer?.id);
+
     if (customer) {
       await this.customerService.upsertToCart(customer, orderItem);
     }
