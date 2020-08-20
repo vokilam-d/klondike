@@ -1447,6 +1447,8 @@ export class ProductService implements OnApplicationBootstrap {
         });
       });
 
+      if (values.length <= 1) { return; }
+
       if (isSortable) {
         values.sort(((a, b) => a.label > b.label ? 1 : -1));
       }
