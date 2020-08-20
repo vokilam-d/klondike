@@ -18,7 +18,7 @@ export class PageRegistryService {
   }
 
   async getPageType(slug: string): Promise<string> {
-    const found = await this.registryModel.findOne({ slug: slug });
+    const found = await this.registryModel.findOne({ slug });
 
     if (!found) {
       throw new NotFoundException(__('Page with url "$1" not found', 'ru', slug));
@@ -27,22 +27,22 @@ export class PageRegistryService {
     return found.type;
   }
 
-  async createPageRegistry(pageRegistry: PageRegistry, session: ClientSession): Promise<any> {
-    const newPage = new this.registryModel({ slug: pageRegistry.slug, type: pageRegistry.type });
+  async createPageRegistry({ slug, type }, session: ClientSession): Promise<any> {
+    const newPage = new this.registryModel({ slug, type });
     await newPage.save({ session });
 
     if (newPage) {
       this.logger.log(`Created '${newPage.slug}' page-registry.`);
     } else {
-      this.logger.error(`Could not create '${pageRegistry.slug}' in page-registry.`);
+      this.logger.error(`Could not create '${slug}' in page-registry.`);
     }
     return newPage;
   }
 
-  async updatePageRegistry(oldSlug: PageRegistry['slug'], pageRegistry: PageRegistry, session: ClientSession): Promise<any> {
+  async updatePageRegistry(oldSlug: PageRegistry['slug'], { slug, type }, session: ClientSession): Promise<any> {
     const result = await this.registryModel.findOneAndUpdate(
       { slug: oldSlug },
-      { slug: pageRegistry.slug, type: pageRegistry.type },
+      { slug, type },
       { new: true }
     ).session(session).exec();
 
@@ -55,7 +55,7 @@ export class PageRegistryService {
   }
 
   async deletePageRegistry(slug: PageRegistry['slug'], session: ClientSession) {
-    const deleted = await this.registryModel.findOneAndDelete({ slug: slug }).session(session).exec();
+    const deleted = await this.registryModel.findOneAndDelete({ slug }).session(session).exec();
 
     if (deleted) {
       this.logger.log(`Deleted '${deleted.slug}' from page-registry.`);
@@ -67,7 +67,7 @@ export class PageRegistryService {
   }
 
   async deletePageRegistryByType(type: PageRegistry['type']) {
-    const deleted = await this.registryModel.deleteMany({ type: type }).exec();
+    const deleted = await this.registryModel.deleteMany({ type }).exec();
 
     if (deleted) {
       this.logger.log(`Deleted all '${type}' pages from page-registry.`);

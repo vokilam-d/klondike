@@ -7,4 +7,7 @@ export class PageRegistryDto {
 
   @Expose()
   type: PageTypeEnum;
+
+  @Expose()
+  redirectSlug: string;
 }

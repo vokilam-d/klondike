@@ -9,6 +9,12 @@ export class PageRegistry {
   @prop({ required: true })
   type: PageTypeEnum;
 
+  @prop({ default: null, required: false })
+  redirectSlug?: string;
+
+  createdAt: Date;
+  updatedAt: Date;
+
   static collectionName: string = 'page-registry';
 }
 
