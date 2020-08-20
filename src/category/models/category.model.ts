@@ -3,6 +3,7 @@ import { MetaTags } from '../../shared/models/meta-tags.model';
 import { CategoryAncestor } from './category-ancestor.model';
 import { Expose } from 'class-transformer';
 import { Breadcrumb } from '../../shared/models/breadcrumb.model';
+import { Media } from '../../shared/models/media.model';
 
 export class Category {
   @prop()
@@ -41,6 +42,9 @@ export class Category {
 
   @prop({ default: 0 })
   reversedSortOrder: number;
+
+  @arrayProp({ items: Media, default: [] })
+  medias: Media[];
 
   static collectionName: string = 'category';
 }

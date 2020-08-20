@@ -14,21 +14,26 @@ import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ReorderPositionEnum } from '../shared/enums/reorder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
+import { MediaService } from '../shared/services/media/media.service';
+import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
+import { Media } from '../shared/models/media.model';
+import { FastifyRequest } from 'fastify';
 
 @Injectable()
 export class CategoryService {
 
   constructor(@InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
-              private pageRegistryService: PageRegistryService,
-              private counterService: CounterService,
-              @Inject(forwardRef(() => ProductService)) private productService: ProductService) {
-  }
+              @Inject(forwardRef(() => ProductService)) private productService: ProductService,
+              private readonly pageRegistryService: PageRegistryService,
+              private readonly counterService: CounterService,
+              private readonly mediaService: MediaService
+  ) { }
 
-  async getAllCategories(): Promise<Category[]> {
+  async getAllCategories(): Promise<Category[]> { // todo cache
     let categories = await this.categoryModel.find().exec();
     categories = categories
       .sort((a, b) => a.reversedSortOrder - b.reversedSortOrder)
-      .map(cat => cat.toJSON());
+      .map(category => category.toJSON());
 
     return categories;
   }
@@ -37,18 +42,12 @@ export class CategoryService {
     const treeItems: CategoryTreeItem[] = [];
     const childrenMap: { [parentId: number]: CategoryTreeItem[] } = {};
 
-    const found = await this.categoryModel.find().exec();
-    found.forEach(category => {
+    const allCategories = await this.getAllCategories();
+    allCategories.forEach(category => {
       if (onlyEnabled && category.isEnabled === false) { return; }
 
-      const item: CategoryTreeItem = {
-        id: category.id,
-        name: category.name,
-        slug: category.slug,
-        parentId: category.parentId,
-        reversedSortOrder: category.reversedSortOrder,
-        children: []
-      };
+      const item: CategoryTreeItem = plainToClass(CategoryTreeItem, category, { excludeExtraneousValues: true });
+      item.children = [];
 
       if (category.parentId === 0) {
         treeItems.push(item);
@@ -66,8 +65,6 @@ export class CategoryService {
 
         populateChildrenArray(arrayItem.children);
       });
-
-      array.sort((a, b) => a.reversedSortOrder - b.reversedSortOrder);
     };
 
     populateChildrenArray(treeItems);
@@ -75,10 +72,10 @@ export class CategoryService {
     return treeItems;
   }
 
-  async getCategoryById(id: string | number): Promise<DocumentType<Category>> {
+  async getCategoryById(id: string | number, session?: ClientSession): Promise<DocumentType<Category>> {
     id = parseInt(id as string);
 
-    const found = await this.categoryModel.findById(id).exec();
+    const found = await this.categoryModel.findById(id).session(session).exec();
     if (!found) {
       throw new NotFoundException(__('Category with id "$1" not found', 'ru', id));
     }
@@ -86,7 +83,7 @@ export class CategoryService {
     return found;
   }
 
-  async getCategoryBySlug(slug: string): Promise<Category> { // todo cache
+  async getCategoryBySlug(slug: string): Promise<Category> {
     const found = await this.categoryModel.findOne({ slug }).exec();
     if (!found) {
       throw new NotFoundException(__('Category with slug "$1" not found', 'ru', slug));
@@ -95,25 +92,31 @@ export class CategoryService {
     return found.toJSON();
   }
 
-  async createCategory(category: AdminAddOrUpdateCategoryDto): Promise<Category> {
-    category.slug = category.slug === '' ? transliterate(category.name) : category.slug;
+  async createCategory(categoryDto: AdminAddOrUpdateCategoryDto): Promise<Category> {
+    categoryDto.slug = categoryDto.slug === '' ? transliterate(categoryDto.name) : categoryDto.slug;
 
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();
 
     try {
-      const newCategoryModel = new this.categoryModel(category);
+      const newCategoryModel = new this.categoryModel(categoryDto);
       newCategoryModel.id = await this.counterService.getCounter(Category.collectionName, session);
 
-      const lastSiblingOrder = await this.getLastSiblingOrder(category.parentId);
+      const lastSiblingOrder = await this.getLastSiblingOrder(categoryDto.parentId);
       if (lastSiblingOrder) {
         newCategoryModel.reversedSortOrder = lastSiblingOrder + 1;
       }
 
       newCategoryModel.breadcrumbs = await this.buildBreadcrumbs(newCategoryModel);
+
+      const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(categoryDto.medias, Category.collectionName);
+      newCategoryModel.medias = savedMedias;
+
       await newCategoryModel.save({ session });
       await this.createCategoryPageRegistry(newCategoryModel.slug, session);
       await session.commitTransaction();
+
+      this.mediaService.deleteTmpMedias(tmpMedias, Category.collectionName).then();
 
       return plainToClass(Category, newCategoryModel.toJSON());
     } catch (ex) {
@@ -125,24 +128,33 @@ export class CategoryService {
   }
 
   async updateCategory(categoryId: number, categoryDto: AdminAddOrUpdateCategoryDto): Promise<Category> {
-    categoryDto.slug = categoryDto.slug === '' ? transliterate(categoryDto.name) : categoryDto.slug;
-
-    const found = await this.getCategoryById(categoryId);
-    const oldSlug = found.slug;
-    const oldName = found.name;
-
-    Object.keys(categoryDto).forEach(key => {
-      if (categoryDto[key] !== undefined && key !== 'id') {
-        found[key] = categoryDto[key];
-      }
-    });
-
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();
 
     try {
-      if (found.parentId !== categoryDto.parentId) {
-        found.breadcrumbs = await this.buildBreadcrumbs(found);
+      const category = await this.getCategoryById(categoryId, session);
+      const oldSlug = category.slug;
+      const oldName = category.name;
+
+      const mediasToDelete: Media[] = [];
+      for (const media of category.medias) {
+        const isMediaInDto = categoryDto.medias.find(dtoMedia => dtoMedia.variantsUrls.original === media.variantsUrls.original);
+        if (!isMediaInDto) {
+          mediasToDelete.push(media);
+        }
+      }
+
+      const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(categoryDto.medias, Category.collectionName);
+      categoryDto.medias = savedMedias;
+
+      Object.keys(categoryDto).forEach(key => {
+        if (categoryDto[key] !== undefined && key !== 'id') {
+          category[key] = categoryDto[key];
+        }
+      });
+
+      if (category.parentId !== categoryDto.parentId) {
+        category.breadcrumbs = await this.buildBreadcrumbs(category);
       }
       if (oldSlug !== categoryDto.slug) {
         await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, session);
@@ -151,8 +163,12 @@ export class CategoryService {
         await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, session);
       }
 
-      const saved = await found.save({ session });
+      const saved = await category.save({ session });
       await session.commitTransaction();
+
+      this.mediaService.deleteTmpMedias(tmpMedias, Category.collectionName).then();
+      this.mediaService.deleteSavedMedias(mediasToDelete, Category.collectionName).then();
+
       return saved.toJSON();
 
     } catch (ex) {
@@ -173,15 +189,16 @@ export class CategoryService {
         throw new NotFoundException(__('Category with id "$1" not found', 'ru', categoryId));
       }
 
-      const parentIdProp: keyof Category = 'parentId';
       await this.categoryModel
-        .updateMany({ parentId: deleted._id }, { [parentIdProp]: deleted.parentId })
+        .updateMany({ parentId: deleted._id }, { parentId: deleted.parentId })
         .session(session)
         .exec();
 
       await this.productService.removeCategoryId(categoryId, session);
       await this.deleteCategoryPageRegistry(deleted.slug, session);
       await session.commitTransaction();
+
+      this.mediaService.deleteSavedMedias(deleted.medias, Category.collectionName).then();
 
       return deleted.toJSON();
     } catch (ex) {
@@ -208,16 +225,6 @@ export class CategoryService {
 
   private deleteCategoryPageRegistry(slug: string, session: ClientSession) {
     return this.pageRegistryService.deletePageRegistry(slug, session);
-  }
-
-  async updateCounter() {
-    const lastCategory = await this.categoryModel.findOne().sort('-_id').exec();
-    return this.counterService.setCounter(Category.collectionName, lastCategory.id);
-  }
-
-  async clearCollection() {
-    await this.categoryModel.deleteMany({}).exec();
-    await this.pageRegistryService.deletePageRegistryByType(PageTypeEnum.Category);
   }
 
   private async buildBreadcrumbs(category: Category, allCategories?: Category[]): Promise<Breadcrumb[]> {
@@ -305,5 +312,9 @@ export class CategoryService {
     if (lastSibling) {
       return lastSibling.reversedSortOrder + 1;
     }
+  }
+
+  uploadMedia(request: FastifyRequest): Promise<Media> {
+    return this.mediaService.upload(request, Category.collectionName);
   }
 }

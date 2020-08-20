@@ -1,8 +1,9 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Expose, Transform } from 'class-transformer';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Expose, Transform, Type } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
+import { AdminMediaDto } from './media.dto';
 
 export class AdminAddOrUpdateCategoryDto {
   @Expose()
@@ -37,6 +38,12 @@ export class AdminAddOrUpdateCategoryDto {
   @Expose()
   @ValidateNested()
   metaTags: MetaTagsDto;
+
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AdminMediaDto)
+  medias: AdminMediaDto[];
 }
 
 export class AdminCategoryDto extends AdminAddOrUpdateCategoryDto {

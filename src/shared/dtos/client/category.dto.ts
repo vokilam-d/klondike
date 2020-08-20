@@ -2,6 +2,7 @@ import { AdminCategoryDto } from '../admin/category.dto';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { Expose } from 'class-transformer';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
+import { ClientMediaDto } from './media.dto';
 
 export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | 'reversedSortOrder'> {
   @Expose()
@@ -24,4 +25,7 @@ export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | '
 
   @Expose()
   breadcrumbs: BreadcrumbDto[];
+
+  @Expose()
+  medias: ClientMediaDto[];
 }

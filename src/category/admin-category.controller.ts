@@ -7,7 +7,7 @@ import {
   Param,
   Post,
   Put,
-  Query, UseGuards,
+  Query, Request, Response, UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe
@@ -19,6 +19,8 @@ import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { ServerResponse } from "http";
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -52,14 +54,11 @@ export class AdminCategoryController {
     };
   }
 
-  @Post('counter') // todo remove this and all counter updates
-  updateCounter() {
-    return this.categoryService.updateCounter();
-  }
+  @Post('media')
+  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
+    const media = await this.categoryService.uploadMedia(request);
 
-  @Post('clear-collection') // todo remove this and all counter updates
-  clearCollection() {
-    return this.categoryService.clearCollection();
+    reply.status(201).send(media);
   }
 
   @Post('action/reorder')
