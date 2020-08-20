@@ -31,6 +31,12 @@ export class Attribute {
   @prop()
   groupName: string;
 
+  @prop({ default: true })
+  isVisibleInProduct: boolean;
+
+  @prop({ default: true })
+  isVisibleInFilters: boolean;
+
   static collectionName: string = 'attribute';
 }
 

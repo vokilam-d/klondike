@@ -12,7 +12,6 @@ import { __ } from '../shared/helpers/translate/translate.function';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
-import { Product } from '../product/models/product.model';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {

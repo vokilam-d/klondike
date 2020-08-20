@@ -1,5 +1,5 @@
 import { AdminAttributeDto, AdminAttributeValueDto } from '../../shared/dtos/admin/attribute.dto';
-import { elasticTextType } from '../../shared/constants';
+import { elasticBooleanType, elasticTextType } from '../../shared/constants';
 
 export class ElasticAttributeValueModel implements Record<keyof AdminAttributeValueDto, any> {
   id = elasticTextType;
@@ -15,4 +15,6 @@ export class ElasticAttributeModel implements Record<keyof AdminAttributeDto, an
   values = {
     properties: new ElasticAttributeValueModel()
   };
+  isVisibleInFilters = elasticBooleanType;
+  isVisibleInProduct = elasticBooleanType;
 }

@@ -1107,7 +1107,7 @@ export class ProductService implements OnApplicationBootstrap {
     const characteristics: ClientProductCharacteristic[] = [];
     for (const attribute of productWithQty.attributes) {
       const foundAttr = attributeModels.find(a => a.id === attribute.attributeId);
-      if (!foundAttr) { continue; }
+      if (!foundAttr || !foundAttr.isVisibleInProduct) { continue; }
       const foundAttrValues = foundAttr.values.filter(v => attribute.valueIds.includes(v.id));
       if (!foundAttrValues.length) { continue; }
 
@@ -1416,7 +1416,7 @@ export class ProductService implements OnApplicationBootstrap {
       if ((productCountForAttr / totalFound) < (this.filtersThresholdPercent / 100)) { return; }
 
       const attribute = attributes.find(attribute => attribute.id === attributeId);
-      if (!attribute) { return; }
+      if (!attribute || !attribute.isVisibleInFilters) { return; }
 
       const spfFilter = spfFilters.find(spfFilter => spfFilter.fieldName === attributeId);
 

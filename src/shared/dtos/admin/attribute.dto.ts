@@ -34,6 +34,16 @@ export class AdminUpdateAttributeDto {
   @Expose()
   @IsString()
   groupName: string;
+
+  @Expose()
+  @IsOptional()
+  @IsBoolean()
+  isVisibleInProduct: boolean;
+
+  @Expose()
+  @IsOptional()
+  @IsBoolean()
+  isVisibleInFilters: boolean;
 }
 
 export class AdminCreateAttributeDto extends AdminUpdateAttributeDto {
