@@ -291,16 +291,19 @@ export class ProductService implements OnApplicationBootstrap {
     if (spf.categoryId) {
       const allCategories = await this.categoryService.getAllCategories();
       const targetCategory = allCategories.find(category => category.id === parseInt(spf.categoryId));
+      const isTargetCategoryChild = targetCategory.parentId > 0;
 
       for (const category of allCategories) {
         const isPossibleCategory = possibleCategoriesIds.has(category.id);
-        const isChild = category.parentId === parseInt(spf.categoryId);
-        const isSibling = category.parentId === targetCategory.parentId && category.id !== targetCategory.id;
+        if (!isPossibleCategory) { continue; }
 
-        if (isPossibleCategory && (isChild || isSibling)) {
-          const filterCategory = plainToClass(FilterCategoryDto, category, { excludeExtraneousValues: true });
-          filterCategories.push(filterCategory);
-        }
+        const isCurrentCategoryChild = category.parentId === parseInt(spf.categoryId);
+        const isSibling = category.parentId === targetCategory.parentId && category.id !== targetCategory.id;
+        const canInclude = (!isTargetCategoryChild && isCurrentCategoryChild) || (isTargetCategoryChild && isSibling);
+        if (!canInclude) { continue; }
+
+        const filterCategory = plainToClass(FilterCategoryDto, category, { excludeExtraneousValues: true });
+        filterCategories.push(filterCategory);
       }
     }
 
