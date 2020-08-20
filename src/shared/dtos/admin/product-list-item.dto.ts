@@ -18,4 +18,6 @@ export class AdminProductListItemDto {
   textReviewsCount: number;
   reviewsAvgRating: number;
   variants?: AdminProductVariantListItem[];
+  createdAt: Date;
+  updatedAt: Date;
 }

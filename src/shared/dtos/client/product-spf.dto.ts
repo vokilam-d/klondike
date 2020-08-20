@@ -10,6 +10,7 @@ import { ProductCategory } from '../../../product/models/product-category.model'
 
 enum ESort {
   Popularity = 'popularity',
+  New = 'new',
   Cheap = 'cheap',
   Expensive = 'expensive'
 }
@@ -39,6 +40,7 @@ export class ClientProductSPFDto extends ClientSPFDto {
 
   getSortAsObj(): ISorting {
     const variantsProp: keyof AdminProductListItemDto = 'variants';
+    const createdAtProp: keyof AdminProductListItemDto = 'createdAt';
     const priceProp: keyof AdminProductVariantListItem = 'priceInDefaultCurrency';
     const categoriesProp: keyof AdminProductListItemDto = 'categories';
     const sortOrderProp: keyof AdminProductCategoryDto = 'sortOrder';
@@ -63,6 +65,9 @@ export class ClientProductSPFDto extends ClientSPFDto {
         break;
       case ESort.Expensive:
         sort[`${variantsProp}.${priceProp}`] = 'desc';
+        break;
+      case ESort.New:
+        sort[createdAtProp] = 'desc';
         break;
       case ESort.Popularity:
       default:

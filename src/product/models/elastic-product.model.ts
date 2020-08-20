@@ -1,5 +1,5 @@
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
-import { elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
+import { elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
 import { ElasticProductVariant } from './elastic-product-variant.model';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
 import { ElasticProductCategory } from './elastic-product-category.model';
@@ -28,4 +28,6 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
   reviewsAvgRating = elasticFloatType;
   allReviewsCount = elasticIntegerType;
   textReviewsCount = elasticIntegerType;
+  createdAt = elasticDateType;
+  updatedAt = elasticDateType;
 }

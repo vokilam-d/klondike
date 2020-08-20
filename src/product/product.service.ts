@@ -999,6 +999,8 @@ export class ProductService implements OnApplicationBootstrap {
         allReviewsCount: product.allReviewsCount,
         textReviewsCount: product.textReviewsCount,
         reviewsAvgRating: product.reviewsAvgRating,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
         variants
       };
     });
