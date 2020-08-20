@@ -55,7 +55,7 @@ import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expres
 import { ReservedInventory } from '../inventory/models/reserved-inventory.model';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
 import { createClientProductId } from '../shared/helpers/client-product-id';
-import { Category } from '../category/models/category.model';
+import { FilterCategoryDto } from '../shared/dtos/client/filter-category.dto';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -287,13 +287,19 @@ export class ProductService implements OnApplicationBootstrap {
       filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
     }
 
-    let categoryTreeItems: CategoryTreeItem[] = [];
+    let filterCategories: FilterCategoryDto[] = [];
     if (spf.categoryId) {
       const allCategories = await this.categoryService.getAllCategories();
+      const targetCategory = allCategories.find(category => category.id === parseInt(spf.categoryId));
+
       for (const category of allCategories) {
-        if (category.parentId === parseInt(spf.categoryId) && possibleCategoriesIds.has(category.id)) {
-          const treeItem = plainToClass(CategoryTreeItem, category, { excludeExtraneousValues: true });
-          categoryTreeItems.push(treeItem);
+        const isPossibleCategory = possibleCategoriesIds.has(category.id);
+        const isChild = category.parentId === parseInt(spf.categoryId);
+        const isSibling = category.parentId === targetCategory.parentId && category.id !== targetCategory.id;
+
+        if (isPossibleCategory && (isChild || isSibling)) {
+          const filterCategory = plainToClass(FilterCategoryDto, category, { excludeExtraneousValues: true });
+          filterCategories.push(filterCategory);
         }
       }
     }
@@ -305,7 +311,7 @@ export class ProductService implements OnApplicationBootstrap {
       itemsTotal,
       itemsFiltered,
       filters,
-      categories: categoryTreeItems
+      categories: filterCategories
     };
   }
 
