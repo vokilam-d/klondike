@@ -13,7 +13,7 @@ import {
   ValidationPipe
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { AdminAddOrUpdateCategoryDto, AdminResponseCategoryDto } from '../shared/dtos/admin/category.dto';
+import { AdminAddOrUpdateCategoryDto, AdminCategoryDto } from '../shared/dtos/admin/category.dto';
 import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
@@ -37,18 +37,18 @@ export class AdminCategoryController {
   }
 
   @Get(':id')
-  async getCategory(@Param('id') id: string): Promise<ResponseDto<AdminResponseCategoryDto>> {
+  async getCategory(@Param('id') id: string): Promise<ResponseDto<AdminCategoryDto>> {
     const category = await this.categoryService.getCategoryById(id);
     return {
-      data: plainToClass(AdminResponseCategoryDto, category.toJSON(), { excludeExtraneousValues: true })
+      data: plainToClass(AdminCategoryDto, category.toJSON(), { excludeExtraneousValues: true })
     };
   }
 
   @Post()
-  async addCategory(@Body() category: AdminAddOrUpdateCategoryDto): Promise<ResponseDto<AdminResponseCategoryDto>> {
+  async addCategory(@Body() category: AdminAddOrUpdateCategoryDto): Promise<ResponseDto<AdminCategoryDto>> {
     const created = await this.categoryService.createCategory(category);
     return {
-      data: plainToClass(AdminResponseCategoryDto, created, { excludeExtraneousValues: true })
+      data: plainToClass(AdminCategoryDto, created, { excludeExtraneousValues: true })
     };
   }
 
@@ -72,18 +72,18 @@ export class AdminCategoryController {
   }
 
   @Put(':id')
-  async updateCategory(@Param('id') id: string, @Body() category: AdminAddOrUpdateCategoryDto): Promise<ResponseDto<AdminResponseCategoryDto>> {
+  async updateCategory(@Param('id') id: string, @Body() category: AdminAddOrUpdateCategoryDto): Promise<ResponseDto<AdminCategoryDto>> {
     const updated = await this.categoryService.updateCategory(parseInt(id), category);
     return {
-      data: plainToClass(AdminResponseCategoryDto, updated, { excludeExtraneousValues: true })
+      data: plainToClass(AdminCategoryDto, updated, { excludeExtraneousValues: true })
     };
   }
 
   @Delete(':id')
-  async deleteCategory(@Param('id') id: number): Promise<ResponseDto<AdminResponseCategoryDto>> {
+  async deleteCategory(@Param('id') id: number): Promise<ResponseDto<AdminCategoryDto>> {
     const deleted = await this.categoryService.deleteCategory(id);
     return {
-      data: plainToClass(AdminResponseCategoryDto, deleted, { excludeExtraneousValues: true })
+      data: plainToClass(AdminCategoryDto, deleted, { excludeExtraneousValues: true })
     };
   }
 }

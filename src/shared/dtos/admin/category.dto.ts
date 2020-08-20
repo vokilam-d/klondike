@@ -39,7 +39,7 @@ export class AdminAddOrUpdateCategoryDto {
   metaTags: MetaTagsDto;
 }
 
-export class AdminResponseCategoryDto extends AdminAddOrUpdateCategoryDto {
+export class AdminCategoryDto extends AdminAddOrUpdateCategoryDto {
   @Expose()
   id?: number;
 }

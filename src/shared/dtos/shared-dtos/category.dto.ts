@@ -1,7 +1,7 @@
 import { Expose, Type } from 'class-transformer';
-import { AdminResponseCategoryDto } from '../admin/category.dto';
+import { AdminCategoryDto } from '../admin/category.dto';
 
-export class CategoryDto extends AdminResponseCategoryDto {
+export class CategoryDto extends AdminCategoryDto {
 }
 
 export class CategoryTreeItem {

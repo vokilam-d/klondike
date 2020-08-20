@@ -55,6 +55,7 @@ import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expres
 import { ReservedInventory } from '../inventory/models/reserved-inventory.model';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
 import { createClientProductId } from '../shared/helpers/client-product-id';
+import { Category } from '../category/models/category.model';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -175,14 +176,6 @@ export class ProductService implements OnApplicationBootstrap {
     const spfFilters = spf
       .getNormalizedFilters()
       .filter(spfFilter => !!attributes.find(attribute => attribute.id === spfFilter.fieldName)); // leave only valid attributes
-    //
-    // let childCategoryIds: number[] = [];
-    // if (spf.categoryId) {
-    //   const allCategories = await this.categoryService.getAllCategories()
-    //   childCategoryIds = allCategories
-    //     .filter(category => category.parentId === parseInt(spf.categoryId))
-    //     .map(category => category.id);
-    // }
 
     const allSelectedAttributesProductCountMap: AttributeProductCountMap = { };
 
@@ -208,15 +201,8 @@ export class ProductService implements OnApplicationBootstrap {
         }
       }
     }
-    //
-    // const addPossibleCategory = (adminListItem: AdminProductListItemDto) => {
-    //   if (!childCategoryIds.length) { return; }
-    //
-    //   for (const itemCategory of adminListItem.categories) {
-    //     if (childCategoryIds.includes(itemCategory.id)) {
-    //     }
-    //   }
-    // }
+
+    const possibleCategoriesIds = new Set<number>();
 
     let possibleMinPrice = adminListItems?.[0]?.variants[0].price || 0;
     let possibleMaxPrice = possibleMinPrice;
@@ -229,13 +215,11 @@ export class ProductService implements OnApplicationBootstrap {
 
     let filteredAdminListItems: AdminProductListItemDto[] = [];
 
-
-
     for (const adminListItem of adminListItems) {
       const filteredVariants: AdminProductVariantListItem[] = [];
       let isProductAttributesSetInProductCount = false;
 
-      // addPossibleCategory(adminListItem);
+      adminListItem.categories.forEach(category => possibleCategoriesIds.add(category.id));
 
       for (const variant of adminListItem.variants) {
         const selectedAttributes = [ ...adminListItem.attributes, ...variant.attributes ];
@@ -303,13 +287,25 @@ export class ProductService implements OnApplicationBootstrap {
       filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
     }
 
+    let categoryTreeItems: CategoryTreeItem[] = [];
+    if (spf.categoryId) {
+      const allCategories = await this.categoryService.getAllCategories();
+      for (const category of allCategories) {
+        if (category.parentId === parseInt(spf.categoryId) && possibleCategoriesIds.has(category.id)) {
+          const treeItem = plainToClass(CategoryTreeItem, category, { excludeExtraneousValues: true });
+          categoryTreeItems.push(treeItem);
+        }
+      }
+    }
+
     return {
       data: clientListItems,
       page: spf.page,
       pagesTotal: Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit),
       itemsTotal,
       itemsFiltered,
-      filters
+      filters,
+      categories: categoryTreeItems
     };
   }
 

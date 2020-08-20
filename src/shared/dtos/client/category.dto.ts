@@ -1,9 +1,9 @@
-import { AdminResponseCategoryDto } from '../admin/category.dto';
+import { AdminCategoryDto } from '../admin/category.dto';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { Expose } from 'class-transformer';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 
-export class ClientCategoryDto implements Omit<AdminResponseCategoryDto, 'isEnabled' | 'reversedSortOrder'> {
+export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | 'reversedSortOrder'> {
   @Expose()
   description: string;
 
