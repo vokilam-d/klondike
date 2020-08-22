@@ -202,8 +202,6 @@ export class ProductService implements OnApplicationBootstrap {
       }
     }
 
-    const possibleCategoriesIds = new Set<number>();
-
     let possibleMinPrice = adminListItems?.[0]?.variants[0].price || 0;
     let possibleMaxPrice = possibleMinPrice;
 
@@ -218,8 +216,6 @@ export class ProductService implements OnApplicationBootstrap {
     for (const adminListItem of adminListItems) {
       const filteredVariants: AdminProductVariantListItem[] = [];
       let isProductAttributesSetInProductCount = false;
-
-      adminListItem.categories.forEach(category => possibleCategoriesIds.add(category.id));
 
       for (const variant of adminListItem.variants) {
         const selectedAttributes = [ ...adminListItem.attributes, ...variant.attributes ];
@@ -294,9 +290,6 @@ export class ProductService implements OnApplicationBootstrap {
       const isTargetCategoryChild = targetCategory.parentId > 0;
 
       for (const category of allCategories) {
-        const isPossibleCategory = possibleCategoriesIds.has(category.id);
-        if (!isPossibleCategory) { continue; }
-
         const isCurrentCategoryChild = category.parentId === parseInt(spf.categoryId);
         const isSibling = category.parentId === targetCategory.parentId && category.id !== targetCategory.id;
         const canInclude = (!isTargetCategoryChild && isCurrentCategoryChild) || (isTargetCategoryChild && isSibling);
