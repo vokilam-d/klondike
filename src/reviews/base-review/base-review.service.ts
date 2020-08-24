@@ -59,7 +59,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     }
 
     const itemsTotal = await this.countReviews();
-    const pagesTotal = Math.ceil(itemsFiltered ?? itemsTotal / spf.limit);
+    const pagesTotal = Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit);
     return {
       data: reviews,
       itemsTotal,
