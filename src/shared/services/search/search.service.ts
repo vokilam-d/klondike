@@ -1,7 +1,13 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
 import { IFilter, ISorting } from '../../dtos/shared-dtos/spf.dto';
-import { elasticAutocompleteType, elasticKeywordFieldName, elasticTextType } from '../../constants';
+import { elasticAutocompleteType, elasticDateType, elasticKeywordFieldName, elasticTextType } from '../../constants';
+
+enum ElasticQueryType {
+  Range = 'range',
+  Term = 'term',
+  MatchPhrasePrefix = 'match_phrase_prefix'
+}
 
 @Injectable()
 export class SearchService {
@@ -129,9 +135,9 @@ export class SearchService {
                                  schema?: any
   ): Promise<[T[], number]> {
 
-    const getQueryTypeForField = (fieldName: string) => {
+    const getQueryTypeForField = (fieldName: string): ElasticQueryType => {
       const isNested = fieldName.includes('.');
-      let queryType = 'match_phrase_prefix';
+      let queryType = ElasticQueryType.MatchPhrasePrefix;
 
       if (!schema) { return queryType; }
 
@@ -150,11 +156,12 @@ export class SearchService {
         fieldFromSchema = schema[fieldName];
       }
 
-      if (fieldFromSchema
-        && fieldFromSchema.type !== elasticTextType.type
-        && fieldFromSchema.type !== elasticAutocompleteType.type
-      ) {
-        queryType = 'term';
+      if (fieldFromSchema) {
+        if (fieldFromSchema.type === elasticDateType.type) {
+          queryType = ElasticQueryType.Range;
+        } else if (fieldFromSchema.type !== elasticTextType.type && fieldFromSchema.type !== elasticAutocompleteType.type) {
+          queryType = ElasticQueryType.Term;
+        }
       }
 
       return queryType;
@@ -172,8 +179,8 @@ export class SearchService {
         }
       }
 
-      filter.values.forEach(value => {
-        value = decodeURIComponent(value);
+      filter.values.forEach((value, valueIdx, valuesArr) => {
+        if (value === undefined || value === '') { return; }
 
         const mustQuery = {
           bool: {
@@ -187,6 +194,16 @@ export class SearchService {
 
           let shouldQuery: any = {};
           const queryType = getQueryTypeForField(fieldName);
+
+          if (queryType === ElasticQueryType.Range) {
+            value = {
+              'time_zone': '-03:00', // todo rm timezone hardcode
+              'gte': valuesArr[0],
+              'lte': valuesArr[1]
+            }
+          } else {
+            value = decodeURIComponent(value);
+          }
 
           const fieldNameParts = fieldName.split('.');
           for (let i = fieldNameParts.length - 1; i >= 0; i--) {
