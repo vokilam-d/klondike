@@ -129,7 +129,8 @@ export class SearchService {
                                  schema?: any
   ): Promise<[T[], number]> {
 
-    const getQueryTypeForField = (fieldName: string, isNested: boolean) => {
+    const getQueryTypeForField = (fieldName: string) => {
+      const isNested = fieldName.includes('.');
       let queryType = 'match_phrase_prefix';
 
       if (!schema) { return queryType; }
@@ -185,39 +186,27 @@ export class SearchService {
         fieldNames.forEach(fieldName => {
 
           let shouldQuery: any = {};
+          const queryType = getQueryTypeForField(fieldName);
 
-          const isNested = fieldName.includes('.');
-          const queryType = getQueryTypeForField(fieldName, isNested);
+          const fieldNameParts = fieldName.split('.');
+          for (let i = fieldNameParts.length - 1; i >= 0; i--) {
+            const isLast = i === fieldNameParts.length - 1;
 
-          if (isNested) {
+            if (isLast) {
+              shouldQuery = {
+                [queryType]: {
+                  [fieldName]: value
+                }
+              };
 
-            const fieldNameParts = fieldName.split('.');
-            for (let i = fieldNameParts.length - 1; i >= 0; i--) {
-              const isLast = i === fieldNameParts.length - 1;
-
-              if (isLast) {
-                shouldQuery = {
-                  [queryType]: {
-                    [fieldName]: value
-                  }
-                };
-
-              } else {
-                shouldQuery = {
-                  nested: {
-                    path: fieldNameParts.filter((_, k) => k <= i).join('.'),
-                    query: shouldQuery
-                  }
-                };
-              }
+            } else {
+              shouldQuery = {
+                nested: {
+                  path: fieldNameParts.filter((_, k) => k <= i).join('.'),
+                  query: shouldQuery
+                }
+              };
             }
-
-          } else {
-            shouldQuery = {
-              [queryType]: {
-                [fieldName]: value
-              }
-            };
           }
 
           mustQuery.bool.should.push(shouldQuery);
