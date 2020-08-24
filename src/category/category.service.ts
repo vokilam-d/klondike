@@ -157,7 +157,7 @@ export class CategoryService {
         category.breadcrumbs = await this.buildBreadcrumbs(category);
       }
       if (oldSlug !== categoryDto.slug) {
-        await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, session);
+        await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, categoryDto.createRedirect, session);
       }
       if (oldSlug !== categoryDto.slug || oldName !== categoryDto.name) {
         await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, session);
@@ -216,10 +216,12 @@ export class CategoryService {
     }, session);
   }
 
-  private updateCategoryPageRegistry(oldSlug: string, newSlug: string, session: ClientSession) {
-    return this.pageRegistryService.updatePageRegistry(oldSlug, {
-      slug: newSlug,
-      type: PageTypeEnum.Category
+  private updateCategoryPageRegistry(oldSlug: string, newSlug: string, createRedirect: boolean, session: ClientSession) {
+    return this.pageRegistryService.updatePageRegistry({
+      oldSlug,
+      newSlug,
+      type: PageTypeEnum.Category,
+      createRedirect
     }, session);
   }
 

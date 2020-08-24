@@ -559,7 +559,7 @@ export class ProductService implements OnApplicationBootstrap {
         tmpMediasToDelete.push(...checkedTmpMedias);
 
         if (variant.slug !== variantInDto.slug) {
-          await this.updateProductPageRegistry(variant.slug, variantInDto.slug, session);
+          await this.updateProductPageRegistry(variant.slug, variantInDto.slug, variantInDto.createRedirect, session);
         }
         const inventory = await this.inventoryService.updateInventory(variant.sku, variantInDto.sku, variantInDto.qtyInStock, session);
         inventories.push(inventory.toJSON());
@@ -637,10 +637,12 @@ export class ProductService implements OnApplicationBootstrap {
     }, session);
   }
 
-  private updateProductPageRegistry(oldSlug: string, newSlug: string, session: ClientSession) {
-    return this.pageRegistryService.updatePageRegistry(oldSlug, {
-      slug: newSlug,
-      type: PageTypeEnum.Product
+  private updateProductPageRegistry(oldSlug: string, newSlug: string, createRedirect: boolean, session: ClientSession) {
+    return this.pageRegistryService.updatePageRegistry({
+      oldSlug,
+      newSlug,
+      type: PageTypeEnum.Product,
+      createRedirect
     }, session);
   }
 

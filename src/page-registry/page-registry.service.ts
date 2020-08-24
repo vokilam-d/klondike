@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PageRegistry } from './models/page-registry.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
-import { ClientSession } from 'mongoose';
+import { ClientSession, UpdateQuery } from 'mongoose';
 import { __ } from '../shared/helpers/translate/translate.function';
 
 @Injectable()
@@ -31,23 +31,32 @@ export class PageRegistryService {
     const newPage = new this.registryModel({ slug, type });
     await newPage.save({ session });
 
-    if (newPage) {
-      this.logger.log(`Created '${newPage.slug}' page-registry.`);
-    } else {
-      this.logger.error(`Could not create '${slug}' in page-registry.`);
-    }
+    this.logger.log(`Created '${newPage.slug}' page-registry.`);
     return newPage;
   }
 
-  async updatePageRegistry(oldSlug: PageRegistry['slug'], { slug, type }, session: ClientSession): Promise<any> {
+  async updatePageRegistry({ oldSlug, newSlug, type, createRedirect }, session: ClientSession): Promise<any> {
+    let updateQuery: UpdateQuery<PageRegistry>;
+    let logMessage: string;
+
+    if (createRedirect) {
+      await this.createPageRegistry({ slug: newSlug, type }, session);
+
+      updateQuery = { redirectSlug: newSlug, type };
+      logMessage = `Created redirect "${oldSlug}" -> "${newSlug}" in page-registry.`;
+    } else {
+      updateQuery = { slug: newSlug, type };
+      logMessage = `Updated "${oldSlug}" -> "${newSlug}" in page-registry.`;
+    }
+
     const result = await this.registryModel.findOneAndUpdate(
       { slug: oldSlug },
-      { slug, type },
+      updateQuery,
       { new: true }
     ).session(session).exec();
 
     if (result) {
-      this.logger.log(`Updated '${result.slug}' page-registry.`);
+      this.logger.log(logMessage);
     } else {
       this.logger.error(`Could not update '${oldSlug}' in page-registry.`);
     }
@@ -61,18 +70,6 @@ export class PageRegistryService {
       this.logger.log(`Deleted '${deleted.slug}' from page-registry.`);
     } else {
       this.logger.error(`Could not delete '${slug}' from page-registry.`);
-    }
-
-    return deleted;
-  }
-
-  async deletePageRegistryByType(type: PageRegistry['type']) {
-    const deleted = await this.registryModel.deleteMany({ type }).exec();
-
-    if (deleted) {
-      this.logger.log(`Deleted all '${type}' pages from page-registry.`);
-    } else {
-      this.logger.error(`Could not delete all '${type}' from page-registry.`);
     }
 
     return deleted;

@@ -4,7 +4,7 @@ import { Expose } from 'class-transformer';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { ClientMediaDto } from './media.dto';
 
-export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | 'reversedSortOrder'> {
+export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | 'reversedSortOrder' | 'createRedirect'> {
   @Expose()
   description: string;
 

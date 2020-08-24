@@ -23,6 +23,10 @@ export class AdminAddOrUpdateCategoryDto {
   @Transform((slug, category) => slug === '' ? transliterate(category.name) : slug)
   slug: string;
 
+  @IsBoolean()
+  @IsOptional()
+  createRedirect: boolean;
+
   @Expose()
   @IsNumber()
   parentId: number;

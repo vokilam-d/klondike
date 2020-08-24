@@ -8,7 +8,7 @@ import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { ProductVariantWithQty } from '../../../product/models/product-with-qty.model';
 import { AdminLinkedProductDto } from './linked-product.dto';
 
-export class AdminProductVariantDto {
+export class AdminAddOrUpdateProductVariantDto {
   @Exclude()
   _id: string;
 
@@ -37,6 +37,10 @@ export class AdminProductVariantDto {
   @IsString()
   @Transform((slug, variant) => slug === '' ? transliterate(variant.name) : slug)
   slug: string;
+
+  @IsBoolean()
+  @IsOptional()
+  createRedirect: boolean;
 
   @Expose()
   @ValidateNested({ each: true })
@@ -126,4 +130,7 @@ export class AdminProductVariantDto {
   @ValidateNested({ each: true })
   @Type(() => AdminLinkedProductDto)
   crossSellProducts: AdminLinkedProductDto[];
+}
+
+export class AdminProductVariantDto extends AdminAddOrUpdateProductVariantDto {
 }

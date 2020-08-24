@@ -1,7 +1,7 @@
 import { ArrayNotEmpty, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
-import { AdminProductVariantDto } from './product-variant.dto';
+import { AdminAddOrUpdateProductVariantDto, AdminProductVariantDto } from './product-variant.dto';
 import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { AdminProductCategoryDto } from './product-category.dto';
@@ -34,8 +34,8 @@ export class AdminAddOrUpdateProductDto {
   @ArrayNotEmpty()
   @NoDuplicatesInProductVariants()
   @ValidateNested({ each: true })
-  @Type(() => AdminProductVariantDto)
-  variants: AdminProductVariantDto[];
+  @Type(() => AdminAddOrUpdateProductVariantDto)
+  variants: AdminAddOrUpdateProductVariantDto[];
 
   @Expose()
   @IsOptional()
