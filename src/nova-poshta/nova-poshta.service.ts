@@ -11,6 +11,8 @@ import { ShipmentPayerEnum } from '../shared/enums/shipment-payer.enum';
 import { PaymentTypeEnum } from '../shared/enums/payment-type.enum';
 import { ShipmentPaymentMethodEnum } from '../shared/enums/shipment-payment-method.enum';
 import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
+import { ShipmentSender } from './models/shipment-sender.model';
+import { ShipmentSenderService } from './shipment-sender.service';
 
 @Injectable()
 export class NovaPoshtaService {
@@ -21,7 +23,8 @@ export class NovaPoshtaService {
     ['Запорожье', 5], ['Львов', 6], ['Кривой Рог', 7], ['Николаев', 8], ['Мариуполь', 9]
   ]);
 
-  constructor(private readonly http: HttpService) {
+  constructor(private readonly http: HttpService,
+              private readonly shipmentSenderService: ShipmentSenderService) {
   }
 
   public async shipmentRecipient(spf: ClientSPFDto): Promise<ShipmentAddressDto> {
@@ -34,7 +37,7 @@ export class NovaPoshtaService {
           Phone: spf.phone,
           LastName: spf.lastName
         },
-        apiKey: process.env.NOVA_POSHTA_API_KEY
+        apiKey: this.shipmentSenderService.defaultSender.apiKey
       }).toPromise();
 
     if (response.success === false) {
@@ -54,9 +57,8 @@ export class NovaPoshtaService {
   }
 
   public async createInternetDocument(shipment: ShipmentDto,
-                                      sender: ShipmentSenderDto,
+                                      sender: ShipmentSender,
                                       orderPaymentMethod: PaymentTypeEnum): Promise<ShipmentDto> {
-
 
     const recipient = shipment.recipient;
     const saveContactRequestBody = {
@@ -69,7 +71,7 @@ export class NovaPoshtaService {
         CounterpartyRef: sender.counterpartyRef,
         Phone: recipient.phone
       },
-      apiKey: process.env.NOVA_POSHTA_API_KEY
+      apiKey: sender.apiKey
     };
     saveContactRequestBody.modelName = 'ContactPersonGeneral';
     const { data: contactPersonSaveResponse } = await this.http.post(this.apiUrl, saveContactRequestBody).toPromise();
@@ -89,7 +91,7 @@ export class NovaPoshtaService {
         AddressRef: recipient.addressId,
         AddressType: recipient.addressType
       },
-      apiKey: process.env.NOVA_POSHTA_API_KEY
+      apiKey: sender.apiKey
     };
 
     if (recipient.addressType === AddressTypeEnum.DOORS) {
@@ -140,7 +142,7 @@ export class NovaPoshtaService {
           }
         ]
       },
-      apiKey: process.env.NOVA_POSHTA_API_KEY
+      apiKey: sender.apiKey
     };
 
     if (orderPaymentMethod === PaymentTypeEnum.CASH_ON_DELIVERY) {
@@ -176,7 +178,7 @@ export class NovaPoshtaService {
           SettlementRef: spf.settlementId,
           Limit: spf.limit
         },
-        apiKey: process.env.NOVA_POSHTA_API_KEY
+        apiKey: this.shipmentSenderService.defaultSender.apiKey
       }).toPromise();
 
     if (response.success === false) {
@@ -213,7 +215,7 @@ export class NovaPoshtaService {
           methodProperties: {
             Documents
           },
-          apiKey: process.env.NOVA_POSHTA_API_KEY
+          apiKey: this.shipmentSenderService.defaultSender.apiKey
         }).toPromise();
 
       if (response.success === false) {
@@ -282,7 +284,7 @@ export class NovaPoshtaService {
           Page: settlementBulkNumber,
           Warehouse: '1'
         },
-        apiKey: process.env.NOVA_POSHTA_API_KEY
+        apiKey: this.shipmentSenderService.defaultSender.apiKey
       }).toPromise();
 
     return response.data.map(settlement => NovaPoshtaService.toSettlementDto(settlement));
@@ -327,7 +329,7 @@ export class NovaPoshtaService {
           Page: warehouseBulkNumber,
           Limit: 500
         },
-        apiKey: process.env.NOVA_POSHTA_API_KEY
+        apiKey: this.shipmentSenderService.defaultSender.apiKey
       }).toPromise();
 
     if (response.success === false) {
