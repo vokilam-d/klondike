@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { Category } from './models/category.model';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { ProductService } from '../product/product.service';
@@ -15,7 +15,6 @@ import { ReorderPositionEnum } from '../shared/enums/reorder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
 import { MediaService } from '../shared/services/media/media.service';
-import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
 import { Media } from '../shared/models/media.model';
 import { FastifyRequest } from 'fastify';
 
@@ -161,6 +160,7 @@ export class CategoryService {
       }
       if (oldSlug !== categoryDto.slug || oldName !== categoryDto.name) {
         await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, session);
+        await this.updateBreadcrumbs(categoryId, categoryDto.name, categoryDto.slug, session)
       }
 
       const saved = await category.save({ session });
@@ -318,5 +318,21 @@ export class CategoryService {
 
   uploadMedia(request: FastifyRequest): Promise<Media> {
     return this.mediaService.upload(request, Category.collectionName);
+  }
+
+  private async updateBreadcrumbs(categoryId: number, name: string, slug: string, session: ClientSession): Promise<void> {
+    const breadcrumbsProp: keyof Category = 'breadcrumbs';
+    const breadcrumbIdProp: keyof Breadcrumb = 'id';
+    const breadcrumbNameProp: keyof Breadcrumb = 'name';
+    const breadcrumbSlugProp: keyof Breadcrumb = 'slug';
+    await this.categoryModel.updateMany(
+      { [`${breadcrumbsProp}.${breadcrumbIdProp}`]: categoryId },
+      {
+        $set: {
+          [`${breadcrumbsProp}.$.${breadcrumbNameProp}`]: name,
+          [`${breadcrumbsProp}.$.${breadcrumbSlugProp}`]: slug
+        }
+      }
+    ).session(session).exec();
   }
 }
