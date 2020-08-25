@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Category } from './models/category.model';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { ProductService } from '../product/product.service';
@@ -17,6 +17,7 @@ import { PageTypeEnum } from '../shared/enums/page-type.enum';
 import { MediaService } from '../shared/services/media/media.service';
 import { Media } from '../shared/models/media.model';
 import { FastifyRequest } from 'fastify';
+import { ClientCategoryDto } from '../shared/dtos/client/category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -82,13 +83,26 @@ export class CategoryService {
     return found;
   }
 
-  async getCategoryBySlug(slug: string): Promise<Category> {
-    const found = await this.categoryModel.findOne({ slug }).exec();
+  async getClientCategoryBySlug(slug: string): Promise<ClientCategoryDto> {
+    const found = await this.categoryModel.findOne({ slug, isEnabled: true }).exec();
     if (!found) {
       throw new NotFoundException(__('Category with slug "$1" not found', 'ru', slug));
     }
 
-    return found.toJSON();
+    const siblingCategories: Category[] = [];
+    const childCategories: Category[] = [];
+    const allCategories = await this.getAllCategories();
+    for (const category of allCategories) {
+      if (!category.isEnabled) { continue; }
+
+      if (found.parentId === category.parentId) {
+        siblingCategories.push(category);
+      } else if (found.id === category.parentId) {
+        childCategories.push(category);
+      }
+    }
+
+    return plainToClass(ClientCategoryDto, { ...found.toJSON(), siblingCategories, childCategories }, { excludeExtraneousValues: true });
   }
 
   async createCategory(categoryDto: AdminAddOrUpdateCategoryDto): Promise<Category> {

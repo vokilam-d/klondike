@@ -22,10 +22,8 @@ export class ClientCategoryController {
 
   @Get(':slug')
   async getCategory(@Param('slug') slug: string): Promise<ResponseDto<ClientCategoryDto>> {
-    const category = await this.categoryService.getCategoryBySlug(slug);
-
     return {
-      data: plainToClass(ClientCategoryDto, category, { excludeExtraneousValues: true })
+      data: await this.categoryService.getClientCategoryBySlug(slug)
     };
   }
 }
