@@ -15,4 +15,7 @@ export class ClientLinkedCategoryDto implements Record<keyof Pick<Category, 'id'
 
   @Expose()
   slug: string;
+
+  @Expose()
+  isSelected: boolean;
 }

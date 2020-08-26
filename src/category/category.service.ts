@@ -18,6 +18,7 @@ import { MediaService } from '../shared/services/media/media.service';
 import { Media } from '../shared/models/media.model';
 import { FastifyRequest } from 'fastify';
 import { ClientCategoryDto } from '../shared/dtos/client/category.dto';
+import { ClientLinkedCategoryDto } from '../shared/dtos/client/linked-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -89,16 +90,16 @@ export class CategoryService {
       throw new NotFoundException(__('Category with slug "$1" not found', 'ru', slug));
     }
 
-    const siblingCategories: Category[] = [];
-    const childCategories: Category[] = [];
+    const siblingCategories: ClientLinkedCategoryDto[] = [];
+    const childCategories: ClientLinkedCategoryDto[] = [];
     const allCategories = await this.getAllCategories();
     for (const category of allCategories) {
       if (!category.isEnabled) { continue; }
 
       if (found.parentId === category.parentId) {
-        siblingCategories.push(category);
+        siblingCategories.push({ ...category, id: category.id, isSelected: found.id === category.id });
       } else if (found.id === category.parentId) {
-        childCategories.push(category);
+        childCategories.push({ ...category, id: category.id, isSelected: false });
       }
     }
 
