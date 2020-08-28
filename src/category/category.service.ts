@@ -106,6 +106,22 @@ export class CategoryService {
     return plainToClass(ClientCategoryDto, { ...found.toJSON(), siblingCategories, childCategories }, { excludeExtraneousValues: true });
   }
 
+  async getLinkedCategories(categoryId: number): Promise<ClientLinkedCategoryDto[]> {
+    const found = await this.categoryModel.findById(categoryId).exec();
+
+    const linkedCategories: ClientLinkedCategoryDto[] = [];
+    const allCategories = await this.getAllCategories();
+    for (const category of allCategories) {
+      if (!category.isEnabled) { continue; }
+
+      if (found.parentId === category.parentId) {
+        linkedCategories.push({ ...category, id: category.id, isSelected: found.id === category.id });
+      }
+    }
+
+    return linkedCategories;
+  }
+
   async createCategory(categoryDto: AdminAddOrUpdateCategoryDto): Promise<Category> {
     categoryDto.slug = categoryDto.slug === '' ? transliterate(categoryDto.name) : categoryDto.slug;
 

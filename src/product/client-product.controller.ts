@@ -1,8 +1,8 @@
 import {
   Body,
   ClassSerializerInterceptor,
-  Controller,
-  Get,
+  Controller, forwardRef,
+  Get, Inject,
   Param,
   Post,
   Query,
@@ -23,12 +23,17 @@ import { ProductQuickReviewService } from '../reviews/product-review/product-qui
 import { AuthService } from '../auth/services/auth.service';
 import { ModuleRef } from '@nestjs/core';
 import { parseClientProductId } from '../shared/helpers/client-product-id';
+import { ClientProductResponseDto } from '../shared/dtos/client/product-response.dto';
+import { CategoryService } from '../category/category.service';
+import { plainToClass } from 'class-transformer';
+import { ClientLinkedCategoryDto } from '../shared/dtos/client/linked-category.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('products')
 export class ClientProductController {
-  constructor(private readonly productService: ProductService,
+  constructor(@Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
+              private readonly productService: ProductService,
               private readonly moduleRef: ModuleRef,
               private readonly quickReviewService: ProductQuickReviewService) {
   }
@@ -47,11 +52,15 @@ export class ClientProductController {
   }
 
   @Get(':slug')
-  async getProductBySlug(@Param('slug') slug: string): Promise<ResponseDto<ClientProductDto>> {
+  async getProductBySlug(@Param('slug') slug: string): Promise<ClientProductResponseDto> {
     const dto = await this.productService.getClientProductDtoBySlug(slug);
 
+    const lastBreadcrumb = dto.breadcrumbs[dto.breadcrumbs.length - 1];
+    const categories = await this.categoryService.getLinkedCategories(lastBreadcrumb.id)
+
     return {
-      data: dto
+      data: dto,
+      categories: plainToClass(ClientLinkedCategoryDto, categories, { excludeExtraneousValues: true })
     }
   }
 
