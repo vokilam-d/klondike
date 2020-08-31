@@ -12,6 +12,7 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
   };
   isEnabled = elasticTextType;
   attributes = {
+    type: 'nested',
     properties: new ElasticProductSelectedAttributeModel()
   };
   mediaUrl = elasticTextType;

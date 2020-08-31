@@ -21,6 +21,7 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   sku = elasticTextType;
   vendorCode = elasticTextType;
   attributes = {
+    type: 'nested',
     properties: new ElasticProductSelectedAttributeModel()
   };
 }

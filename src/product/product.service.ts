@@ -95,7 +95,8 @@ export class ProductService implements OnApplicationBootstrap {
     let itemsFiltered: number;
 
     if (spf.hasFilters()) {
-      const searchResponse = await this.findByFilters(spf);
+      const filters = await this.buildAdminFilters(spf);
+      const searchResponse = await this.findByFilters(spf, filters);
       products = searchResponse[0];
       itemsFiltered = searchResponse[1];
     } else {
@@ -125,7 +126,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     spf[isEnabledProp] = true;
 
-    const searchResponse = await this.findByFilters(spf);
+    const searchResponse = await this.findByFilters(spf, spf.getNormalizedFilters());
     const adminDtos = searchResponse[0];
     const itemsTotal = searchResponse[1];
     const attributes = await this.attributeService.getAllAttributes();
@@ -906,10 +907,10 @@ export class ProductService implements OnApplicationBootstrap {
     );
   }
 
-  private async findByFilters(spf: SortingPaginatingFilterDto) {
+  private async findByFilters(spf: SortingPaginatingFilterDto, filters: IFilter[]) {
     return this.searchService.searchByFilters<AdminProductListItemDto>(
       Product.collectionName,
-      spf.getNormalizedFilters(),
+      filters,
       spf.skip,
       spf.limit,
       spf.getSortAsObj(),
@@ -1515,5 +1516,35 @@ export class ProductService implements OnApplicationBootstrap {
     const inventory = await this.inventoryService.getInventory(variant.sku);
 
     return inventory.reserved;
+  }
+
+  private async buildAdminFilters(spf: AdminSPFDto): Promise<IFilter[]> {
+    const variantsProp = getPropertyOf<AdminProductListItemDto>('variants');
+    const attributesProp = getPropertyOf<AdminProductListItemDto>('attributes');
+    const attributeIdProp = getPropertyOf<AdminProductSelectedAttributeDto>('attributeId');
+    const valueIdsProp = getPropertyOf<AdminProductSelectedAttributeDto>('valueIds');
+
+    const allAttributes = await this.attributeService.getAllAttributes();
+    const normalized = spf.getNormalizedFilters();
+    const filters: IFilter[] = [];
+
+    for (const filter of normalized) {
+      const attribute = allAttributes.find(attribute => attribute.id === filter.fieldName);
+      if (!attribute) {
+        filters.push(filter);
+        continue;
+      }
+
+      filters.push({
+        fieldName: `${attributesProp}.${attributeIdProp}|${variantsProp}.${attributesProp}.${attributeIdProp}`,
+        values: [attribute.id]
+      });
+      filters.push({
+        fieldName: `${attributesProp}.${valueIdsProp}|${variantsProp}.${attributesProp}.${valueIdsProp}`,
+        values: filter.values
+      });
+    }
+
+    return filters;
   }
 }
