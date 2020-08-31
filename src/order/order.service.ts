@@ -706,6 +706,17 @@ export class OrderService implements OnApplicationBootstrap {
           }
           break;
 
+        case OrderStatusEnum.FINISHED:
+          if (order.status === OrderStatusEnum.FINISHED) {
+            throw new BadRequestException(__('Cannot change status to "$1": order must not be with status "$2"', 'ru', status, OrderStatusEnum.FINISHED));
+          }
+
+          if (!ShippedOrderStatuses.includes(order.status)) {
+            await this.shippedOrderPostActions(order, session);
+          }
+          await this.finishedOrderPostActions(order, session);
+          break;
+
         default:
           throw new BadRequestException(__('Cannot change status to "$1": disallowed status', 'ru', status));
           break;

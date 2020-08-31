@@ -98,6 +98,10 @@ export const TRANSLATIONS = {
     en: 'Cannot change status to "$1": order must be with status "$2"',
     ru: 'Нельзя сменить статус на "$1": заказ должен быть в статусе "$2"'
   },
+  'Cannot change status to "$1": order must not be with status "$2"': {
+    en: 'Cannot change status to "$1": order must not be with status "$2"',
+    ru: 'Нельзя сменить статус на "$1": заказ не должен быть в статусе "$2"'
+  },
   'Cannot change status to "$1": order is not paid': {
     en: 'Cannot change status to "$1": order is not paid',
     ru: 'Нельзя сменить статус на "$1": заказ не оплачен'
