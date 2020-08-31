@@ -18,6 +18,7 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   oldPriceInDefaultCurrency = elasticFloatType;
   qtyInStock = elasticIntegerType;
   sellableQty = elasticIntegerType;
+  salesCount = elasticIntegerType;
   sku = elasticTextType;
   vendorCode = elasticTextType;
   attributes = {

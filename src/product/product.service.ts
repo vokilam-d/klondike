@@ -942,6 +942,7 @@ export class ProductService implements OnApplicationBootstrap {
       const prices: string[] = [];
       const quantitiesInStock: number[] = [];
       const sellableQuantities: number[] = [];
+      const salesCounts: number[] = [];
       const variants: AdminProductVariantListItem[] = [];
       let productMediaUrl: string = null;
 
@@ -951,6 +952,7 @@ export class ProductService implements OnApplicationBootstrap {
         prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
         quantitiesInStock.push(variant.qtyInStock);
         sellableQuantities.push(variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0));
+        salesCounts.push(variant.salesCount);
 
         let primaryMediaUrl;
         let secondaryMediaUrl;
@@ -986,6 +988,7 @@ export class ProductService implements OnApplicationBootstrap {
           oldPriceInDefaultCurrency: variant.oldPriceInDefaultCurrency,
           qtyInStock: variant.qtyInStock,
           sellableQty: variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0),
+          salesCount: variant.salesCount
         });
       });
 
@@ -1006,6 +1009,7 @@ export class ProductService implements OnApplicationBootstrap {
         reviewsAvgRating: product.reviewsAvgRating,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
+        salesCounts: salesCounts.join(', '),
         variants
       };
     });
