@@ -96,17 +96,24 @@ export class CategoryService {
     for (const category of allCategories) {
       if (!category.isEnabled) { continue; }
 
+      const linked: ClientLinkedCategoryDto = {
+        ...category,
+        id: category.id,
+        medias: category.medias.filter(media => !media.isHidden),
+        isSelected: found.id === category.id
+      };
+
       if (found.parentId === category.parentId) {
-        siblingCategories.push({ ...category, id: category.id, isSelected: found.id === category.id });
+        siblingCategories.push(linked);
       } else if (found.id === category.parentId) {
-        childCategories.push({ ...category, id: category.id, isSelected: false });
+        childCategories.push(linked);
       }
     }
 
     return plainToClass(ClientCategoryDto, { ...found.toJSON(), siblingCategories, childCategories }, { excludeExtraneousValues: true });
   }
 
-  async getLinkedCategories(categoryId: number): Promise<ClientLinkedCategoryDto[]> {
+  async getClientLinkedCategories(categoryId: number): Promise<ClientLinkedCategoryDto[]> {
     const found = await this.categoryModel.findById(categoryId).exec();
 
     const linkedCategories: ClientLinkedCategoryDto[] = [];
@@ -115,7 +122,12 @@ export class CategoryService {
       if (!category.isEnabled) { continue; }
 
       if (found.parentId === category.parentId) {
-        linkedCategories.push({ ...category, id: category.id, isSelected: found.id === category.id });
+        linkedCategories.push({
+          ...category,
+          id: category.id,
+          medias: category.medias.filter(media => !media.isHidden),
+          isSelected: found.id === category.id
+        });
       }
     }
 
