@@ -422,7 +422,7 @@ export class ProductService implements OnApplicationBootstrap {
     return found;
   }
 
-  async getClientProductDtoBySlug(slug: string): Promise<ClientProductDto> {
+  async getEnabledClientProductDtoBySlug(slug: string): Promise<ClientProductDto> {
     const variantsProp = getPropertyOf<Product>('variants');
     const slugProp = getPropertyOf<ProductVariant>('slug');
     const skuProp = getPropertyOf<Inventory>('sku');
@@ -445,7 +445,7 @@ export class ProductService implements OnApplicationBootstrap {
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
       .exec();
 
-    if (!found) {
+    if (!found || !(found as ProductWithQty).isEnabled) {
       throw new NotFoundException(__('Product with slug "$1" not found', 'ru', slug));
     }
 

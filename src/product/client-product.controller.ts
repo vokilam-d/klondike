@@ -53,7 +53,7 @@ export class ClientProductController {
 
   @Get(':slug')
   async getProductBySlug(@Param('slug') slug: string): Promise<ClientProductResponseDto> {
-    const dto = await this.productService.getClientProductDtoBySlug(slug);
+    const dto = await this.productService.getEnabledClientProductDtoBySlug(slug);
 
     const lastBreadcrumb = dto.breadcrumbs[dto.breadcrumbs.length - 1];
     const categories = await this.categoryService.getClientLinkedCategories(lastBreadcrumb.id)
