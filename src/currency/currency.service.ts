@@ -9,22 +9,18 @@ import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-c
 import { Subject } from 'rxjs';
 import { __ } from '../shared/helpers/translate/translate.function';
 
-type ExchangeRate = {
-  bid: string;
-  ask: string;
-  trendAsk: number;
-  trendBid: number;
-}
-
-type ExchangeRates = {
-  [currency in CurrencyCodeEnum]: ExchangeRate;
+interface ExchangeRate {
+  ccy: 'EUR' | 'USD';
+  base_ccy: 'UAH';
+  buy: string;
+  sale: string;
 }
 
 @Injectable()
 export class CurrencyService {
 
   private logger = new Logger(CurrencyService.name);
-  private exchangeRateUrl = 'https://api.minfin.com.ua/summary/58ec1c89d7ea9221853cf7b777a02c686c455a03/';
+  private exchangeRateUrl = 'https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5';
   echangeRatesUpdated$: Subject<Currency[]> = new Subject();
 
   constructor(@InjectModel(Currency.name) private readonly currencyModel: ReturnModelType<typeof Currency>,
@@ -40,7 +36,7 @@ export class CurrencyService {
   @CronProdPrimaryInstance(CronExpression.EVERY_DAY_AT_3PM)
   async updateExchangeRates(): Promise<Currency[]> {
     const currencies = await this.currencyModel.find().exec();
-    let exchangeRates: ExchangeRates;
+    let exchangeRates: ExchangeRate[];
 
     try {
       const response = await this.http.get(this.exchangeRateUrl).toPromise();
@@ -51,12 +47,10 @@ export class CurrencyService {
     }
 
     for (let currency of currencies) {
-      const rate: ExchangeRate = exchangeRates[currency.id];
-      if (!rate || currency.id === CurrencyCodeEnum.UAH) {
-        continue;
-      }
+      const rate: ExchangeRate = exchangeRates.find(rate => rate.ccy.toLowerCase() === currency.id.toLowerCase())
+      if (!rate || currency.id === CurrencyCodeEnum.UAH) { continue; }
 
-      currency.exchangeRate = +rate.ask;
+      currency.exchangeRate = parseFloat(rate.sale);
       currency = await currency.save();
 
       this.logger.log(`Updated currency '${currency.id}' exchange rate to ${currency.exchangeRate}`);
