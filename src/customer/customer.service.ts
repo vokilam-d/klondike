@@ -124,7 +124,7 @@ export class CustomerService implements OnApplicationBootstrap {
 
   async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
     const foundByEmail = await this.customerModel.findOne({ email: customerDto.email }).exec();
-    if (foundByEmail) {
+    if (!customerDto.email && foundByEmail) {
       throw new ConflictException(__('Customer with email "$1" already exists', 'ru', customerDto.email));
     }
 
