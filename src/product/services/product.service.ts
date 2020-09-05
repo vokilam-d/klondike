@@ -105,10 +105,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
 
     if (!withVariants) {
-      products = products.map(product => {
-        delete product.variants;
-        return product;
-      });
+      products = products.map(({ variants, ...product }) => product);
     }
     const itemsTotal = await this.countProducts();
 
