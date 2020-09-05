@@ -21,7 +21,7 @@ import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
 import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
 import { Customer } from '../customer/models/customer.model';
-import { ProductService } from '../product/product.service';
+import { ProductService } from '../product/services/product.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { SearchService } from '../shared/services/search/search.service';
@@ -58,6 +58,7 @@ export class OrderService implements OnApplicationBootstrap {
 
   constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
               @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
+              // @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
               private readonly counterService: CounterService,
               private readonly paymentMethodService: PaymentMethodService,
               private readonly tasksService: TasksService,
@@ -73,6 +74,27 @@ export class OrderService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
+    //
+    // const allOrders = await this.orderModel.find({ status: { $in: ShippedOrderStatuses} }).exec();
+    // const map = new Map();
+    // for (const order of allOrders) {
+    //   for (const item of order.items) {
+    //     const id = item.productId;
+    //     const count = (map.get(id) || 0) + item.qty;
+    //     map.set(id, count);
+    //   }
+    // }
+    //
+    // for (const [productId, count] of map) {
+    //   const product = await this.productService.productModel.findById(productId).exec();
+    //   if (!product) { continue; }
+    //
+    //   product.variants[0].salesCount = count;
+    //   await product.save();
+    //   console.log('saved', product.id);
+    // }
+    //
+    // await this.productService.reindexAllSearchData();
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {

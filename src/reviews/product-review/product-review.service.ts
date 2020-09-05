@@ -4,7 +4,7 @@ import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { BaseReviewService } from '../base-review/base-review.service';
 import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReview, ProductReviewComment } from './models/product-review.model';
-import { ProductService } from '../../product/product.service';
+import { ProductService } from '../../product/services/product.service';
 import { ClientSession, FilterQuery } from 'mongoose';
 import { CounterService } from '../../shared/services/counter/counter.service';
 import { MediaService } from '../../shared/services/media/media.service';

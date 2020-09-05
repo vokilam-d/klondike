@@ -11,22 +11,22 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
-import { ProductService } from './product.service';
-import { ClientProductDto } from '../shared/dtos/client/product.dto';
-import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
-import { ClientProductSPFDto } from '../shared/dtos/client/product-spf.dto';
-import { ClientProductListResponseDto } from '../shared/dtos/client/product-list-response.dto';
-import { AddProductQuickReviewDto } from '../shared/dtos/client/add-product-quick-review.dto';
-import { IpAddress } from '../shared/decorators/ip-address.decorator';
-import { ClientId } from '../shared/decorators/client-id.decorator';
-import { ProductQuickReviewService } from '../reviews/product-review/product-quick-review.service';
-import { AuthService } from '../auth/services/auth.service';
+import { ProductService } from '../services/product.service';
+import { ClientProductDto } from '../../shared/dtos/client/product.dto';
+import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
+import { ClientProductSPFDto } from '../../shared/dtos/client/product-spf.dto';
+import { ClientProductListResponseDto } from '../../shared/dtos/client/product-list-response.dto';
+import { AddProductQuickReviewDto } from '../../shared/dtos/client/add-product-quick-review.dto';
+import { IpAddress } from '../../shared/decorators/ip-address.decorator';
+import { ClientId } from '../../shared/decorators/client-id.decorator';
+import { ProductQuickReviewService } from '../../reviews/product-review/product-quick-review.service';
+import { AuthService } from '../../auth/services/auth.service';
 import { ModuleRef } from '@nestjs/core';
-import { parseClientProductId } from '../shared/helpers/client-product-id';
-import { ClientProductResponseDto } from '../shared/dtos/client/product-response.dto';
-import { CategoryService } from '../category/category.service';
+import { parseClientProductId } from '../../shared/helpers/client-product-id';
+import { ClientProductResponseDto } from '../../shared/dtos/client/product-response.dto';
+import { CategoryService } from '../../category/category.service';
 import { plainToClass } from 'class-transformer';
-import { ClientLinkedCategoryDto } from '../shared/dtos/client/linked-category.dto';
+import { ClientLinkedCategoryDto } from '../../shared/dtos/client/linked-category.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)

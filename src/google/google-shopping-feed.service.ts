@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ProductService } from '../product/product.service';
+import { ProductService } from '../product/services/product.service';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { create } from 'xmlbuilder2/lib';
 import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';

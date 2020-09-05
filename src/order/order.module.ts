@@ -28,7 +28,7 @@ const orderModel = {
     MongooseModule.forFeature([orderModel]),
     forwardRef(() => CustomerModule),
     forwardRef(() => AuthModule),
-    ProductModule,
+    forwardRef(() => ProductModule),
     EmailModule,
     TasksModule,
     ShippingMethodModule,

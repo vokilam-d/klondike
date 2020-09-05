@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable } from '@nestjs/common';
-import { ProductService } from '../product/product.service';
+import { ProductService } from '../product/services/product.service';
 import { CustomerService } from '../customer/customer.service';
 import { OrderItem } from './models/order-item.model';
 import { __ } from '../shared/helpers/translate/translate.function';

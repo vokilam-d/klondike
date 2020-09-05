@@ -1,7 +1,7 @@
 import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Category } from './models/category.model';
 import { PageRegistryService } from '../page-registry/page-registry.service';
-import { ProductService } from '../product/product.service';
+import { ProductService } from '../product/services/product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminAddOrUpdateCategoryDto } from '../shared/dtos/admin/category.dto';

@@ -16,21 +16,21 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
-import { AdminAddOrUpdateProductDto, AdminProductDto } from '../shared/dtos/admin/product.dto';
-import { ProductService } from './product.service';
+import { AdminAddOrUpdateProductDto, AdminProductDto } from '../../shared/dtos/admin/product.dto';
+import { ProductService } from '../services/product.service';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
-import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
-import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
-import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
-import { AdminProductListItemDto } from '../shared/dtos/admin/product-list-item.dto';
-import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
-import { ProductReorderDto } from '../shared/dtos/admin/reorder.dto';
-import { Product } from './models/product.model';
-import { ProductCategory } from './models/product-category.model';
-import { AdminProductCategoryDto } from '../shared/dtos/admin/product-category.dto';
-import { ReservedInventory } from '../inventory/models/reserved-inventory.model';
+import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
+import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
+import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
+import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
+import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
+import { ProductReorderDto } from '../../shared/dtos/admin/reorder.dto';
+import { Product } from '../models/product.model';
+import { ProductCategory } from '../models/product-category.model';
+import { AdminProductCategoryDto } from '../../shared/dtos/admin/product-category.dto';
+import { ReservedInventory } from '../../inventory/models/reserved-inventory.model';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
