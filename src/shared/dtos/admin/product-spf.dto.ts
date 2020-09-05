@@ -18,6 +18,8 @@ export class AdminProductSPFDto extends AdminSPFDto {
   }
 
   getOrderedDates(): string[] {
+    if (!this.orderedDates) { return []; }
+
     const decoded = decodeURIComponent(this.orderedDates);
     if (!decoded) { return []; }
 
