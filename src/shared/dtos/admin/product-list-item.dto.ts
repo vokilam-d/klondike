@@ -14,7 +14,7 @@ export class AdminProductListItemDto {
   prices: string;
   quantitiesInStock: string;
   sellableQuantities: string;
-  salesCounts: string;
+  salesCount: number;
   allReviewsCount: number;
   textReviewsCount: number;
   reviewsAvgRating: number;

@@ -5,7 +5,6 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
   Put,
   Query,
@@ -27,10 +26,9 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { ProductReorderDto } from '../../shared/dtos/admin/reorder.dto';
-import { Product } from '../models/product.model';
-import { ProductCategory } from '../models/product-category.model';
-import { AdminProductCategoryDto } from '../../shared/dtos/admin/product-category.dto';
 import { ReservedInventory } from '../../inventory/models/reserved-inventory.model';
+import { OrderedProductService } from '../services/ordered-product.service';
+import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -38,14 +36,18 @@ import { ReservedInventory } from '../../inventory/models/reserved-inventory.mod
 @Controller('admin/products')
 export class AdminProductController {
 
-  constructor(private readonly productsService: ProductService) {
-  }
+  constructor(private readonly productsService: ProductService,
+              private readonly orderedProductService: OrderedProductService,
+  ) { }
 
   @Get()
-  async getProducts(@Query() spf: AdminSPFDto,
-                    @Query('withVariants') withVariants: string): Promise<ResponseDto<AdminProductListItemDto[]>> {
+  async getProducts(@Query() spf: AdminProductSPFDto): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    return this.productsService.getAdminProductsList(spf, withVariants === 'true');
+    if (spf.hasOrderedDates()) {
+      return this.orderedProductService.getAdminOrderedProductsList(spf, spf.getOrderedDates());
+    } else {
+      return this.productsService.getAdminProductsList(spf, spf.withVariants);
+    }
   }
 
   @Get(':id')

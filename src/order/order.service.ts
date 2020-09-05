@@ -49,6 +49,7 @@ import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expres
 import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 import { User } from '../user/models/user.model';
 import { OrderItemService } from './order-item.service';
+import { OrderItem } from './models/order-item.model';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -74,27 +75,6 @@ export class OrderService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
-    //
-    // const allOrders = await this.orderModel.find({ status: { $in: ShippedOrderStatuses} }).exec();
-    // const map = new Map();
-    // for (const order of allOrders) {
-    //   for (const item of order.items) {
-    //     const id = item.productId;
-    //     const count = (map.get(id) || 0) + item.qty;
-    //     map.set(id, count);
-    //   }
-    // }
-    //
-    // for (const [productId, count] of map) {
-    //   const product = await this.productService.productModel.findById(productId).exec();
-    //   if (!product) { continue; }
-    //
-    //   product.variants[0].salesCount = count;
-    //   await product.save();
-    //   console.log('saved', product.id);
-    // }
-    //
-    // await this.productService.reindexAllSearchData();
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
@@ -810,5 +790,25 @@ export class OrderService implements OnApplicationBootstrap {
     order.paymentMethodClientName = paymentMethod.clientName;
 
     return;
+  }
+
+  async findShippedOrdersByDate([dateFrom, dateTo]: string[]): Promise<Pick<Order, 'items'>[]> {
+    const filterQuery: FilterQuery<Order> = {
+      status: { $in: ShippedOrderStatuses },
+      createdAt: {
+        ...(dateFrom ? { $gte: dateFrom as unknown as Date } : { }),
+        ...(dateTo ? { $lte: dateTo as unknown as Date } : { })
+      }
+    };
+
+    const itemsProp: keyof Order = 'items';
+    const productIdProp: keyof OrderItem = 'productId';
+    const qtyProp: keyof OrderItem = 'qty';
+    const projection = {
+      [`${itemsProp}.${productIdProp}`]: 1,
+      [`${itemsProp}.${qtyProp}`]: 1,
+    }
+
+    return this.orderModel.find(filterQuery, projection).exec();
   }
 }

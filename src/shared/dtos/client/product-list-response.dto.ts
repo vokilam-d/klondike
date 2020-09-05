@@ -5,5 +5,5 @@ import { FilterCategoryDto } from './filter-category.dto';
 
 export class ClientProductListResponseDto extends ResponseDto<ClientProductListItemDto[]> {
   filters?: ClientFilterDto[];
-  categories?: FilterCategoryDto[];
+  categories?: FilterCategoryDto[]; // todo deprecated
 }

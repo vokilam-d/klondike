@@ -91,31 +91,21 @@ export class ProductService implements OnApplicationBootstrap {
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    let products: AdminProductListItemDto[];
-    let itemsFiltered: number;
-
-    if (spf.hasFilters()) {
-      const filters = await this.buildAdminFilters(spf);
-      const searchResponse = await this.findByFilters(spf, filters);
-      products = searchResponse[0];
-      itemsFiltered = searchResponse[1];
-    } else {
-      const productsWithQty = await this.getProductsWithQty(spf);
-      products = this.transformToAdminListDto(productsWithQty);
-    }
+    const filters = await this.buildAdminFilters(spf);
+    let [ products, itemsFiltered ] = await this.findByFilters(spf, filters);
+    const itemsTotal = await this.countProducts();
 
     if (!withVariants) {
       products = products.map(({ variants, ...product }) => product);
     }
-    const itemsTotal = await this.countProducts();
 
     return {
       data: products,
       page: spf.page,
-      pagesTotal: Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit),
+      pagesTotal: Math.ceil((itemsTotal) / spf.limit),
       itemsTotal,
-      itemsFiltered
-    }
+      itemsFiltered: spf.hasFilters() ? itemsFiltered : undefined
+    };
   }
 
   async getClientProductList(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
@@ -282,7 +272,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
 
     let filterCategories: FilterCategoryDto[] = [];
-    if (spf.categoryId) {
+    if (spf.categoryId) { // todo deprecated, remove this block
       const allCategories = await this.categoryService.getAllCategories();
       const targetCategory = allCategories.find(category => category.id === parseInt(spf.categoryId));
       const isTargetCategoryChild = targetCategory.parentId > 0;
@@ -939,8 +929,8 @@ export class ProductService implements OnApplicationBootstrap {
       const prices: string[] = [];
       const quantitiesInStock: number[] = [];
       const sellableQuantities: number[] = [];
-      const salesCounts: number[] = [];
       const variants: AdminProductVariantListItem[] = [];
+      let salesCount: number = 0;
       let productMediaUrl: string = null;
 
       product.variants.forEach(variant => {
@@ -949,7 +939,7 @@ export class ProductService implements OnApplicationBootstrap {
         prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
         quantitiesInStock.push(variant.qtyInStock);
         sellableQuantities.push(variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0));
-        salesCounts.push(variant.salesCount);
+        salesCount += variant.salesCount;
 
         let primaryMediaUrl;
         let secondaryMediaUrl;
@@ -1006,7 +996,7 @@ export class ProductService implements OnApplicationBootstrap {
         reviewsAvgRating: product.reviewsAvgRating,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
-        salesCounts: salesCounts.join(', '),
+        salesCount,
         variants
       };
     });
@@ -1520,6 +1510,8 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   private async buildAdminFilters(spf: AdminSPFDto): Promise<IFilter[]> {
+    if (!spf.hasFilters()) { return []; }
+
     const variantsProp = getPropertyOf<AdminProductListItemDto>('variants');
     const attributesProp = getPropertyOf<AdminProductListItemDto>('attributes');
     const attributeIdProp = getPropertyOf<AdminProductSelectedAttributeDto>('attributeId');
