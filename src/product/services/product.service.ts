@@ -319,7 +319,6 @@ export class ProductService implements OnApplicationBootstrap {
       })
       .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
-      .project({ [`${variantsProp}.${descProp}`]: false })
       .sort(sortingPaginating.getSortAsObj())
       .skip(sortingPaginating.skip)
       .limit(sortingPaginating.limit)
