@@ -18,6 +18,9 @@ export class OrderedProductService {
 
   async getAdminOrderedProductsList(spf: AdminProductSPFDto, orderedDates: string[]): Promise<ResponseDto<AdminProductListItemDto[]>> {
     const orderedSalesCountMap = await this.getOrderedSalesCountMap(orderedDates);
+    if (orderedSalesCountMap.size === 0) {
+      return { data: [], page: spf.page, pagesTotal: 0, itemsTotal: await this.productService.countProducts(), itemsFiltered: 0 };
+    }
 
     let sort = spf.getSortAsObj();
     const salesCountProp: keyof AdminProductListItemDto = 'salesCount';

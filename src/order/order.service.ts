@@ -809,7 +809,7 @@ export class OrderService implements OnApplicationBootstrap {
       status: { $in: ShippedOrderStatuses },
       createdAt: {
         ...(dateFrom ? { $gte: dateFrom  } : { }),
-        ...(dateFrom ? { $lte: dateFrom } : { })
+        ...(dateTo ? { $lte: dateTo } : { })
       }
     };
 
