@@ -699,19 +699,21 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async removeReviewRatingFromProduct(productId: number, rating: number, session?: ClientSession): Promise<any> {
-    const countProp = getPropertyOf<Product>('allReviewsCount');
+    const allCountProp = getPropertyOf<Product>('allReviewsCount');
+    const textCountProp = getPropertyOf<Product>('textReviewsCount');
     const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
 
     await this.productModel
       .updateOne(
         { _id: productId as any },
         [
-          { $set: { [countProp]: { $toInt: { $subtract: [ `$${countProp}`, 1 ] } } } },
+          { $set: { [allCountProp]: { $toInt: { $subtract: [ `$${allCountProp}`, 1 ] } } } },
+          { $set: { [textCountProp]: { $toInt: { $subtract: [ `$${textCountProp}`, 1 ] } } } },
           {
             $set: {
               [ratingProp]: {
                 $cond: {
-                  if: { $lte: [`$${countProp}`, 0]},
+                  if: { $lte: [`$${allCountProp}`, 0]},
                   then: null,
                   else: { $subtract: [{ $multiply: [`$${ratingProp}`, 2] }, rating] }
                 }
@@ -725,10 +727,11 @@ export class ProductService implements OnApplicationBootstrap {
 
     const elasticQuery = { term: { id: productId } };
     const elasticUpdateScript = `
-      if (ctx._source.${countProp} == 0) {
+      if (ctx._source.${allCountProp} == 0) {
         ctx._source.${ratingProp} = null;
       } else {
-        ctx._source.${countProp} = ctx._source.${countProp} - 1;
+        ctx._source.${allCountProp} = ctx._source.${allCountProp} - 1;
+        ctx._source.${textCountProp} = ctx._source.${textCountProp} - 1;
         ctx._source.${ratingProp} = ctx._source.${ratingProp} - ((ctx._source.${ratingProp} * 2) - ${rating});
       }
     `;
