@@ -44,7 +44,7 @@ export class EmailService {
     }
   };
   private senderName = 'Клондайк <info@klondike.com.ua>';
-  private managerEmails: string = ['denis@klondike.com.ua', 'yurii@klondike.com.ua', 'elena@klondike.com.ua'].join(',');
+  private managerEmails: string = ['denis@klondike.com.ua', 'yurii@klondike.com.ua', 'elena@klondike.com.ua', 'masloirina15@gmail.com', 'irina@klondike.com.ua'].join(',');
 
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
