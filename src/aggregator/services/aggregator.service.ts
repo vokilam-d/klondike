@@ -17,6 +17,7 @@ import { ClientProductSPFDto } from '../../shared/dtos/client/product-spf.dto';
 import { IFilter } from '../../shared/dtos/shared-dtos/spf.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { ClientAggregatedProductDto } from '../../shared/dtos/client/aggregated-product.dto';
+import { CounterService } from '../../shared/services/counter/counter.service';
 
 @Injectable()
 export class AggregatorService {
@@ -25,6 +26,7 @@ export class AggregatorService {
 
   constructor(@InjectModel(Aggregator.name) private readonly aggregatorModel: ReturnModelType<typeof Aggregator>,
               private readonly productService: ProductService,
+              private readonly counterService: CounterService,
               private readonly searchService: SearchService
   ) { }
 
@@ -81,11 +83,25 @@ export class AggregatorService {
       throw new BadRequestException(__('Aggregator with id "$1" already exists', 'ru', aggregatorDto.id));
     }
 
-    const aggregator = new this.aggregatorModel(aggregatorDto);
-    await aggregator.save();
-    this.addSearchData(aggregator);
+    const session = await this.aggregatorModel.db.startSession();
+    session.startTransaction();
 
-    return aggregator;
+    try {
+      const aggregator = new this.aggregatorModel(aggregatorDto);
+      aggregator.id = await this.counterService.getCounter(Aggregator.collectionName, session);
+      await aggregator.save();
+      await session.commitTransaction();
+
+      this.addSearchData(aggregator).then();
+
+      return aggregator;
+
+    } catch (ex) {
+      await session.abortTransaction();
+      throw ex;
+    } finally {
+      session.endSession();
+    }
   }
 
   async updateAggregator(aggregatorId: string, aggregatorDto: AdminAggregatorDto): Promise<DocumentType<Aggregator>> {
