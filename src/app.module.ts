@@ -24,6 +24,7 @@ import { NovaPoshtaModule } from './nova-poshta/nova-poshta.module';
 import { TasksModule } from './tasks/tasks.module';
 import { CommonRequestInterceptor } from './shared/interceptors/common-request.interceptor';
 import { BlogModule } from './blog/blog.module';
+import { AggregatorModule } from './aggregator/aggregator.module';
 
 @Module({
   imports: [
@@ -62,7 +63,8 @@ import { BlogModule } from './blog/blog.module';
     UserModule,
     NovaPoshtaModule,
     TasksModule,
-    BlogModule
+    BlogModule,
+    AggregatorModule
   ],
   providers: [
     GlobalExceptionFilter,

@@ -896,7 +896,7 @@ export class ProductService implements OnApplicationBootstrap {
     );
   }
 
-  private async findByFilters(spf: SortingPaginatingFilterDto, filters: IFilter[]) {
+  async findByFilters(spf: SortingPaginatingFilterDto, filters: IFilter[]) {
     return this.searchService.searchByFilters<AdminProductListItemDto>(
       Product.collectionName,
       filters,
