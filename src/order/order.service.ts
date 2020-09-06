@@ -792,12 +792,24 @@ export class OrderService implements OnApplicationBootstrap {
     return;
   }
 
-  async findShippedOrdersByDate([dateFrom, dateTo]: string[]): Promise<Pick<Order, 'items'>[]> {
+  async findShippedOrdersByDate([dateFromStr, dateToStr]: string[]): Promise<Pick<Order, 'items'>[]> {
+
+    let dateFrom: Date;
+    let dateTo: Date;
+    if (dateFromStr) {
+      dateFrom = new Date(dateFromStr);
+    }
+    if (dateToStr) {
+      dateTo = new Date(dateToStr);
+      dateTo.setHours(dateTo.getHours() + 24);
+      dateTo.setSeconds(dateTo.getSeconds() - 1);
+    }
+
     const filterQuery: FilterQuery<Order> = {
       status: { $in: ShippedOrderStatuses },
       createdAt: {
-        ...(dateFrom ? { $gte: dateFrom as unknown as Date } : { }),
-        ...(dateTo ? { $lte: dateTo as unknown as Date } : { })
+        ...(dateFrom ? { $gte: dateFrom  } : { }),
+        ...(dateFrom ? { $lte: dateFrom } : { })
       }
     };
 
