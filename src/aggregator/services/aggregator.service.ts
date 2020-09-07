@@ -146,7 +146,7 @@ export class AggregatorService {
 
       for (const linkedProductId of aggregator.productIds) {
         const product = linkedProducts.find(product => product.id === linkedProductId);
-        if (!product) { continue; }
+        if (!product || product.id === productId) { continue; }
 
         for (const variant of product.variants) {
           aggregatedProducts.push(variant);
