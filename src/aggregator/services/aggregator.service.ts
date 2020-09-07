@@ -154,7 +154,7 @@ export class AggregatorService {
       }
 
       tables.push({
-        name: aggregator.name,
+        name: aggregator.clientName,
         products: aggregatedProducts
       });
     }
