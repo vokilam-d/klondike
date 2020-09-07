@@ -198,8 +198,8 @@ export class SearchService {
           if (queryType === ElasticQueryType.Range) {
             value = {
               'time_zone': '-03:00', // todo rm timezone hardcode
-              'gte': valuesArr[0],
-              'lte': valuesArr[1]
+              ...(valuesArr[0] ? { 'gte': valuesArr[0] }: { }),
+              ...(valuesArr[1] ? { 'lte': valuesArr[1] }: { })
             }
           } else {
             value = decodeURIComponent(value);
