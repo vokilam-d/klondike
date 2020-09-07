@@ -4,6 +4,7 @@ import { elasticBooleanType, elasticIntegerType, elasticTextType } from '../../s
 export class ElasticAggregator implements Record<keyof AdminAggregatorDto, any> {
   id = elasticIntegerType;
   name = elasticTextType;
+  clientName = elasticTextType;
   isVisibleOnProductPage = elasticBooleanType;
   productIds = elasticIntegerType;
 }

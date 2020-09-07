@@ -11,6 +11,9 @@ export class Aggregator {
   name: string;
 
   @prop()
+  clientName: string;
+
+  @prop()
   isVisibleOnProductPage: boolean;
 
   @arrayProp({ items: Number })

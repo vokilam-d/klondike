@@ -11,6 +11,10 @@ export class AdminAggregatorDto implements Pick<Aggregator, 'id' | 'isVisibleOnP
   name: string;
 
   @Expose()
+  @IsString()
+  clientName: string;
+
+  @Expose()
   @IsBoolean()
   isVisibleOnProductPage: boolean;
 
