@@ -131,12 +131,14 @@ export class AggregatorService {
 
   async getClientAggregators(productId: number): Promise<ClientAggregatedProductsTableDto[]> {
     const aggregators = await this.aggregatorModel.find({ productIds: productId }).exec();
+    const productIds = aggregators.flatMap(aggregator => aggregator.productIds);
 
     const spf = new ClientProductSPFDto();
+    spf.limit = productIds.length;
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
     const filters: IFilter[] = [
       { fieldName: isEnabledProp, values: [true] },
-      { fieldName: 'id', values: aggregators.flatMap(aggregator => aggregator.productIds) }
+      { fieldName: 'id', values: productIds }
     ];
     const [linkedProducts] = await this.productService.findByFilters(spf, filters)
 
