@@ -1511,7 +1511,7 @@ export class ProductService implements OnApplicationBootstrap {
     return inventory.reserved;
   }
 
-  private async buildAdminFilters(spf: AdminSPFDto): Promise<IFilter[]> {
+  async buildAdminFilters(spf: AdminSPFDto): Promise<IFilter[]> {
     if (!spf.hasFilters()) { return []; }
 
     const variantsProp = getPropertyOf<AdminProductListItemDto>('variants');

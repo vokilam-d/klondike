@@ -30,7 +30,7 @@ export class OrderedProductService {
       delete sort[salesCountProp];
     }
 
-    const filters = spf.getNormalizedFilters();
+    const filters = await this.productService.buildAdminFilters(spf);
     filters.push({ fieldName: 'id', values: Array.from(orderedSalesCountMap.keys()) })
 
     let [ products, itemsFiltered ] = await this.searchService.searchByFilters<AdminProductListItemDto>(
