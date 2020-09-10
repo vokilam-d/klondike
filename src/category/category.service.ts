@@ -1,10 +1,10 @@
-import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { Category } from './models/category.model';
 import { PageRegistryService } from '../page-registry/page-registry.service';
 import { ProductService } from '../product/services/product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { AdminAddOrUpdateCategoryDto } from '../shared/dtos/admin/category.dto';
+import { AdminAddOrUpdateCategoryDto, AdminCategoryDto } from '../shared/dtos/admin/category.dto';
 import { CounterService } from '../shared/services/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
@@ -19,16 +19,29 @@ import { Media } from '../shared/models/media.model';
 import { FastifyRequest } from 'fastify';
 import { ClientCategoryDto } from '../shared/dtos/client/category.dto';
 import { ClientLinkedCategoryDto } from '../shared/dtos/client/linked-category.dto';
+import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
+import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
+import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
+import { SearchService } from '../shared/services/search/search.service';
+import { ElasticCategory } from './models/elastic-category.model';
+import { IFilter, ISorting } from '../shared/dtos/shared-dtos/spf.dto';
 
 @Injectable()
-export class CategoryService {
+export class CategoryService implements OnApplicationBootstrap {
+
+  private logger = new Logger(CategoryService.name);
 
   constructor(@InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
               @Inject(forwardRef(() => ProductService)) private productService: ProductService,
               private readonly pageRegistryService: PageRegistryService,
               private readonly counterService: CounterService,
-              private readonly mediaService: MediaService
+              private readonly mediaService: MediaService,
+              private readonly searchService: SearchService
   ) { }
+
+  onApplicationBootstrap() {
+    this.searchService.ensureCollection(Category.collectionName, new ElasticCategory());
+  }
 
   async getAllCategories(): Promise<Category[]> { // todo cache
     let categories = await this.categoryModel.find().exec();
@@ -158,6 +171,7 @@ export class CategoryService {
       await this.createCategoryPageRegistry(newCategoryModel.slug, session);
       await session.commitTransaction();
 
+      this.addSearchData(newCategoryModel).then();
       this.mediaService.deleteTmpMedias(tmpMedias, Category.collectionName).then();
 
       return plainToClass(Category, newCategoryModel.toJSON());
@@ -209,6 +223,7 @@ export class CategoryService {
       const saved = await category.save({ session });
       await session.commitTransaction();
 
+      this.updateSearchData(saved).then();
       this.mediaService.deleteTmpMedias(tmpMedias, Category.collectionName).then();
       this.mediaService.deleteSavedMedias(mediasToDelete, Category.collectionName).then();
 
@@ -241,6 +256,7 @@ export class CategoryService {
       await this.deleteCategoryPageRegistry(deleted.slug, session);
       await session.commitTransaction();
 
+      this.deleteSearchData(deleted).then();
       this.mediaService.deleteSavedMedias(deleted.medias, Category.collectionName).then();
 
       return deleted.toJSON();
@@ -250,6 +266,22 @@ export class CategoryService {
     } finally {
       session.endSession();
     }
+  }
+
+  async searchEnabledByName(spf: AdminSPFDto, name: string): Promise<AdminCategoryDto[]> {
+    const nameProp: keyof AdminCategoryDto = 'name';
+    const isEnabledProp: keyof AdminCategoryDto = 'isEnabled';
+    const sortProp: keyof AdminCategoryDto = 'reversedSortOrder';
+
+    const filters: IFilter[] = [
+      { fieldName: nameProp, values: [name] },
+      { fieldName: isEnabledProp, values: [true] }
+    ];
+    const sorting: ISorting = { [sortProp]: 'asc' };
+
+    const [categories] = await this.searchByFilters(spf, filters, sorting);
+
+    return categories;
   }
 
   private createCategoryPageRegistry(slug: string, session: ClientSession) {
@@ -338,6 +370,8 @@ export class CategoryService {
         await category.save({ session });
       }
 
+      this.reindexAllSearchData();
+
       await session.commitTransaction();
     } catch (ex) {
       await session.abortTransaction();
@@ -377,5 +411,69 @@ export class CategoryService {
         }
       }
     ).session(session).exec();
+  }
+
+  private async addSearchData(category: Category) {
+    const categoryDto = plainToClass(AdminCategoryDto, category, { excludeExtraneousValues: true });
+    await this.searchService.addDocument(Category.collectionName, category.id, categoryDto);
+  }
+
+  private updateSearchData(category: Category): Promise<any> {
+    const categoryDto = plainToClass(AdminCategoryDto, category, { excludeExtraneousValues: true });
+    return this.searchService.updateDocument(Category.collectionName, category.id, categoryDto);
+  }
+
+  private deleteSearchData(category: Category): Promise<any> {
+    return this.searchService.deleteDocument(Category.collectionName, category.id);
+  }
+
+  @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
+  private async reindexAllSearchData() {
+    this.logger.log('Start reindex all search data');
+    const categorys = await this.categoryModel.find().exec();
+
+    await this.searchService.deleteCollection(Category.collectionName);
+    await this.searchService.ensureCollection(Category.collectionName, new ElasticCategory());
+
+    for (const batch of getBatches(categorys, 20)) {
+      await Promise.all(batch.map(category => this.addSearchData(category)));
+      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
+    }
+
+    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
+      const result = [];
+      for (let i = 0; i < arr.length; i++) {
+        if (i % size !== 0) {
+          continue;
+        }
+
+        const resultItem = [];
+        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
+          resultItem.push(arr[i + k]);
+        }
+        result.push(resultItem);
+      }
+
+      return result;
+    }
+  }
+
+  private async searchByFilters(spf: AdminSPFDto, filters?: IFilter[], sorting?: ISorting) {
+    if (!filters) {
+      filters = spf.getNormalizedFilters();
+    }
+    if (!sorting) {
+      sorting = spf.getSortAsObj();
+    }
+
+    return this.searchService.searchByFilters<AdminCategoryDto>(
+      Category.collectionName,
+      filters,
+      spf.skip,
+      spf.limit,
+      sorting,
+      undefined,
+      new ElasticCategory()
+    );
   }
 }
