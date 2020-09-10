@@ -269,31 +269,13 @@ export class ProductService implements OnApplicationBootstrap {
       filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
     }
 
-    let filterCategories: FilterCategoryDto[] = [];
-    if (spf.categoryId) { // todo deprecated, remove this block
-      const allCategories = await this.categoryService.getAllCategories();
-      const targetCategory = allCategories.find(category => category.id === parseInt(spf.categoryId));
-      const isTargetCategoryChild = targetCategory.parentId > 0;
-
-      for (const category of allCategories) {
-        const isCurrentCategoryChild = category.parentId === parseInt(spf.categoryId);
-        const isSibling = category.parentId === targetCategory.parentId && category.id !== targetCategory.id;
-        const canInclude = (!isTargetCategoryChild && isCurrentCategoryChild) || (isTargetCategoryChild && isSibling);
-        if (!canInclude) { continue; }
-
-        const filterCategory = plainToClass(FilterCategoryDto, category, { excludeExtraneousValues: true });
-        filterCategories.push(filterCategory);
-      }
-    }
-
     return {
       data: clientListItems,
       page: spf.page,
       pagesTotal: Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit),
       itemsTotal,
       itemsFiltered,
-      filters,
-      categories: filterCategories
+      filters
     };
   }
 
