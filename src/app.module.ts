@@ -25,6 +25,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { CommonRequestInterceptor } from './shared/interceptors/common-request.interceptor';
 import { BlogModule } from './blog/blog.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
+import { AutocompleteModule } from './autocomplete/autocomplete.module';
 
 @Module({
   imports: [
@@ -64,7 +65,8 @@ import { AggregatorModule } from './aggregator/aggregator.module';
     NovaPoshtaModule,
     TasksModule,
     BlogModule,
-    AggregatorModule
+    AggregatorModule,
+    AutocompleteModule
   ],
   providers: [
     GlobalExceptionFilter,

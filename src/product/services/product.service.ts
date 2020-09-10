@@ -127,7 +127,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async getClientProductListAutocomplete(query: string): Promise<ClientProductListResponseDto> {
+  async getClientProductListAutocomplete(query: string): Promise<ClientProductListItemDto[]> {
     const spf = new ClientProductSPFDto();
     spf.limit = 5;
 
@@ -135,9 +135,7 @@ export class ProductService implements OnApplicationBootstrap {
     const attributes = await this.attributeService.getAllAttributes();
     const clientListItems = await this.transformToClientListDto(adminListItems, attributes);
 
-    return {
-      data: clientListItems
-    };
+    return clientListItems;
   }
 
   async getClientProductListLastAdded(): Promise<ClientProductListResponseDto> {

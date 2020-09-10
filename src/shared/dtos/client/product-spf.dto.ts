@@ -34,8 +34,6 @@ export class ClientProductSPFDto extends ClientSPFDto {
     }
   }
 
-  q?: string;
-
   autocomplete?: any;
 
   getSortAsObj(): ISorting {

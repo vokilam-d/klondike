@@ -40,9 +40,7 @@ export class ClientProductController {
 
   @Get()
   async findProducts(@Query() spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
-    if (spf.autocomplete) {
-      return this.productService.getClientProductListAutocomplete(spf.q);
-    } else if (spf.lastAdded) {
+    if (spf.lastAdded) {
       return this.productService.getClientProductListLastAdded();
     } else if (spf.id) {
       return this.productService.getClientProductList(spf);
