@@ -58,9 +58,9 @@ export class AttributeService implements OnApplicationBootstrap {
   }
 
   async getAllAttributes(): Promise<Attribute[]> {
-    if (this.cachedAttrbiutes) {
-      return this.cachedAttrbiutes;
-    }
+    // if (this.cachedAttrbiutes.length) {
+    //   return this.cachedAttrbiutes;
+    // }
 
     const attributes = await this.attributeModel.find().exec();
     return attributes.map(attr => attr.toJSON());
