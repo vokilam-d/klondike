@@ -6,7 +6,8 @@ import { elasticAutocompleteType, elasticDateType, elasticKeywordFieldName, elas
 enum ElasticQueryType {
   Range = 'range',
   Term = 'term',
-  MatchPhrasePrefix = 'match_phrase_prefix'
+  MatchPhrasePrefix = 'match_phrase_prefix',
+  Match = 'match',
 }
 
 @Injectable()
@@ -137,7 +138,7 @@ export class SearchService {
 
     const getQueryTypeForField = (fieldName: string): ElasticQueryType => {
       const isNested = fieldName.includes('.');
-      let queryType = ElasticQueryType.MatchPhrasePrefix;
+      let queryType = ElasticQueryType.Match;
 
       if (!schema) { return queryType; }
 
@@ -191,18 +192,24 @@ export class SearchService {
 
         const fieldNames = filter.fieldName.split('|');
         fieldNames.forEach(fieldName => {
-
+          let valueForField;
           let shouldQuery: any = {};
           const queryType = getQueryTypeForField(fieldName);
 
           if (queryType === ElasticQueryType.Range) {
-            value = {
+            valueForField = {
               'time_zone': '-03:00', // todo rm timezone hardcode
               ...(valuesArr[0] ? { 'gte': valuesArr[0] }: { }),
               ...(valuesArr[1] ? { 'lte': valuesArr[1] }: { })
             }
+          } else if (queryType === ElasticQueryType.Match) {
+            valueForField = {
+              query : decodeURIComponent(value),
+              operator: 'and',
+              fuzziness: 'auto'
+            };
           } else {
-            value = decodeURIComponent(value);
+            valueForField = decodeURIComponent(value);
           }
 
           const fieldNameParts = fieldName.split('.');
@@ -212,7 +219,7 @@ export class SearchService {
             if (isLast) {
               shouldQuery = {
                 [queryType]: {
-                  [fieldName]: value
+                  [fieldName]: valueForField
                 }
               };
 
