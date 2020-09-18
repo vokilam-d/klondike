@@ -13,14 +13,12 @@ export class ProductQuickReviewService {
               @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService
   ) {}
 
-  async createQuickReview(productId: number, quickReviewDto: AddProductQuickReviewDto, ipAddress: string, userId: string, customerId: number): Promise<ProductQuickReview> {
+  async createQuickReview(productId: number, quickReviewDto: AddProductQuickReviewDto, ip: string, userId: string, customerId: number): Promise<ProductQuickReview> {
     const alreadyVoted = await this.quickReviewModel.findOne({
       productId,
-      $or: [
-        { ip: ipAddress },
-        { userId },
-        { customerId }
-      ]
+      ...(ip ? { ip } : { }),
+      ...(userId ? { userId } : { }),
+      ...(customerId ? { customerId } : { }),
     }).exec();
     if (alreadyVoted) { throw new ForbiddenException(__('You have already rated this product', 'ru')); }
 
@@ -30,7 +28,7 @@ export class ProductQuickReviewService {
       const [quickReview] = await this.quickReviewModel.create([{
         productId,
         rating: quickReviewDto.rating,
-        ip: ipAddress,
+        ip,
         customerId,
         userId
       }], { session });
