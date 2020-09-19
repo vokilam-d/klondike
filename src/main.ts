@@ -17,7 +17,7 @@ import { CommonRequestInterceptor } from './shared/interceptors/common-request.i
 declare const module: any;
 
 async function bootstrap() {
-  const fastifyAdapter = new FastifyAdapter({ ignoreTrailingSlash: true, maxParamLength: 200 });
+  const fastifyAdapter = new FastifyAdapter({ ignoreTrailingSlash: true, maxParamLength: 500 });
   fastifyAdapter.register(fastifyMultipart);
   fastifyAdapter.register(fastifyCookie);
   registerOAuth(fastifyAdapter);
