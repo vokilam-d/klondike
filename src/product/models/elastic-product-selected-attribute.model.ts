@@ -1,6 +1,6 @@
-import { elasticTextType } from '../../shared/constants';
+import { elasticAutocompleteTextType } from '../../shared/constants';
 
 export class ElasticProductSelectedAttributeModel {
-  attributeId = elasticTextType;
-  valueIds = elasticTextType;
+  attributeId = elasticAutocompleteTextType;
+  valueIds = elasticAutocompleteTextType;
 }

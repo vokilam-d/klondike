@@ -1,5 +1,5 @@
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
-import { elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
+import { elasticAutocompleteTextType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
 import { ElasticProductVariant } from './elastic-product-variant.model';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
 import { ElasticProductCategory } from './elastic-product-category.model';
@@ -16,7 +16,7 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
     properties: new ElasticProductSelectedAttributeModel()
   };
   mediaUrl = elasticTextType;
-  name = elasticTextType;
+  name = elasticAutocompleteTextType;
   prices = elasticTextType;
   quantitiesInStock = elasticTextType;
   sellableQuantities = elasticTextType;

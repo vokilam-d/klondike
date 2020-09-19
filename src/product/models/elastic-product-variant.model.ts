@@ -1,6 +1,6 @@
 import { AdminProductVariantListItem } from '../../shared/dtos/admin/product-variant-list-item.dto';
 import {
-  elasticAutocompleteType,
+  elasticAutocompleteTextType,
   elasticBooleanType,
   elasticFloatType,
   elasticIntegerType,
@@ -16,7 +16,7 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   mediaUrl = elasticTextType;
   mediaHoverUrl = elasticTextType;
   mediaAltText = elasticTextType;
-  name = elasticAutocompleteType;
+  name = elasticAutocompleteTextType;
   slug = elasticTextType;
   price = elasticFloatType;
   oldPrice = elasticFloatType;

@@ -1,16 +1,16 @@
 import { AdminAttributeDto, AdminAttributeValueDto } from '../../shared/dtos/admin/attribute.dto';
-import { elasticBooleanType, elasticTextType } from '../../shared/constants';
+import { elasticAutocompleteTextType, elasticBooleanType, elasticTextType } from '../../shared/constants';
 
 export class ElasticAttributeValueModel implements Record<keyof AdminAttributeValueDto, any> {
   id = elasticTextType;
   isDefault = elasticTextType;
-  label = elasticTextType;
+  label = elasticAutocompleteTextType;
 }
 
 export class ElasticAttributeModel implements Record<keyof AdminAttributeDto, any> {
   groupName = elasticTextType;
   id = elasticTextType;
-  label = elasticTextType;
+  label = elasticAutocompleteTextType;
   type = elasticTextType;
   values = {
     properties: new ElasticAttributeValueModel()

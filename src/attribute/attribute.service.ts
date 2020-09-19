@@ -26,6 +26,7 @@ export class AttributeService implements OnApplicationBootstrap {
   onApplicationBootstrap(): any {
     this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttributeModel());
     this.updateCachedAttributes();
+    // this.reindexAllSearchData();
   }
 
   async getAttributesResponseDto(spf: AdminSPFDto): Promise<ResponseDto<AdminAttributeDto[]>> {

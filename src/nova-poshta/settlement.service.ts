@@ -1,10 +1,7 @@
-import { CronExpression } from '@nestjs/schedule';
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { SearchService } from '../shared/services/search/search.service';
 import { ElasticSettlement } from './models/elastic-settlement.model';
-import { autocompleteSettings } from '../shared/constants';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
-import { IFilter } from '../shared/dtos/shared-dtos/spf.dto';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { SettlementDto } from '../shared/dtos/shared-dtos/settlement.dto';
 import { plainToClass } from 'class-transformer';
@@ -21,7 +18,7 @@ export class SettlementService implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap() {
-    this.searchService.ensureCollection(ElasticSettlement.collectionName, new ElasticSettlement(), autocompleteSettings);
+    this.searchService.ensureCollection(ElasticSettlement.collectionName, new ElasticSettlement());
   }
 
   public async getSettlements(spf: ClientSPFDto): Promise<SettlementDto[]> {

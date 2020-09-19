@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
 import { IFilter, ISorting } from '../../dtos/shared-dtos/spf.dto';
-import { elasticAutocompleteType, elasticDateType, elasticKeywordFieldName, elasticTextType } from '../../constants';
+import { autocompleteSettings, elasticAutocompleteType, elasticDateType, elasticKeywordFieldName, elasticTextType } from '../../constants';
 
 enum ElasticQueryType {
   Range = 'range',
@@ -29,7 +29,7 @@ export class SearchService {
     });
   }
 
-  async ensureCollection(collection: string, properties, customSettings?): Promise<any> {
+  async ensureCollection(collection: string, properties): Promise<any> {
     try {
       const { body: exists } = await this.client.indices.exists({ index: collection });
       if (exists) {
@@ -42,7 +42,7 @@ export class SearchService {
           mappings: {
             properties
           },
-          settings: customSettings
+          settings: autocompleteSettings
         }
       });
     } catch (ex) {

@@ -1,8 +1,6 @@
-import { CronExpression } from '@nestjs/schedule';
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { SearchService } from '../shared/services/search/search.service';
 import { ElasticWarehouse } from './models/elastic-warehouse.model';
-import { autocompleteSettings } from '../shared/constants';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { WarehouseDto } from '../shared/dtos/shared-dtos/warehouse.dto';
@@ -19,7 +17,7 @@ export class WarehouseService implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap() {
-    this.searchService.ensureCollection(ElasticWarehouse.collectionName, new ElasticWarehouse(), autocompleteSettings);
+    this.searchService.ensureCollection(ElasticWarehouse.collectionName, new ElasticWarehouse());
   }
 
   public async getWarehouses(spf: ClientSPFDto): Promise<WarehouseDto[]> {

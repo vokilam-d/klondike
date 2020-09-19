@@ -40,46 +40,48 @@ export const elasticFloatType = {
 export const elasticBooleanType = {
   "type": "boolean"
 };
-export const elasticAutocompleteLowercaseTextType = {
-  "type" : "text",
-  "analyzer": "analyze_autocomplete_lower_case",
-  "search_analyzer": "search_autocomplete_lower_case"
-};
 export const elasticAutocompleteTextType = {
   "type" : "text",
-  "analyzer": "analyse_autocomplete_letters_digits"
+  "analyzer": "autocomplete",
+  "search_analyzer": "search_autocomplete"
 };
 export const autocompleteSettings = {
   "analysis": {
     "analyzer": {
-      "analyse_autocomplete_letters_digits": {
-        "tokenizer": "autocomplete_letters_digits"
-      },
-      "analyze_autocomplete_lower_case": {
-        "tokenizer": "autocomplete_letters_lowercase",
+      "autocomplete": {
+        "tokenizer": "autocomplete",
         "filter": [
           "lowercase"
+        ],
+        "char_filter": [
+          "dot_char_filter"
         ]
       },
-      "search_autocomplete_lower_case": {
-        "tokenizer": "lowercase"
+      "search_autocomplete": {
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase"
+        ],
+        "char_filter": [
+          "dot_char_filter"
+        ]
       }
     },
     "tokenizer": {
-      "autocomplete_letters_lowercase": {
+      "autocomplete": {
         "type": "edge_ngram",
         "min_gram": 1,
         "max_gram": 20,
         "token_chars": [
           "letter", "digit"
         ]
-      },
-      "autocomplete_letters_digits": {
-        "type": "edge_ngram",
-        "min_gram": 1,
-        "max_gram": 20,
-        "token_chars": [
-          "letter", "digit"
+      }
+    },
+    "char_filter": {
+      "dot_char_filter": {
+        "type": "mapping",
+        "mappings": [
+          ". =>  "
         ]
       }
     }

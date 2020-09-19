@@ -1128,18 +1128,20 @@ export class ProductService implements OnApplicationBootstrap {
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
 
-    await this.searchService.deleteCollection(Product.collectionName);
-    await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
-
     const spf = new AdminSPFDto();
     spf.limit = 10000;
     const products = await this.getProductsWithQty(spf);
     const listItems = this.transformToAdminListDto(products);
 
+    await this.searchService.deleteCollection(Product.collectionName);
+    await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
+
     for (const batch of getBatches(listItems, 20)) {
       await Promise.all(batch.map(listItem => this.searchService.addDocument(Product.collectionName, listItem.id, listItem)));
       this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
     }
+
+    this.logger.log(`Finished reindex`);
 
     function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
       const result = [];
