@@ -43,7 +43,13 @@ export const elasticBooleanType = {
 export const elasticAutocompleteTextType = {
   "type" : "text",
   "analyzer": "autocomplete",
-  "search_analyzer": "search_autocomplete"
+  "search_analyzer": "search_autocomplete",
+  "fields" : {
+    [elasticKeywordFieldName] : {
+      ...elasticKeywordType,
+      "ignore_above" : 254
+    }
+  },
 };
 export const autocompleteSettings = {
   "analysis": {

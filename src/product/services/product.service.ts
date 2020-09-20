@@ -55,7 +55,6 @@ import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-exp
 import { ReservedInventory } from '../../inventory/models/reserved-inventory.model';
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 import { createClientProductId } from '../../shared/helpers/client-product-id';
-import { FilterCategoryDto } from '../../shared/dtos/client/filter-category.dto';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
