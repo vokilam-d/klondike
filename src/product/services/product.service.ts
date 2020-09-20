@@ -1328,61 +1328,6 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async turnOverProductSortOrder() {
-    const session = await this.productModel.db.startSession();
-    session.startTransaction();
-
-    try {
-      const categories = await this.categoryService.getAllCategories();
-      for (let k = 0; k < categories.length; k++) {
-        const categoryId = categories[k]._id;
-        if (categoryId === 11) { continue; }
-        let products = await this.productModel.find({ 'categories.id': categoryId });
-        products = products
-          .filter(p => {
-            const foundCatsIdx = p.categories.findIndex(c => c.id === categoryId);
-            if (foundCatsIdx === -1 || p.categories[foundCatsIdx].sortOrder === 0) {
-              return false;
-            }
-            return true;
-          })
-          .sort((a, b) => {
-            const aCatIdx = a.categories.findIndex(c => c.id === categoryId);
-            const bCatIdx = b.categories.findIndex(c => c.id === categoryId);
-            return b.categories[bCatIdx].sortOrder - a.categories[aCatIdx].sortOrder;
-          });
-
-        const end = Math.floor(products.length / 2);
-
-        for (let i = 0; i < end; i++) {
-          const product = products[i];
-          const productCategoryIdx = product.categories.findIndex(c => c.id === categoryId);
-
-          const mirror = products[products.length - 1 - i];
-          const mirrorCategoryIdx = mirror.categories.findIndex(c => c.id === categoryId);
-          const mirrorCategoryOrder = mirror.categories[mirrorCategoryIdx].sortOrder;
-
-          mirror.categories[mirrorCategoryIdx].sortOrder = product.categories[productCategoryIdx].sortOrder;
-          product.categories[productCategoryIdx].sortOrder = mirrorCategoryOrder;
-
-          await product.save();
-          await mirror.save();
-        }
-
-        console.log(`Finished categories: (${k + 1} of ${categories.length})`);
-      }
-
-      await session.commitTransaction();
-
-      await this.reindexAllSearchData();
-    } catch (ex) {
-      await session.abortTransaction();
-      throw ex;
-    } finally {
-      await session.endSession();
-    }
-  }
-
   private buildClientFilters(
     attributeProductCountMap: AttributeProductCountMap,
     attributes: Attribute[],
