@@ -35,6 +35,7 @@ import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-c
 import { CronExpression } from '@nestjs/schedule';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
 import { OrderService } from '../order/order.service';
+import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -53,6 +54,7 @@ export class CustomerService implements OnApplicationBootstrap {
 
   onApplicationBootstrap(): any {
     this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
+    // this.reindexAllSearchData();
   }
 
   async getCustomersList(spf: AdminSPFDto): Promise<ResponseDto<AdminCustomerDto[]>> {
@@ -465,5 +467,36 @@ export class CustomerService implements OnApplicationBootstrap {
     if (oldEmail === newEmail) { return; }
 
     await this.orderService.changeCustomerEmail(oldEmail, newEmail, session);
+  }
+
+  private async reindexAllSearchData() {
+    this.logger.log('Start reindex all search data');
+    const customers = await this.customerModel.find().exec();
+
+    await this.searchService.deleteCollection(Customer.collectionName);
+    await this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
+
+    for (const batch of getBatches(customers, 20)) {
+      await Promise.all(batch.map(customer => this.addSearchData(customer)));
+      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
+    }
+    this.logger.log(`Finished reindex.`);
+
+    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
+      const result = [];
+      for (let i = 0; i < arr.length; i++) {
+        if (i % size !== 0) {
+          continue;
+        }
+
+        const resultItem = [];
+        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
+          resultItem.push(arr[i + k]);
+        }
+        result.push(resultItem);
+      }
+
+      return result;
+    }
   }
 }

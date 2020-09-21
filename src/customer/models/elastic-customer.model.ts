@@ -1,5 +1,12 @@
 import { AdminCustomerDto } from '../../shared/dtos/admin/customer.dto';
-import { elasticBooleanType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
+import {
+  elasticAutocompleteTextType,
+  elasticBooleanType,
+  elasticDateType,
+  elasticFloatType,
+  elasticIntegerType,
+  elasticTextType
+} from '../../shared/constants';
 import { ElasticShipmentAddressModel } from '../../shared/models/elastic-shipment-address.model';
 
 export class ElasticCustomerModel implements Record<keyof AdminCustomerDto, any> {
@@ -10,13 +17,13 @@ export class ElasticCustomerModel implements Record<keyof AdminCustomerDto, any>
   deprecatedAddresses = elasticTextType;
   discountPercent = elasticTextType;
   email = elasticTextType;
-  firstName = elasticTextType;
+  firstName = elasticAutocompleteTextType;
   id = elasticIntegerType;
   isEmailConfirmed = elasticBooleanType;
   isLocked = elasticBooleanType;
   isPhoneNumberConfirmed = elasticBooleanType;
   lastLoggedIn = elasticDateType;
-  lastName = elasticTextType;
+  lastName = elasticAutocompleteTextType;
   note = elasticTextType;
   orderIds = elasticIntegerType;
   password = elasticTextType;
