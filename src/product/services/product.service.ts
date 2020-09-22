@@ -139,7 +139,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   async getClientProductListLastAdded(): Promise<ClientProductListResponseDto> {
     const spf = new ClientProductSPFDto();
-    spf.limit = 5;
+    spf.limit = 11;
 
     const createdAtProp: keyof Product = 'createdAt';
     spf.sort = `-${createdAtProp}`;
