@@ -132,8 +132,9 @@ export class SearchService {
                                  from: number,
                                  size: number,
                                  sortObj: ISorting = {},
-                                 sortFilter?: any,
-                                 schema?: any
+                                 sortFilter: any,
+                                 schema: any,
+                                 fuzzy: boolean = false
   ): Promise<[T[], number]> {
 
     const getQueryTypeForField = (fieldName: string): ElasticQueryType => {
@@ -205,9 +206,12 @@ export class SearchService {
           } else if (queryType === ElasticQueryType.Match) {
             valueForField = {
               query : decodeURIComponent(value),
-              operator: 'and',
-              fuzziness: 'auto'
+              operator: 'and'
             };
+
+            if (fuzzy) {
+              valueForField.fuzziness = 'auto';
+            }
           } else {
             valueForField = decodeURIComponent(value);
           }
