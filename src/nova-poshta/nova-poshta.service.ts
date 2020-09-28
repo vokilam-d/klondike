@@ -5,9 +5,7 @@ import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
 import { StreetDto } from '../shared/dtos/shared-dtos/street.dto';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
-import { ShipmentSenderDto } from '../shared/dtos/admin/shipment-sender.dto';
 import { AddressTypeEnum } from '../shared/enums/address-type.enum';
-import { ShipmentPayerEnum } from '../shared/enums/shipment-payer.enum';
 import { PaymentTypeEnum } from '../shared/enums/payment-type.enum';
 import { ShipmentPaymentMethodEnum } from '../shared/enums/shipment-payment-method.enum';
 import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
@@ -129,7 +127,7 @@ export class NovaPoshtaService {
         ParamsOptionsSeats: false,
         Cost: shipment.cost,
         Description: shipment.description,
-        PayerType: ShipmentPayerEnum.RECIPIENT,
+        PayerType: shipment.payerType,
         PaymentMethod: ShipmentPaymentMethodEnum.CASH,
         DateTime: `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`,
         SeatsAmount: '1',
@@ -148,7 +146,7 @@ export class NovaPoshtaService {
     if (orderPaymentMethod === PaymentTypeEnum.CASH_ON_DELIVERY) {
       const redelivery = shipment.backwardMoneyDelivery ? shipment.backwardMoneyDelivery : shipment.cost;
       saveInternetDocumentRequestBody.methodProperties.BackwardDeliveryData = [{
-        PayerType: ShipmentPayerEnum.RECIPIENT,
+        PayerType: shipment.payerType,
         CargoType: 'Money',
         RedeliveryString: redelivery
       }];

@@ -1,5 +1,4 @@
 export enum ShipmentPayerEnum {
-
-  RECIPIENT = 'Recipient'
-
+  RECIPIENT = 'Recipient',
+  SENDER = 'Sender'
 }
