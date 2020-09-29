@@ -1,14 +1,13 @@
 import { ClientSPFDto } from './spf.dto';
 import { IsNumberString, IsOptional } from 'class-validator';
 import { Product } from '../../../product/models/product.model';
-import { IFilter, ISorting } from '../shared-dtos/spf.dto';
+import { ISorting } from '../shared-dtos/spf.dto';
 import { AdminProductListItemDto } from '../admin/product-list-item.dto';
 import { AdminProductVariantListItem } from '../admin/product-variant-list-item.dto';
 import { AdminProductCategoryDto } from '../admin/product-category.dto';
-import { Transform } from 'class-transformer';
 import { ProductCategory } from '../../../product/models/product-category.model';
 
-enum ESort {
+enum EProductsSort {
   Popularity = 'popularity',
   New = 'new',
   Cheap = 'cheap',
@@ -27,7 +26,7 @@ export class ClientProductSPFDto extends ClientSPFDto {
   id?: string;
 
   get sortFilter(): any {
-    if (this.categoryId && this.sort === ESort.Popularity) {
+    if (this.categoryId && this.sort === EProductsSort.Popularity) {
       const categoriesProp: keyof Product = 'categories';
       const categoryIdProp: keyof ProductCategory = 'id';
       return { [`${categoriesProp}.${categoryIdProp}`]: this.categoryId };
@@ -58,16 +57,16 @@ export class ClientProductSPFDto extends ClientSPFDto {
     };
 
     switch (this.sort) {
-      case ESort.Cheap:
+      case EProductsSort.Cheap:
         sort[`${variantsProp}.${priceProp}`] = 'asc';
         break;
-      case ESort.Expensive:
+      case EProductsSort.Expensive:
         sort[`${variantsProp}.${priceProp}`] = 'desc';
         break;
-      case ESort.New:
+      case EProductsSort.New:
         sort[createdAtProp] = 'desc';
         break;
-      case ESort.Popularity:
+      case EProductsSort.Popularity:
       default:
         if (this.categoryId) {
           sort[`${categoriesProp}.${sortOrderProp}`] = 'desc';

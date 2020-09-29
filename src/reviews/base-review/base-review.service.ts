@@ -12,6 +12,7 @@ import { MediaService } from '../../shared/services/media/media.service';
 import { SearchService } from '../../shared/services/search/search.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
+import { ClientSPFDto } from '../../shared/dtos/client/spf.dto';
 
 type IReviewCallback<T = any> = (review: T, session: ClientSession) => Promise<any>;
 
@@ -34,29 +35,11 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());
   }
 
-  async findReviewsByFilters(spf: AdminSPFDto,
-                             ipAddress?: string,
-                             userId?: string,
-                             customerId?: number
-  ): Promise<ResponseDto<U[]>> {
+  async findReviewsByFilters(spf: AdminSPFDto | ClientSPFDto): Promise<ResponseDto<U[]>> {
 
-    let itemsFiltered: number;
-    let reviews: U[];
-
-    if (spf.hasFilters()) {
-      const searchResponse = await this.searchByFilters(spf);
-      reviews = searchResponse[0];
-      itemsFiltered = searchResponse[1];
-    } else {
-      const reviewModels = await this.reviewModel
-        .find()
-        .sort(spf.getSortAsObj())
-        .skip(spf.skip)
-        .limit(spf.limit)
-        .exec();
-
-      reviews = reviewModels.map(review => this.transformReviewToDto(review, ipAddress, userId, customerId));
-    }
+    const searchResponse = await this.searchByFilters(spf);
+    const reviews: U[] = searchResponse[0];
+    const itemsFiltered: number = searchResponse[1];
 
     const itemsTotal = await this.countReviews();
     const pagesTotal = Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit);
@@ -259,7 +242,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     return this.searchService.deleteDocument(this.collectionName, review.id);
   }
 
-  private async searchByFilters(spf: AdminSPFDto) {
+  private async searchByFilters(spf: AdminSPFDto | ClientSPFDto) {
     return this.searchService.searchByFilters<U>(
       this.collectionName,
       spf.getNormalizedFilters(),

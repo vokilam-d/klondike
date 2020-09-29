@@ -31,6 +31,18 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
     return review;
   }
 
+  async countAverageRating(): Promise<number> {
+    const ratingProp: keyof StoreReview = 'rating';
+    const ratingAggregation: { rating: number }[] = await this.reviewModel.aggregate([{
+      $group: {
+        _id: null,
+        rating: { $avg: `$${ratingProp}` }
+      }
+    }]);
+
+    return Math.round(ratingAggregation[0].rating * 10) / 10;
+  }
+
   transformReviewToDto(review: DocumentType<StoreReview>, ipAddress?: string, userId?: string, customerId?: number): AdminStoreReviewDto {
     review = review.toJSON();
 
