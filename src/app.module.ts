@@ -26,6 +26,7 @@ import { CommonRequestInterceptor } from './shared/interceptors/common-request.i
 import { BlogModule } from './blog/blog.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { AutocompleteModule } from './autocomplete/autocomplete.module';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
   imports: [
@@ -66,7 +67,8 @@ import { AutocompleteModule } from './autocomplete/autocomplete.module';
     TasksModule,
     BlogModule,
     AggregatorModule,
-    AutocompleteModule
+    AutocompleteModule,
+    LoggerModule
   ],
   providers: [
     GlobalExceptionFilter,

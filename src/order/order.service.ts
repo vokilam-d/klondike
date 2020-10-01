@@ -50,6 +50,7 @@ import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 import { User } from '../user/models/user.model';
 import { OrderItemService } from './order-item.service';
 import { OrderItem } from './models/order-item.model';
+import { FileLogger } from '../logger/file-logger.service';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -329,6 +330,9 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       OrderService.setOrderPrices(order);
+
+      order.logs.push({ time: new Date(), text: `Edited order` });
+
       return order;
     });
   }
@@ -479,7 +483,7 @@ export class OrderService implements OnApplicationBootstrap {
               break;
           }
 
-          order.logs.push({ time: new Date(), text: `Updated order status to "${order.status}" - ${order.statusDescription}` });
+          order.logs.push({ time: new Date(), text: `Updated order status by shipment status to "${order.status}" - ${order.statusDescription}` });
         }
 
         await order.save({ session });
@@ -724,7 +728,10 @@ export class OrderService implements OnApplicationBootstrap {
           break;
       }
 
+      const oldStatus = order.status;
       order.status = status;
+
+      order.logs.push({ time: new Date(), text: `Changed order status from "${oldStatus}" to "${order.status}"` });
 
       return order;
     });
