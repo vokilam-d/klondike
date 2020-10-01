@@ -23,7 +23,8 @@ export class OrderItemService {
     }
     const variant = foundProduct.variants.find(v => v.sku === sku);
 
-    if (variant.qtyInStock < qty) {
+    const qtyAvailable = variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0);
+    if (qty > qtyAvailable) {
       throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, variant.qtyInStock));
     }
 

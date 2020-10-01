@@ -280,7 +280,8 @@ export class OrderService implements OnApplicationBootstrap {
         throw new BadRequestException(__('Product with sku "$1" not found', 'ru', item.sku));
       }
 
-      if (variant.qtyInStock < item.qty) {
+      const qtyAvailable = variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0);
+      if (item.qty > qtyAvailable) {
         throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', item.qty, variant.qtyInStock));
       }
 
