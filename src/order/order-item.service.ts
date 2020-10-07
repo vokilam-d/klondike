@@ -64,7 +64,6 @@ export class OrderItemService {
       }
     }
 
-    orderItem.originalPrice = orderItem.price; // todo is this field necessary?
     orderItem.cost = orderItem.price * orderItem.qty;
     orderItem.totalCost = orderItem.cost - orderItem.discountValue;
 

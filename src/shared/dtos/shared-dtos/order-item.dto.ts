@@ -26,10 +26,6 @@ export class OrderItemDto {
 
   @Expose()
   @IsNumber()
-  originalPrice: number;
-
-  @Expose()
-  @IsNumber()
   price: number;
 
   @Expose()

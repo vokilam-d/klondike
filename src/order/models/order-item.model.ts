@@ -18,9 +18,6 @@ export class OrderItem {
   vendorCode: string;
 
   @prop()
-  originalPrice: number;
-
-  @prop()
   price: number;
 
   @prop()
