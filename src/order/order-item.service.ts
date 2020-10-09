@@ -13,7 +13,7 @@ import { OrderPrices } from '../shared/models/order-prices.model';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [
   { totalCostBreakpoint: 500, discountPercent: 5 },
-  { totalCostBreakpoint: 1500, discountPercent: 15 }
+  { totalCostBreakpoint: 1500, discountPercent: 10 }
 ]
 
 @Injectable()
