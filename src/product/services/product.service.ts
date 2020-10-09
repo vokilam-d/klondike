@@ -1115,6 +1115,7 @@ export class ProductService implements OnApplicationBootstrap {
       gtin: variant.gtin,
       price: variant.priceInDefaultCurrency,
       oldPrice: variant.oldPriceInDefaultCurrency,
+      isDiscountApplicable: variant.isDiscountApplicable,
       reviewsAvgRating: productWithQty.reviewsAvgRating,
       allReviewsCount: productWithQty.allReviewsCount,
       textReviewsCount: productWithQty.textReviewsCount,
