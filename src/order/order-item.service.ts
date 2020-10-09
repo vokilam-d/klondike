@@ -74,7 +74,7 @@ export class OrderItemService {
       }
 
       itemsCost += orderItem.cost;
-      if (variant.isDiscountApplicable && variant.oldPriceInDefaultCurrency) {
+      if (variant.isDiscountApplicable && !variant.oldPriceInDefaultCurrency) {
         itemsCostApplicableForDiscount += orderItem.cost;
       }
     }
