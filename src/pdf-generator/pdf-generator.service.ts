@@ -55,6 +55,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       addressBuildingNumber: order.shipment.recipient.buildingNumber,
       addressFlatNumber: order.shipment.recipient.flat,
       shipping: order.shippingMethodName,
+      shippingTip: order.prices.totalCost < 1000 ? 'оплачивается получателем' : 'бесплатная доставка',
       payment: order.paymentMethodClientName,
       products: order.items.map(item => ({
         name: item.name,

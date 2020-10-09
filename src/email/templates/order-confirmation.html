@@ -488,7 +488,7 @@
                                                         <tr style="border-collapse:collapse;">
                                                             <td align="left" style="padding:0;Margin:0;"><p
                                                                     style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131;">
-                                                                {{ shipping }}<br><span
+                                                                {{ shipping }} ({{ shippingTip }})<br><span
                                                                     style="color:#808080;">{{ addressCity }}, {{ address }}{{#if addressBuildingNumber}}, {{ addressBuildingNumber }}{{/if}}{{#if addressFlatNumber}}, {{ addressFlatNumber }}{{/if}}</span>
                                                             </p></td>
                                                         </tr>
@@ -775,7 +775,7 @@
                                                                     <tr style="border-collapse:collapse;">
                                                                         <td align="left" style="padding:0;Margin:0;"><p
                                                                                 style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:18px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:27px;color:#313131;">
-                                                                            Скидка ({{ discountLabel }} - {{ discountPercent }}%)</p></td>
+                                                                            Скидка {{#if discountPercent}}({{ discountLabel }}, {{ discountPercent }}%) {{/if}}</p></td>
                                                                     </tr>
                                                                 </table>
                                                             </td>

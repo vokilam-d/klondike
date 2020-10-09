@@ -48,7 +48,7 @@
 
         <div class="methods">
             <div class="address-methods__title">Способ доставки и оплаты</div>
-            <div class="methods__method">{{ shipping }}</div>
+            <div class="methods__method">{{ shipping }} ({{ shippingTip }})</div>
             <div class="methods__method">{{ payment }}</div>
         </div>
     </main>
@@ -91,7 +91,7 @@
             <div class="summary__value">{{ totalProductsCost }} грн</div>
         </div>
         <div class="summary__row">
-            <div class="summary__key">Скидка ({{ discountLabel }} - {{ discountPercent }}%)</div>
+            <div class="summary__key">Скидка {{#if discountPercent}} ({{ discountLabel }}, {{ discountPercent }}%) {{/if}}</div>
             <div class="summary__value">{{ discountValue }} грн</div>
         </div>
         <div class="summary__row">
