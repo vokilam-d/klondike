@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsNumber, IsPositive, IsString } from 'class-validator';
 
 export class AdminCreateOrderItemDto {
   @IsString()
@@ -7,8 +7,4 @@ export class AdminCreateOrderItemDto {
   @IsNumber()
   @IsPositive()
   qty: number;
-
-  @IsNumber()
-  @IsOptional()
-  customerId: number;
 }

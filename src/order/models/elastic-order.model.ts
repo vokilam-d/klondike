@@ -1,30 +1,21 @@
 import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
 import { ElasticShipmentAddressModel } from '../../shared/models/elastic-shipment-address.model';
-import {
-  elasticAutocompleteType,
-  elasticBooleanType,
-  elasticDateType,
-  elasticFloatType,
-  elasticIntegerType,
-  elasticTextType
-} from '../../shared/constants';
+import { elasticBooleanType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
 import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { ElasticLog } from '../../shared/models/elastic-log.model';
+import { OrderPricesDto } from '../../shared/dtos/shared-dtos/order-prices.dto';
 
 class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'crossSellProducts'> {
   cost = elasticFloatType;
-  discountValue = elasticFloatType;
   imageUrl = elasticTextType;
   name = elasticTextType;
-  originalPrice = elasticFloatType;
   price = elasticFloatType;
   productId = elasticIntegerType;
   qty = elasticIntegerType;
   sku = elasticTextType;
   vendorCode = elasticTextType;
   slug = elasticTextType;
-  totalCost = elasticIntegerType;
   variantId = elasticTextType;
 }
 
@@ -38,6 +29,14 @@ class ElasticShipmentModel implements Record<keyof Pick<ShipmentDto, 'trackingNu
   };
 }
 
+class ElasticOrderPrices implements Record<keyof Pick<OrderPricesDto, 'totalCost' | 'discountLabel' | 'discountPercent' | 'discountValue' | 'itemsCost'>, any> {
+  discountLabel = elasticTextType;
+  discountPercent = elasticIntegerType;
+  discountValue = elasticIntegerType;
+  itemsCost = elasticIntegerType;
+  totalCost = elasticIntegerType;
+}
+
 export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   adminNote = elasticTextType;
   clientNote = elasticTextType;
@@ -48,13 +47,9 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   customerLastName = elasticTextType;
   customerPhoneNumber = elasticTextType;
   customerNote = elasticTextType;
-  discountLabel = elasticTextType;
-  discountPercent = elasticFloatType;
-  discountValue = elasticFloatType;
   id = elasticIntegerType;
   idForCustomer = elasticTextType;
   isCallbackNeeded = elasticBooleanType;
-  isConfirmationEmailSent = elasticBooleanType;
   items = {
     type: 'nested',
     properties: new ElasticOrderItemModel()
@@ -76,7 +71,9 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   state = elasticTextType;
   status = elasticTextType;
   statusDescription = elasticTextType;
-  totalCost = elasticAutocompleteType;
-  totalItemsCost = elasticAutocompleteType;
+  prices = {
+    type: 'nested',
+    properties: new ElasticOrderPrices()
+  }
   isOrderPaid = elasticBooleanType;
 }

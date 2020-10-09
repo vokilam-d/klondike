@@ -230,4 +230,12 @@ export const TRANSLATIONS = {
     en: 'Confirm email link is invalid or expired',
     ru: 'Ссылка для подтверждения пароля неверна или устарела'
   },
+  'Cumulative discount': {
+    en: 'Cumulative discount',
+    ru: 'Накопительная скидка'
+  },
+  'Order amount over $1 uah': {
+    en: 'Order amount over $1 uah',
+    ru: 'Сумма заказа более $1 грн'
+  }
 }

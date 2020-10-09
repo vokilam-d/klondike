@@ -6,8 +6,9 @@ import { ShipmentDto } from '../admin/shipment.dto';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { __ } from '../../helpers/translate/translate.function';
 import { AdminOrderDto } from '../admin/order.dto';
+import { OrderPricesDto } from '../shared-dtos/order-prices.dto';
 
-export class ClientAddOrderDto {
+export class ClientAddOrderDto implements Pick<Order, 'paymentMethodId' | 'isCallbackNeeded' | 'items' | 'clientNote'> {
   @Expose()
   @IsOptional()
   @IsString()
@@ -40,7 +41,7 @@ export class ClientAddOrderDto {
   clientNote: string;
 }
 
-export class ClientOrderDto extends ClientAddOrderDto {
+export class ClientOrderDto extends ClientAddOrderDto implements Pick<Order, 'shipment' | 'shippingMethodName' | 'prices' | 'createdAt'> {
   @Expose()
   @Transform(((value, obj: Order) => obj.idForCustomer))
   id: string;
@@ -61,19 +62,8 @@ export class ClientOrderDto extends ClientAddOrderDto {
   status: string;
 
   @Expose()
-  totalItemsCost: number;
-
-  @Expose()
-  discountPercent: number;
-
-  @Expose()
-  discountValue: number;
-
-  @Expose()
-  discountLabel: string;
-
-  @Expose()
-  totalCost: number;
+  @Type(() => OrderPricesDto)
+  prices: OrderPricesDto;
 
   @Expose()
   createdAt: Date;

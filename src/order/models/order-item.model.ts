@@ -27,12 +27,6 @@ export class OrderItem {
   cost: number;
 
   @prop()
-  discountValue: number;
-
-  @prop()
-  totalCost: number;
-
-  @prop()
   imageUrl: string;
 
   @prop()

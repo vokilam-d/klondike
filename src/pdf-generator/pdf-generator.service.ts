@@ -47,7 +47,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
     return {
       orderId: order.idForCustomer,
       orderDateTime: readableDate(order.createdAt),
-      totalOrderCost: order.totalCost,
+      totalOrderCost: order.prices.totalCost,
       addressName: `${order.shipment.recipient.firstName} ${order.shipment.recipient.lastName}`,
       addressPhone: order.shipment.recipient.phone,
       addressCity: order.shipment.recipient.settlement,
@@ -65,9 +65,10 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
         imageUrl: item.imageUrl,
         slug: item.slug
       })),
-      totalProductsCost: order.totalItemsCost,
-      discountPercent: order.discountPercent,
-      discountValue: order.discountValue
+      totalProductsCost: order.prices.itemsCost,
+      discountLabel: order.prices.discountLabel,
+      discountPercent: order.prices.discountPercent,
+      discountValue: order.prices.discountValue
     };
   }
 

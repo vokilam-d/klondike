@@ -37,14 +37,6 @@ export class OrderItemDto {
   cost: number;
 
   @Expose()
-  @IsNumber()
-  discountValue: number;
-
-  @Expose()
-  @IsNumber()
-  totalCost: number;
-
-  @Expose()
   @IsOptional()
   @IsString()
   imageUrl: string;

@@ -5,6 +5,7 @@ import { Shipment } from './shipment.model';
 import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { Log } from '../../shared/models/log.model';
+import { OrderPrices } from '../../shared/models/order-prices.model';
 
 export class Order {
   @prop()
@@ -42,9 +43,6 @@ export class Order {
 
   @prop({ default: new Date() })
   updatedAt: Date;
-
-  @prop()
-  isConfirmationEmailSent: boolean;
 
   @prop()
   paymentMethodId: string;
@@ -87,20 +85,8 @@ export class Order {
   @arrayProp({ items: Log, default: [] })
   logs: Log[];
 
-  @prop({ default: 0 })
-  totalItemsCost: number;
-
-  @prop({ default: 0 })
-  discountPercent: number;
-
-  @prop({ default: 0 })
-  discountValue: number;
-
   @prop()
-  discountLabel: string;
-
-  @prop({ default: 0 })
-  totalCost: number;
+  prices: OrderPrices;
 
   @prop({ default: false })
   isOrderPaid: boolean;

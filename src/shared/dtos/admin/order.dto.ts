@@ -15,8 +15,10 @@ import { OrderStatusEnum } from '../../enums/order-status.enum';
 import { __ } from '../../helpers/translate/translate.function';
 import { PaymentTypeEnum } from '../../enums/payment-type.enum';
 import { Log } from '../../models/log.model';
+import { OrderPricesDto } from '../shared-dtos/order-prices.dto';
+import { Order } from '../../../order/models/order.model';
 
-export class AdminAddOrUpdateOrderDto {
+export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'state' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid'>{
   @Expose()
   @IsOptional()
   @IsNumber()
@@ -55,11 +57,6 @@ export class AdminAddOrUpdateOrderDto {
   @IsDate()
   @Type(() => Date)
   createdAt: Date;
-
-  @Expose()
-  @IsOptional()
-  @IsBoolean()
-  isConfirmationEmailSent: boolean;
 
   @Expose()
   @IsString()
@@ -107,29 +104,8 @@ export class AdminAddOrUpdateOrderDto {
   logs: Log[];
 
   @Expose()
-  @IsOptional()
-  @IsNumber()
-  totalItemsCost: number;
-
-  @Expose()
-  @IsOptional()
-  @IsNumber()
-  discountPercent: number;
-
-  @Expose()
-  @IsOptional()
-  @IsNumber()
-  discountValue: number;
-
-  @Expose()
-  @IsOptional()
-  @IsString()
-  discountLabel: string;
-
-  @Expose()
-  @IsOptional()
-  @IsNumber()
-  totalCost: number;
+  @Type(() => OrderPricesDto)
+  prices: OrderPricesDto;
 
   @Expose()
   @IsOptional()
@@ -137,7 +113,7 @@ export class AdminAddOrUpdateOrderDto {
   isOrderPaid: boolean;
 }
 
-export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
+export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Order, 'id' | 'idForCustomer' | 'statusDescription' | 'paymentMethodClientName' | 'paymentMethodAdminName' | 'shippingMethodName'> {
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id: number;
@@ -167,7 +143,7 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto {
   shippingMethodName: string;
 }
 
-export class UpdateOrderAdminNote {
+export class UpdateOrderAdminNote implements Pick<Order, 'adminNote'>{
   @IsString()
   adminNote: string;
 }

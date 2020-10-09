@@ -50,7 +50,6 @@ import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 import { User } from '../user/models/user.model';
 import { OrderItemService } from './order-item.service';
 import { OrderItem } from './models/order-item.model';
-import { FileLogger } from '../logger/file-logger.service';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -187,9 +186,9 @@ export class OrderService implements OnApplicationBootstrap {
 
       await session.commitTransaction();
 
-      this.logger.log(`Created order by admin, orderId=${newOrder.id}, userLogin=${user.login}`);
+      this.logger.log(`Created order by admin, orderId=${newOrder.id}, userLogin=${user?.login}`);
 
-      await this.addSearchData(newOrder);
+      this.addSearchData(newOrder).then();
       this.updateCachedOrderCount();
 
       return newOrder;
@@ -233,7 +232,9 @@ export class OrderService implements OnApplicationBootstrap {
       const shipment = new ShipmentDto();
       shipment.recipient = orderDto.address;
 
-      const newOrder = await this.createOrder({ ...orderDto, shipment }, customer, session);
+      const prices = await this.orderItemService.calcOrderPrices(orderDto.items, customer);
+
+      const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, customer, session);
       newOrder.status = OrderStatusEnum.NEW;
       await newOrder.save({ session });
       await session.commitTransaction();
@@ -272,27 +273,19 @@ export class OrderService implements OnApplicationBootstrap {
     newOrder.status = OrderStatusEnum.NEW;
 
     const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
-    for (const item of newOrder.items) {
-      const product = products.find(product => product._id === item.productId);
-      const variant = product?.variants.find(variant => variant._id.equals(item.variantId));
-
+    for (let i = 0; i < newOrder.items.length; i++) {
+      const { productId, variantId, sku, qty } = newOrder.items[i];
+      const product = products.find(product => product._id === productId);
+      const variant = product?.variants.find(variant => variant._id.equals(variantId));
       if (!product || !variant) {
-        throw new BadRequestException(__('Product with sku "$1" not found', 'ru', item.sku));
+        throw new BadRequestException(__('Product with sku "$1" not found', 'ru', sku));
       }
 
-      const qtyAvailable = variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0);
-      if (item.qty > qtyAvailable) {
-        throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', item.qty, variant.qtyInStock));
-      }
+      newOrder.items[i] = await this.orderItemService.createOrderItem(sku, qty, false, product, variant);
 
-      await this.orderItemService.setOrderItemPrices(item, variant, customer);
-
-      await this.inventoryService.addToOrdered(item.sku, item.qty, newOrder.id, session);
-      await this.productService.updateSearchDataById(item.productId, session);
+      await this.inventoryService.addToOrdered(sku, qty, newOrder.id, session);
+      await this.productService.updateSearchDataById(productId, session);
     }
-
-    newOrder.discountPercent = customer.discountPercent;
-    OrderService.setOrderPrices(newOrder);
 
     await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
 
@@ -329,8 +322,6 @@ export class OrderService implements OnApplicationBootstrap {
       if (oldPaymentMethodId !== newPaymentMethodId) {
         await this.setPaymentInfoByMethodId(order, newPaymentMethodId);
       }
-
-      OrderService.setOrderPrices(order);
 
       order.logs.push({ time: new Date(), text: `Edited order` });
 
@@ -392,7 +383,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   private async finishedOrderPostActions(order: Order, session: ClientSession): Promise<Order> {
-    await this.customerService.incrementTotalOrdersCost(order.customerId, order.totalCost, session);
+    await this.customerService.incrementTotalOrdersCost(order.customerId, order.prices.totalCost, session);
 
     return order;
   }
@@ -569,7 +560,7 @@ export class OrderService implements OnApplicationBootstrap {
     const merchantDomainName = process.env.MERCHANT_DOMAIN;
     const orderReference = order.idForCustomer + '#' + new Date().getTime();
     const orderDate = order.createdAt.getTime() + '';
-    const amount = order.totalCost;
+    const amount = order.prices.totalCost;
     const currency = 'UAH';
 
     const itemNames: string[] = [];
@@ -642,21 +633,6 @@ export class OrderService implements OnApplicationBootstrap {
       await this.fetchShipmentStatus(order);
       return order;
     });
-  }
-
-  private static setOrderPrices(order: Order) {
-    order.totalItemsCost = 0;
-    order.totalCost = 0;
-    order.discountValue = 0;
-
-    for (let item of order.items) {
-      item.cost = item.price * item.qty;
-      item.totalCost = item.cost - item.discountValue;
-
-      order.totalItemsCost += item.cost;
-      order.totalCost += item.totalCost;
-      order.discountValue += item.discountValue;
-    }
   }
 
   async changeStatus(orderId: number, status: OrderStatusEnum, shipmentDto?: ShipmentDto) {
