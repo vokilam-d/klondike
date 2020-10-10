@@ -191,6 +191,7 @@ export class CategoryService implements OnApplicationBootstrap {
       const category = await this.getCategoryById(categoryId, session);
       const oldSlug = category.slug;
       const oldName = category.name;
+      const oldIsEnabled = category.isEnabled;
 
       const mediasToDelete: Media[] = [];
       for (const media of category.medias) {
@@ -215,9 +216,9 @@ export class CategoryService implements OnApplicationBootstrap {
       if (oldSlug !== categoryDto.slug) {
         await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, categoryDto.createRedirect, session);
       }
-      if (oldSlug !== categoryDto.slug || oldName !== categoryDto.name) {
-        await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, session);
-        await this.updateBreadcrumbs(categoryId, categoryDto.name, categoryDto.slug, session)
+      if (oldSlug !== categoryDto.slug || oldName !== categoryDto.name || oldIsEnabled !== categoryDto.isEnabled) {
+        await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session);
+        await this.updateBreadcrumbs(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session)
       }
 
       const saved = await category.save({ session });
@@ -318,7 +319,8 @@ export class CategoryService implements OnApplicationBootstrap {
       breadcrumbs.unshift({
         id: parent.id,
         name: parent.name,
-        slug: parent.slug
+        slug: parent.slug,
+        isEnabled: parent.isEnabled
       });
 
       parentId = parent.parentId;
@@ -397,17 +399,20 @@ export class CategoryService implements OnApplicationBootstrap {
     return this.mediaService.upload(request, Category.collectionName);
   }
 
-  private async updateBreadcrumbs(categoryId: number, name: string, slug: string, session: ClientSession): Promise<void> {
+  private async updateBreadcrumbs(categoryId: number, name: string, slug: string, isEnabled: boolean, session: ClientSession): Promise<void> {
     const breadcrumbsProp: keyof Category = 'breadcrumbs';
     const breadcrumbIdProp: keyof Breadcrumb = 'id';
     const breadcrumbNameProp: keyof Breadcrumb = 'name';
     const breadcrumbSlugProp: keyof Breadcrumb = 'slug';
+    const breadcrumbIsEnabledProp: keyof Breadcrumb = 'isEnabled';
+
     await this.categoryModel.updateMany(
       { [`${breadcrumbsProp}.${breadcrumbIdProp}`]: categoryId },
       {
         $set: {
           [`${breadcrumbsProp}.$.${breadcrumbNameProp}`]: name,
-          [`${breadcrumbsProp}.$.${breadcrumbSlugProp}`]: slug
+          [`${breadcrumbsProp}.$.${breadcrumbSlugProp}`]: slug,
+          [`${breadcrumbsProp}.$.${breadcrumbIsEnabledProp}`]: isEnabled
         }
       }
     ).session(session).exec();

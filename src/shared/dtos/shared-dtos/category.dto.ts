@@ -16,6 +16,9 @@ export class CategoryTreeItem {
   slug: CategoryDto['slug'];
 
   @Expose()
+  isEnabled: CategoryDto['isEnabled'];
+
+  @Expose()
   parentId: CategoryDto['parentId'];
 
   @Expose()

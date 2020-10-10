@@ -749,18 +749,20 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  async updateProductCategory(categoryId: number, categoryName: string, categorySlug: string, session: ClientSession): Promise<any> {
+  async updateProductCategory(categoryId: number, categoryName: string, categorySlug: string, categoryIsEnabled: boolean, session: ClientSession): Promise<any> {
     const categoriesProp: keyof Product = 'categories';
     const categoryIdProp: keyof ProductCategory = 'id';
     const categoryNameProp: keyof ProductCategory = 'name';
     const categorySlugProp: keyof ProductCategory = 'slug';
+    const categoryIsEnabledProp: keyof ProductCategory = 'isEnabled';
 
     await this.productModel
       .updateMany(
         { [`${categoriesProp}.${categoryIdProp}`]: categoryId },
         {
           [`${categoriesProp}.$.${categoryNameProp}`]: categoryName,
-          [`${categoriesProp}.$.${categorySlugProp}`]: categorySlug
+          [`${categoriesProp}.$.${categorySlugProp}`]: categorySlug,
+          [`${categoriesProp}.$.${categoryIsEnabledProp}`]: categoryIsEnabled
         }
       )
       .session(session)
@@ -769,7 +771,7 @@ export class ProductService implements OnApplicationBootstrap {
     // todo remove this lines under after converting breadcrumbs to ids only
     const breadcrumbsProp = getPropertyOf<Product>('breadcrumbs');
     const idProp = getPropertyOf<Breadcrumb>('id');
-    const breadcrumb = { id: categoryId, name: categoryName, slug: categorySlug };
+    const breadcrumb: Breadcrumb = { id: categoryId, name: categoryName, slug: categorySlug, isEnabled: categoryIsEnabled };
 
     return this.productModel
       .updateMany(
@@ -796,7 +798,8 @@ export class ProductService implements OnApplicationBootstrap {
           newBreadcrumbs.push({ // todo remove this after converting breadcrumbs to ids only
             id: treeItem.id,
             name: treeItem.name,
-            slug: treeItem.slug
+            slug: treeItem.slug,
+            isEnabled: treeItem.isEnabled
           });
         }
 
@@ -1047,10 +1050,12 @@ export class ProductService implements OnApplicationBootstrap {
   async transformToClientProductDto(productWithQty: ProductWithQty, slug: string): Promise<ClientProductDto> {
     const variant = productWithQty.variants.find(v => v.slug === slug);
 
-    const categories: ClientProductCategoryDto[] = productWithQty.categories.map(category => {
-      const { sortOrder, ...rest } = category;
-      return rest;
-    });
+    const categories: ClientProductCategoryDto[] = productWithQty.categories
+      .filter(category => category.isEnabled)
+      .map(category => {
+        const { sortOrder, ...rest } = category;
+        return rest;
+      });
 
     const variantGroups: ClientProductVariantGroupDto[] = [];
     const attributeModels = await this.attributeService.getAllAttributes();

@@ -11,6 +11,9 @@ export class ProductCategory {
   @prop()
   slug: string;
 
+  @prop()
+  isEnabled: boolean;
+
   @prop({ default: 0 })
   sortOrder: number;
 }

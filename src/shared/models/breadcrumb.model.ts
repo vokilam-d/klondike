@@ -10,4 +10,7 @@ export class Breadcrumb {
 
   @prop()
   slug: Category['slug'];
+
+  @prop()
+  isEnabled: Category['isEnabled'];
 }

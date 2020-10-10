@@ -24,4 +24,7 @@ export class AdminProductCategoryDto implements Required<ProductCategory> {
   @IsOptional()
   @IsNumber()
   sortOrder: number;
+
+  @Expose()
+  isEnabled: boolean;
 }
