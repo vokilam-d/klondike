@@ -116,6 +116,7 @@ export class CustomerService implements OnApplicationBootstrap {
   private async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
     const newCustomer = new this.customerModel(customerDto);
     newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
+    newCustomer.createdAt = new Date();
 
     await newCustomer.save({ session });
     this.addSearchData(newCustomer);
