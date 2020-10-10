@@ -57,7 +57,7 @@ export class OrderItemService {
   assertIsInStock(qty: number, variant: ProductVariantWithQty): void {
     const qtyAvailable = variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0);
     if (qty > qtyAvailable) {
-      throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, variant.qtyInStock));
+      throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, qtyAvailable));
     }
   }
 
