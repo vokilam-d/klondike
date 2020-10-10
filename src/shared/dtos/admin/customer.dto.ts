@@ -11,14 +11,17 @@ import {
 } from 'class-validator';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class AdminAddOrUpdateCustomerDto {
   @Expose()
   @IsString()
+  @TrimString()
   firstName: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   lastName: string;
 
   @Expose()
@@ -30,6 +33,7 @@ export class AdminAddOrUpdateCustomerDto {
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   @Transform(value => normalizePhoneNumber(value))
   phoneNumber: string;
 
@@ -71,6 +75,7 @@ export class AdminAddOrUpdateCustomerDto {
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   note: string;
 
   @Expose()

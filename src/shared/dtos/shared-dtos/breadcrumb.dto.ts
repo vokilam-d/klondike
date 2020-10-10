@@ -1,5 +1,6 @@
 import { Expose } from 'class-transformer';
 import { IsNumber, IsString } from 'class-validator';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class BreadcrumbDto {
   @Expose()
@@ -8,9 +9,11 @@ export class BreadcrumbDto {
 
   @Expose()
   @IsString()
+  @TrimString()
   name: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   slug: string;
 }

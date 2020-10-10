@@ -1,10 +1,11 @@
 import { ArrayNotEmpty, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
-import { AdminAddOrUpdateProductVariantDto, AdminProductVariantDto } from './product-variant.dto';
+import { AdminAddOrUpdateProductVariantDto } from './product-variant.dto';
 import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { AdminProductCategoryDto } from './product-category.dto';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class AdminAddOrUpdateProductDto {
   @Expose()
@@ -13,6 +14,7 @@ export class AdminAddOrUpdateProductDto {
 
   @Expose()
   @IsString()
+  @TrimString()
   name: string;
 
   @Expose()

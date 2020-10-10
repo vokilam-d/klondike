@@ -4,6 +4,7 @@ import { transliterate } from '../../helpers/transliterate.function';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { AdminMediaDto } from './media.dto';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class AdminAddOrUpdateCategoryDto {
   @Expose()
@@ -12,15 +13,18 @@ export class AdminAddOrUpdateCategoryDto {
 
   @Expose()
   @IsString()
+  @TrimString()
   name: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   description: string;
 
   @Expose()
   @IsString()
   @Transform((slug, category) => slug === '' ? transliterate(category.name) : slug)
+  @TrimString()
   slug: string;
 
   @IsBoolean()

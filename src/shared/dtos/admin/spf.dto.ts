@@ -3,10 +3,12 @@ import { queryParamArrayDelimiter } from '../../constants';
 import { IFilter, SortingPaginatingFilterDto } from '../shared-dtos/spf.dto';
 import { AdminProductListItemDto } from './product-list-item.dto';
 import { AdminProductCategoryDto } from './product-category.dto';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class AdminSPFDto extends SortingPaginatingFilterDto {
   @IsString()
   @IsOptional()
+  @TrimString()
   filters: string;
 
   get sortFilter(): any {

@@ -1,6 +1,7 @@
 import { IsOptional, IsPositive, IsString, Min } from 'class-validator';
 import { queryParamArrayDelimiter, sortFieldRegex } from '../../constants';
 import { Transform } from 'class-transformer';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export interface IFilter {
   fieldName: string;
@@ -16,6 +17,7 @@ const defaultSorting: ISorting = { 'id': 'desc' };
 export abstract class SortingPaginatingFilterDto {
 
   @IsString()
+  @TrimString()
   @IsOptional()
   sort?: string = '';
 

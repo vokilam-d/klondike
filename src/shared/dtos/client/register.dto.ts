@@ -1,11 +1,14 @@
 import { IsEmail, IsString, Matches } from 'class-validator';
 import { validPasswordRegex } from '../../constants';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class ClientRegisterDto {
   @IsString()
+  @TrimString()
   firstName: string;
 
   @IsString()
+  @TrimString()
   lastName: string;
 
   @IsEmail()

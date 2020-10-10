@@ -4,6 +4,7 @@ import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { ShipmentStatusEnum } from '../../enums/shipment-status.enum';
 import { ShipmentPayerEnum } from '../../enums/shipment-payer.enum';
 import { ShipmentPaymentMethodEnum } from '../../enums/shipment-payment-method.enum';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class ShipmentDto {
 
@@ -23,6 +24,7 @@ export class ShipmentDto {
   @Expose()
   @IsString()
   @IsOptional()
+  @TrimString()
   statusDescription?: string;
 
   @Expose()

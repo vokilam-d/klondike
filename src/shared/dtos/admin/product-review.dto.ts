@@ -1,6 +1,7 @@
 import { Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { AdminBaseReviewDto } from './base-review.dto';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class AdminProductReviewCommentDto {
   @Expose()
@@ -13,15 +14,18 @@ export class AdminProductReviewCommentDto {
 
   @Expose()
   @IsString()
+  @TrimString()
   name: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   text: string;
 
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   email: string;
 
   @Expose()
@@ -42,11 +46,13 @@ export class AdminProductReviewDto extends AdminBaseReviewDto {
 
   @Expose()
   @IsString()
+  @TrimString()
   productName: string;
 
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   productVariantId: string;
 
   @Expose()

@@ -7,6 +7,7 @@ import { CurrencyCodeEnum } from '../../enums/currency.enum';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { ProductVariantWithQty } from '../../../product/models/product-with-qty.model';
 import { AdminLinkedProductDto } from './linked-product.dto';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class AdminAddOrUpdateProductVariantDto {
   @Exclude()
@@ -18,6 +19,7 @@ export class AdminAddOrUpdateProductVariantDto {
 
   @Expose()
   @IsString()
+  @TrimString()
   name: string;
 
   @Expose()
@@ -26,15 +28,18 @@ export class AdminAddOrUpdateProductVariantDto {
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   vendorCode: string;
 
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   gtin: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   @Transform((slug, variant) => slug === '' ? transliterate(variant.name) : slug)
   slug: string;
 
@@ -83,10 +88,12 @@ export class AdminAddOrUpdateProductVariantDto {
 
   @Expose()
   @IsString()
+  @TrimString()
   fullDescription: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   shortDescription: string;
 
   @Expose()
@@ -119,6 +126,7 @@ export class AdminAddOrUpdateProductVariantDto {
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   googleAdsProductTitle: string;
 
   @Expose()

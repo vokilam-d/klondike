@@ -3,12 +3,14 @@ import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class AdminBlogCategoryCreateDto implements Omit<BlogCategory, '_id' | 'id'> {
   id?: any;
 
   @Expose()
   @IsString()
+  @TrimString()
   content: string;
 
   @Expose()
@@ -22,11 +24,13 @@ export class AdminBlogCategoryCreateDto implements Omit<BlogCategory, '_id' | 'i
 
   @Expose()
   @IsString()
+  @TrimString()
   name: string;
 
   @Expose()
   @IsString()
   @Transform((slug, category) => slug === '' ? transliterate(category.name) : slug)
+  @TrimString()
   slug: string;
 
   @Expose()

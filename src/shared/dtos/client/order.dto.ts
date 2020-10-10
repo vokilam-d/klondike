@@ -7,11 +7,13 @@ import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { __ } from '../../helpers/translate/translate.function';
 import { AdminOrderDto } from '../admin/order.dto';
 import { OrderPricesDto } from '../shared-dtos/order-prices.dto';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class ClientAddOrderDto implements Pick<Order, 'paymentMethodId' | 'isCallbackNeeded' | 'items' | 'clientNote'> {
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   @Transform(((value, obj: Order) => value ? value : obj.customerEmail))
   email: string;
 
@@ -22,6 +24,7 @@ export class ClientAddOrderDto implements Pick<Order, 'paymentMethodId' | 'isCal
 
   @Expose()
   @IsString()
+  @TrimString()
   paymentMethodId: string;
 
   @Expose()
@@ -38,6 +41,7 @@ export class ClientAddOrderDto implements Pick<Order, 'paymentMethodId' | 'isCal
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   clientNote: string;
 }
 

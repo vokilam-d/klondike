@@ -17,6 +17,7 @@ import { PaymentTypeEnum } from '../../enums/payment-type.enum';
 import { Log } from '../../models/log.model';
 import { OrderPricesDto } from '../shared-dtos/order-prices.dto';
 import { Order } from '../../../order/models/order.model';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'state' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid'>{
   @Expose()
@@ -27,21 +28,25 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   customerFirstName: string;
 
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   customerLastName: string;
 
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   customerEmail: string;
 
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   customerPhoneNumber: string;
 
   @Expose()
@@ -60,6 +65,7 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
 
   @Expose()
   @IsString()
+  @TrimString()
   paymentMethodId: string;
 
   @Expose()
@@ -91,11 +97,13 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
 
   @Expose()
   @IsString()
+  @TrimString()
   @IsOptional()
   clientNote: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   @IsOptional()
   adminNote: string;
 
@@ -121,6 +129,7 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Orde
   @Expose()
   @IsOptional()
   @IsString()
+  @TrimString()
   idForCustomer: string;
 
   @Expose()
@@ -129,16 +138,19 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Orde
 
   @Expose()
   @IsString()
+  @TrimString()
   @IsOptional()
   paymentMethodClientName: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   @IsOptional()
   paymentMethodAdminName: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   @IsOptional()
   shippingMethodName: string;
 }

@@ -7,6 +7,7 @@ import { Expose, Transform, Type } from 'class-transformer';
 import { AdminMediaDto } from './media.dto';
 import { transliterate } from '../../helpers/transliterate.function';
 import { LinkedBlogCategory } from '../../../blog/models/linked-blog-category.model';
+import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class LinkedBlogCategoryDto implements LinkedBlogCategory {
   @Expose()
@@ -15,10 +16,12 @@ export class LinkedBlogCategoryDto implements LinkedBlogCategory {
 
   @Expose()
   @IsString()
+  @TrimString()
   name: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   slug: string;
 }
 
@@ -29,10 +32,12 @@ export class LinkedBlogPostDto implements LinkedBlogPost {
 
   @Expose()
   @IsString()
+  @TrimString()
   name: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   slug: string;
 
   @Expose()
@@ -44,11 +49,13 @@ export class LinkedBlogPostDto implements LinkedBlogPost {
 export class AdminBlogPostCreateDto implements Record<keyof Omit<BlogPost, '_id' | 'id'>, any> {
   @Expose()
   @IsString()
+  @TrimString()
   name: string;
 
   @Expose()
   @IsString()
   @Transform((slug, post) => slug === '' ? transliterate(post.name) : slug)
+  @TrimString()
   slug: string;
 
   @Expose()
@@ -57,10 +64,12 @@ export class AdminBlogPostCreateDto implements Record<keyof Omit<BlogPost, '_id'
 
   @Expose()
   @IsString()
+  @TrimString()
   content: string;
 
   @Expose()
   @IsString()
+  @TrimString()
   shortContent: string;
 
   @Expose()
