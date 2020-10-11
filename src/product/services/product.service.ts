@@ -1172,9 +1172,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     for (const variant of product.variants) {
       variant.priceInDefaultCurrency = Math.ceil(variant.price * exchangeRate);
-      if (variant.oldPrice) {
-        variant.oldPriceInDefaultCurrency = Math.ceil(variant.oldPrice * exchangeRate);
-      }
+      variant.oldPriceInDefaultCurrency = variant.oldPrice ? Math.ceil(variant.oldPrice * exchangeRate) : variant.oldPrice;
     }
 
     return product;
