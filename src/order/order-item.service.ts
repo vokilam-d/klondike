@@ -43,7 +43,7 @@ export class OrderItemService {
       orderItem.imageUrl = variant.medias[0].variantsUrls.small;
     }
 
-    orderItem.price = variant.oldPriceInDefaultCurrency ? variant.oldPriceInDefaultCurrency : variant.priceInDefaultCurrency;
+    orderItem.price = variant.priceInDefaultCurrency;
     orderItem.qty = qty;
     orderItem.cost = orderItem.price * orderItem.qty;
 
