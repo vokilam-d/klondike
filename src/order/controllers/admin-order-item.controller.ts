@@ -9,6 +9,7 @@ import { OrderPricesDto } from '../../shared/dtos/shared-dtos/order-prices.dto';
 import { plainToClass } from 'class-transformer';
 import { CustomerService } from '../../customer/customer.service';
 import { AdminCalculatePricesDto } from '../../shared/dtos/admin/calculate-prices.dto';
+import { Customer } from '../../customer/models/customer.model';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -30,7 +31,11 @@ export class AdminOrderItemController {
 
   @Post('prices')
   async calcOrderPrices(@Req() req: FastifyRequest, @Body() body: AdminCalculatePricesDto): Promise<ResponseDto<OrderPricesDto>> {
-    const customer = await this.customerService.getCustomerById(body.customerId);
+    let customer: Customer;
+    if (body.customerId) {
+      customer = await this.customerService.getCustomerById(body.customerId);
+    }
+
     const prices = await this.orderItemService.calcOrderPrices(body.items, customer);
 
     return {
