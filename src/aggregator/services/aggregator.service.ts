@@ -32,6 +32,7 @@ export class AggregatorService {
 
   onApplicationBootstrap(): any {
     this.searchService.ensureCollection(Aggregator.collectionName, new ElasticAggregator());
+    // this.reindexAllSearchData();
   }
 
   async getAggregatorsResponseDto(spf: AdminSPFDto): Promise<ResponseDto<AdminAggregatorDto[]>> {
@@ -151,7 +152,10 @@ export class AggregatorService {
         if (!product || product.id === productId) { continue; }
 
         for (const variant of product.variants) {
-          aggregatedProducts.push(variant);
+          aggregatedProducts.push({
+            ...variant,
+            price: variant.priceInDefaultCurrency
+          });
         }
       }
 
