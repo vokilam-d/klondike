@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
 import { ProductVariant } from '../../../product/models/product-variant.model';
 
-export class ClientAggregatedProductDto implements Pick<ProductVariant, 'slug' | 'name' | 'sku'> {
+export class ClientAggregatedProductDto implements Pick<ProductVariant, 'slug' | 'name' | 'sku' | 'price'> {
 
   @Expose()
   mediaUrl: string;
@@ -14,4 +14,7 @@ export class ClientAggregatedProductDto implements Pick<ProductVariant, 'slug' |
 
   @Expose()
   sku: string;
+
+  @Expose()
+  price: number;
 }
