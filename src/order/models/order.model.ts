@@ -91,6 +91,9 @@ export class Order {
   @prop({ default: false })
   isOrderPaid: boolean;
 
+  @prop()
+  source: 'client' | 'manager';
+
 
   static collectionName: string = 'order';
 }

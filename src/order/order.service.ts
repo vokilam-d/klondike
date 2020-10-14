@@ -180,8 +180,11 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const newOrder = await this.createOrder(orderDto, customer, session);
+      newOrder.source = 'manager';
+      newOrder.logs.push({ time: new Date(), text: `Created order` });
       newOrder.status = OrderStatusEnum.PROCESSING;
       await this.fetchShipmentStatus(newOrder);
+
       await newOrder.save({ session });
 
       await session.commitTransaction();
@@ -236,6 +239,8 @@ export class OrderService implements OnApplicationBootstrap {
 
       const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, customer, session);
       newOrder.status = OrderStatusEnum.NEW;
+      newOrder.source = 'client';
+      newOrder.logs.push({ time: new Date(), text: `Created order` });
       await newOrder.save({ session });
       await session.commitTransaction();
 
