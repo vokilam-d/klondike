@@ -5,7 +5,7 @@ import { Expose, Transform, Type } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
 import { TrimString } from '../../decorators/trim-string.decorator';
 
-export class AdminBlogCategoryCreateDto implements Omit<BlogCategory, '_id' | 'id'> {
+export class AdminBlogCategoryCreateOrUpdateDto implements Omit<BlogCategory, '_id' | 'id'> {
   id?: any;
 
   @Expose()
@@ -39,7 +39,7 @@ export class AdminBlogCategoryCreateDto implements Omit<BlogCategory, '_id' | 'i
   sortOrder: number;
 }
 
-export class AdminBlogCategoryDto extends AdminBlogCategoryCreateDto implements Pick<BlogCategory, 'id'> {
+export class AdminBlogCategoryDto extends AdminBlogCategoryCreateOrUpdateDto implements Pick<BlogCategory, 'id'> {
   @Expose()
   id: number;
 }

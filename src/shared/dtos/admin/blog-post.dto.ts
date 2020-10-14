@@ -46,7 +46,7 @@ export class LinkedBlogPostDto implements LinkedBlogPost {
   sortOrder: number;
 }
 
-export class AdminBlogPostCreateDto implements Record<keyof Omit<BlogPost, '_id' | 'id'>, any> {
+export class AdminBlogPostCreateOrUpdateDto implements Record<keyof Omit<BlogPost, '_id' | 'id'>, any> {
   @Expose()
   @IsString()
   @TrimString()
@@ -60,6 +60,7 @@ export class AdminBlogPostCreateDto implements Record<keyof Omit<BlogPost, '_id'
 
   @Expose()
   @ValidateNested()
+  @Type(() => LinkedBlogCategoryDto)
   category: LinkedBlogCategoryDto;
 
   @Expose()
@@ -123,7 +124,7 @@ export class AdminBlogPostCreateDto implements Record<keyof Omit<BlogPost, '_id'
   featuredMedia: AdminMediaDto;
 }
 
-export class AdminBlogPostDto extends AdminBlogPostCreateDto implements Pick<BlogPost, 'id'> {
+export class AdminBlogPostDto extends AdminBlogPostCreateOrUpdateDto implements Pick<BlogPost, 'id'> {
   @Expose()
   id: number;
 }

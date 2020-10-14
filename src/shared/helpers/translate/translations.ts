@@ -146,6 +146,14 @@ export const TRANSLATIONS = {
     en: 'Review with id "$1" not found',
     ru: 'Отзыв с id "$1" не найден'
   },
+  'Blog post with id "$1" not found': {
+    en: 'Blog post with id "$1" not found',
+    ru: 'Блог пост с id "$1" не найден'
+  },
+  'Blog category with id "$1" not found': {
+    en: 'Blog category with id "$1" not found',
+    ru: 'Блог категория с id "$1" не найдена'
+  },
   'You have already voted for this review': {
     en: 'You have already voted for this review',
     ru: 'Вы уже голосовали за этот отзыв'

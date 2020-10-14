@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BlogPost, BlogPostModel } from './models/blog-post.model';
-import { AdminBlogController } from './admin-blog.controller';
-import { BlogService } from './blog.service';
+import { AdminBlogPostController } from './controllers/admin-blog-post.controller';
+import { BlogPostService } from './services/blog-post.service';
 import { BlogCategory, BlogCategoryModel } from './models/blog-category.model';
-import { ProductModule } from '../product/product.module';
-import { ClientBlogController } from './client-blog.controller';
+import { ClientBlogController } from './controllers/client-blog.controller';
 import { PageRegistryModule } from '../page-registry/page-registry.module';
+import { AdminBlogCategoryController } from './controllers/admin-blog-category.controller';
+import { BlogCategoryService } from './services/blog-category.service';
 
 const blogPostModel = {
   name: BlogPostModel.modelName,
@@ -25,8 +26,8 @@ const blogCategoryModel = {
     MongooseModule.forFeature([blogPostModel, blogCategoryModel]),
     PageRegistryModule
   ],
-  controllers: [AdminBlogController, ClientBlogController],
-  providers: [BlogService]
+  controllers: [AdminBlogPostController, AdminBlogCategoryController, ClientBlogController],
+  providers: [BlogPostService, BlogCategoryService]
 })
 export class BlogModule {
 }
