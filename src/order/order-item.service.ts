@@ -115,18 +115,20 @@ export class OrderItemService {
     spf.id = idsArr.join(queryParamArrayDelimiter);
     const { data: products } = await this.productService.getClientProductList(spf);
 
-    products.sort((a, b) => {
-      const indexOfA = idsArr.indexOf(a.productId);
-      const indexOfB = idsArr.indexOf(b.productId);
+    products
+      .filter(product => product.isInStock)
+      .sort((a, b) => {
+        const indexOfA = idsArr.indexOf(a.productId);
+        const indexOfB = idsArr.indexOf(b.productId);
 
-      if (indexOfA > indexOfB) {
-        return 1;
-      } else if (indexOfA < indexOfB) {
-        return -1;
-      } else {
-        return 0;
-      }
-    });
+        if (indexOfA > indexOfB) {
+          return 1;
+        } else if (indexOfA < indexOfB) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
 
     return products;
   }
