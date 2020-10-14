@@ -113,22 +113,21 @@ export class OrderItemService {
     const spf = new ClientProductSPFDto();
     spf.limit = crossSellProducts.length;
     spf.id = idsArr.join(queryParamArrayDelimiter);
-    const { data: products } = await this.productService.getClientProductList(spf);
+    let { data: products } = await this.productService.getClientProductList(spf);
 
-    products
-      .filter(product => product.isInStock)
-      .sort((a, b) => {
-        const indexOfA = idsArr.indexOf(a.productId);
-        const indexOfB = idsArr.indexOf(b.productId);
+    products = products.filter(product => product.isInStock);
+    products.sort((a, b) => {
+      const indexOfA = idsArr.indexOf(a.productId);
+      const indexOfB = idsArr.indexOf(b.productId);
 
-        if (indexOfA > indexOfB) {
-          return 1;
-        } else if (indexOfA < indexOfB) {
-          return -1;
-        } else {
-          return 0;
-        }
-      });
+      if (indexOfA > indexOfB) {
+        return 1;
+      } else if (indexOfA < indexOfB) {
+        return -1;
+      } else {
+        return 0;
+      }
+    });
 
     return products;
   }
