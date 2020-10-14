@@ -546,7 +546,8 @@ export class OrderService implements OnApplicationBootstrap {
     const isCashOnDelivery = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
-    const isJustSent = order.status === OrderStatusEnum.READY_TO_SHIP && order.shipment.status === ShipmentStatusEnum.HEADING_TO_CITY;
+    const isReadyToShip = order.status === OrderStatusEnum.PACKED || order.status === OrderStatusEnum.READY_TO_SHIP;
+    const isJustSent = isReadyToShip && order.shipment.status === ShipmentStatusEnum.HEADING_TO_CITY;
 
     if (!isCashOnDelivery && isReceived || isCashOnDelivery && isCashPickedUp) {
       order.status = OrderStatusEnum.FINISHED;
@@ -742,6 +743,8 @@ export class OrderService implements OnApplicationBootstrap {
 
   async changeOrderPaymentStatus(id: number, isPaid: boolean): Promise<Order> {
     return await this.updateOrderById(id, async order => {
+      const oldIsPaid = order.isOrderPaid;
+      const oldOrderStatus = order.status;
       order.isOrderPaid = isPaid;
 
       if (order.isOrderPaid) {
@@ -752,6 +755,13 @@ export class OrderService implements OnApplicationBootstrap {
         if (order.status === OrderStatusEnum.READY_TO_SHIP) {
           order.status = OrderStatusEnum.PACKED;
         }
+      }
+
+      if (oldIsPaid !== order.isOrderPaid) {
+        order.logs.push({ time: new Date(), text: `Changed "isOrderPaid" from "${oldIsPaid}" to "${order.isOrderPaid}"` });
+      }
+      if (oldOrderStatus !== order.status) {
+        order.logs.push({ time: new Date(), text: `Changed order status from "${oldOrderStatus}" to "${order.status}"` });
       }
 
       return order;
