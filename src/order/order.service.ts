@@ -181,7 +181,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       const newOrder = await this.createOrder(orderDto, customer, session);
       newOrder.source = 'manager';
-      newOrder.logs.push({ time: new Date(), text: `Created order` });
+      newOrder.logs.push({ time: new Date(), text: `Created order. Manager login: ${user?.login}` });
       newOrder.status = OrderStatusEnum.PROCESSING;
       await this.fetchShipmentStatus(newOrder);
 
