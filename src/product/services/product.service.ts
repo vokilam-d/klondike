@@ -1473,4 +1473,13 @@ export class ProductService implements OnApplicationBootstrap {
 
     return filters;
   }
+
+  async incrementViewsCount(productId: number): Promise<void> {
+    try {
+      await this.productModel.findByIdAndUpdate(productId, { $inc: { viewsCount: 1 } });
+    } catch (e) {
+      this.logger.error(`Could not update views count:`);
+      this.logger.error(e);
+    }
+  }
 }

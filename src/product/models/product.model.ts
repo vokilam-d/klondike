@@ -39,6 +39,9 @@ export class Product {
   @prop({ min: 1, max: 5, default: null })
   reviewsAvgRating: number;
 
+  @prop({ default: 0 })
+  viewsCount: number;
+
   createdAt: Date;
   updatedAt: Date;
 

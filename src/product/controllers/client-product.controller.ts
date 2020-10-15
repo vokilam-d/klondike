@@ -84,4 +84,15 @@ export class ClientProductController {
       data: dto
     };
   }
+
+  @Post(':clientProductId/views-count')
+  async incViewsCount(@Param('clientProductId') clientProductId: string): Promise<ResponseDto<null>> {
+
+    const [productId, variantId] = parseClientProductId(clientProductId);
+    await this.productService.incrementViewsCount(productId);
+
+    return {
+      data: null
+    };
+  }
 }
