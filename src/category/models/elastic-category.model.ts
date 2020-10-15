@@ -10,4 +10,5 @@ export class ElasticCategory implements Omit<Record<keyof AdminCategoryDto, any>
   parentId = elasticIntegerType;
   reversedSortOrder = elasticIntegerType;
   slug = elasticTextType;
+  defaultItemsSort = elasticTextType;
 }

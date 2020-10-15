@@ -6,13 +6,7 @@ import { AdminProductListItemDto } from '../admin/product-list-item.dto';
 import { AdminProductVariantListItem } from '../admin/product-variant-list-item.dto';
 import { AdminProductCategoryDto } from '../admin/product-category.dto';
 import { ProductCategory } from '../../../product/models/product-category.model';
-
-enum EProductsSort {
-  Popularity = 'popularity',
-  New = 'new',
-  Cheap = 'cheap',
-  Expensive = 'expensive'
-}
+import { EProductsSort } from '../../enums/product-sort.enum';
 
 export class ClientProductSPFDto extends ClientSPFDto {
   @IsOptional()

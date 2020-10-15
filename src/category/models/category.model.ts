@@ -4,6 +4,7 @@ import { CategoryAncestor } from './category-ancestor.model';
 import { Expose } from 'class-transformer';
 import { Breadcrumb } from '../../shared/models/breadcrumb.model';
 import { Media } from '../../shared/models/media.model';
+import { EProductsSort } from '../../shared/enums/product-sort.enum';
 
 export class Category {
   @prop()
@@ -45,6 +46,9 @@ export class Category {
 
   @arrayProp({ items: Media, default: [] })
   medias: Media[];
+
+  @prop({ enum: EProductsSort })
+  defaultItemsSort: EProductsSort;
 
   static collectionName: string = 'category';
 }
