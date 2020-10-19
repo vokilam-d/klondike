@@ -8,9 +8,11 @@ import { OrderPricesDto } from '../../shared/dtos/shared-dtos/order-prices.dto';
 
 class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'crossSellProducts'> {
   cost = elasticFloatType;
+  oldCost = elasticFloatType;
   imageUrl = elasticTextType;
   name = elasticTextType;
   price = elasticFloatType;
+  oldPrice = elasticFloatType;
   productId = elasticIntegerType;
   qty = elasticIntegerType;
   sku = elasticTextType;

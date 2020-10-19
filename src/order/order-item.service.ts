@@ -44,8 +44,10 @@ export class OrderItemService {
     }
 
     orderItem.price = variant.priceInDefaultCurrency;
+    orderItem.oldPrice = variant.oldPriceInDefaultCurrency;
     orderItem.qty = qty;
     orderItem.cost = orderItem.price * orderItem.qty;
+    orderItem.oldCost = orderItem.oldPrice * orderItem.qty;
 
     if (withCrossSell) {
       orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
@@ -64,6 +66,7 @@ export class OrderItemService {
   async calcOrderPrices(orderItems: OrderItem[], customer: Customer): Promise<OrderPrices> {
     const products = await this.productService.getProductsWithQtyBySkus(orderItems.map(item => item.sku));
     let itemsCost: number = 0;
+    let itemsCostForDiscountPercentCalculation: number = 0;
     let itemsCostApplicableForDiscount: number = 0;
 
     for (const orderItem of orderItems) {
@@ -74,13 +77,18 @@ export class OrderItemService {
       }
 
       itemsCost += orderItem.cost;
-      if (variant.isDiscountApplicable && !variant.oldPriceInDefaultCurrency) {
-        itemsCostApplicableForDiscount += orderItem.cost;
+
+      if (variant.isDiscountApplicable) {
+        itemsCostForDiscountPercentCalculation += orderItem.cost;
+
+        if (!variant.oldPriceInDefaultCurrency) {
+          itemsCostApplicableForDiscount += orderItem.cost;
+        }
       }
     }
 
     const customerDiscountPercent: number = customer?.discountPercent ?? 0;
-    const [totalCostDiscountPercent, totalCostBreakpoint] = OrderItemService.getDiscountPercent(itemsCostApplicableForDiscount);
+    const [totalCostDiscountPercent, totalCostBreakpoint] = OrderItemService.getDiscountPercent(itemsCostForDiscountPercentCalculation);
 
     let discountPercent: number = 0;
     let discountLabel: string = '';
