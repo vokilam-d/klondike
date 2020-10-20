@@ -124,9 +124,7 @@ export class OrderItemService {
     spf.sort = EProductsSort.SalesCount;
     let { data: products } = await this.productService.getClientProductList(spf);
 
-    products = products.filter(product => product.isInStock);
-
-    return products;
+    return products.filter(product => product.isInStock);
   }
 
   private static getDiscountPercent(totalCost: number): [number, number] {
