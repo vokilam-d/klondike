@@ -36,6 +36,7 @@ export class ClientProductSPFDto extends ClientSPFDto {
     const categoriesProp: keyof AdminProductListItemDto = 'categories';
     const sortOrderProp: keyof AdminProductCategoryDto = 'sortOrder';
     const qtyProp: keyof AdminProductVariantListItem = 'sellableQty';
+    const salesCountProp: keyof AdminProductVariantListItem = 'salesCount';
 
     const sort: ISorting = {
       '_script': {
@@ -59,6 +60,9 @@ export class ClientProductSPFDto extends ClientSPFDto {
         break;
       case EProductsSort.New:
         sort[createdAtProp] = 'desc';
+        break;
+      case EProductsSort.SalesCount:
+        sort[`${variantsProp}.${salesCountProp}`] = 'desc';
         break;
       case EProductsSort.Popularity:
       default:

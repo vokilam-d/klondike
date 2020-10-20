@@ -10,6 +10,7 @@ import { queryParamArrayDelimiter } from '../shared/constants';
 import { Customer } from '../customer/models/customer.model';
 import { ProductVariantWithQty, ProductWithQty } from '../product/models/product-with-qty.model';
 import { OrderPrices } from '../shared/models/order-prices.model';
+import { EProductsSort } from '../shared/enums/product-sort.enum';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [
   { totalCostBreakpoint: 500, discountPercent: 5 },
@@ -115,27 +116,15 @@ export class OrderItemService {
   private async getCrossSellProducts(crossSellProducts: LinkedProduct[]): Promise<ClientProductListItemDto[]> {
     if (!crossSellProducts.length) { return []; }
 
-    crossSellProducts.sort((a, b) => b.sortOrder - a.sortOrder);
     const idsArr = crossSellProducts.map(p => p.productId);
 
     const spf = new ClientProductSPFDto();
     spf.limit = crossSellProducts.length;
     spf.id = idsArr.join(queryParamArrayDelimiter);
+    spf.sort = EProductsSort.SalesCount;
     let { data: products } = await this.productService.getClientProductList(spf);
 
     products = products.filter(product => product.isInStock);
-    products.sort((a, b) => {
-      const indexOfA = idsArr.indexOf(a.productId);
-      const indexOfB = idsArr.indexOf(b.productId);
-
-      if (indexOfA > indexOfB) {
-        return 1;
-      } else if (indexOfA < indexOfB) {
-        return -1;
-      } else {
-        return 0;
-      }
-    });
 
     return products;
   }
