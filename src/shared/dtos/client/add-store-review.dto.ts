@@ -1,6 +1,6 @@
 import { ClientStoreReviewDto } from './store-review.dto';
 import { IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ClientMediaDto } from './media.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
 
@@ -14,6 +14,7 @@ export class ClientAddStoreReviewDto implements Pick<ClientStoreReviewDto, 'name
   name: string;
 
   @IsNumber()
+  @Transform(Number)
   rating: number;
 
   @IsString()
