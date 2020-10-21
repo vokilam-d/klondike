@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Request, Response, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Redirect, Req, Request, Response, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StoreReviewService } from './store-review.service';
 import { IpAddress } from '../../shared/decorators/ip-address.decorator';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
@@ -8,10 +8,11 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from "http";
 import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
-import { ClientAddStoreReviewDto } from '../../shared/dtos/client/add-store-review.dto';
+import { ClientAddStoreReviewDto, ClientAddStoreReviewFromEmailDto } from '../../shared/dtos/client/add-store-review.dto';
 import { ClientStoreReviewDto } from '../../shared/dtos/client/store-review.dto';
 import { ClientId } from '../../shared/decorators/client-id.decorator';
 import { ClientStoreReviewsSPFDto } from '../../shared/dtos/client/store-reviews-spf.dto';
+import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('store-reviews')
@@ -57,6 +58,16 @@ export class ClientStoreReviewController {
     return {
       data: avgRating
     }
+  }
+
+  @Get('from-email')
+  @Redirect('/')
+  async createReviewFromEmail(@Query() storeReviewDto: ClientAddStoreReviewFromEmailDto) {
+    await this.storeReviewService.createReview(storeReviewDto);
+
+    return {
+      url: `/otzyvy?review-from-email=true`
+    };
   }
 
   @Post('media')
