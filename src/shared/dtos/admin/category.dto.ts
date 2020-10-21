@@ -1,12 +1,14 @@
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
 import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { AdminMediaDto } from './media.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { Category } from '../../../category/models/category.model';
+import { EProductsSort } from '../../enums/product-sort.enum';
 
-export class AdminAddOrUpdateCategoryDto {
+export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, any>, 'id' | '_id' | 'ancestors' | 'imageUrl'> {
   @Expose()
   @IsBoolean()
   isEnabled: boolean;
@@ -52,6 +54,10 @@ export class AdminAddOrUpdateCategoryDto {
   @ValidateNested({ each: true })
   @Type(() => AdminMediaDto)
   medias: AdminMediaDto[];
+
+  @Expose()
+  @IsEnum(EProductsSort)
+  defaultItemsSort: EProductsSort;
 }
 
 export class AdminCategoryDto extends AdminAddOrUpdateCategoryDto {

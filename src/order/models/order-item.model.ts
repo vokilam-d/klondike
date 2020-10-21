@@ -21,10 +21,16 @@ export class OrderItem {
   price: number;
 
   @prop()
+  oldPrice: number;
+
+  @prop()
   qty: number;
 
   @prop()
   cost: number;
+
+  @prop()
+  oldCost: number;
 
   @prop()
   imageUrl: string;

@@ -25,3 +25,7 @@ export class ClientAddStoreReviewDto implements Pick<ClientStoreReviewDto, 'name
   @Type(() => ClientMediaDto)
   medias: ClientMediaDto[] = [];
 }
+
+export class ClientAddStoreReviewFromEmailDto extends ClientAddStoreReviewDto {
+  customerId: number;
+}

@@ -10,6 +10,7 @@ import { queryParamArrayDelimiter } from '../shared/constants';
 import { Customer } from '../customer/models/customer.model';
 import { ProductVariantWithQty, ProductWithQty } from '../product/models/product-with-qty.model';
 import { OrderPrices } from '../shared/models/order-prices.model';
+import { EProductsSort } from '../shared/enums/product-sort.enum';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [
   { totalCostBreakpoint: 500, discountPercent: 5 },
@@ -44,8 +45,10 @@ export class OrderItemService {
     }
 
     orderItem.price = variant.priceInDefaultCurrency;
+    orderItem.oldPrice = variant.oldPriceInDefaultCurrency;
     orderItem.qty = qty;
     orderItem.cost = orderItem.price * orderItem.qty;
+    orderItem.oldCost = orderItem.oldPrice * orderItem.qty;
 
     if (withCrossSell) {
       orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
@@ -64,6 +67,7 @@ export class OrderItemService {
   async calcOrderPrices(orderItems: OrderItem[], customer: Customer): Promise<OrderPrices> {
     const products = await this.productService.getProductsWithQtyBySkus(orderItems.map(item => item.sku));
     let itemsCost: number = 0;
+    let itemsCostForDiscountPercentCalculation: number = 0;
     let itemsCostApplicableForDiscount: number = 0;
 
     for (const orderItem of orderItems) {
@@ -74,13 +78,18 @@ export class OrderItemService {
       }
 
       itemsCost += orderItem.cost;
-      if (variant.isDiscountApplicable && !variant.oldPriceInDefaultCurrency) {
-        itemsCostApplicableForDiscount += orderItem.cost;
+
+      if (variant.isDiscountApplicable) {
+        itemsCostForDiscountPercentCalculation += orderItem.cost;
+
+        if (!variant.oldPriceInDefaultCurrency) {
+          itemsCostApplicableForDiscount += orderItem.cost;
+        }
       }
     }
 
     const customerDiscountPercent: number = customer?.discountPercent ?? 0;
-    const [totalCostDiscountPercent, totalCostBreakpoint] = OrderItemService.getDiscountPercent(itemsCostApplicableForDiscount);
+    const [totalCostDiscountPercent, totalCostBreakpoint] = OrderItemService.getDiscountPercent(itemsCostForDiscountPercentCalculation);
 
     let discountPercent: number = 0;
     let discountLabel: string = '';
@@ -107,29 +116,15 @@ export class OrderItemService {
   private async getCrossSellProducts(crossSellProducts: LinkedProduct[]): Promise<ClientProductListItemDto[]> {
     if (!crossSellProducts.length) { return []; }
 
-    crossSellProducts.sort((a, b) => b.sortOrder - a.sortOrder);
     const idsArr = crossSellProducts.map(p => p.productId);
 
     const spf = new ClientProductSPFDto();
     spf.limit = crossSellProducts.length;
     spf.id = idsArr.join(queryParamArrayDelimiter);
+    spf.sort = EProductsSort.SalesCount;
     let { data: products } = await this.productService.getClientProductList(spf);
 
-    products = products.filter(product => product.isInStock);
-    products.sort((a, b) => {
-      const indexOfA = idsArr.indexOf(a.productId);
-      const indexOfB = idsArr.indexOf(b.productId);
-
-      if (indexOfA > indexOfB) {
-        return 1;
-      } else if (indexOfA < indexOfB) {
-        return -1;
-      } else {
-        return 0;
-      }
-    });
-
-    return products;
+    return products.filter(product => product.isInStock);
   }
 
   private static getDiscountPercent(totalCost: number): [number, number] {

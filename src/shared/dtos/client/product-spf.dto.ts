@@ -6,13 +6,7 @@ import { AdminProductListItemDto } from '../admin/product-list-item.dto';
 import { AdminProductVariantListItem } from '../admin/product-variant-list-item.dto';
 import { AdminProductCategoryDto } from '../admin/product-category.dto';
 import { ProductCategory } from '../../../product/models/product-category.model';
-
-enum EProductsSort {
-  Popularity = 'popularity',
-  New = 'new',
-  Cheap = 'cheap',
-  Expensive = 'expensive'
-}
+import { EProductsSort } from '../../enums/product-sort.enum';
 
 export class ClientProductSPFDto extends ClientSPFDto {
   @IsOptional()
@@ -42,6 +36,7 @@ export class ClientProductSPFDto extends ClientSPFDto {
     const categoriesProp: keyof AdminProductListItemDto = 'categories';
     const sortOrderProp: keyof AdminProductCategoryDto = 'sortOrder';
     const qtyProp: keyof AdminProductVariantListItem = 'sellableQty';
+    const salesCountProp: keyof AdminProductVariantListItem = 'salesCount';
 
     const sort: ISorting = {
       '_script': {
@@ -65,6 +60,9 @@ export class ClientProductSPFDto extends ClientSPFDto {
         break;
       case EProductsSort.New:
         sort[createdAtProp] = 'desc';
+        break;
+      case EProductsSort.SalesCount:
+        sort[`${variantsProp}.${salesCountProp}`] = 'desc';
         break;
       case EProductsSort.Popularity:
       default:

@@ -34,12 +34,22 @@ export class OrderItemDto {
   price: number;
 
   @Expose()
+  @IsOptional()
+  @IsNumber()
+  oldPrice: number;
+
+  @Expose()
   @IsNumber()
   qty: number;
 
   @Expose()
   @IsNumber()
   cost: number;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  oldCost: number;
 
   @Expose()
   @IsOptional()

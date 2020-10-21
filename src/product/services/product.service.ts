@@ -280,7 +280,6 @@ export class ProductService implements OnApplicationBootstrap {
 
   async getProductsWithQty(sortingPaginating: AdminSPFDto = new AdminSPFDto()): Promise<ProductWithQty[]> {
     const variantsProp = getPropertyOf<Product>('variants');
-    const descProp = getPropertyOf<ProductVariant>('fullDescription');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qtyInStock');
     const reservedProp: keyof Inventory = 'reserved';
@@ -486,13 +485,13 @@ export class ProductService implements OnApplicationBootstrap {
 
       const variantsToUpdate: AdminProductVariantDto[] = [];
       const variantsToAdd: AdminProductVariantDto[] = [];
-      productDto.variants.forEach(variantDto => {
+      for (const variantDto of productDto.variants) {
         if (variantDto.id) {
           variantsToUpdate.push(variantDto);
         } else {
           variantsToAdd.push(variantDto);
         }
-      });
+      }
 
       for (const variantDto of variantsToAdd) {
         const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(variantDto.medias, Product.collectionName);
@@ -918,7 +917,7 @@ export class ProductService implements OnApplicationBootstrap {
       let salesCount: number = 0;
       let productMediaUrl: string = null;
 
-      product.variants.forEach(variant => {
+      for (const variant of product.variants) {
         skus.push(variant.sku);
         if (variant.vendorCode) { vendorCodes.push(variant.vendorCode); }
         prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
@@ -962,7 +961,7 @@ export class ProductService implements OnApplicationBootstrap {
           sellableQty: variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0),
           salesCount: variant.salesCount
         });
-      });
+      }
 
       return {
         id: product._id,
@@ -997,21 +996,21 @@ export class ProductService implements OnApplicationBootstrap {
 
       const variantGroups: ClientProductVariantGroupDto[] = [];
       if (product.variants.length > 1) {
-        product.variants.forEach(variant => {
-          variant.attributes.forEach(selectedAttr => {
+        for (const variantWithQty of product.variants) {
+          for (const selectedAttr of variantWithQty.attributes) {
             const attribute = attributes.find(a => a.id === selectedAttr.attributeId);
-            if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { return; }
+            if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
 
             const attrLabel = attribute.label;
             const attrValue = attribute.values.find(v => v.id === selectedAttr.valueIds[0]);
-            if (!attrValue) { return; }
+            if (!attrValue) { continue; }
 
             const foundIdx = variantGroups.findIndex(group => group.label === attrLabel);
 
             const itemVariant: ClientProductVariantDto = {
               label: attrValue.label,
               isSelected: false,
-              slug: variant.slug
+              slug: variantWithQty.slug
             };
 
             if (foundIdx === -1) {
@@ -1022,8 +1021,8 @@ export class ProductService implements OnApplicationBootstrap {
             } else {
               variantGroups[foundIdx].variants.push(itemVariant);
             }
-          });
-        });
+          }
+        }
       }
 
       return {
@@ -1060,21 +1059,21 @@ export class ProductService implements OnApplicationBootstrap {
     const variantGroups: ClientProductVariantGroupDto[] = [];
     const attributeModels = await this.attributeService.getAllAttributes();
     if (productWithQty.variants.length > 1) {
-      productWithQty.variants.forEach(variant => {
-        variant.attributes.forEach(selectedAttr => {
+      for (const variantWithQty of productWithQty.variants) {
+        for (const selectedAttr of variantWithQty.attributes) {
           const attribute = attributeModels.find(a => a.id === selectedAttr.attributeId);
-          if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { return; }
+          if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
 
           const attrLabel = attribute.label;
           const attrValue = attribute.values.find(v => selectedAttr.valueIds.includes(v.id));
-          if (!attrValue) { return; }
+          if (!attrValue) { continue; }
 
           const foundIdx = variantGroups.findIndex(group => group.label === attrLabel);
 
           const itemVariant: ClientProductVariantDto = {
             label: attrValue.label,
             isSelected: false,
-            slug: variant.slug
+            slug: variantWithQty.slug
           };
 
           if (foundIdx === -1) {
@@ -1085,8 +1084,8 @@ export class ProductService implements OnApplicationBootstrap {
           } else {
             variantGroups[foundIdx].variants.push(itemVariant);
           }
-        });
-      });
+        }
+      }
     }
 
     const characteristics: ClientProductCharacteristic[] = [];
@@ -1472,5 +1471,14 @@ export class ProductService implements OnApplicationBootstrap {
     }
 
     return filters;
+  }
+
+  async incrementViewsCount(productId: number): Promise<void> {
+    try {
+      await this.productModel.findByIdAndUpdate(productId, { $inc: { viewsCount: 1 } });
+    } catch (e) {
+      this.logger.error(`Could not update views count:`);
+      this.logger.error(e);
+    }
   }
 }
