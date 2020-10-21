@@ -22,11 +22,12 @@ export class ClientStoreReviewController {
   }
 
   @Get()
-  async getAllReviews(): Promise<ResponseDto<ClientStoreReviewDto[]>> {
-    const reviews = await this.storeReviewService.findAllReviews(true);
+  async getAllReviews(@Query() spf: ClientStoreReviewsSPFDto): Promise<ResponseDto<ClientStoreReviewDto[]>> {
+    const responseDto = await this.storeReviewService.findReviewsByFilters(spf);
 
     return {
-      data: plainToClass(ClientStoreReviewDto, reviews, { excludeExtraneousValues: true })
+      ...responseDto,
+      data: plainToClass(ClientStoreReviewDto, responseDto.data, { excludeExtraneousValues: true })
     }
   }
 
