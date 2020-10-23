@@ -86,10 +86,12 @@
     border-spacing: 0;
     border-collapse: collapse;
     table-layout: fixed;
+    border: 1px solid #808080;
 }
 
 .products th {
     font-weight: 700;
+    border: 1px solid #808080;
 }
 
 .products__product:nth-child(2n) {
@@ -99,18 +101,22 @@
 .products__name {
     text-align: left;
     padding: 6px 10px 6px;
+    border: 1px solid #808080;
 }
 
 .products__qty {
     width: 80px;
+    border: 1px solid #808080;
 }
 
 .products__price {
     width: 100px;
+    border: 1px solid #808080;
 }
 
 .products__cost {
     width: 120px;
+    border: 1px solid #808080;
 }
 
 .products__sku {
