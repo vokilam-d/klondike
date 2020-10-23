@@ -76,6 +76,9 @@
                 </td>
                 <td class="products__price">
                     {{ this.price }} грн
+                    {{#if this.oldPrice}}
+                    <div class="products__old-price"> {{ this.oldPrice }} грн</div>
+                    {{/if}}
                 </td>
                 <td class="products__cost">
                     {{ this.cost }} грн
@@ -90,10 +93,12 @@
             <div class="summary__key">Стоимость товаров</div>
             <div class="summary__value">{{ totalProductsCost }} грн</div>
         </div>
+        {{#if discountValue}}
         <div class="summary__row">
-            <div class="summary__key">Скидка {{#if discountPercent}} ({{ discountLabel }}, {{ discountPercent }}%) {{/if}}</div>
+            <div class="summary__key">Скидка {{#if discountLabel}} ({{ discountLabel }}, {{ discountPercent }}%) {{/if}}</div>
             <div class="summary__value">{{ discountValue }} грн</div>
         </div>
+        {{/if}}
         <div class="summary__row">
             <div class="summary__key">Общий итог</div>
             <div class="summary__value summary__value--total">{{ totalOrderCost }} грн</div>

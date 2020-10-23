@@ -114,6 +114,11 @@
     border: 1px solid #808080;
 }
 
+.products__old-price {
+    color:#808080;
+    text-decoration:line-through;
+}
+
 .products__cost {
     width: 120px;
     border: 1px solid #808080;
