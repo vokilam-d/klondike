@@ -73,6 +73,17 @@ export class AttributeService implements OnApplicationBootstrap {
       throw new NotFoundException(__('Attribute with id "$1" not found', 'ru', id));
     }
 
+    let isSortable: boolean = true;
+    for (const value of found.values) {
+      if (value.label.startsWith('№')) {
+        isSortable = false;
+      }
+    }
+
+    if (isSortable) {
+      found.values.sort(((a, b) => a.label > b.label ? 1 : -1));
+    }
+
     return found;
   }
 
