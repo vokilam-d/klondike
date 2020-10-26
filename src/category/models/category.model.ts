@@ -1,6 +1,5 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { MetaTags } from '../../shared/models/meta-tags.model';
-import { CategoryAncestor } from './category-ancestor.model';
 import { Expose } from 'class-transformer';
 import { Breadcrumb } from '../../shared/models/breadcrumb.model';
 import { Media } from '../../shared/models/media.model';
@@ -29,9 +28,6 @@ export class Category {
   @arrayProp({ items: Breadcrumb, _id: false })
   breadcrumbs: Breadcrumb[];
 
-  @arrayProp({ _id: false, items: CategoryAncestor })
-  ancestors: CategoryAncestor[];
-
   @prop({ _id: false })
   metaTags: MetaTags;
 
@@ -49,6 +45,9 @@ export class Category {
 
   @prop({ enum: EProductsSort })
   defaultItemsSort: EProductsSort;
+
+  @prop({ default: null })
+  canonicalCategoryId: number;
 
   static collectionName: string = 'category';
 }

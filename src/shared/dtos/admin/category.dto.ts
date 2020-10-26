@@ -8,7 +8,7 @@ import { TrimString } from '../../decorators/trim-string.decorator';
 import { Category } from '../../../category/models/category.model';
 import { EProductsSort } from '../../enums/product-sort.enum';
 
-export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, any>, 'id' | '_id' | 'ancestors' | 'imageUrl'> {
+export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, any>, 'id' | '_id' | 'imageUrl'> {
   @Expose()
   @IsBoolean()
   isEnabled: boolean;
@@ -58,6 +58,11 @@ export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, 
   @Expose()
   @IsEnum(EProductsSort)
   defaultItemsSort: EProductsSort;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  canonicalCategoryId: number;
 }
 
 export class AdminCategoryDto extends AdminAddOrUpdateCategoryDto {

@@ -6,7 +6,7 @@ import { ClientMediaDto } from './media.dto';
 import { ClientLinkedCategoryDto } from './linked-category.dto';
 import { EProductsSort } from '../../enums/product-sort.enum';
 
-export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | 'reversedSortOrder' | 'createRedirect'> {
+export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | 'reversedSortOrder' | 'createRedirect' | 'canonicalCategoryId'> {
   @Expose()
   description: string;
 

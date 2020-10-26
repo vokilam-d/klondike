@@ -7,7 +7,10 @@ import {
   Param,
   Post,
   Put,
-  Query, Request, Response, UseGuards,
+  Query,
+  Request,
+  Response,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe
@@ -20,7 +23,7 @@ import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { ServerResponse } from "http";
+import { ServerResponse } from 'http';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -30,9 +33,18 @@ export class AdminCategoryController {
   constructor(private readonly categoryService: CategoryService) {
   }
 
+  @Get()
+  async getCategories(): Promise<ResponseDto<AdminCategoryDto[]>> {
+    const categories = await this.categoryService.getAllCategories();
+
+    return {
+      data: plainToClass(AdminCategoryDto, categories, { excludeExtraneousValues: true })
+    }
+  }
+
   @Get('tree')
-  async getCategoriesTree(): Promise<ResponseDto<CategoryTreeItem[]>> {
-    const tree = await this.categoryService.getCategoriesTree(false);
+  async getCategoriesTree(@Query('noClones') noClones: string): Promise<ResponseDto<CategoryTreeItem[]>> {
+    const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, noClones: Boolean(noClones) });
     return {
       data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
     };
@@ -64,7 +76,7 @@ export class AdminCategoryController {
   @Post('action/reorder')
   async reorderCategories(@Body() reorderDto: ReorderDto): Promise<ResponseDto<CategoryTreeItem[]>> {
     await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position);
-    const tree = await this.categoryService.getCategoriesTree(false);
+    const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false });
     return {
       data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
     };

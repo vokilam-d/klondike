@@ -811,7 +811,7 @@ export class ProductService implements OnApplicationBootstrap {
     };
 
     if (!categoryTreeItems) {
-      categoryTreeItems = await this.categoryService.getCategoriesTree(true);
+      categoryTreeItems = await this.categoryService.getCategoriesTree({ onlyEnabled: true });
     }
     populate(categoryTreeItems);
 

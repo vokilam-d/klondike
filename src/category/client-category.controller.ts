@@ -14,7 +14,7 @@ export class ClientCategoryController {
 
   @Get('tree')
   async getCategoriesTree(): Promise<ResponseDto<CategoryTreeItem[]>> {
-    const tree = await this.categoryService.getCategoriesTree(true);
+    const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: true });
     return {
       data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
     };

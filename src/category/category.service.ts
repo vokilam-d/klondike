@@ -39,7 +39,7 @@ export class CategoryService implements OnApplicationBootstrap {
               private readonly searchService: SearchService
   ) { }
 
-  onApplicationBootstrap() {
+  async onApplicationBootstrap() {
     this.searchService.ensureCollection(Category.collectionName, new ElasticCategory());
   }
 
@@ -52,33 +52,37 @@ export class CategoryService implements OnApplicationBootstrap {
     return categories;
   }
 
-  async getCategoriesTree(onlyEnabled?: boolean): Promise<CategoryTreeItem[]> {
+  async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean } = { }): Promise<CategoryTreeItem[]> {
     const treeItems: CategoryTreeItem[] = [];
     const childrenMap: { [parentId: number]: CategoryTreeItem[] } = {};
 
     const allCategories = await this.getAllCategories();
-    allCategories.forEach(category => {
-      if (onlyEnabled && category.isEnabled === false) { return; }
+    for (let category of allCategories) {
+
+      if (options.onlyEnabled && category.isEnabled === false) { continue; }
+      if (options.noClones && CategoryService.isClone(category)) { continue; }
+
+      category = this.handleCloneCategory(category, allCategories);
 
       const item: CategoryTreeItem = plainToClass(CategoryTreeItem, category, { excludeExtraneousValues: true });
       item.children = [];
 
       if (category.parentId === 0) {
         treeItems.push(item);
-        return;
+        continue;
       }
 
       childrenMap[category.parentId] = childrenMap[category.parentId] || [];
       childrenMap[category.parentId].push(item);
-    });
+    }
 
     const populateChildrenArray = (array: CategoryTreeItem[]) => {
-      array.forEach(arrayItem => {
+      for (const arrayItem of array) {
         const children = childrenMap[arrayItem.id] || [];
         arrayItem.children.push(...children);
 
         populateChildrenArray(arrayItem.children);
-      });
+      }
     };
 
     populateChildrenArray(treeItems);
@@ -106,8 +110,11 @@ export class CategoryService implements OnApplicationBootstrap {
     const siblingCategories: ClientLinkedCategoryDto[] = [];
     const childCategories: ClientLinkedCategoryDto[] = [];
     const allCategories = await this.getAllCategories();
-    for (const category of allCategories) {
+    for (let category of allCategories) {
       if (!category.isEnabled) { continue; }
+
+      const ref = category;
+      category = this.handleCloneCategory(category, allCategories);
 
       const linked: ClientLinkedCategoryDto = {
         ...category,
@@ -126,22 +133,23 @@ export class CategoryService implements OnApplicationBootstrap {
     return plainToClass(ClientCategoryDto, { ...found.toJSON(), siblingCategories, childCategories }, { excludeExtraneousValues: true });
   }
 
-  async getClientLinkedCategories(categoryId: number): Promise<ClientLinkedCategoryDto[]> {
+  async getClientSiblingCategories(categoryId: number): Promise<ClientLinkedCategoryDto[]> {
     const found = await this.categoryModel.findById(categoryId).exec();
 
     const linkedCategories: ClientLinkedCategoryDto[] = [];
     const allCategories = await this.getAllCategories();
-    for (const category of allCategories) {
+    for (let category of allCategories) {
       if (!category.isEnabled) { continue; }
+      if (found.parentId !== category.parentId) { continue; }
 
-      if (found.parentId === category.parentId) {
-        linkedCategories.push({
-          ...category,
-          id: category.id,
-          medias: category.medias.filter(media => !media.isHidden),
-          isSelected: found.id === category.id
-        });
-      }
+      category = this.handleCloneCategory(category, allCategories);
+
+      linkedCategories.push({
+        ...category,
+        id: category.id,
+        medias: category.medias.filter(media => !media.isHidden),
+        isSelected: found.id === category.id
+      });
     }
 
     return linkedCategories;
@@ -156,6 +164,11 @@ export class CategoryService implements OnApplicationBootstrap {
     try {
       const newCategoryModel = new this.categoryModel(categoryDto);
       newCategoryModel.id = await this.counterService.getCounter(Category.collectionName, session);
+      const isClone = Boolean(newCategoryModel.canonicalCategoryId);
+
+      if (isClone) {
+        newCategoryModel.slug = `clone-${newCategoryModel.id}`;
+      }
 
       const lastSiblingOrder = await this.getLastSiblingOrder(categoryDto.parentId);
       if (lastSiblingOrder) {
@@ -168,7 +181,9 @@ export class CategoryService implements OnApplicationBootstrap {
       newCategoryModel.medias = savedMedias;
 
       await newCategoryModel.save({ session });
-      await this.createCategoryPageRegistry(newCategoryModel.slug, session);
+      if (!isClone) {
+        await this.createCategoryPageRegistry(newCategoryModel.slug, session);
+      }
       await session.commitTransaction();
 
       this.addSearchData(newCategoryModel).then();
@@ -315,7 +330,9 @@ export class CategoryService implements OnApplicationBootstrap {
     let parentId = category.parentId;
 
     while (parentId) {
-      const parent = allCategories.find(c => c.id === parentId);
+      let parent = allCategories.find(c => c.id === parentId);
+      parent = this.handleCloneCategory(parent, allCategories);
+
       breadcrumbs.unshift({
         id: parent.id,
         name: parent.name,
@@ -480,5 +497,28 @@ export class CategoryService implements OnApplicationBootstrap {
       undefined,
       new ElasticCategory()
     );
+  }
+
+  private handleCloneCategory(category: Category, allCategories: Category[]): Category {
+    if (!CategoryService.isClone(category)) {
+      return category;
+    }
+
+    let source = allCategories.find(c => c.id === category.canonicalCategoryId);
+    if (!source) {
+      return category;
+    }
+
+    source = plainToClass(Category, source);
+    source.name = category.name;
+    source.parentId = category.parentId;
+    source.id = category.id;
+    source._id = category.id;
+
+    return source;
+  }
+
+  private static isClone(category: Category): boolean {
+    return Boolean(category.canonicalCategoryId);
   }
 }

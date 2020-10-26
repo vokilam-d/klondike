@@ -54,7 +54,7 @@ export class ClientProductController {
     const dto = await this.productService.getEnabledClientProductDtoBySlug(slug);
 
     const lastBreadcrumb = dto.breadcrumbs[dto.breadcrumbs.length - 1];
-    const categories = await this.categoryService.getClientLinkedCategories(lastBreadcrumb.id)
+    const categories = await this.categoryService.getClientSiblingCategories(lastBreadcrumb.id)
 
     return {
       data: dto,
