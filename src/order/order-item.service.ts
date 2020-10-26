@@ -96,7 +96,7 @@ export class OrderItemService {
     if (totalCostDiscountPercent > customerDiscountPercent) {
       discountPercent = totalCostDiscountPercent;
       discountLabel = __('Order amount over $1 uah', 'ru', totalCostBreakpoint);
-    } else if (customerDiscountPercent > totalCostDiscountPercent) {
+    } else if (customerDiscountPercent >= totalCostDiscountPercent) {
       discountPercent = customerDiscountPercent;
       discountLabel = __('Cumulative discount', 'ru');
     }
