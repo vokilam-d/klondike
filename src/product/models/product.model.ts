@@ -42,6 +42,9 @@ export class Product {
   @prop({ default: 0 })
   viewsCount: number;
 
+  @arrayProp({ items: Number, default: [] })
+  additionalServiceIds: number[];
+
   createdAt: Date;
   updatedAt: Date;
 
