@@ -1,4 +1,4 @@
-import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
+import { getModelForClass, prop } from '@typegoose/typegoose';
 
 export class AdditionalService {
   @prop()
@@ -14,10 +14,10 @@ export class AdditionalService {
   clientName: string;
 
   @prop()
-  isVisibleOnProductPage: boolean;
+  isEnabled: boolean;
 
-  @arrayProp({ items: Number })
-  productIds: number[];
+  @prop()
+  price: number;
 
   static collectionName: string = 'additional-service';
 }

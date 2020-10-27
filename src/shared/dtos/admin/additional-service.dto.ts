@@ -3,7 +3,7 @@ import { Expose } from 'class-transformer';
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
 import { TrimString } from '../../decorators/trim-string.decorator';
 
-export class AdminAdditionalServiceDto implements Pick<AdditionalService, 'id' | 'isVisibleOnProductPage' | 'productIds'> {
+export class AdminAdditionalServiceDto implements Pick<AdditionalService, 'id' | 'isEnabled' | 'name' | 'clientName'> {
   @Expose()
   id: number;
 
@@ -19,9 +19,5 @@ export class AdminAdditionalServiceDto implements Pick<AdditionalService, 'id' |
 
   @Expose()
   @IsBoolean()
-  isVisibleOnProductPage: boolean;
-
-  @Expose()
-  @IsNumber(undefined, { each: true })
-  productIds: number[];
+  isEnabled: boolean;
 }
