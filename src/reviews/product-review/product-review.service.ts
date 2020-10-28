@@ -100,6 +100,8 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
 
     const comment = new ProductReviewComment();
     Object.assign(comment, commentDto);
+    comment.createdAt = new Date();
+
     if (customerId) {
       comment.customerId = customerId;
     }

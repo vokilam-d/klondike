@@ -62,4 +62,9 @@ export class AdminBaseReviewDto {
   @IsDate()
   @Type(() => Date)
   createdAt?: Date;
+
+  @Expose()
+  @IsString()
+  @TrimString()
+  managerComment?: string;
 }

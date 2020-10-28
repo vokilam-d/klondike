@@ -48,4 +48,7 @@ export abstract class BaseReview {
 
   @prop({ default: new Date() })
   createdAt: Date;
+
+  @prop({ default: '' })
+  managerComment: string;
 }
