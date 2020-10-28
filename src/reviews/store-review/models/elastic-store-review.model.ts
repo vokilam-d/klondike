@@ -3,8 +3,6 @@ import { ElasticBaseReviewModel } from '../../base-review/models/elastic-base-re
 import { elasticTextType } from '../../../shared/constants';
 
 export class ElasticStoreReviewModel extends ElasticBaseReviewModel implements Record<keyof AdminStoreReviewDto, any> {
-  managerComment = elasticTextType;
-
   constructor() {
     super();
   }
