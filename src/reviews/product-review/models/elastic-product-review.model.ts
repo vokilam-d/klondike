@@ -19,6 +19,7 @@ export class ElasticProductReviewModel extends ElasticBaseReviewModel implements
   productId = elasticIntegerType;
   productName = elasticTextType;
   productVariantId = elasticTextType;
+  managerComment = elasticTextType;
 
   constructor() {
     super();
