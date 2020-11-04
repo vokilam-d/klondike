@@ -76,10 +76,11 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
   private async launchBrowser() {
     const launchOptions: puppeteer.LaunchOptions = {
       headless: true,
-      args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox', "--disable-gpu", "--single-process", "--no-zygote"]
+      args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox', "--disable-gpu", "--no-zygote"]
     };
     if (isInDocker()) {
       launchOptions.executablePath = '/usr/bin/chromium-browser';
+      launchOptions.args.push("--single-process");
     }
 
     this.browser = await puppeteer.launch(launchOptions);
