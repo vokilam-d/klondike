@@ -245,5 +245,17 @@ export const TRANSLATIONS = {
   'Order amount over $1 uah': {
     en: 'Order amount over $1 uah',
     ru: 'Сумма заказа более $1 грн'
+  },
+  'Cash on delivery is not available with address delivery': {
+    en: 'Cash on delivery is not available with address delivery',
+    ru: 'Наложенный платёж недоступен при адресной доставке'
+  },
+  'Cash on delivery is not available for orders less than $1 uah': {
+    en: 'Cash on delivery is not available for orders less than $1 uah',
+    ru: 'Наложенный платёж недоступен для заказов на сумму менее $1 грн'
+  },
+  'Cash on delivery is not available for gold leaf': {
+    en: 'Cash on delivery is not available for gold leaf',
+    ru: 'Наложенный платёж недоступен для сусального золота'
   }
 }

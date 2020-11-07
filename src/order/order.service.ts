@@ -50,6 +50,7 @@ import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 import { User } from '../user/models/user.model';
 import { OrderItemService } from './order-item.service';
 import { OrderItem } from './models/order-item.model';
+import { AddressTypeEnum } from '../shared/enums/address-type.enum';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -59,7 +60,6 @@ export class OrderService implements OnApplicationBootstrap {
 
   constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
               @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
-              // @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
               private readonly counterService: CounterService,
               private readonly paymentMethodService: PaymentMethodService,
               private readonly tasksService: TasksService,
@@ -238,9 +238,13 @@ export class OrderService implements OnApplicationBootstrap {
       const prices = await this.orderItemService.calcOrderPrices(orderDto.items, customer);
 
       const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, customer, session);
+
+      OrderService.checkForCheckoutRules(newOrder);
+
       newOrder.status = OrderStatusEnum.NEW;
       newOrder.source = 'client';
       newOrder.logs.push({ time: new Date(), text: `Created order` });
+
       await newOrder.save({ session });
       await session.commitTransaction();
 
@@ -821,5 +825,29 @@ export class OrderService implements OnApplicationBootstrap {
     }
 
     return this.orderModel.find(filterQuery, projection).exec();
+  }
+
+  private static checkForCheckoutRules(order: Order) {
+    const errors: string[] = [];
+    const isCashOnDeliveryMethod = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
+    if (!isCashOnDeliveryMethod) { return; }
+
+    if (order.shipment.recipient.addressType === AddressTypeEnum.DOORS) {
+      errors.push(__('Cash on delivery is not available with address delivery', 'ru'));
+    }
+
+    const COST_BREAKPOINT = 100;
+    if (order.prices.itemsCost < COST_BREAKPOINT) {
+      errors.push(__('Cash on delivery is not available for orders less than $1 uah', 'ru', COST_BREAKPOINT));
+    }
+
+    const disallowedItem = order.items.find(item => item.name.toLowerCase().match(/сусаль([ ,])/g));
+    if (disallowedItem) {
+      errors.push(__('Cash on delivery is not available for gold leaf', 'ru'));
+    }
+
+    if (errors.length) {
+      throw new BadRequestException(errors);
+    }
   }
 }
