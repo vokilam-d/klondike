@@ -62,6 +62,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
         sku: item.sku,
         qty: item.qty,
         price: item.price,
+        oldPrice: item.oldPrice,
         cost: item.cost,
         imageUrl: item.imageUrl,
         slug: item.slug
@@ -76,7 +77,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
   private async launchBrowser() {
     const launchOptions: puppeteer.LaunchOptions = {
       headless: true,
-      args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox', "--disable-gpu", "--single-process", "--no-zygote"]
+      args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox', "--disable-gpu", "--no-zygote"]
     };
     if (isInDocker()) {
       launchOptions.executablePath = '/usr/bin/chromium-browser';
