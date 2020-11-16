@@ -645,7 +645,7 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async changeStatus(orderId: number, status: OrderStatusEnum, shipmentDto?: ShipmentDto) {
+  async changeStatus(orderId: number, status: OrderStatusEnum) {
     return await this.updateOrderById(orderId, async (order, session) => {
 
       const assertStatus = (statusToAssert: OrderStatusEnum) => {
@@ -665,10 +665,6 @@ export class OrderService implements OnApplicationBootstrap {
 
         case OrderStatusEnum.PACKED:
           assertStatus(OrderStatusEnum.READY_TO_PACK);
-          order.shipment = await this.createInternetDocument(order.shipment, shipmentDto, order.paymentType);
-          if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
-            status = OrderStatusEnum.READY_TO_SHIP;
-          }
           break;
 
         case OrderStatusEnum.READY_TO_SHIP:
@@ -724,25 +720,30 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async createInternetDocument(shipment: Shipment, shipmentDto: ShipmentDto, paymentType: PaymentTypeEnum): Promise<Shipment> {
-    OrderService.patchShipmentData(shipment, shipmentDto);
-    shipmentDto = plainToClass(ShipmentDto, shipment, { excludeExtraneousValues: true });
+  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
+    return this.updateOrderById(orderId, async order => {
+      OrderService.patchShipmentData(order.shipment, shipmentDto);
 
-    const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
-    shipment.sender.firstName = shipmentSender.firstName;
-    shipment.sender.lastName = shipmentSender.lastName;
-    shipment.sender.phone = shipmentSender.phone;
-    shipment.sender.address = shipmentSender.address;
-    shipment.sender.settlement = shipmentSender.city;
-    shipment.sender.addressType = shipmentSender.addressType;
+      const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
+      order.shipment.sender.firstName = shipmentSender.firstName;
+      order.shipment.sender.lastName = shipmentSender.lastName;
+      order.shipment.sender.phone = shipmentSender.phone;
+      order.shipment.sender.address = shipmentSender.address;
+      order.shipment.sender.settlement = shipmentSender.city;
+      order.shipment.sender.addressType = shipmentSender.addressType;
 
-    shipmentDto = await this.novaPoshtaService.createInternetDocument(shipmentDto, shipmentSender, paymentType);
-    shipment.trackingNumber = shipmentDto.trackingNumber;
-    shipment.estimatedDeliveryDate = shipmentDto.estimatedDeliveryDate;
-    shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
-    shipment.statusDescription = 'Новая почта ожидает поступление';
+      const { trackingNumber, estimatedDeliveryDate } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentType);
+      order.shipment.trackingNumber = trackingNumber;
+      order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
+      order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
+      order.shipment.statusDescription = 'Новая почта ожидает поступление';
 
-    return shipment;
+      if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
+        order.status = OrderStatusEnum.READY_TO_SHIP;
+      }
+
+      return order;
+    });
   }
 
   async changeOrderPaymentStatus(id: number, isPaid: boolean): Promise<Order> {

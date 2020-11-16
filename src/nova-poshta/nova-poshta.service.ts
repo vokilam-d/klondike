@@ -56,7 +56,7 @@ export class NovaPoshtaService {
 
   public async createInternetDocument(shipment: ShipmentDto,
                                       sender: ShipmentSender,
-                                      orderPaymentMethod: PaymentTypeEnum): Promise<ShipmentDto> {
+                                      orderPaymentMethod: PaymentTypeEnum) {
 
     const recipient = shipment.recipient;
     const saveContactRequestBody = {
@@ -160,10 +160,10 @@ export class NovaPoshtaService {
 
     const responseData = internetDocumentSaveResponse.data[0];
 
-    shipment.trackingNumber = responseData.IntDocNumber;
-    shipment.estimatedDeliveryDate = responseData.EstimatedDeliveryDate;
-
-    return shipment;
+    return {
+      trackingNumber: responseData.IntDocNumber,
+      estimatedDeliveryDate: responseData.EstimatedDeliveryDate
+    };
   }
 
   public async fetchStreets(spf: ClientSPFDto): Promise<StreetDto[]> {

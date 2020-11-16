@@ -71,6 +71,15 @@ export class AdminOrderController {
     };
   }
 
+  @Post(':id/internet-document')
+  async createInternetDocument(@Param('id') orderId: string, @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
+    const order = await this.orderService.createInternetDocument(parseInt(orderId), shipmentDto);
+
+    return {
+      data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
+  }
+
   @Put(':id')
   async editOrder(@Param('id') orderId: string, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
     const updated = await this.orderService.editOrder(parseInt(orderId), orderDto);
@@ -81,10 +90,9 @@ export class AdminOrderController {
   }
 
   @Put(':id/status/:status')
-  async changeStatus(@Param() params: ChangeOrderStatusDto,
-                     @Body() shipmentDto?: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
+  async changeStatus(@Param() params: ChangeOrderStatusDto): Promise<ResponseDto<AdminOrderDto>> {
 
-    const order = await this.orderService.changeStatus(params.id, params.status, shipmentDto);
+    const order = await this.orderService.changeStatus(params.id, params.status);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
