@@ -517,15 +517,18 @@ export class OrderService implements OnApplicationBootstrap {
   private async fetchShipmentStatus(order) {
     let status: string = '';
     let statusDescription: string = '';
+    let estimatedDeliveryDate: string = '';
 
     if (order.shipment.trackingNumber) {
       const shipmentDto: ShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
       status = shipmentDto?.status || '';
       statusDescription = shipmentDto?.statusDescription || '';
+      estimatedDeliveryDate = shipmentDto?.estimatedDeliveryDate || '';
     }
 
     order.shipment.status = status;
     order.shipment.statusDescription = statusDescription;
+    order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
 
     OrderService.updateOrderStatusByShipment(order);
   }
@@ -722,21 +725,27 @@ export class OrderService implements OnApplicationBootstrap {
 
   async createInternetDocument(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
     return this.updateOrderById(orderId, async order => {
-      OrderService.patchShipmentData(order.shipment, shipmentDto);
+      if (shipmentDto.trackingNumber) {
+        order.shipment.trackingNumber = shipmentDto.trackingNumber;
+        order.status = OrderStatusEnum.PACKED;
+        await this.fetchShipmentStatus(order);
+      } else {
+        OrderService.patchShipmentData(order.shipment, shipmentDto);
 
-      const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
-      order.shipment.sender.firstName = shipmentSender.firstName;
-      order.shipment.sender.lastName = shipmentSender.lastName;
-      order.shipment.sender.phone = shipmentSender.phone;
-      order.shipment.sender.address = shipmentSender.address;
-      order.shipment.sender.settlement = shipmentSender.city;
-      order.shipment.sender.addressType = shipmentSender.addressType;
+        const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
+        order.shipment.sender.firstName = shipmentSender.firstName;
+        order.shipment.sender.lastName = shipmentSender.lastName;
+        order.shipment.sender.phone = shipmentSender.phone;
+        order.shipment.sender.address = shipmentSender.address;
+        order.shipment.sender.settlement = shipmentSender.city;
+        order.shipment.sender.addressType = shipmentSender.addressType;
 
-      const { trackingNumber, estimatedDeliveryDate } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentType);
-      order.shipment.trackingNumber = trackingNumber;
-      order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
-      order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
-      order.shipment.statusDescription = 'Новая почта ожидает поступление';
+        const { trackingNumber, estimatedDeliveryDate } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentType);
+        order.shipment.trackingNumber = trackingNumber;
+        order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
+        order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
+        order.shipment.statusDescription = 'Новая почта ожидает поступление';
+      }
 
       if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
         order.status = OrderStatusEnum.READY_TO_SHIP;
