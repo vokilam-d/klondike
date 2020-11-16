@@ -70,17 +70,18 @@ export class ProductService implements OnApplicationBootstrap {
   private cachedProductCount: number;
   private filtersThresholdPercent = 25;
 
-  constructor(@InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
-              @Inject(forwardRef(() => ProductReviewService)) private readonly productReviewService: ProductReviewService,
-              @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
-              private readonly inventoryService: InventoryService,
-              private readonly counterService: CounterService,
-              private readonly mediaService: MediaService,
-              private readonly currencyService: CurrencyService,
-              private readonly attributeService: AttributeService,
-              private readonly searchService: SearchService,
-              private readonly pageRegistryService: PageRegistryService) {
-  }
+  constructor(
+    @InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
+    @Inject(forwardRef(() => ProductReviewService)) private readonly productReviewService: ProductReviewService,
+    @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
+    private readonly inventoryService: InventoryService,
+    private readonly counterService: CounterService,
+    private readonly mediaService: MediaService,
+    private readonly currencyService: CurrencyService,
+    private readonly attributeService: AttributeService,
+    private readonly searchService: SearchService,
+    private readonly pageRegistryService: PageRegistryService
+  ) { }
 
   async onApplicationBootstrap() {
     this.handleCurrencyUpdates();
@@ -630,90 +631,19 @@ export class ProductService implements OnApplicationBootstrap {
       .catch(_ => { });
   }
 
-  async addReviewRatingToProduct(productId: number, rating: number, isQuickRating: boolean, session?: ClientSession): Promise<any> {
-    const allReviewsCountProp = getPropertyOf<Product>('allReviewsCount');
-    const textReviewsCountProp = getPropertyOf<Product>('textReviewsCount');
-    const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
-
-    const mongoUpdateQuery: UpdateQuery<Product> = [
-      { $set: { [allReviewsCountProp]: { $toInt: { $add: [ `$${allReviewsCountProp}`, 1 ] } } } },
-      {
-        $set: {
-          [ratingProp]: {
-            $ifNull: [
-              { $divide: [{ $add: [`$${ratingProp}`, rating] }, 2] },
-              rating
-            ]
-          }
-        }
-      }
-    ];
-    if (isQuickRating === false) {
-      mongoUpdateQuery.push({
-        $set: { [textReviewsCountProp]: { $toInt: { $add: [ `$${textReviewsCountProp}`, 1 ] } } }
-      });
+  async updateReviewRating(productId: number, session: ClientSession): Promise<any> {
+    const product = await this.productModel.findById(productId).exec();
+    if (!product) {
+      throw new NotFoundException(__('Product with id "$1" not found', 'ru', productId));
     }
 
-    await this.productModel
-      .updateOne({ _id: productId as any }, mongoUpdateQuery)
-      .session(session)
-      .exec();
+    const { reviewsAvgRating, textReviewsCount, allReviewsCount } = await this.productReviewService.getRatingInfo(productId);
+    product.reviewsAvgRating = reviewsAvgRating;
+    product.textReviewsCount = textReviewsCount;
+    product.allReviewsCount = allReviewsCount;
 
-    const elasticQuery = { term: { id: productId } };
-    let elasticUpdateScript = `
-      ctx._source.${allReviewsCountProp} = ctx._source.${allReviewsCountProp} + 1;
-      if (ctx._source.${ratingProp} == null) {
-        ctx._source.${ratingProp} = ${rating};
-      } else {
-        ctx._source.${ratingProp} = (ctx._source.${ratingProp} + ${rating}) / 2;
-      }
-    `;
-    if (isQuickRating === false) {
-      elasticUpdateScript += `
-        ctx._source.${textReviewsCountProp} = ctx._source.${textReviewsCountProp} + 1;
-      `;
-    }
-    this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript).catch();
-  }
-
-  async removeReviewRatingFromProduct(productId: number, rating: number, session?: ClientSession): Promise<any> {
-    const allCountProp = getPropertyOf<Product>('allReviewsCount');
-    const textCountProp = getPropertyOf<Product>('textReviewsCount');
-    const ratingProp = getPropertyOf<Product>('reviewsAvgRating');
-
-    await this.productModel
-      .updateOne(
-        { _id: productId as any },
-        [
-          { $set: { [allCountProp]: { $toInt: { $subtract: [ `$${allCountProp}`, 1 ] } } } },
-          { $set: { [textCountProp]: { $toInt: { $subtract: [ `$${textCountProp}`, 1 ] } } } },
-          {
-            $set: {
-              [ratingProp]: {
-                $cond: {
-                  if: { $lte: [`$${allCountProp}`, 0]},
-                  then: null,
-                  else: { $subtract: [{ $multiply: [`$${ratingProp}`, 2] }, rating] }
-                }
-              }
-            }
-          }
-        ]
-      )
-      .session(session)
-      .exec();
-
-    const elasticQuery = { term: { id: productId } };
-    const elasticUpdateScript = `
-      if (ctx._source.${allCountProp} == 0) {
-        ctx._source.${ratingProp} = null;
-      } else {
-        ctx._source.${allCountProp} = ctx._source.${allCountProp} - 1;
-        ctx._source.${textCountProp} = ctx._source.${textCountProp} - 1;
-        ctx._source.${ratingProp} = ctx._source.${ratingProp} - ((ctx._source.${ratingProp} * 2) - ${rating});
-      }
-    `;
-    this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript).catch();
+    await product.save({ session });
+    await this.updateSearchDataById(productId, session);
   }
 
   async incrementSalesCount(productId: number, variantId: string, count: number, session: ClientSession): Promise<any> {
