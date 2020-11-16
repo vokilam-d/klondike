@@ -7,7 +7,7 @@ export class OnlinePaymentDetailsDto {
   orderDate: string;
   orderNo: string;
   amount: number;
-  currency: 'UAH';
+  currency: 'UAH' | string;
   productName: string[];
   productPrice: number[];
   productCount: number[];

@@ -51,6 +51,7 @@ import { User } from '../user/models/user.model';
 import { OrderItemService } from './order-item.service';
 import { OrderItem } from './models/order-item.model';
 import { AddressTypeEnum } from '../shared/enums/address-type.enum';
+import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -574,7 +575,7 @@ export class OrderService implements OnApplicationBootstrap {
     const orderReference = order.idForCustomer + '#' + new Date().getTime();
     const orderDate = order.createdAt.getTime() + '';
     const amount = order.prices.totalCost;
-    const currency = 'UAH';
+    const currency = CurrencyCodeEnum.UAH.toUpperCase();
 
     const itemNames: string[] = [];
     const itemPrices: number[] = [];
