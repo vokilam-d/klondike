@@ -12,7 +12,7 @@ import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { Inventory } from '../../inventory/models/inventory.model';
 import { getPropertyOf } from '../../shared/helpers/get-property-of.function';
-import { ClientSession, UpdateQuery } from 'mongoose';
+import { ClientSession } from 'mongoose';
 import { AdminProductVariantDto } from '../../shared/dtos/admin/product-variant.dto';
 import { ProductReviewService } from '../../reviews/product-review/product-review.service';
 import { ProductVariant } from '../models/product-variant.model';
@@ -638,7 +638,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
 
     const { reviewsAvgRating, textReviewsCount, allReviewsCount } = await this.productReviewService.getRatingInfo(productId);
-    product.reviewsAvgRating = reviewsAvgRating;
+    product.reviewsAvgRating = reviewsAvgRating === 0 ? null : reviewsAvgRating;
     product.textReviewsCount = textReviewsCount;
     product.allReviewsCount = allReviewsCount;
 

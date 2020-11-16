@@ -132,7 +132,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
 
     const accumulateRating = (acc, review: ProductReview | ProductQuickReview) => acc + review.rating;
     const reviewsRatingSum = reviews.reduce(accumulateRating, 0);
-    const quickReviewsRatingSum = reviews.reduce(accumulateRating, 0);
+    const quickReviewsRatingSum = quickReviews.reduce(accumulateRating, 0);
 
     const allReviewsCount = reviews.length + quickReviews.length;
 
