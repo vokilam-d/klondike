@@ -59,20 +59,21 @@ export class OrderService implements OnApplicationBootstrap {
   private logger = new Logger(OrderService.name);
   private cachedOrderCount: number;
 
-  constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
-              @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
-              private readonly counterService: CounterService,
-              private readonly paymentMethodService: PaymentMethodService,
-              private readonly tasksService: TasksService,
-              private readonly emailService: EmailService,
-              private readonly pdfGeneratorService: PdfGeneratorService,
-              private readonly inventoryService: InventoryService,
-              private readonly orderItemService: OrderItemService,
-              private readonly productService: ProductService,
-              private readonly searchService: SearchService,
-              private readonly novaPoshtaService: NovaPoshtaService,
-              private readonly shipmentSenderService: ShipmentSenderService) {
-  }
+  constructor(
+    @InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
+    @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
+    private readonly counterService: CounterService,
+    private readonly paymentMethodService: PaymentMethodService,
+    private readonly tasksService: TasksService,
+    private readonly emailService: EmailService,
+    private readonly pdfGeneratorService: PdfGeneratorService,
+    private readonly inventoryService: InventoryService,
+    private readonly orderItemService: OrderItemService,
+    private readonly productService: ProductService,
+    private readonly searchService: SearchService,
+    private readonly novaPoshtaService: NovaPoshtaService,
+    private readonly shipmentSenderService: ShipmentSenderService
+  ) { }
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());

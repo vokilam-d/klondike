@@ -12,7 +12,7 @@ import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { Inventory } from '../../inventory/models/inventory.model';
 import { getPropertyOf } from '../../shared/helpers/get-property-of.function';
-import { ClientSession } from 'mongoose';
+import { ClientSession, FilterQuery } from 'mongoose';
 import { AdminProductVariantDto } from '../../shared/dtos/admin/product-variant.dto';
 import { ProductReviewService } from '../../reviews/product-review/product-review.service';
 import { ProductVariant } from '../models/product-variant.model';
@@ -55,6 +55,8 @@ import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-exp
 import { ReservedInventory } from '../../inventory/models/reserved-inventory.model';
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 import { createClientProductId } from '../../shared/helpers/client-product-id';
+import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
+import { Category } from '../../category/models/category.model';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -286,6 +288,32 @@ export class ProductService implements OnApplicationBootstrap {
     const reservedProp: keyof Inventory = 'reserved';
 
     return this.productModel.aggregate()
+      .unwind(variantsProp)
+      .lookup({
+        'from': Inventory.collectionName,
+        'let': { [variantsProp]: `$${variantsProp}` },
+        'pipeline': [
+          { $match: { $expr: { $eq: [ `$${skuProp}`, `$$${variantsProp}.${skuProp}` ] } } },
+          { $replaceRoot: { newRoot: { $mergeObjects: [{ [qtyProp]: `$${qtyProp}` }, { [reservedProp]: `$${reservedProp}` }, `$$${variantsProp}`] } }}
+        ],
+        'as': variantsProp
+      })
+      .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
+      .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
+      .sort(sortingPaginating.getSortAsObj())
+      .skip(sortingPaginating.skip)
+      .limit(sortingPaginating.limit)
+      .exec();
+  }
+
+  async getProductsWithQtyByIds(productIds: number[], sortingPaginating: AdminSPFDto = new AdminSPFDto()): Promise<ProductWithQty[]> {
+    const variantsProp = getPropertyOf<Product>('variants');
+    const skuProp = getPropertyOf<Inventory>('sku');
+    const qtyProp = getPropertyOf<Inventory>('qtyInStock');
+    const reservedProp: keyof Inventory = 'reserved';
+
+    return this.productModel.aggregate()
+      .match({ _id: { $in: productIds } })
       .unwind(variantsProp)
       .lookup({
         'from': Inventory.collectionName,
@@ -1059,24 +1087,36 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
-  private async reindexAllSearchData() {
+  private async reindexSearchDataByIds(productIds?: number[]) {
+    const spf = new AdminSPFDto();
+    spf.limit = 10000;
+    const products: ProductWithQty[] = await this.getProductsWithQtyByIds(productIds, spf);
+    const listItems = this.transformToAdminListDto(products);
+
+    return this.reindexSearchData(listItems);
+  }
+
+  private async reindexAllSearchData() { // this is called by cron from another method
     this.logger.log('Start reindex all search data');
 
     const spf = new AdminSPFDto();
     spf.limit = 10000;
-    const products = await this.getProductsWithQty(spf);
+    const products: ProductWithQty[] = await this.getProductsWithQty(spf);
     const listItems = this.transformToAdminListDto(products);
 
     await this.searchService.deleteCollection(Product.collectionName);
     await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
 
-    for (const batch of getBatches(listItems, 20)) {
-      await Promise.all(batch.map(listItem => this.searchService.addDocument(Product.collectionName, listItem.id, listItem)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
+    await this.reindexSearchData(listItems);
 
     this.logger.log(`Finished reindex`);
+  }
+
+  private async reindexSearchData(listItems: AdminProductListItemDto[]) {
+
+    for (const batch of getBatches(listItems, 20)) {
+      await Promise.all(batch.map(listItem => this.searchService.addDocument(Product.collectionName, listItem.id, listItem)));
+    }
 
     function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
       const result = [];
@@ -1179,7 +1219,185 @@ export class ProductService implements OnApplicationBootstrap {
     return areArraysEqual(categories1.map(c => c.id), categories2.map(c => c.id));
   }
 
-  async reorderProduct(reorderDto: ProductReorderDto) { // todo this method is ugly, do separation on repositories
+  @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
+  async updateProductsOrder({ categoryId, fixedProductId }: { categoryId: number, fixedProductId: number } = { categoryId: null, fixedProductId: null }) {
+    let categories: Category[];
+    if (categoryId) {
+      categories = [await this.categoryService.getCategoryById(categoryId)];
+    } else {
+      categories = await this.categoryService.getAllCategories();
+    }
+
+    const variantsProp: keyof Product = 'variants';
+    const salesCountProp: keyof ProductVariant = 'salesCount';
+    const filterQuery: FilterQuery<Product> = { };
+    if (categoryId) {
+      const categoriesProp: keyof Product = 'categories';
+      const idProp: keyof ProductCategory = 'id';
+      filterQuery[`${categoriesProp}.${idProp}`] = categoryId;
+    }
+    const products = await this.productModel.find(filterQuery).sort({ [`${variantsProp}.${salesCountProp}`]: -1 }).exec();
+    const changedProducts: Set<DocumentType<Product>> = new Set();
+
+    for (const category of categories) {
+      const findProductCategory = (productCategory: ProductCategory) => productCategory.id === category.id;
+      const productsInCategory = products.filter(product => product.categories.some(findProductCategory));
+
+      let reversedSortOrder: number = 1;
+      for (const product of productsInCategory) {
+
+        const handleConflict = async (sortOrder: number) => {
+          const fixedProductAtThisSortOrder = productsInCategory.find(productInCategory => {
+            const productCategory = productInCategory.categories.find(findProductCategory);
+            return productInCategory.id !== product.id && productCategory.reversedSortOrder === sortOrder;
+          });
+
+          if (fixedProductAtThisSortOrder) {
+            const incrementedSortOrder = sortOrder + 1;
+
+            await handleConflict(incrementedSortOrder);
+
+            fixedProductAtThisSortOrder.categories.find(findProductCategory).reversedSortOrder = incrementedSortOrder;
+            changedProducts.add(fixedProductAtThisSortOrder);
+          }
+        }
+
+        const productCategoryIdx = product.categories.findIndex(findProductCategory);
+
+        if (product.id === fixedProductId) {
+          await handleConflict(product.categories[productCategoryIdx].reversedSortOrder);
+          continue;
+        }
+
+        const checkForAvailability = () => {
+          const fixedProductAtThisSortOrder = productsInCategory.find(productInCategory => {
+            const productCategory = productInCategory.categories.find(findProductCategory);
+            return productCategory.reversedSortOrder === reversedSortOrder && productCategory.isSortOrderFixed;
+          });
+
+          if (fixedProductAtThisSortOrder) {
+            reversedSortOrder += 1;
+            checkForAvailability();
+          }
+        }
+        checkForAvailability();
+
+        if (!product.categories[productCategoryIdx].isSortOrderFixed) {
+          product.categories[productCategoryIdx].reversedSortOrder = reversedSortOrder;
+          changedProducts.add(product);
+        }
+
+        reversedSortOrder += 1;
+      }
+    }
+
+    const bulk = this.productModel.collection.initializeUnorderedBulkOp();
+    const changedProductIds: number[] = [];
+    for (const changedProduct of changedProducts) {
+      bulk.find({ _id: changedProduct.id }).updateOne(changedProduct);
+      changedProductIds.push(changedProduct.id);
+    }
+    await bulk.execute();
+
+    if (categoryId) {
+      await this.reindexSearchDataByIds(changedProductIds);
+    } else {
+      await this.reindexAllSearchData();
+    }
+  }
+
+  async fixProductSortOrder(reorderDto: ProductReorderDto) {
+    const session = await this.productModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const product = await this.productModel.findById(reorderDto.id).session(session).exec();
+      if (!product) {
+        throw new BadRequestException(__('Product with id "$1" not found', 'ru', reorderDto.id));
+      }
+
+      const productCategoryIdx = product.categories.findIndex(c => c.id === reorderDto.categoryId);
+      if (productCategoryIdx === -1) {
+        throw new BadRequestException(__('Product with id "$1" is not present in category with id "$2"', 'ru', reorderDto.id, reorderDto.categoryId));
+      }
+
+      const targetProduct = await this.productModel.findById(reorderDto.targetId);
+      if (!targetProduct) {
+        throw new BadRequestException(__('Product with id "$1" not found', 'ru', reorderDto.targetId));
+      }
+
+      const targetProductCategory = targetProduct.categories.find(c => c.id === reorderDto.categoryId);
+      if (!targetProductCategory) {
+        throw new BadRequestException(__('Product with id "$1" is not present in category with id "$2"', 'ru', reorderDto.targetId, reorderDto.categoryId));
+      }
+
+      const targetProductOrder = targetProductCategory.reversedSortOrder || 0;
+      let newOrder;
+      if (reorderDto.position === ReorderPositionEnum.Start) {
+        newOrder = targetProductOrder;
+      } else {
+        newOrder = targetProductOrder + 1;
+      }
+
+      product.categories[productCategoryIdx].reversedSortOrderBeforeFix = product.categories[productCategoryIdx].reversedSortOrder;
+      product.categories[productCategoryIdx].reversedSortOrder = newOrder;
+      product.categories[productCategoryIdx].isSortOrderFixed = true;
+
+      await product.save({ session });
+      await this.updateSearchDataById(reorderDto.id, session);
+      await session.commitTransaction();
+
+      await this.updateProductsOrder({ categoryId: reorderDto.categoryId, fixedProductId: reorderDto.id });
+
+    } catch (ex) {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+      throw ex;
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  async unFixProductSortOrder(unfixDto: UnfixProductOrderDto) {
+    const session = await this.productModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const product = await this.productModel.findById(unfixDto.id).session(session).exec();
+      if (!product) {
+        throw new BadRequestException(__('Product with id "$1" not found', 'ru', unfixDto.id));
+      }
+
+      const productCategoryIdx = product.categories.findIndex(c => c.id === unfixDto.categoryId);
+      if (productCategoryIdx === -1) {
+        throw new BadRequestException(__('Product with id "$1" is not present in category with id "$2"', 'ru', unfixDto.id, unfixDto.categoryId));
+      }
+
+      if (!product.categories[productCategoryIdx].isSortOrderFixed) {
+        throw new BadRequestException(__('Product with id "$1" does not have fixed sort order in category with id "$2"', 'ru', unfixDto.id, unfixDto.categoryId));
+      }
+
+      product.categories[productCategoryIdx].reversedSortOrder = product.categories[productCategoryIdx].reversedSortOrderBeforeFix;
+      product.categories[productCategoryIdx].reversedSortOrderBeforeFix = 0;
+      product.categories[productCategoryIdx].isSortOrderFixed = false;
+      await product.save({ session });
+      await this.updateSearchDataById(unfixDto.id, session);
+      await session.commitTransaction();
+
+      await this.updateProductsOrder({ categoryId: unfixDto.categoryId, fixedProductId: null });
+
+    } catch (ex) {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+      throw ex;
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  async reorderProductDeprecated(reorderDto: ProductReorderDto) {
     const product = await this.productModel.findById(reorderDto.id).exec();
     if (!product) { throw new BadRequestException(__('Product with id "$1" not found', 'ru', reorderDto.id)); }
 

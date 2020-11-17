@@ -138,6 +138,14 @@ export const TRANSLATIONS = {
     en: 'Product with id "$1" not found',
     ru: 'Товар с id "$1" не найден'
   },
+  'Product with id "$1" is not present in category with id "$2"': {
+    en: 'Product with id "$1" is not present in category with id "$2"',
+    ru: 'Товар с id "$1" отсутствует в категории с id "$2"'
+  },
+  'Product with id "$1" does not have fixed sort order in category with id "$2"': {
+    en: 'Product with id "$1" does not have fixed sort order in category with id "$2"',
+    ru: 'Сортировка товара с id "$1" не закреплена в категории с id "$2"'
+  },
   'Product with slug "$1" not found': {
     en: 'Product with slug "$1" not found',
     ru: 'Товар с url "$1" не найден'
