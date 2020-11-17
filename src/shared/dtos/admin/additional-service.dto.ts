@@ -3,7 +3,7 @@ import { Expose } from 'class-transformer';
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
 import { TrimString } from '../../decorators/trim-string.decorator';
 
-export class AdminAdditionalServiceDto implements Pick<AdditionalService, 'id' | 'isEnabled' | 'name' | 'clientName'> {
+export class AdminAdditionalServiceDto implements Pick<AdditionalService, 'id' | 'isEnabled' | 'name' | 'clientName' | 'price'> {
   @Expose()
   id: number;
 
@@ -20,4 +20,8 @@ export class AdminAdditionalServiceDto implements Pick<AdditionalService, 'id' |
   @Expose()
   @IsBoolean()
   isEnabled: boolean;
+
+  @Expose()
+  @IsNumber()
+  price: number;
 }

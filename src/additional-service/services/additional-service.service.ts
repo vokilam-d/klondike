@@ -13,6 +13,8 @@ import { ElasticAdditionalService } from '../models/elastic-additional-service.m
 import { AdminAdditionalServiceDto } from '../../shared/dtos/admin/additional-service.dto';
 import { ProductService } from '../../product/services/product.service';
 import { CounterService } from '../../shared/services/counter/counter.service';
+import { GetClientAdditionalServicesQueryDto } from '../../shared/dtos/client/get-client-additional-services-query.dto';
+import { IFilter } from '../../shared/dtos/shared-dtos/spf.dto';
 
 @Injectable()
 export class AdditionalServiceService {
@@ -31,26 +33,10 @@ export class AdditionalServiceService {
   }
 
   async getAdditionalServicesResponseDto(spf: AdminSPFDto): Promise<ResponseDto<AdminAdditionalServiceDto[]>> {
-    let additionalServices: AdminAdditionalServiceDto[];
-    let itemsFiltered: number;
-
-    if (spf.hasFilters()) {
-      const searchResponse = await this.searchByFilters(spf);
-      additionalServices = searchResponse[0];
-      itemsFiltered = searchResponse[1];
-    } else {
-      additionalServices = await this.additionalServiceModel
-        .find()
-        .sort(spf.getSortAsObj())
-        .skip(spf.skip)
-        .limit(spf.limit)
-        .exec();
-
-      additionalServices = plainToClass(AdminAdditionalServiceDto, additionalServices, { excludeExtraneousValues: true });
-    }
-
+    const [additionalServices, itemsFiltered] = await this.searchByFilters(spf);
     const itemsTotal = await this.countAdditionalServices();
     const pagesTotal = Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit);
+
     return {
       data: additionalServices,
       itemsTotal,
@@ -64,10 +50,17 @@ export class AdditionalServiceService {
     return additionalServices.map(additionalService => additionalService.toJSON());
   }
 
-  async getAdditionalService(id: string): Promise<DocumentType<AdditionalService>> {
+  async getAdditionalServicesForClient(queryDto: GetClientAdditionalServicesQueryDto): Promise<AdminAdditionalServiceDto[]> {
+    const spf = new AdminSPFDto();
+
+    const [additionalServices, itemsFiltered] = await this.searchByFilters(spf, [{ fieldName: 'id', values: queryDto.idsAsArray() }])
+    return additionalServices;
+  }
+
+  async getAdditionalServiceById(id: string): Promise<DocumentType<AdditionalService>> {
     const found = await this.additionalServiceModel.findById(id).exec();
     if (!found) {
-      throw new NotFoundException(__('AdditionalService with id "$1" not found', 'ru', id));
+      throw new NotFoundException(__('Additional service with id "$1" not found', 'ru', id));
     }
 
     return found;
@@ -76,7 +69,7 @@ export class AdditionalServiceService {
   async createAdditionalService(additionalServiceDto: AdminAdditionalServiceDto): Promise<DocumentType<AdditionalService>> {
     const found = await this.additionalServiceModel.findById(additionalServiceDto.id).exec();
     if (found) {
-      throw new BadRequestException(__('AdditionalService with id "$1" already exists', 'ru', additionalServiceDto.id));
+      throw new BadRequestException(__('Additional service with id "$1" already exists', 'ru', additionalServiceDto.id));
     }
 
     const session = await this.additionalServiceModel.db.startSession();
@@ -101,12 +94,12 @@ export class AdditionalServiceService {
   }
 
   async updateAdditionalService(additionalServiceId: string, additionalServiceDto: AdminAdditionalServiceDto): Promise<DocumentType<AdditionalService>> {
-    const additionalService = await this.getAdditionalService(additionalServiceId);
+    const additionalService = await this.getAdditionalServiceById(additionalServiceId);
 
     Object.keys(additionalServiceDto).forEach(key => additionalService[key] = additionalServiceDto[key]);
 
     await additionalService.save();
-    this.updateSearchData(additionalService);
+    this.updateSearchData(additionalService).then();
 
     return additionalService;
   }
@@ -114,9 +107,9 @@ export class AdditionalServiceService {
   async deleteAdditionalService(additionalServiceId: string): Promise<DocumentType<AdditionalService>> {
     const deleted = await this.additionalServiceModel.findByIdAndDelete(additionalServiceId).exec();
     if (!deleted) {
-      throw new NotFoundException(__('AdditionalService with id "$1" not found', 'ru', additionalServiceId));
+      throw new NotFoundException(__('Additional service with id "$1" not found', 'ru', additionalServiceId));
     }
-    this.deleteSearchData(deleted);
+    this.deleteSearchData(deleted).then();
 
     return deleted;
   }
@@ -137,6 +130,18 @@ export class AdditionalServiceService {
 
   private deleteSearchData(additionalService: AdditionalService): Promise<any> {
     return this.searchService.deleteDocument(AdditionalService.collectionName, additionalService.id);
+  }
+
+  private async searchByFilters(spf: AdminSPFDto, filters?: IFilter[]) {
+    return this.searchService.searchByFilters<AdminAdditionalServiceDto>(
+      AdditionalService.collectionName,
+      filters || spf.getNormalizedFilters(),
+      spf.skip,
+      spf.limit,
+      spf.getSortAsObj(),
+      undefined,
+      new ElasticAdditionalService()
+    );
   }
 
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
@@ -168,17 +173,5 @@ export class AdditionalServiceService {
 
       return result;
     }
-  }
-
-  private async searchByFilters(spf: AdminSPFDto) {
-    return this.searchService.searchByFilters<AdminAdditionalServiceDto>(
-      AdditionalService.collectionName,
-      spf.getNormalizedFilters(),
-      spf.skip,
-      spf.limit,
-      spf.getSortAsObj(),
-      undefined,
-      new ElasticAdditionalService()
-    );
   }
 }

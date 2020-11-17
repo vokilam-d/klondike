@@ -23,7 +23,7 @@ import { AdditionalServiceService } from '../services/additional-service.service
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
-@Controller('admin/additionalServices')
+@Controller('admin/additional-services')
 export class AdminAdditionalServiceController {
 
   constructor(private readonly additionalServiceService: AdditionalServiceService) {}
@@ -35,7 +35,7 @@ export class AdminAdditionalServiceController {
 
   @Get(':id')
   async getAdditionalService(@Param('id') additionalServiceId: string): Promise<ResponseDto<AdminAdditionalServiceDto>> {
-    const additionalService = await this.additionalServiceService.getAdditionalService(additionalServiceId);
+    const additionalService = await this.additionalServiceService.getAdditionalServiceById(additionalServiceId);
 
     return {
       data: plainToClass(AdminAdditionalServiceDto, additionalService, { excludeExtraneousValues: true })
