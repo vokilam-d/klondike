@@ -50,8 +50,14 @@ export class AdditionalServiceService {
 
   async getAdditionalServicesForClient(queryDto: GetClientAdditionalServicesQueryDto): Promise<AdminAdditionalServiceDto[]> {
     const spf = new AdminSPFDto();
+    const idProp: keyof AdminAdditionalServiceDto = 'id';
+    const isEnabledProp: keyof AdminAdditionalServiceDto = 'isEnabled';
+    const filters: IFilter[] = [
+      { fieldName: idProp, values: queryDto.idsAsArray() },
+      { fieldName: isEnabledProp, values: [true] }
+    ]
 
-    const [additionalServices, itemsFiltered] = await this.searchByFilters(spf, [{ fieldName: 'id', values: queryDto.idsAsArray() }])
+    const [additionalServices, itemsFiltered] = await this.searchByFilters(spf, filters)
     return additionalServices;
   }
 
