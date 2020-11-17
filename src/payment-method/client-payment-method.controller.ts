@@ -13,7 +13,7 @@ export class ClientPaymentMethodController {
 
   @Get()
   async getAllPaymentMethods(): Promise<ResponseDto<ClientPaymentMethodDto[]>> {
-    const methods = await this.paymentMethodService.getAllPaymentMethods();
+    const methods = await this.paymentMethodService.getAllPaymentMethodsForClient();
 
     return {
       data: plainToClass(ClientPaymentMethodDto, methods, { excludeExtraneousValues: true })

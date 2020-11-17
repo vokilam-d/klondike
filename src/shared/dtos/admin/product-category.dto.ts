@@ -26,5 +26,14 @@ export class AdminProductCategoryDto implements Required<ProductCategory> {
   sortOrder: number;
 
   @Expose()
+  reversedSortOrder: number;
+
+  @Expose()
+  isSortOrderFixed: boolean;
+
+  @Expose()
+  reversedSortOrderBeforeFix: number;
+
+  @Expose()
   isEnabled: boolean;
 }

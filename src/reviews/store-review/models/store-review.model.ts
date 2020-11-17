@@ -5,9 +5,6 @@ export class StoreReview extends BaseReview {
   set id(id: number) { this._id = id; }
   get id(): number { return this._id; }
 
-  @prop({ default: '' })
-  managerComment: string;
-
   static collectionName: string = 'store-review';
 }
 

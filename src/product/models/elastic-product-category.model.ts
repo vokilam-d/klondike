@@ -7,4 +7,7 @@ export class ElasticProductCategory implements Record<keyof ProductCategory, any
   slug = elasticTextType;
   sortOrder = elasticIntegerType;
   isEnabled = elasticBooleanType;
+  reversedSortOrder = elasticIntegerType;
+  isSortOrderFixed = elasticBooleanType;
+  reversedSortOrderBeforeFix = elasticIntegerType;
 }

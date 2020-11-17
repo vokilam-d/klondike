@@ -74,6 +74,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     try {
       const review = new this.reviewModel(reviewDto);
       review.id = await this.counterService.getCounter(this.collectionName, session);
+      review.createdAt = new Date();
 
       const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(reviewDto.medias, this.collectionName);
       review.medias = savedMedias;

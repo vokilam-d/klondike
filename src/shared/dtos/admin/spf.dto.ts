@@ -13,7 +13,7 @@ export class AdminSPFDto extends SortingPaginatingFilterDto {
 
   get sortFilter(): any {
     const categoriesProp: keyof AdminProductListItemDto = 'categories';
-    const sortOrderProp: keyof AdminProductCategoryDto = 'sortOrder';
+    const sortOrderProp: keyof AdminProductCategoryDto = 'reversedSortOrder';
     const idProp: keyof AdminProductCategoryDto = 'id';
     const categorySortOrderProp = `${categoriesProp}.${sortOrderProp}`;
     const categoryIdProp = `${categoriesProp}.${idProp}`;

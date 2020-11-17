@@ -14,6 +14,18 @@ export class ProductCategory {
   @prop()
   isEnabled: boolean;
 
+  /**
+   * @deprecated
+   */
   @prop({ default: 0 })
   sortOrder: number;
+
+  @prop({ default: 0 })
+  reversedSortOrder: number;
+
+  @prop({ default: false })
+  isSortOrderFixed: boolean;
+
+  @prop({ default: 0 })
+  reversedSortOrderBeforeFix: number;
 }

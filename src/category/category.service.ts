@@ -52,7 +52,7 @@ export class CategoryService implements OnApplicationBootstrap {
     return categories;
   }
 
-  async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean } = { }): Promise<CategoryTreeItem[]> {
+  async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean } = { }): Promise<CategoryTreeItem[]> {
     const treeItems: CategoryTreeItem[] = [];
     const childrenMap: { [parentId: number]: CategoryTreeItem[] } = {};
 
@@ -62,7 +62,7 @@ export class CategoryService implements OnApplicationBootstrap {
       if (options.onlyEnabled && category.isEnabled === false) { continue; }
       if (options.noClones && CategoryService.isClone(category)) { continue; }
 
-      category = this.handleCloneCategory(category, allCategories);
+      category = this.handleCloneCategory(category, allCategories, options.adminTree);
 
       const item: CategoryTreeItem = plainToClass(CategoryTreeItem, category, { excludeExtraneousValues: true });
       item.children = [];
@@ -113,8 +113,7 @@ export class CategoryService implements OnApplicationBootstrap {
     for (let category of allCategories) {
       if (!category.isEnabled) { continue; }
 
-      const ref = category;
-      category = this.handleCloneCategory(category, allCategories);
+      category = this.handleCloneCategory(category, allCategories, false);
 
       const linked: ClientLinkedCategoryDto = {
         ...category,
@@ -142,7 +141,7 @@ export class CategoryService implements OnApplicationBootstrap {
       if (!category.isEnabled) { continue; }
       if (found.parentId !== category.parentId) { continue; }
 
-      category = this.handleCloneCategory(category, allCategories);
+      category = this.handleCloneCategory(category, allCategories, false);
 
       linkedCategories.push({
         ...category,
@@ -331,7 +330,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
     while (parentId) {
       let parent = allCategories.find(c => c.id === parentId);
-      parent = this.handleCloneCategory(parent, allCategories);
+      parent = this.handleCloneCategory(parent, allCategories, false);
 
       breadcrumbs.unshift({
         id: parent.id,
@@ -499,7 +498,7 @@ export class CategoryService implements OnApplicationBootstrap {
     );
   }
 
-  private handleCloneCategory(category: Category, allCategories: Category[]): Category {
+  private handleCloneCategory(category: Category, allCategories: Category[], adminView: boolean): Category {
     if (!CategoryService.isClone(category)) {
       return category;
     }
@@ -512,8 +511,10 @@ export class CategoryService implements OnApplicationBootstrap {
     source = plainToClass(Category, source);
     source.name = category.name;
     source.parentId = category.parentId;
-    source.id = category.id;
-    source._id = category.id;
+    if (adminView) {
+      source.id = category.id;
+      source._id = category.id;
+    }
 
     return source;
   }

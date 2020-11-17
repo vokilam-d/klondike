@@ -34,7 +34,7 @@ export class ClientProductSPFDto extends ClientSPFDto {
     const createdAtProp: keyof AdminProductListItemDto = 'createdAt';
     const priceProp: keyof AdminProductVariantListItem = 'priceInDefaultCurrency';
     const categoriesProp: keyof AdminProductListItemDto = 'categories';
-    const sortOrderProp: keyof AdminProductCategoryDto = 'sortOrder';
+    const sortOrderProp: keyof AdminProductCategoryDto = 'reversedSortOrder';
     const qtyProp: keyof AdminProductVariantListItem = 'sellableQty';
     const salesCountProp: keyof AdminProductVariantListItem = 'salesCount';
 
@@ -67,7 +67,7 @@ export class ClientProductSPFDto extends ClientSPFDto {
       case EProductsSort.Popularity:
       default:
         if (this.categoryId) {
-          sort[`${categoriesProp}.${sortOrderProp}`] = 'desc';
+          sort[`${categoriesProp}.${sortOrderProp}`] = 'asc';
         }
         break;
     }

@@ -15,6 +15,14 @@ import { ClientAddProductReviewCommentDto } from '../../shared/dtos/client/produ
 import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { EmailService } from '../../email/email.service';
+import { ProductQuickReviewService } from './product-quick-review.service';
+import { ProductQuickReview } from './models/product-quick-review.model';
+
+interface RatingInfo {
+  allReviewsCount: number;
+  textReviewsCount: number;
+  reviewsAvgRating: number;
+}
 
 @Injectable()
 export class ProductReviewService extends BaseReviewService<ProductReview, AdminProductReviewDto> {
@@ -22,12 +30,15 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   get collectionName(): string { return ProductReview.collectionName; }
   protected ElasticReview = ElasticProductReviewModel;
 
-  constructor(@InjectModel(ProductReview.name) protected readonly reviewModel: ReturnModelType<typeof ProductReview>,
-              @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
-              protected readonly searchService: SearchService,
-              protected readonly counterService: CounterService,
-              protected readonly emailService: EmailService,
-              protected readonly mediaService: MediaService) {
+  constructor(
+    @InjectModel(ProductReview.name) protected readonly reviewModel: ReturnModelType<typeof ProductReview>,
+    @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
+    protected readonly quickReviewService: ProductQuickReviewService,
+    protected readonly searchService: SearchService,
+    protected readonly counterService: CounterService,
+    protected readonly emailService: EmailService,
+    protected readonly mediaService: MediaService
+  ) {
     super();
   }
 
@@ -46,7 +57,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   }
 
   async createReview(reviewDto: AdminProductReviewDto | ClientAddProductReviewDto): Promise<AdminProductReviewDto> {
-    const review = await super.createReview(reviewDto, (review: ProductReview, session) => this.productService.addReviewRatingToProduct(review.productId, review.rating, false, session));
+    const review = await super.createReview(reviewDto, (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session));
     this.emailService.sendNewProductReviewEmail(review).then();
     return review;
   }
@@ -58,14 +69,17 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   }
 
   async updateReview(reviewId: string, reviewDto: AdminProductReviewDto): Promise<AdminProductReviewDto> {
-    const onEnable = (review: ProductReview, session) => this.productService.addReviewRatingToProduct(review.productId, review.rating, false, session);
-    const onDisable = (review: ProductReview, session) => this.productService.removeReviewRatingFromProduct(review.productId, review.rating, session);
+    const onEnable = (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session);
+    const onDisable = (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session);
 
     return super.updateReview(reviewId, reviewDto, { onEnable, onDisable });
   }
 
   async deleteReview(reviewId: string): Promise<AdminProductReviewDto> {
-    return super.deleteReview(reviewId, (review: ProductReview, session) => this.productService.removeReviewRatingFromProduct(review.productId, review.rating, session));
+    return super.deleteReview(
+      reviewId,
+      (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session)
+    );
   }
 
   async deleteReviewsByProductId(productId: number, session: ClientSession) {
@@ -100,6 +114,8 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
 
     const comment = new ProductReviewComment();
     Object.assign(comment, commentDto);
+    comment.createdAt = new Date();
+
     if (customerId) {
       comment.customerId = customerId;
     }
@@ -108,5 +124,27 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     await review.save();
 
     return review;
+  }
+
+  async getRatingInfo(productId: number, session: ClientSession): Promise<RatingInfo> {
+    const reviews = await this.reviewModel.find({ productId }).session(session);
+    const quickReviews = await this.quickReviewService.findByProductId(productId, session);
+
+    const accumulateRating = (acc, review: ProductReview | ProductQuickReview) => acc + review.rating;
+    const reviewsRatingSum = reviews.reduce(accumulateRating, 0);
+    const quickReviewsRatingSum = quickReviews.reduce(accumulateRating, 0);
+
+    const allReviewsCount = reviews.length + quickReviews.length;
+
+    let reviewsAvgRating: number = null;
+    if (allReviewsCount) {
+      reviewsAvgRating = (reviewsRatingSum + quickReviewsRatingSum) / allReviewsCount;
+    }
+
+    return {
+      allReviewsCount,
+      textReviewsCount: reviews.length,
+      reviewsAvgRating
+    }
   }
 }

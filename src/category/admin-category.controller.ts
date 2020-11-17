@@ -44,7 +44,7 @@ export class AdminCategoryController {
 
   @Get('tree')
   async getCategoriesTree(@Query('noClones') noClones: string): Promise<ResponseDto<CategoryTreeItem[]>> {
-    const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, noClones: Boolean(noClones) });
+    const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, noClones: Boolean(noClones), adminTree: true });
     return {
       data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
     };
@@ -76,7 +76,7 @@ export class AdminCategoryController {
   @Post('action/reorder')
   async reorderCategories(@Body() reorderDto: ReorderDto): Promise<ResponseDto<CategoryTreeItem[]>> {
     await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position);
-    const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false });
+    const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, adminTree: true });
     return {
       data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
     };

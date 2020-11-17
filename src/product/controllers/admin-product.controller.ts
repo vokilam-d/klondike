@@ -29,6 +29,7 @@ import { ProductReorderDto } from '../../shared/dtos/admin/reorder.dto';
 import { ReservedInventory } from '../../inventory/models/reserved-inventory.model';
 import { OrderedProductService } from '../services/ordered-product.service';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
+import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -87,12 +88,23 @@ export class AdminProductController {
     reply.status(201).send(media);
   }
 
-  @Post('action/reorder')
-  async reorderProduct(@Body() reorderDto: ProductReorderDto,
-                       @Query() spf: AdminSPFDto
+  @Post('action/fix-sort-order')
+  async fixProductSortOrder(
+    @Body() reorderDto: ProductReorderDto,
+    @Query() spf: AdminSPFDto
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    await this.productsService.reorderProduct(reorderDto);
+    await this.productsService.fixProductSortOrder(reorderDto);
+    return this.productsService.getAdminProductsList(spf, false);
+  }
+
+  @Post('action/unfix-sort-order')
+  async unFixProductSortOrder(
+    @Body() unfixDto: UnfixProductOrderDto,
+    @Query() spf: AdminSPFDto
+  ): Promise<ResponseDto<AdminProductListItemDto[]>> {
+
+    await this.productsService.unFixProductSortOrder(unfixDto);
     return this.productsService.getAdminProductsList(spf, false);
   }
 

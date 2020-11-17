@@ -50,6 +50,8 @@ import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 import { User } from '../user/models/user.model';
 import { OrderItemService } from './order-item.service';
 import { OrderItem } from './models/order-item.model';
+import { AddressTypeEnum } from '../shared/enums/address-type.enum';
+import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -57,21 +59,21 @@ export class OrderService implements OnApplicationBootstrap {
   private logger = new Logger(OrderService.name);
   private cachedOrderCount: number;
 
-  constructor(@InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
-              @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
-              // @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
-              private readonly counterService: CounterService,
-              private readonly paymentMethodService: PaymentMethodService,
-              private readonly tasksService: TasksService,
-              private readonly emailService: EmailService,
-              private readonly pdfGeneratorService: PdfGeneratorService,
-              private readonly inventoryService: InventoryService,
-              private readonly orderItemService: OrderItemService,
-              private readonly productService: ProductService,
-              private readonly searchService: SearchService,
-              private readonly novaPoshtaService: NovaPoshtaService,
-              private readonly shipmentSenderService: ShipmentSenderService) {
-  }
+  constructor(
+    @InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
+    @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
+    private readonly counterService: CounterService,
+    private readonly paymentMethodService: PaymentMethodService,
+    private readonly tasksService: TasksService,
+    private readonly emailService: EmailService,
+    private readonly pdfGeneratorService: PdfGeneratorService,
+    private readonly inventoryService: InventoryService,
+    private readonly orderItemService: OrderItemService,
+    private readonly productService: ProductService,
+    private readonly searchService: SearchService,
+    private readonly novaPoshtaService: NovaPoshtaService,
+    private readonly shipmentSenderService: ShipmentSenderService
+  ) { }
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
@@ -238,9 +240,13 @@ export class OrderService implements OnApplicationBootstrap {
       const prices = await this.orderItemService.calcOrderPrices(orderDto.items, customer);
 
       const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, customer, session);
+
+      OrderService.checkForCheckoutRules(newOrder);
+
       newOrder.status = OrderStatusEnum.NEW;
       newOrder.source = 'client';
       newOrder.logs.push({ time: new Date(), text: `Created order` });
+
       await newOrder.save({ session });
       await session.commitTransaction();
 
@@ -513,15 +519,18 @@ export class OrderService implements OnApplicationBootstrap {
   private async fetchShipmentStatus(order) {
     let status: string = '';
     let statusDescription: string = '';
+    let estimatedDeliveryDate: string = '';
 
     if (order.shipment.trackingNumber) {
       const shipmentDto: ShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
       status = shipmentDto?.status || '';
       statusDescription = shipmentDto?.statusDescription || '';
+      estimatedDeliveryDate = shipmentDto?.estimatedDeliveryDate || '';
     }
 
     order.shipment.status = status;
     order.shipment.statusDescription = statusDescription;
+    order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
 
     OrderService.updateOrderStatusByShipment(order);
   }
@@ -567,7 +576,7 @@ export class OrderService implements OnApplicationBootstrap {
     const orderReference = order.idForCustomer + '#' + new Date().getTime();
     const orderDate = order.createdAt.getTime() + '';
     const amount = order.prices.totalCost;
-    const currency = 'UAH';
+    const currency = CurrencyCodeEnum.UAH.toUpperCase();
 
     const itemNames: string[] = [];
     const itemPrices: number[] = [];
@@ -641,7 +650,7 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async changeStatus(orderId: number, status: OrderStatusEnum, shipmentDto?: ShipmentDto) {
+  async changeStatus(orderId: number, status: OrderStatusEnum) {
     return await this.updateOrderById(orderId, async (order, session) => {
 
       const assertStatus = (statusToAssert: OrderStatusEnum) => {
@@ -661,10 +670,6 @@ export class OrderService implements OnApplicationBootstrap {
 
         case OrderStatusEnum.PACKED:
           assertStatus(OrderStatusEnum.READY_TO_PACK);
-          order.shipment = await this.createInternetDocument(order.shipment, shipmentDto, order.paymentType);
-          if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
-            status = OrderStatusEnum.READY_TO_SHIP;
-          }
           break;
 
         case OrderStatusEnum.READY_TO_SHIP:
@@ -720,25 +725,36 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async createInternetDocument(shipment: Shipment, shipmentDto: ShipmentDto, paymentType: PaymentTypeEnum): Promise<Shipment> {
-    OrderService.patchShipmentData(shipment, shipmentDto);
-    shipmentDto = plainToClass(ShipmentDto, shipment, { excludeExtraneousValues: true });
+  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
+    return this.updateOrderById(orderId, async order => {
+      if (shipmentDto.trackingNumber) {
+        order.shipment.trackingNumber = shipmentDto.trackingNumber;
+        order.status = OrderStatusEnum.PACKED;
+        await this.fetchShipmentStatus(order);
+      } else {
+        OrderService.patchShipmentData(order.shipment, shipmentDto);
 
-    const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
-    shipment.sender.firstName = shipmentSender.firstName;
-    shipment.sender.lastName = shipmentSender.lastName;
-    shipment.sender.phone = shipmentSender.phone;
-    shipment.sender.address = shipmentSender.address;
-    shipment.sender.settlement = shipmentSender.city;
-    shipment.sender.addressType = shipmentSender.addressType;
+        const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
+        order.shipment.sender.firstName = shipmentSender.firstName;
+        order.shipment.sender.lastName = shipmentSender.lastName;
+        order.shipment.sender.phone = shipmentSender.phone;
+        order.shipment.sender.address = shipmentSender.address;
+        order.shipment.sender.settlement = shipmentSender.city;
+        order.shipment.sender.addressType = shipmentSender.addressType;
 
-    shipmentDto = await this.novaPoshtaService.createInternetDocument(shipmentDto, shipmentSender, paymentType);
-    shipment.trackingNumber = shipmentDto.trackingNumber;
-    shipment.estimatedDeliveryDate = shipmentDto.estimatedDeliveryDate;
-    shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
-    shipment.statusDescription = 'Новая почта ожидает поступление';
+        const { trackingNumber, estimatedDeliveryDate } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentType);
+        order.shipment.trackingNumber = trackingNumber;
+        order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
+        order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
+        order.shipment.statusDescription = 'Новая почта ожидает поступление';
+      }
 
-    return shipment;
+      if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
+        order.status = OrderStatusEnum.READY_TO_SHIP;
+      }
+
+      return order;
+    });
   }
 
   async changeOrderPaymentStatus(id: number, isPaid: boolean): Promise<Order> {
@@ -821,5 +837,29 @@ export class OrderService implements OnApplicationBootstrap {
     }
 
     return this.orderModel.find(filterQuery, projection).exec();
+  }
+
+  private static checkForCheckoutRules(order: Order) {
+    const errors: string[] = [];
+    const isCashOnDeliveryMethod = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
+    if (!isCashOnDeliveryMethod) { return; }
+
+    if (order.shipment.recipient.addressType === AddressTypeEnum.DOORS) {
+      errors.push(__('Cash on delivery is not available with address delivery', 'ru'));
+    }
+
+    const COST_BREAKPOINT = 100;
+    if (order.prices.itemsCost < COST_BREAKPOINT) {
+      errors.push(__('Cash on delivery is not available for orders less than $1 uah', 'ru', COST_BREAKPOINT));
+    }
+
+    const disallowedItem = order.items.find(item => item.name.toLowerCase().match(/сусаль([ ,])/g));
+    if (disallowedItem) {
+      errors.push(__('Cash on delivery is not available for gold leaf', 'ru'));
+    }
+
+    if (errors.length) {
+      throw new BadRequestException(errors);
+    }
   }
 }
