@@ -65,7 +65,8 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
         oldPrice: item.oldPrice,
         cost: item.cost,
         imageUrl: item.imageUrl,
-        slug: item.slug
+        slug: item.slug,
+        additionalServices: item.additionalServices.map(service => `${service.name} (+${service.price}грн)`)
       })),
       totalProductsCost: order.prices.itemsCost,
       discountLabel: order.prices.discountLabel,

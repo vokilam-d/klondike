@@ -931,7 +931,12 @@
                                                                     </tr>
                                                                     <tr style="border-collapse:collapse;">
                                                                         <td align="left" class="es-m-txt-l"
-                                                                            style="padding:0;Margin:0;padding-top:5px;"><p
+                                                                            style="padding:0;Margin:0;padding-top:5px;">
+                                                                            {{#each this.additionalServices}}
+                                                                            <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:15px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:16px;font-size:14px !important;color:#313131;">
+                                                                                {{ this }}</p>
+                                                                            {{/each}}
+                                                                            <p
                                                                                 style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:15px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:16px;font-size:14px !important;color:#313131;">
                                                                             Цена: <strong>{{ this.price }} грн</strong>
                                                                             {{#if this.oldPrice}}

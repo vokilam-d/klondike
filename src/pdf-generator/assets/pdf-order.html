@@ -70,6 +70,12 @@
                     <div class="products__sku">
                         SKU: {{ this.sku }}
                     </div>
+
+                    {{#each this.additionalServices}}
+                    <div class="products__additional-service">
+                        {{ this }}
+                    </div>
+                    {{/each}}
                 </td>
                 <td class="products__qty">
                     {{ this.qty }}

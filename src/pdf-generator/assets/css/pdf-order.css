@@ -128,6 +128,11 @@
     margin: 6px 0 0;
 }
 
+.products__additional-service {
+    margin: 4px 0 0;
+    font-size: 12px;
+}
+
 
 .summary {
     margin: 15px 0 0;
