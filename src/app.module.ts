@@ -27,6 +27,7 @@ import { BlogModule } from './blog/blog.module';
 import { AggregatorModule } from './aggregator/aggregator.module';
 import { AutocompleteModule } from './autocomplete/autocomplete.module';
 import { LoggerModule } from './logger/logger.module';
+import { AdditionalServiceModule } from './additional-service/additional-service.module';
 
 @Module({
   imports: [
@@ -68,7 +69,8 @@ import { LoggerModule } from './logger/logger.module';
     BlogModule,
     AggregatorModule,
     AutocompleteModule,
-    LoggerModule
+    LoggerModule,
+    AdditionalServiceModule
   ],
   providers: [
     GlobalExceptionFilter,

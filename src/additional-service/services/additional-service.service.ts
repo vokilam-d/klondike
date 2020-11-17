@@ -11,7 +11,6 @@ import { SearchService } from '../../shared/services/search/search.service';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { ElasticAdditionalService } from '../models/elastic-additional-service.model';
 import { AdminAdditionalServiceDto } from '../../shared/dtos/admin/additional-service.dto';
-import { ProductService } from '../../product/services/product.service';
 import { CounterService } from '../../shared/services/counter/counter.service';
 import { GetClientAdditionalServicesQueryDto } from '../../shared/dtos/client/get-client-additional-services-query.dto';
 import { IFilter } from '../../shared/dtos/shared-dtos/spf.dto';
@@ -22,7 +21,6 @@ export class AdditionalServiceService {
   private logger = new Logger(AdditionalServiceService.name);
 
   constructor(@InjectModel(AdditionalService.name) private readonly additionalServiceModel: ReturnModelType<typeof AdditionalService>,
-              private readonly productService: ProductService,
               private readonly counterService: CounterService,
               private readonly searchService: SearchService
   ) { }
@@ -40,8 +38,8 @@ export class AdditionalServiceService {
     return {
       data: additionalServices,
       itemsTotal,
-      itemsFiltered,
-      pagesTotal
+      pagesTotal,
+      ...(spf.hasFilters() ? { itemsFiltered } : { })
     };
   }
 
