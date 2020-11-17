@@ -66,7 +66,9 @@ export class OrderItemService {
     orderItem.oldPrice = variant.oldPriceInDefaultCurrency;
     orderItem.qty = qty;
     orderItem.cost = (orderItem.price * orderItem.qty) + servicesCost;
-    orderItem.oldCost = (orderItem.oldPrice * orderItem.qty) + servicesCost;
+    if (orderItem.oldPrice) {
+      orderItem.oldCost = (orderItem.oldPrice * orderItem.qty) + servicesCost;
+    }
 
     if (withCrossSell) {
       orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
