@@ -1,4 +1,4 @@
-import { IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 import { TrimString } from '../../decorators/trim-string.decorator';
 
 export class AdminCreateOrderItemDto {
@@ -9,4 +9,8 @@ export class AdminCreateOrderItemDto {
   @IsNumber()
   @IsPositive()
   qty: number;
+
+  @IsNumber(undefined, { each: true })
+  @IsOptional()
+  additionalServiceIds: number[];
 }

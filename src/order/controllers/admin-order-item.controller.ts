@@ -22,7 +22,7 @@ export class AdminOrderItemController {
 
   @Post()
   async createOrderItem(@Body() body: AdminCreateOrderItemDto): Promise<ResponseDto<OrderItemDto>> {
-    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty, false);
+    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty, body.additionalServiceIds, false);
 
     return {
       data: orderItem

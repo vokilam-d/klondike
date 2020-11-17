@@ -55,7 +55,7 @@ export class AdditionalServiceService {
     return additionalServices;
   }
 
-  async getAdditionalServiceById(id: string): Promise<DocumentType<AdditionalService>> {
+  async getAdditionalServiceById(id: number): Promise<DocumentType<AdditionalService>> {
     const found = await this.additionalServiceModel.findById(id).exec();
     if (!found) {
       throw new NotFoundException(__('Additional service with id "$1" not found', 'ru', id));
@@ -92,7 +92,7 @@ export class AdditionalServiceService {
   }
 
   async updateAdditionalService(additionalServiceId: string, additionalServiceDto: AdminAdditionalServiceDto): Promise<DocumentType<AdditionalService>> {
-    const additionalService = await this.getAdditionalServiceById(additionalServiceId);
+    const additionalService = await this.getAdditionalServiceById(parseInt(additionalServiceId));
 
     Object.keys(additionalServiceDto).forEach(key => additionalService[key] = additionalServiceDto[key]);
 

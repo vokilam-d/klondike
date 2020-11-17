@@ -1,5 +1,6 @@
-import { prop } from '@typegoose/typegoose';
+import { arrayProp, prop } from '@typegoose/typegoose';
 import { ClientProductListItemDto } from '../../shared/dtos/client/product-list-item.dto';
+import { OrderItemAdditionalService } from './order-item-additional-service.model';
 
 export class OrderItem {
   @prop()
@@ -37,6 +38,9 @@ export class OrderItem {
 
   @prop()
   slug: string;
+
+  @arrayProp({ items: OrderItemAdditionalService, _id: false, default: [] })
+  additionalServices: OrderItemAdditionalService[];
 
   crossSellProducts: ClientProductListItemDto[] = [];
 }

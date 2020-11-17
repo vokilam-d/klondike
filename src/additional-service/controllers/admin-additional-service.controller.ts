@@ -35,7 +35,7 @@ export class AdminAdditionalServiceController {
 
   @Get(':id')
   async getAdditionalService(@Param('id') additionalServiceId: string): Promise<ResponseDto<AdminAdditionalServiceDto>> {
-    const additionalService = await this.additionalServiceService.getAdditionalServiceById(additionalServiceId);
+    const additionalService = await this.additionalServiceService.getAdditionalServiceById(parseInt(additionalServiceId));
 
     return {
       data: plainToClass(AdminAdditionalServiceDto, additionalService, { excludeExtraneousValues: true })

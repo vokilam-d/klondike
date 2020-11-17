@@ -16,6 +16,7 @@ const additionalServiceModel = {
     MongooseModule.forFeature([additionalServiceModel]),
   ],
   providers: [AdditionalServiceService],
-  controllers: [AdminAdditionalServiceController, ClientAdditionalServiceController]
+  controllers: [AdminAdditionalServiceController, ClientAdditionalServiceController],
+  exports: [AdditionalServiceService]
 })
 export class AdditionalServiceModule {}
