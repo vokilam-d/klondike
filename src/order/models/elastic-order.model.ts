@@ -5,6 +5,13 @@ import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { ElasticLog } from '../../shared/models/elastic-log.model';
 import { OrderPricesDto } from '../../shared/dtos/shared-dtos/order-prices.dto';
+import { OrderItemAdditionalService } from './order-item-additional-service.model';
+
+class ElasticOrderItemAdditionalService implements Record<keyof OrderItemAdditionalService, any> {
+  id = elasticIntegerType;
+  name = elasticTextType;
+  price = elasticFloatType;
+}
 
 class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'crossSellProducts'> {
   cost = elasticFloatType;
@@ -19,6 +26,10 @@ class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'cr
   vendorCode = elasticTextType;
   slug = elasticTextType;
   variantId = elasticTextType;
+  additionalServices = {
+    type: 'nested',
+    properties: new ElasticOrderItemAdditionalService()
+  }
 }
 
 class ElasticShipmentModel implements Record<keyof Pick<ShipmentDto, 'trackingNumber' | 'status' | 'statusDescription' | 'recipient'>, any>{

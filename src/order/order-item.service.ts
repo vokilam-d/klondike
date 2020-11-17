@@ -11,6 +11,7 @@ import { Customer } from '../customer/models/customer.model';
 import { ProductVariantWithQty, ProductWithQty } from '../product/models/product-with-qty.model';
 import { OrderPrices } from '../shared/models/order-prices.model';
 import { EProductsSort } from '../shared/enums/product-sort.enum';
+import { AdditionalServiceService } from '../additional-service/services/additional-service.service';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [
   { totalCostBreakpoint: 500, discountPercent: 5 },
@@ -19,11 +20,13 @@ const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPe
 
 @Injectable()
 export class OrderItemService {
-  constructor(private readonly productService: ProductService,
-              @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService
+  constructor(
+    @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
+    private readonly productService: ProductService,
+    private readonly additionalServiceService: AdditionalServiceService
   ) { }
 
-  async createOrderItem(sku: string, qty: number, withCrossSell: boolean, product?: ProductWithQty, variant?: ProductVariantWithQty): Promise<OrderItem> {
+  async createOrderItem(sku: string, qty: number, additionalServiceIds: number[], withCrossSell: boolean, product?: ProductWithQty, variant?: ProductVariantWithQty): Promise<OrderItem> {
 
     if (!product) {
       product = await this.productService.getProductWithQtyBySku(sku);
@@ -44,11 +47,26 @@ export class OrderItemService {
       orderItem.imageUrl = variant.medias[0].variantsUrls.small;
     }
 
+    orderItem.additionalServices = [];
+    let servicesCost: number = 0;
+    for (const additionalServiceId of additionalServiceIds) {
+      const additionalService = await this.additionalServiceService.getAdditionalServiceById(additionalServiceId);
+      if (!additionalService) { continue; }
+
+      orderItem.additionalServices.push({
+        id: additionalService.id,
+        name: additionalService.clientName,
+        price: additionalService.price
+      });
+
+      servicesCost += additionalService.price;
+    }
+
     orderItem.price = variant.priceInDefaultCurrency;
     orderItem.oldPrice = variant.oldPriceInDefaultCurrency;
     orderItem.qty = qty;
-    orderItem.cost = orderItem.price * orderItem.qty;
-    orderItem.oldCost = orderItem.oldPrice * orderItem.qty;
+    orderItem.cost = (orderItem.price * orderItem.qty) + servicesCost;
+    orderItem.oldCost = (orderItem.oldPrice * orderItem.qty) + servicesCost;
 
     if (withCrossSell) {
       orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);

@@ -1083,7 +1083,8 @@ export class ProductService implements OnApplicationBootstrap {
       textReviewsCount: productWithQty.textReviewsCount,
       relatedProducts: variant.relatedProducts
         .sort(((a, b) => b.sortOrder - a.sortOrder))
-        .map(p => ({ productId: p.productId, variantId: p.variantId.toString() }))
+        .map(p => ({ productId: p.productId, variantId: p.variantId.toString() })),
+      additionalServiceIds: productWithQty.additionalServiceIds
     }
   }
 

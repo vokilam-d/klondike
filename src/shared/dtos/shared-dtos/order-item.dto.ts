@@ -1,7 +1,8 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { ClientProductListItemDto } from '../client/product-list-item.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { OrderItemAdditionalServiceDto } from './order-item-additional-service.dto';
 
 export class OrderItemDto {
   @Expose()
@@ -62,6 +63,10 @@ export class OrderItemDto {
   @IsString()
   @TrimString()
   slug: string;
+
+  @Expose()
+  @Type(() => OrderItemAdditionalServiceDto)
+  additionalServices: OrderItemAdditionalServiceDto[];
 
   @Expose()
   crossSellProducts: ClientProductListItemDto[];

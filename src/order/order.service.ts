@@ -285,14 +285,15 @@ export class OrderService implements OnApplicationBootstrap {
 
     const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
     for (let i = 0; i < newOrder.items.length; i++) {
-      const { productId, variantId, sku, qty } = newOrder.items[i];
+      const { productId, variantId, sku, qty, additionalServices } = newOrder.items[i];
       const product = products.find(product => product._id === productId);
       const variant = product?.variants.find(variant => variant._id.equals(variantId));
       if (!product || !variant) {
         throw new BadRequestException(__('Product with sku "$1" not found', 'ru', sku));
       }
 
-      newOrder.items[i] = await this.orderItemService.createOrderItem(sku, qty, false, product, variant);
+      const additionalServiceIds = additionalServices.map(service => service.id);
+      newOrder.items[i] = await this.orderItemService.createOrderItem(sku, qty, additionalServiceIds, false, product, variant);
 
       await this.inventoryService.addToOrdered(sku, qty, newOrder.id, session);
       await this.productService.updateSearchDataById(productId, session);

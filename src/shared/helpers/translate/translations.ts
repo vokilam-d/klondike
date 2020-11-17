@@ -26,6 +26,10 @@ export const TRANSLATIONS = {
     en: 'Attribute with id "$1" already exists',
     ru: 'Атрибут с id "$1" уже существует'
   },
+  'Additional service with id "$1" already exists': {
+    en: 'Additional service with id "$1" already exists',
+    ru: 'Дополнительная услуга с id "$1" уже существует'
+  },
   'User with such login and password is not registred': {
     en: 'User with such login and password is not registred',
     ru: 'Пользователь с таким логином и паролем не зарегистрирован'
@@ -133,6 +137,10 @@ export const TRANSLATIONS = {
   'User with id "$1" not found': {
     en: 'User with id "$1" not found',
     ru: 'Пользователь с id "$1" не найден'
+  },
+  'Additional service with id "$1" not found': {
+    en: 'Additional service with id "$1" not found',
+    ru: 'Дополнительная услуга с id "$1" не найдена'
   },
   'Product with id "$1" not found': {
     en: 'Product with id "$1" not found',
