@@ -5,6 +5,7 @@ import { ProductService } from '../../product/services/product.service';
 import { ProductQuickReview } from './models/product-quick-review.model';
 import { AddProductQuickReviewDto } from '../../shared/dtos/client/add-product-quick-review.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
+import { ClientSession } from 'mongoose';
 
 @Injectable()
 export class ProductQuickReviewService {
@@ -57,7 +58,7 @@ export class ProductQuickReviewService {
     }
   }
 
-  async findByProductId(productId: number): Promise<ProductQuickReview[]> {
-    return this.quickReviewModel.find({ productId }).exec();
+  async findByProductId(productId: number, session: ClientSession): Promise<ProductQuickReview[]> {
+    return this.quickReviewModel.find({ productId }).session(session).exec();
   }
 }

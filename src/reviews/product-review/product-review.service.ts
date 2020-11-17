@@ -126,9 +126,9 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     return review;
   }
 
-  async getRatingInfo(productId: number): Promise<RatingInfo> {
-    const reviews = await this.reviewModel.find({ productId });
-    const quickReviews = await this.quickReviewService.findByProductId(productId);
+  async getRatingInfo(productId: number, session: ClientSession): Promise<RatingInfo> {
+    const reviews = await this.reviewModel.find({ productId }).session(session);
+    const quickReviews = await this.quickReviewService.findByProductId(productId, session);
 
     const accumulateRating = (acc, review: ProductReview | ProductQuickReview) => acc + review.rating;
     const reviewsRatingSum = reviews.reduce(accumulateRating, 0);
@@ -136,7 +136,10 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
 
     const allReviewsCount = reviews.length + quickReviews.length;
 
-    const reviewsAvgRating = (reviewsRatingSum + quickReviewsRatingSum) / allReviewsCount;
+    let reviewsAvgRating: number = null;
+    if (allReviewsCount) {
+      reviewsAvgRating = (reviewsRatingSum + quickReviewsRatingSum) / allReviewsCount;
+    }
 
     return {
       allReviewsCount,

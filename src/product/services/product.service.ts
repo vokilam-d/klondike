@@ -665,8 +665,8 @@ export class ProductService implements OnApplicationBootstrap {
       throw new NotFoundException(__('Product with id "$1" not found', 'ru', productId));
     }
 
-    const { reviewsAvgRating, textReviewsCount, allReviewsCount } = await this.productReviewService.getRatingInfo(productId);
-    product.reviewsAvgRating = reviewsAvgRating === 0 ? null : reviewsAvgRating;
+    const { reviewsAvgRating, textReviewsCount, allReviewsCount } = await this.productReviewService.getRatingInfo(productId, session);
+    product.reviewsAvgRating = reviewsAvgRating;
     product.textReviewsCount = textReviewsCount;
     product.allReviewsCount = allReviewsCount;
 
