@@ -518,6 +518,8 @@ export class ProductService implements OnApplicationBootstrap {
         if (variantDto.id) {
           variantsToUpdate.push(variantDto);
         } else {
+          const skuCounter = await this.counterService.getCounter('sku', session);
+          variantDto.sku = addLeadingZeros(skuCounter, 5);
           variantsToAdd.push(variantDto);
         }
       }
