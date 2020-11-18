@@ -49,7 +49,7 @@ export class OrderItemService {
 
     orderItem.additionalServices = [];
     let servicesCost: number = 0;
-    for (const additionalServiceId of additionalServiceIds) {
+    for (const additionalServiceId of (additionalServiceIds || [])) {
       const additionalService = await this.additionalServiceService.getAdditionalServiceById(additionalServiceId);
       if (!additionalService) { continue; }
 
