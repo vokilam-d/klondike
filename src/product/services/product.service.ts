@@ -952,12 +952,14 @@ export class ProductService implements OnApplicationBootstrap {
   ): Promise<ClientProductListItemDto[]> {
 
     return adminListItemDtos.map(product => {
-      const variant = product.variants[0]; // todo add flag in ProductVariant to select here default variant?
+      const defaultVariantIdx = 0; // todo add flag in ProductVariant to select here default variant?
+      const variant = product.variants[defaultVariantIdx];
 
       const variantGroups: ClientProductVariantGroupDto[] = [];
       if (product.variants.length > 1) {
-        for (const variantWithQty of product.variants) {
-          for (const selectedAttr of variantWithQty.attributes) {
+        for (let i = 0; i < product.variants.length; i++){
+          const variant = product.variants[i];
+          for (const selectedAttr of variant.attributes) {
             const attribute = attributes.find(a => a.id === selectedAttr.attributeId);
             if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
 
@@ -965,21 +967,21 @@ export class ProductService implements OnApplicationBootstrap {
             const attrValue = attribute.values.find(v => v.id === selectedAttr.valueIds[0]);
             if (!attrValue) { continue; }
 
-            const foundIdx = variantGroups.findIndex(group => group.label === attrLabel);
+            const variantGroupIdx = variantGroups.findIndex(group => group.label === attrLabel);
 
             const itemVariant: ClientProductVariantDto = {
               label: attrValue.label,
-              isSelected: false,
-              slug: variantWithQty.slug
+              isSelected: defaultVariantIdx === i,
+              slug: variant.slug
             };
 
-            if (foundIdx === -1) {
+            if (variantGroupIdx === -1) {
               variantGroups.push({
                 label: attrLabel,
                 variants: [ itemVariant ]
               });
             } else {
-              variantGroups[foundIdx].variants.push(itemVariant);
+              variantGroups[variantGroupIdx].variants.push(itemVariant);
             }
           }
         }
@@ -1007,7 +1009,8 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async transformToClientProductDto(productWithQty: ProductWithQty, slug: string): Promise<ClientProductDto> {
-    const variant = productWithQty.variants.find(v => v.slug === slug);
+    const variantIdx = productWithQty.variants.findIndex(v => v.slug === slug);
+    const variant = productWithQty.variants[variantIdx]
 
     const categories: ClientProductCategoryDto[] = productWithQty.categories
       .filter(category => category.isEnabled)
@@ -1019,7 +1022,9 @@ export class ProductService implements OnApplicationBootstrap {
     const variantGroups: ClientProductVariantGroupDto[] = [];
     const attributeModels = await this.attributeService.getAllAttributes();
     if (productWithQty.variants.length > 1) {
-      for (const variantWithQty of productWithQty.variants) {
+      for (let i = 0; i < productWithQty.variants.length; i++){
+        const variantWithQty = productWithQty.variants[i];
+
         for (const selectedAttr of variantWithQty.attributes) {
           const attribute = attributeModels.find(a => a.id === selectedAttr.attributeId);
           if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
@@ -1028,21 +1033,21 @@ export class ProductService implements OnApplicationBootstrap {
           const attrValue = attribute.values.find(v => selectedAttr.valueIds.includes(v.id));
           if (!attrValue) { continue; }
 
-          const foundIdx = variantGroups.findIndex(group => group.label === attrLabel);
+          const variantGroupIdx = variantGroups.findIndex(group => group.label === attrLabel);
 
           const itemVariant: ClientProductVariantDto = {
             label: attrValue.label,
-            isSelected: false,
+            isSelected: variantIdx === i,
             slug: variantWithQty.slug
           };
 
-          if (foundIdx === -1) {
+          if (variantGroupIdx === -1) {
             variantGroups.push({
               label: attrLabel,
               variants: [ itemVariant ]
             });
           } else {
-            variantGroups[foundIdx].variants.push(itemVariant);
+            variantGroups[variantGroupIdx].variants.push(itemVariant);
           }
         }
       }
