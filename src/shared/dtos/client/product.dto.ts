@@ -14,8 +14,14 @@ export class ClientProductCharacteristic {
 }
 
 export class ClientProductCategoryDto {
+  @Expose()
+
   id: number;
+
+  @Expose()
   name: string;
+
+  @Expose()
   slug: string;
 }
 

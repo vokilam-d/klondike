@@ -1,7 +1,7 @@
 import { Expose, Type } from 'class-transformer';
 import { ProductVariant } from '../../../product/models/product-variant.model';
 import { Product } from '../../../product/models/product.model';
-import { ClientLinkedProductDto } from './linked-product.dto';
+import { Attribute } from '../../../attribute/models/attribute.model';
 
 export class ClientProductVariantDto {
   @Expose()
@@ -12,11 +12,20 @@ export class ClientProductVariantDto {
 
   @Expose()
   isSelected: boolean;
+
+  @Expose()
+  isInStock: boolean;
 }
 
 export class ClientProductVariantGroupDto {
+  attribute: Attribute;
+  attributeValueId: string;
+
   @Expose()
   label: string;
+
+  @Expose()
+  selectedVariantLabel: string;
 
   @Expose()
   @Type(() => ClientProductVariantDto)

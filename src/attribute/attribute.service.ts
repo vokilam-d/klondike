@@ -12,6 +12,7 @@ import { __ } from '../shared/helpers/translate/translate.function';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
+import { sortByLabel } from '../shared/helpers/sort-by-label.function';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {
@@ -73,16 +74,7 @@ export class AttributeService implements OnApplicationBootstrap {
       throw new NotFoundException(__('Attribute with id "$1" not found', 'ru', id));
     }
 
-    let isSortable: boolean = true;
-    for (const value of found.values) {
-      if (value.label.startsWith('№')) {
-        isSortable = false;
-      }
-    }
-
-    if (isSortable) {
-      found.values.sort(((a, b) => a.label > b.label ? 1 : -1));
-    }
+    found.values = sortByLabel(found.values);
 
     return found;
   }

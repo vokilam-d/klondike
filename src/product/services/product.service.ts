@@ -57,6 +57,7 @@ import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function
 import { createClientProductId } from '../../shared/helpers/client-product-id';
 import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
 import { Category } from '../../category/models/category.model';
+import { sortByLabel } from '../../shared/helpers/sort-by-label.function';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -952,55 +953,88 @@ export class ProductService implements OnApplicationBootstrap {
   ): Promise<ClientProductListItemDto[]> {
 
     return adminListItemDtos.map(product => {
-      const defaultVariantIdx = 0; // todo add flag in ProductVariant to select here default variant?
-      const variant = product.variants[defaultVariantIdx];
-
-      const variantGroups: ClientProductVariantGroupDto[] = [];
-      if (product.variants.length > 1) {
-        for (let i = 0; i < product.variants.length; i++){
-          const variant = product.variants[i];
-          for (const selectedAttr of variant.attributes) {
-            const attribute = attributes.find(a => a.id === selectedAttr.attributeId);
-            if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
-
-            const attrLabel = attribute.label;
-            const attrValue = attribute.values.find(v => v.id === selectedAttr.valueIds[0]);
-            if (!attrValue) { continue; }
-
-            const variantGroupIdx = variantGroups.findIndex(group => group.label === attrLabel);
-
-            const itemVariant: ClientProductVariantDto = {
-              label: attrValue.label,
-              isSelected: defaultVariantIdx === i,
-              slug: variant.slug
-            };
-
-            if (variantGroupIdx === -1) {
-              variantGroups.push({
-                label: attrLabel,
-                variants: [ itemVariant ]
-              });
-            } else {
-              variantGroups[variantGroupIdx].variants.push(itemVariant);
-            }
-          }
+      let selectedVariantIdx = 0; // todo add flag in ProductVariant to select here default variant?
+      let selectedVariant = product.variants[selectedVariantIdx];
+      if (selectedVariant.sellableQty <= 0) {
+        const variantInStockIdx = product.variants.findIndex(variantArg => variantArg.sellableQty > 0);
+        if (variantInStockIdx > -1) {
+          selectedVariantIdx = variantInStockIdx;
+          selectedVariant = product.variants[selectedVariantIdx];
         }
       }
 
+      let variantGroups: ClientProductVariantGroupDto[] = [];
+      if (product.variants.length > 1) {
+        for (const productSelectedAttribute of selectedVariant.attributes) {
+          const attribute = attributes.find(a => a.id === productSelectedAttribute.attributeId);
+          if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
+
+          const attrLabel = attribute.label;
+          const attrValue = attribute.values.find(v => productSelectedAttribute.valueIds.includes(v.id));
+          if (!attrValue) { continue; }
+
+          const itemVariant: ClientProductVariantDto = {
+            label: attrValue.label,
+            isSelected: true,
+            slug: selectedVariant.slug,
+            isInStock: selectedVariant.sellableQty > 0
+          };
+
+          variantGroups.push({
+            attribute: attribute,
+            attributeValueId: attrValue.id,
+            label: attrLabel,
+            variants: [ itemVariant ],
+            selectedVariantLabel: itemVariant.label
+          });
+        }
+
+        for (let i = 0; i < variantGroups.length; i++) {
+          const restGroups = variantGroups.filter((_, index) => index !== i);
+
+          for (let k = 0; k < product.variants.length; k++) {
+            if (k === selectedVariantIdx) { continue; }
+
+            const productVariant = product.variants[k];
+            const isMatched = restGroups.every(group =>
+              productVariant.attributes.find(attr => attr.attributeId === group.attribute.id && attr.valueIds.includes(group.attributeValueId))
+            );
+            if (!isMatched) { continue; }
+
+            const isInStock = productVariant.sellableQty > 0;
+            if (!isInStock) { continue; }
+
+            const selectedAttribute = productVariant.attributes.find(attr => attr.attributeId === variantGroups[i].attribute.id);
+            const attributeValue = variantGroups[i].attribute.values.find(value => selectedAttribute.valueIds.includes(value.id));
+            variantGroups[i].variants.push({
+              label: attributeValue.label,
+              isSelected: false,
+              slug: productVariant.slug,
+              isInStock
+            });
+          }
+
+          variantGroups[i].variants = sortByLabel(variantGroups[i].variants);
+        }
+
+        variantGroups = variantGroups.filter(group => group.variants.length > 1);
+        variantGroups = plainToClass(ClientProductVariantGroupDto, variantGroups, { excludeExtraneousValues: true });
+      }
+
       return {
-        id: createClientProductId(product.id, variant.id.toString()),
+        id: createClientProductId(product.id, selectedVariant.id.toString()),
         productId: product.id,
-        variantId: variant.id,
-        sku: variant.sku,
-        isInStock: variant.sellableQty > 0,
-        name: variant.name,
-        price: variant.priceInDefaultCurrency,
-        oldPrice: variant.oldPriceInDefaultCurrency,
-        slug: variant.slug,
+        variantId: selectedVariant.id,
+        sku: selectedVariant.sku,
+        isInStock: selectedVariant.sellableQty > 0,
+        name: selectedVariant.name,
+        price: selectedVariant.priceInDefaultCurrency,
+        oldPrice: selectedVariant.oldPriceInDefaultCurrency,
+        slug: selectedVariant.slug,
         variantGroups,
-        mediaUrl: variant.mediaUrl,
-        mediaHoverUrl: variant.mediaHoverUrl,
-        mediaAltText: variant.mediaAltText,
+        mediaUrl: selectedVariant.mediaUrl,
+        mediaHoverUrl: selectedVariant.mediaHoverUrl,
+        mediaAltText: selectedVariant.mediaAltText,
         allReviewsCount: product.allReviewsCount,
         textReviewsCount: product.textReviewsCount,
         reviewsAvgRating: product.reviewsAvgRating
@@ -1009,54 +1043,22 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async transformToClientProductDto(productWithQty: ProductWithQty, slug: string): Promise<ClientProductDto> {
-    const variantIdx = productWithQty.variants.findIndex(v => v.slug === slug);
-    const variant = productWithQty.variants[variantIdx]
+    const selectedVariantIdx = productWithQty.variants.findIndex(v => v.slug === slug);
+    const selectedVariant = productWithQty.variants[selectedVariantIdx];
 
-    const categories: ClientProductCategoryDto[] = productWithQty.categories
-      .filter(category => category.isEnabled)
-      .map(category => {
-        const { sortOrder, ...rest } = category;
-        return rest;
-      });
+    const categories: ClientProductCategoryDto[] = plainToClass(
+      ClientProductCategoryDto,
+      productWithQty.categories.filter(category => category.isEnabled),
+      { excludeExtraneousValues: true }
+    );
 
-    const variantGroups: ClientProductVariantGroupDto[] = [];
     const attributeModels = await this.attributeService.getAllAttributes();
-    if (productWithQty.variants.length > 1) {
-      for (let i = 0; i < productWithQty.variants.length; i++){
-        const variantWithQty = productWithQty.variants[i];
-
-        for (const selectedAttr of variantWithQty.attributes) {
-          const attribute = attributeModels.find(a => a.id === selectedAttr.attributeId);
-          if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
-
-          const attrLabel = attribute.label;
-          const attrValue = attribute.values.find(v => selectedAttr.valueIds.includes(v.id));
-          if (!attrValue) { continue; }
-
-          const variantGroupIdx = variantGroups.findIndex(group => group.label === attrLabel);
-
-          const itemVariant: ClientProductVariantDto = {
-            label: attrValue.label,
-            isSelected: variantIdx === i,
-            slug: variantWithQty.slug
-          };
-
-          if (variantGroupIdx === -1) {
-            variantGroups.push({
-              label: attrLabel,
-              variants: [ itemVariant ]
-            });
-          } else {
-            variantGroups[variantGroupIdx].variants.push(itemVariant);
-          }
-        }
-      }
-    }
 
     const characteristics: ClientProductCharacteristic[] = [];
     for (const attribute of productWithQty.attributes) {
       const foundAttr = attributeModels.find(a => a.id === attribute.attributeId);
       if (!foundAttr || !foundAttr.isVisibleInProduct) { continue; }
+
       const foundAttrValues = foundAttr.values.filter(v => attribute.valueIds.includes(v.id));
       if (!foundAttrValues.length) { continue; }
 
@@ -1064,31 +1066,87 @@ export class ProductService implements OnApplicationBootstrap {
       characteristics.push({ label: foundAttr.label, code: foundAttr._id, value });
     }
 
+    let variantGroups: ClientProductVariantGroupDto[] = [];
+    if (productWithQty.variants.length > 1) {
+      for (const productSelectedAttribute of selectedVariant.attributes) {
+        const attribute = attributeModels.find(a => a.id === productSelectedAttribute.attributeId);
+        if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
+
+        const attrLabel = attribute.label;
+        const attrValue = attribute.values.find(v => productSelectedAttribute.valueIds.includes(v.id));
+        if (!attrValue) { continue; }
+
+        const itemVariant: ClientProductVariantDto = {
+          label: attrValue.label,
+          isSelected: true,
+          slug: selectedVariant.slug,
+          isInStock: selectedVariant.qtyInStock > selectedVariant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)
+        };
+
+        variantGroups.push({
+          attribute: attribute,
+          attributeValueId: attrValue.id,
+          label: attrLabel,
+          variants: [ itemVariant ],
+          selectedVariantLabel: itemVariant.label
+        });
+
+        characteristics.push({ label: attribute.label, code: attribute.id, value: attrValue.label });
+      }
+
+      for (let i = 0; i < variantGroups.length; i++) {
+        const restGroups = variantGroups.filter((_, index) => index !== i);
+
+        for (let k = 0; k < productWithQty.variants.length; k++) {
+          if (k === selectedVariantIdx) { continue; }
+
+          const productVariant = productWithQty.variants[k];
+          const isMatched = restGroups.every(group =>
+            productVariant.attributes.find(attr => attr.attributeId === group.attribute.id && attr.valueIds.includes(group.attributeValueId))
+          );
+          if (!isMatched) { continue; }
+
+          const selectedAttribute = productVariant.attributes.find(attr => attr.attributeId === variantGroups[i].attribute.id);
+          const attributeValue = variantGroups[i].attribute.values.find(value => selectedAttribute.valueIds.includes(value.id));
+          variantGroups[i].variants.push({
+            label: attributeValue.label,
+            isSelected: false,
+            slug: productVariant.slug,
+            isInStock: productVariant.qtyInStock > productVariant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)
+          });
+        }
+
+        variantGroups[i].variants = sortByLabel(variantGroups[i].variants);
+      }
+
+      variantGroups = plainToClass(ClientProductVariantGroupDto, variantGroups, { excludeExtraneousValues: true });
+    }
+
     return {
-      id: createClientProductId(productWithQty._id, variant._id.toString()),
+      id: createClientProductId(productWithQty._id, selectedVariant._id.toString()),
       productId: productWithQty._id,
-      variantId: variant._id.toString(),
-      isInStock: variant.qtyInStock > variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0),
+      variantId: selectedVariant._id.toString(),
+      isInStock: selectedVariant.qtyInStock > selectedVariant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0),
       categories,
       variantGroups,
       characteristics,
       breadcrumbs: productWithQty.breadcrumbs,
-      fullDescription: variant.fullDescription,
-      shortDescription: variant.shortDescription,
-      medias: plainToClass(ClientMediaDto, variant.medias, { excludeExtraneousValues: true }),
-      metaTags: plainToClass(MetaTagsDto, variant.metaTags, { excludeExtraneousValues: true }),
-      name: variant.name,
-      slug: variant.slug,
-      sku: variant.sku,
-      vendorCode: variant.vendorCode,
-      gtin: variant.gtin,
-      price: variant.priceInDefaultCurrency,
-      oldPrice: variant.oldPriceInDefaultCurrency,
-      isDiscountApplicable: variant.isDiscountApplicable,
+      fullDescription: selectedVariant.fullDescription,
+      shortDescription: selectedVariant.shortDescription,
+      medias: plainToClass(ClientMediaDto, selectedVariant.medias, { excludeExtraneousValues: true }),
+      metaTags: plainToClass(MetaTagsDto, selectedVariant.metaTags, { excludeExtraneousValues: true }),
+      name: selectedVariant.name,
+      slug: selectedVariant.slug,
+      sku: selectedVariant.sku,
+      vendorCode: selectedVariant.vendorCode,
+      gtin: selectedVariant.gtin,
+      price: selectedVariant.priceInDefaultCurrency,
+      oldPrice: selectedVariant.oldPriceInDefaultCurrency,
+      isDiscountApplicable: selectedVariant.isDiscountApplicable,
       reviewsAvgRating: productWithQty.reviewsAvgRating,
       allReviewsCount: productWithQty.allReviewsCount,
       textReviewsCount: productWithQty.textReviewsCount,
-      relatedProducts: variant.relatedProducts
+      relatedProducts: selectedVariant.relatedProducts
         .sort(((a, b) => b.sortOrder - a.sortOrder))
         .map(p => ({ productId: p.productId, variantId: p.variantId.toString() })),
       additionalServiceIds: productWithQty.additionalServiceIds
@@ -1506,9 +1564,8 @@ export class ProductService implements OnApplicationBootstrap {
 
       const spfFilter = spfFilters.find(spfFilter => spfFilter.fieldName === attributeId);
 
-      const values: ClientFilterValueDto[] = [];
+      let values: ClientFilterValueDto[] = [];
       let valuesProductsCount = 0;
-      let isSortable: boolean = true;
       Object.entries(valuesMap).forEach(([ valueId, productsCount ]) => {
         const attributeValue = attribute.values.find(value => value.id === valueId);
         if (!attributeValue) { return; }
@@ -1516,10 +1573,6 @@ export class ProductService implements OnApplicationBootstrap {
         let isSelected = false;
         if (spfFilter) {
           isSelected = spfFilter.values.includes(valueId);
-        }
-
-        if (attributeValue.label.startsWith('№')) {
-          isSortable = false;
         }
 
         valuesProductsCount += productsCount;
@@ -1535,9 +1588,7 @@ export class ProductService implements OnApplicationBootstrap {
 
       if (values.length <= 1) { return; }
 
-      if (isSortable) {
-        values.sort(((a, b) => a.label > b.label ? 1 : -1));
-      }
+      values = sortByLabel(values);
 
       clientFilters.push({
         id: attribute.id,
