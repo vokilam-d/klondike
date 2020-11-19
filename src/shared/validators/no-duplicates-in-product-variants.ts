@@ -26,13 +26,21 @@ export function NoDuplicatesInProductVariants(validationOptions: ValidationOptio
           const dto = args.object as AdminAddOrUpdateProductDto;
           const skus = new Set();
           const slugs = new Set();
+          let skusCount: number = 0;
+          let slugsCount: number = 0;
 
           for (const variant of dto.variants) {
-            skus.add(variant.sku);
-            slugs.add(variant.slug);
+            if (variant.sku) {
+              skus.add(variant.sku);
+              skusCount++;
+            }
+            if (variant.slug) {
+              slugs.add(variant.slug);
+              slugsCount++;
+            }
           }
 
-          return skus.size === dto.variants.length && slugs.size === dto.variants.length;
+          return skus.size === skusCount && slugs.size === slugsCount;
         }
       }
     });
