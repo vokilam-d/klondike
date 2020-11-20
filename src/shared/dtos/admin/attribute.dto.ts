@@ -8,8 +8,8 @@ export class AdminAttributeValueDto {
   @Expose()
   @IsString()
   @IsOptional()
-  @Transform((id, value: AdminAttributeValueDto) => id === '' ? transliterate(value.label) : id)
   @TrimString()
+  @Transform((id, value: AdminAttributeValueDto) => id === '' ? transliterate(value.label) : id)
   id: string;
 
   @Expose()
@@ -19,9 +19,13 @@ export class AdminAttributeValueDto {
   label: string;
 
   @Expose()
-  @IsOptional()
   @IsBoolean()
   isDefault: boolean;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  color?: string;
 }
 
 export class AdminUpdateAttributeDto {
@@ -41,14 +45,16 @@ export class AdminUpdateAttributeDto {
   groupName: string;
 
   @Expose()
-  @IsOptional()
   @IsBoolean()
   isVisibleInProduct: boolean;
 
   @Expose()
-  @IsOptional()
   @IsBoolean()
   isVisibleInFilters: boolean;
+
+  @Expose()
+  @IsBoolean()
+  hasColor: boolean;
 }
 
 export class AdminCreateAttributeDto extends AdminUpdateAttributeDto {

@@ -969,7 +969,6 @@ export class ProductService implements OnApplicationBootstrap {
           const attribute = attributes.find(a => a.id === productSelectedAttribute.attributeId);
           if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
 
-          const attrLabel = attribute.label;
           const attrValue = attribute.values.find(v => productSelectedAttribute.valueIds.includes(v.id));
           if (!attrValue) { continue; }
 
@@ -977,13 +976,15 @@ export class ProductService implements OnApplicationBootstrap {
             label: attrValue.label,
             isSelected: true,
             slug: selectedVariant.slug,
-            isInStock: selectedVariant.sellableQty > 0
+            isInStock: selectedVariant.sellableQty > 0,
+            color: attrValue.color
           };
 
           variantGroups.push({
             attribute: attribute,
             attributeValueId: attrValue.id,
-            label: attrLabel,
+            label: attribute.label,
+            hasColor: attribute.hasColor,
             variants: [ itemVariant ],
             selectedVariantLabel: itemVariant.label
           });
@@ -1008,6 +1009,7 @@ export class ProductService implements OnApplicationBootstrap {
             const attributeValue = variantGroups[i].attribute.values.find(value => selectedAttribute.valueIds.includes(value.id));
             variantGroups[i].variants.push({
               label: attributeValue.label,
+              color: attributeValue.color,
               isSelected: false,
               slug: productVariant.slug,
               isInStock
@@ -1072,12 +1074,12 @@ export class ProductService implements OnApplicationBootstrap {
         const attribute = attributeModels.find(a => a.id === productSelectedAttribute.attributeId);
         if (!attribute || attribute.type === AttributeTypeEnum.MultiSelect) { continue; }
 
-        const attrLabel = attribute.label;
         const attrValue = attribute.values.find(v => productSelectedAttribute.valueIds.includes(v.id));
         if (!attrValue) { continue; }
 
         const itemVariant: ClientProductVariantDto = {
           label: attrValue.label,
+          color: attrValue.color,
           isSelected: true,
           slug: selectedVariant.slug,
           isInStock: selectedVariant.qtyInStock > selectedVariant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)
@@ -1086,7 +1088,8 @@ export class ProductService implements OnApplicationBootstrap {
         variantGroups.push({
           attribute: attribute,
           attributeValueId: attrValue.id,
-          label: attrLabel,
+          label: attribute.label,
+          hasColor: attribute.hasColor,
           variants: [ itemVariant ],
           selectedVariantLabel: itemVariant.label
         });
@@ -1110,6 +1113,7 @@ export class ProductService implements OnApplicationBootstrap {
           const attributeValue = variantGroups[i].attribute.values.find(value => selectedAttribute.valueIds.includes(value.id));
           variantGroups[i].variants.push({
             label: attributeValue.label,
+            color: attributeValue.color,
             isSelected: false,
             slug: productVariant.slug,
             isInStock: productVariant.qtyInStock > productVariant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)

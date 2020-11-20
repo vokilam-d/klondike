@@ -5,6 +5,7 @@ export class ElasticAttributeValueModel implements Record<keyof AdminAttributeVa
   id = elasticTextType;
   isDefault = elasticTextType;
   label = elasticAutocompleteTextType;
+  color = elasticTextType;
 }
 
 export class ElasticAttributeModel implements Record<keyof AdminAttributeDto, any> {
@@ -17,4 +18,5 @@ export class ElasticAttributeModel implements Record<keyof AdminAttributeDto, an
   };
   isVisibleInFilters = elasticBooleanType;
   isVisibleInProduct = elasticBooleanType;
+  hasColor = elasticBooleanType;
 }

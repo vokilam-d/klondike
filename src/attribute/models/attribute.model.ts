@@ -10,6 +10,9 @@ export class AttributeValue {
 
   @prop({ default: false })
   isDefault: boolean;
+
+  @prop()
+  color?: string;
 }
 
 export class Attribute {
@@ -36,6 +39,9 @@ export class Attribute {
 
   @prop({ default: true })
   isVisibleInFilters: boolean;
+
+  @prop({ default: false })
+  hasColor: boolean;
 
   static collectionName: string = 'attribute';
 }

@@ -11,6 +11,9 @@ export class ClientProductVariantDto {
   label: string;
 
   @Expose()
+  color: string;
+
+  @Expose()
   isSelected: boolean;
 
   @Expose()
@@ -26,6 +29,9 @@ export class ClientProductVariantGroupDto {
 
   @Expose()
   selectedVariantLabel: string;
+
+  @Expose()
+  hasColor: boolean;
 
   @Expose()
   @Type(() => ClientProductVariantDto)
