@@ -52,7 +52,8 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     const conditions: FilterQuery<ProductReview> = { productId };
     if (onlyEnabled) { conditions.isEnabled = true; }
 
-    const found = await this.reviewModel.find(conditions).exec();
+    const createdAtProp: keyof ProductReview = 'createdAt';
+    const found = await this.reviewModel.find(conditions).sort({ [createdAtProp]: -1 }).exec();
     return found.map(review => this.transformReviewToDto(review, ipAddress, userId, customerId, onlyEnabled));
   }
 
