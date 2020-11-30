@@ -27,6 +27,7 @@
             margin: 0px;
         }
 
+        /*
         @media only screen and (max-width: 600px) {
             p, ul li, ol li, a {
                 font-size: 16px !important
@@ -129,7 +130,6 @@
             }
 
             .adapt-img {
-                /*width: 100% !important;*/
                 height: auto !important;
                 margin: 0 auto;
             }
@@ -187,6 +187,7 @@
                 display: inline-block !important
             }
         }
+        */
 
         #outlook a {
             padding: 0;
@@ -231,7 +232,34 @@
     </style>
 </head>
 <body style="width:100%;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;padding:0;Margin:0;">
-<span style="display:none !important;font-size:0px;line-height:0;color:#FFFFFF;visibility:hidden;opacity:0;height:0;width:0;mso-hide:all;">Это займёт 1 минуту. Вы недавно совершали покупку в "Клондайк"</span><img
+
+<span style="display:none !important;font-size:0px;line-height:0;color:#FFFFFF;visibility:hidden;opacity:0;height:0;width:0;mso-hide:all;">Это займёт 1 минуту. Вы недавно совершали покупку в "Клондайк"</span>
+<!-- Gmail hack -->
+<div style="display:none; white-space:nowrap; font:15px courier; color:#ffffff; line-height:0; width:600px !important; min-width:600px !important; max-width:600px !important;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div>
+
+<table class="gmail-app-fix">
+    <tr>
+        <td>
+            <table cellpadding="0" cellspacing="0" border="0" align="center" width="585">
+                <tr>
+                    <td cellpadding="0" cellspacing="0" border="0" height="1"; style="line-height: 1px; min-width: 195px;">
+                        <img src="transparent.gif" width="195" height="1" style="display: block; max-height: 1px; min-height: 1px; min-width: 195px; width: 195px;"/>
+                    </td>
+                    <td cellpadding="0" cellspacing="0" border="0" height="1"; style="line-height: 1px; min-width: 195px;">
+                        <img src="transparent.gif" width="195" height="1" style="display: block; max-height: 1px; min-height: 1px; min-width: 195px; width: 195px;"/>
+                    </td>
+                    <td cellpadding="0" cellspacing="0" border="0" height="1"; style="line-height: 1px; min-width: 195px;">
+                        <img src="transparent.gif" width="195" height="1" style="display: block; max-height: 1px; min-height: 1px; min-width: 195px; width: 195px;"/>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<!-- /Gmail hack -->
+
+<img
         id="mshidden"
         src="https://esputnik.com/repository/applications/commons/hidden.png?iid=4CD72486-D526-4F93-B23C-A2A8FBBFD2E3"
         alt=""
@@ -287,20 +315,21 @@
                                                            style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
                                                         <tr style="border-collapse:collapse;">
                                                             <td align="left"
-                                                                style="padding:0;Margin:0;padding-top:10px;padding-bottom:10px;">
+                                                                style="padding:0;Margin:0;padding-top:10px;padding-bottom:0px;">
                                                                 <div><h2
-                                                                        style="Margin:0;line-height:29px;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:15px!important;text-align:left;font-style:normal;font-weight:normal;color:#242424;">
-                                                                    <span>Здравствуйте, {{ firstName}} {{ lastName }}</span>
+                                                                        style="Margin:0;line-height:29px;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:15px!important;text-align:left;font-style:normal;font-weight:normal;color:#242424;text-align: center;font-size: 18px !important;">
+                                                                    <strong>{{ firstName }},</strong>
                                                                 </h2></div>
                                                             </td>
                                                         </tr>
                                                         <tr style="border-collapse:collapse;">
                                                             <td align="left"
                                                                 style="padding:0;Margin:0;padding-top:5px;"><span
-                                                                    style="font-size:15px;">Вы недавно купили <a
-                                                                    target="_blank"
-                                                                    style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:15px;text-decoration:none;color:#3E77AA;"
-                                                                    href="https://klondike.com.ua/{{ mainProductSlug }}">{{ mainProductName }} </a>&nbsp;в интернет-магазине "Клондайк". Пожалуйста, поделитесь своим мнением об этом товаре.</span>
+                                                                    style="font-size:15px;">
+                                                                Пожалуйста, поделитесь своим мнением о купленных Вами товарах.<br>
+                                                                Этим Вы поможете определиться другим покупателям, а нам - стать лучше.
+
+                                                            </span>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -309,220 +338,89 @@
                                         </table>
                                     </td>
                                 </tr>
-                                <tr style="border-collapse:collapse;">
-                                    <td style="padding:0;Margin:0;padding-top:20px;padding-left:0px;padding-right:0px;background-color:transparent;"
-                                        bgcolor="transparent" align="left">
-                                        <form action="https://klondike.com.ua/api/v1/product-reviews/from-email" method="get" target="_blank" accept-charset="UTF-8">
-                                            <input type="hidden" name="productName" value="{{ mainProductName }}">
-                                            <input type="hidden" name="productId" value="{{ mainProductId }}">
-                                            <input type="hidden" name="productVariantId" value="{{ mainProductVariantId }}">
-                                            <input type="hidden" name="name" value="{{ firstName }} {{ lastName }}">
-                                            <input type="hidden" name="customerId" value="{{ customerId }}">
-                                            <input type="hidden" name="email" value="{{ email }}">
-                                            <table width="100%" cellspacing="0" cellpadding="0"
-                                                   style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                <tr style="border-collapse:collapse;">
-                                                    <td align="left"
-                                                        style="padding:0;Margin:0;padding-top:0px;padding-left:20px;padding-right:20px;">
-                                                        <table cellpadding="0" cellspacing="0" width="100%"
-                                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                            <tr style="border-collapse:collapse;">
-                                                                <td width="560" align="center" valign="top" style="padding:0;Margin:0;">
-                                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                        <tr style="border-collapse:collapse;">
-                                                                            <td align="left" style="padding:0;Margin:0;"><p
-                                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131;">
-                                                                                <strong>Оценка:</strong></p></td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    </td>
-                                                </tr>
-                                                <tr style="border-collapse:collapse;">
-                                                    <td align="left"
-                                                        style="padding:0;Margin:0;padding-top:5px;padding-left:20px;padding-right:20px;">
-                                                        <!--[if mso]>
-                                                        <table width="560" cellpadding="0" cellspacing="0">
-                                                            <tr>
-                                                                <td width="116" valign="top"><![endif]-->
-                                                        <table cellpadding="0" cellspacing="0" class="es-right" align="left"
-                                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
-                                                            <tr style="border-collapse:collapse;">
-                                                                <td width="140" class="es-m-p0r" align="center"
-                                                                    style="padding:0;Margin:0;">
-                                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                        <tr style="border-collapse:collapse;">
-                                                                            <td align="left" style="padding:0;Margin:0;">
-                                                                                <input name="rating" type="radio" id="product-stars5" value="5" style="font-family:inherit;color:#666666;margin-right:2px;" checked>
-                                                                                <label for="product-stars5">
-                                                                                    <span style="font-size:16px;letter-spacing:0.21em;color:#FDC705;padding-left:0;">★★★★★</span>
-                                                                                </label>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                                <td class="es-hidden" width="20" style="padding:0;Margin:0;"></td>
-                                                            </tr>
-                                                        </table>
-                                                        <!--[if mso]></td>
-                                                    <td width="116" valign="top"><![endif]-->
-                                                        <table cellpadding="0" cellspacing="0" class="es-right" align="left"
-                                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                            <tr style="border-collapse:collapse;">
-                                                                <td width="110" align="center" style="padding:0;Margin:0;">
-                                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                        <tr style="border-collapse:collapse;">
-                                                                            <td align="left" style="padding:0;Margin:0;">
-                                                                                <input name="rating" type="radio" id="product-stars4" value="4" style="font-family:inherit;color:#666666;margin-right:2px;">
-                                                                                <label for="product-stars4">
-                                                                                    <span style="font-size:16px;letter-spacing:0.21em;color:#FDC705;padding-left:0;">★★★★</span>
-                                                                                </label>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                                <td class="es-hidden" width="20" style="padding:0;Margin:0;"></td>
-                                                            </tr>
-                                                        </table>
-                                                        <!--[if mso]></td>
-                                                    <td width="116" valign="top"><![endif]-->
-                                                        <table cellpadding="0" cellspacing="0" class="es-right" align="left"
-                                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                            <tr style="border-collapse:collapse;">
-                                                                <td width="90" align="center" style="padding:0;Margin:0;">
-                                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                        <tr style="border-collapse:collapse;">
-                                                                            <td align="left" style="padding:0;Margin:0;">
-                                                                                <input name="rating" type="radio" id="product-stars3" value="3" style="font-family:inherit;color:#666666;margin-right:2px;">
-                                                                                <label for="product-stars3">
-                                                                                    <span style="font-size:16px;letter-spacing:0.21em;color:#FDC705;padding-left:0;">★★★</span>
-                                                                                </label>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                                <td class="es-hidden" width="20" style="padding:0;Margin:0;"></td>
-                                                            </tr>
-                                                        </table>
-                                                        <!--[if mso]>
-                                                        </td>
-                                                        <td width="96" valign="top"><![endif]-->
-                                                        <table cellpadding="0" cellspacing="0" class="es-right" align="left"
-                                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                            <tr style="border-collapse:collapse;">
-                                                                <td width="90" align="center" style="padding:0;Margin:0;">
-                                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                        <tr style="border-collapse:collapse;">
-                                                                            <td align="left" style="padding:0;Margin:0;">
-                                                                                <input name="rating" type="radio" id="product-stars2" value="2" style="font-family:inherit;color:#666666;margin-right:2px;">
-                                                                                <label for="product-stars2">
-                                                                                    <span style="font-size:16px;letter-spacing:0.21em;color:#FDC705;padding-left:0;">★★</span>
-                                                                                </label>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                        <!--[if mso]></td>
-                                                    <td width="20"></td>
-                                                    <td width="96" valign="top"><![endif]-->
-                                                        <table cellpadding="0" cellspacing="0" class="es-left" align="left"
-                                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                            <tr style="border-collapse:collapse;">
-                                                                <td width="70" align="left" style="padding:0;Margin:0;">
-                                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                        <tr style="border-collapse:collapse;">
-                                                                            <td align="left" style="padding:0;Margin:0;">
-                                                                                <input name="rating" type="radio" id="product-stars1" value="1" style="font-family:inherit;color:#666666;margin-right:2px;">
-                                                                                <label for="product-stars1">
-                                                                                    <span style="font-size:16px;letter-spacing:0.21em;color:#FDC705;padding-left:0;">★</span>
-                                                                                </label>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                        <!--[if mso]></td></tr></table><![endif]--></td>
-                                                </tr>
-                                                <tr style="border-collapse:collapse;">
-                                                    <td align="left"
-                                                        style="padding:0;Margin:0;padding-top:20px;padding-left:20px;padding-right:20px;">
-                                                        <table cellpadding="0" cellspacing="0" width="100%"
-                                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                            <tr style="border-collapse:collapse;">
-                                                                <td width="560" align="center" valign="top" style="padding:0;Margin:0;">
-                                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                        <tr style="border-collapse:collapse;">
-                                                                            <td align="left" style="padding:0;Margin:0;"><p
-                                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131;">
-                                                                                <strong>Отзыв:</strong></p></td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    </td>
-                                                </tr>
-                                                <tr style="border-collapse:collapse;">
-                                                    <td align="left"
-                                                        style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;">
-                                                        <table cellpadding="0" cellspacing="0" width="100%"
-                                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                            <tr style="border-collapse:collapse;">
-                                                                <td width="560" align="center" valign="top" style="padding:0;Margin:0;">
-                                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                        <tr style="border-collapse:collapse;">
-                                                                            <td align="left" style="padding:0;Margin:0;">
-                                                                                <textarea name="text" cols="40" rows="5" style="color:#313131;width:99%;padding-left:3px;height:60px;font-size:1em;border:solid 1px #dbddde;font-weight:normal;font-family:inherit;border-radius:5px;-webkit-border-radius:5px;-moz-border-radius:5px" required="required"></textarea>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    </td>
-                                                </tr>
-                                                <tr style="border-collapse:collapse;">
-                                                    <td align="left"
-                                                        style="padding:0;Margin:0;padding-top:20px;padding-left:20px;padding-right:20px;">
-                                                        <table cellpadding="0" cellspacing="0" width="100%"
-                                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                            <tr style="border-collapse:collapse;">
-                                                                <td width="560" align="center" valign="top" style="padding:0;Margin:0;">
-                                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                                        <tr style="border-collapse:collapse;">
-                                                                            <td align="center" style="padding:10px;Margin:0;"><span
-                                                                                    class="es-button-border"
-                                                                                    style="border-style:solid;border-color:#205177;background:#3285B9;border-width:0px 0px 2px 0px;display:inline-block;border-radius:8px;width:auto;">
-                                                                <input class="es-button" target="_blank"
-                                                                       style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:18px;color:#FFFFFF;border-style:solid;border-color:#3285B9;border-width:8px 30px 7px;display:inline-block;background-color:transparent;background-image:none;border-radius:5px;font-weight:normal;font-style:normal;appearance: none;-webkit-appearance:none;line-height:18px;width:auto;text-align:center;" type="submit" value="Отправить отзыв
- о товаре" />
-                                                            </span>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </form>
+
+
+
+
+                                {{#each productRows}}
+                                <tr style="border-collapse:collapse">
+                                    <td align="left" style="padding:0;Margin:0;padding-top:20px;padding-left:10px;padding-right:10px">
+                                        <table cellpadding="0" cellspacing="0"
+                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;width:580px">
+                                            <tr style="border-collapse:collapse">
+
+
+                                                {{#each this}}
+                                                <td style="padding:0;Margin:0" valign="top">
+                                                    <table align="left" cellpadding="0" cellspacing="0" class="es-left"
+                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left">
+                                                        <tr style="border-collapse:collapse">
+                                                            <td align="center" class="es-m-p0r" style="padding:0;Margin:0;width:180px">
+                                                                <table cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"
+                                                                       width="100%">
+                                                                    <tr style="border-collapse:collapse">
+                                                                        <td align="center" style="padding:0;Margin:0;font-size:0px; text-align: center;"><img alt
+                                                                                                                                         src="https://klondike.com.ua{{ this.imageUrl }}"
+                                                                                                                                         style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;margin: 0 auto;"
+                                                                                                                                         height="110"></td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                            <td style="padding:0;Margin:0;width:20px"></td>
+                                                        </tr>
+                                                        <tr style="border-collapse:collapse">
+                                                            <td align="center" style="padding:0;Margin:0;width:180px">
+                                                                <table cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"
+                                                                       width="100%">
+                                                                    <tr style="border-collapse:collapse">
+                                                                        <td align="left" style="padding:0;Margin:0;padding-top:10px"><p
+                                                                                style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:17px;color:#313131;">
+
+                                                                            <a target="_blank"
+                                                                               href="https://klondike.com.ua/{{ this.slug }}#reviews"
+                                                                               style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:14px !important;text-decoration:none;color:#3E77AA !important;">
+                                                                            <span
+                                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:17px;color:#313131;height: 67px !important;overflow: hidden !important;text-overflow: ellipsis !important;display:block !important;color:#3E77AA !important;">
+
+                                                                                    {{ this.name }}
+
+                                                                            </span>
+                                                                            </a>
+
+                                                                        </p></td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                            <td style="padding:0;Margin:0;width:20px"></td>
+                                                        </tr>
+                                                        <tr style="border-collapse:collapse">
+                                                            <td align="center" style="padding:0;Margin:0;width:180px">
+                                                                <table cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"
+                                                                       width="100%">
+                                                                    <tr style="border-collapse:collapse">
+                                                                        <td align="center" style="padding:0;Margin:0;padding-top:10px"><span
+                                                                                class="es-button-border"
+                                                                                style="border-style:solid;border-color:#3285B9;background:#F8CA68;border-width:0px;display:inline-block;border-radius:5px;width:auto"><a
+                                                                                href="https://klondike.com.ua/{{ this.slug }}#reviews" style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:16px;color:#313131;border-style:solid;border-color:#F8CA68;border-width:10px 20px;display:inline-block;background:#F8CA68;border-radius:5px;font-weight:normal;font-style:normal;line-height:19px;width:auto;text-align:center;line-height: 1;white-space: nowrap;"
+                                                                                target="_blank">Оставить отзыв</a></span>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                            <td style="padding:0;Margin:0;width:20px"></td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                {{/each}}
+
+
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
+                                {{/each}}
+
+
                                 <tr style="border-collapse:collapse;">
                                     <td style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;background-color:transparent;"
                                         bgcolor="transparent" align="left">
@@ -535,7 +433,7 @@
                                                         <tr style="border-collapse:collapse;">
                                                             <td align="left"
                                                                 style="padding:0;Margin:0;padding-top:5px;"><span
-                                                                    style="font-size:15px;">А также Вы можете оставить отзыв о магазине "Клондайк" (например, оценить скорость отправки посылки, консультацию, упаковку посылки). Мы очень благодарны за обратную связь, каждый отзыв вдохновляет нас!</span>
+                                                                    style="font-size:15px;">Или Вы можете оставить отзыв о магазине "Клондайк" (например, оценить скорость отправки посылки, консультацию, упаковку посылки). Мы очень благодарны за обратную связь, каждый отзыв вдохновляет нас!</span>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -717,7 +615,7 @@
                                                                            style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
                                                                         <tr style="border-collapse:collapse;">
                                                                             <td align="left" style="padding:0;Margin:0;">
-                                                                                <textarea name="text" cols="40" rows="5" style="color:#313131;width:99%;padding-left:3px;height:60px;font-size:1em;border:solid 1px #dbddde;font-weight:normal;font-family:inherit;border-radius:5px;-webkit-border-radius:5px;-moz-border-radius:5px" required="required"></textarea>
+                                                                                <textarea name="text" cols="40" rows="5" style="color:#313131;width:99%;padding-left:3px;height:60px;font-size:1em;border:solid 1px #dbddde;font-weight:normal;font-family:inherit;border-radius:5px;-webkit-border-radius:5px;-moz-border-radius:5px;font-size: 15px;" required="required"></textarea>
                                                                             </td>
                                                                         </tr>
                                                                     </table>
@@ -738,9 +636,9 @@
                                                                         <tr style="border-collapse:collapse;">
                                                                             <td align="center" style="padding:10px;Margin:0;"><span
                                                                                     class="es-button-border"
-                                                                                    style="border-style:solid;border-color:#205177;background:#3285B9;border-width:0px 0px 2px 0px;display:inline-block;border-radius:8px;width:auto;">
+                                                                                    style="border-style:solid;border-color:#F8CA68;background:#F8CA68;border-width:0px 0px 0px 0px;display:inline-block;border-radius:8px;width:auto;">
                                                                 <input class="es-button" target="_blank"
-                                                                       style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:18px;color:#FFFFFF;border-style:solid;border-color:#3285B9;border-width:8px 30px 7px;display:inline-block;background-color:transparent;background-image:none;border-radius:5px;font-weight:normal;font-style:normal;appearance: none;-webkit-appearance:none;line-height:18px;width:auto;text-align:center;" type="submit" value="Отправить отзыв
+                                                                       style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:18px;color:#313131;border-style:solid;border-color:#F8CA68;border-width:12px 30px 11px;display:inline-block;background-color:transparent;background-image:none;border-radius:8px;font-weight:normal;font-style:normal;appearance: none;-webkit-appearance:none;line-height:18px;width:auto;text-align:center;white-space: nowrap;" type="submit" value="Отправить отзыв
  о магазине" />
                                                             </span>
                                                                             </td>
@@ -755,106 +653,11 @@
                                         </form>
                                     </td>
                                 </tr>
-                                <tr style="border-collapse:collapse;">
-                                    <td align="left"
-                                        style="padding:0;Margin:0;padding-top:20px;padding-left:20px;padding-right:20px;">
-                                        <table cellpadding="0" cellspacing="0" width="100%"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="560" align="center" valign="top" style="padding:0;Margin:0;">
-                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        {{#if products.length}}
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="left" style="padding:0;Margin:0;"><p
-                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131;">
-                                                                Или, если хотите оставить отзыв о других товарах, тогда
-                                                                нажмите на соответствующую кнопку "Оставить
-                                                                отзыв" ниже:</p></td>
-                                                        </tr>
-                                                        {{/if}}
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                                {{#each products}}
-                                <tr style="border-collapse:collapse;">
-                                    <td align="left"
-                                        style="padding:0;Margin:0;padding-top:20px;padding-left:20px;padding-right:20px;">
-                                        <!--[if mso]>
-                                        <table width="560" cellpadding="0" cellspacing="0">
-                                            <tr>
-                                                <td width="120" valign="top"><![endif]-->
-                                        <table cellpadding="0" cellspacing="0" class="es-left" align="left"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="100" class="es-m-p0r es-m-p20b" align="center"
-                                                    style="padding:0;Margin:0;">
-                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="center" class="es-m-txt-c"
-                                                                style="padding:0;Margin:0;font-size:0px;"><img
-                                                                    class="adapt-img"
-                                                                    src="https://klondike.com.ua{{ this.imageUrl }}"
-                                                                    alt
-                                                                    style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;"
-                                                                    width="100"></td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                                <td class="es-hidden" width="20" style="padding:0;Margin:0;"></td>
-                                            </tr>
-                                        </table>
-                                        <!--[if mso]></td>
-                                    <td width="220" valign="top"><![endif]-->
-                                        <table cellpadding="0" cellspacing="0" class="es-left" align="left"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="220" class="es-m-p20b" align="center"
-                                                    style="padding:0;Margin:0;">
-                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="left" style="padding:0;Margin:0;"><p
-                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:21px;color:#313131;">
-                                                                <a target="_blank"
-                                                                   href="https://klondike.com.ua/{{ this.slug }}#reviews"
-                                                                   style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:14px;text-decoration:none;color:#3E77AA;">
-                                                                    {{ this.name }}
-                                                                </a></p></td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <!--[if mso]></td>
-                                    <td width="20"></td>
-                                    <td width="200" valign="top"><![endif]-->
-                                        <table cellpadding="0" cellspacing="0" class="es-right" align="right"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:right;">
-                                            <tr style="border-collapse:collapse;">
-                                                <td width="200" align="center" style="padding:0;Margin:0;">
-                                                    <table cellpadding="0" cellspacing="0" width="100%"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="center"
-                                                                style="padding:0;Margin:0;padding-left:10px;padding-right:10px;">
-                                                                <span class="es-button-border"
-                                                                      style="border-style:solid;border-color:#313131;background:#FFFFFF;border-width:1px;display:inline-block;border-radius:5px;width:auto;"><a
-                                                                        href="https://klondike.com.ua/{{ this.slug }}#reviews" class="es-button" target="_blank"
-                                                                        style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:16px;color:#313131;border-style:solid;border-color:#FFFFFF;border-width:5px 15px;display:inline-block;background:#FFFFFF;border-radius:5px;font-weight:normal;font-style:normal;line-height:19px;width:auto;text-align:center;">Оставить отзыв</a></span>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <!--[if mso]></td></tr></table><![endif]--></td>
-                                </tr>
-                                {{/each}}
+
+
+
+
+
                                 <tr style="border-collapse:collapse;">
                                     <td align="left"
                                         style="padding:0;Margin:0;padding-left:20px;padding-right:20px;padding-top:40px;">
@@ -883,6 +686,7 @@
                                         </table>
                                     </td>
                                 </tr>
+
                             </table>
                         </td>
                     </tr>
@@ -903,5 +707,6 @@
         <tr style="border-collapse:collapse;"></tr>
     </table>
 </div>
+
 </body>
 </html>

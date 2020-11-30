@@ -27,6 +27,12 @@ interface SendEmailOptions {
   emailType: EEmailType;
 }
 
+interface EmailProduct {
+  name: string;
+  imageUrl: string;
+  slug: string;
+}
+
 @Injectable()
 export class EmailService {
 
@@ -203,27 +209,24 @@ export class EmailService {
   }
 
   private getLeaveReviewTemplateContext(order: Order): any {
-    let mainProductIdx = 0;
-    order.items.forEach((item, index) => {
-      if (item.price > order.items[mainProductIdx].price) {
-        mainProductIdx = index;
-      }
-    });
 
-    const products = order.items
-      .filter((item, index) => index !== mainProductIdx)
-      .map(item => ({ name: item.name, imageUrl: item.imageUrl, slug: item.slug }))
+    const productsInRow = 3;
+    const productRows: EmailProduct[][] = [];
+
+    for (let i = 0; i < order.items.length; i++) {
+      let item = order.items[i];
+      const rowIndex = Math.floor(i / productsInRow);
+      productRows[rowIndex] = productRows[rowIndex] || [];
+
+      productRows[rowIndex].push({ name: item.name, imageUrl: item.imageUrl, slug: item.slug });
+    }
 
     return {
       firstName: order.customerFirstName,
       lastName: order.customerLastName,
-      mainProductSlug: order.items[mainProductIdx].slug,
-      mainProductName: order.items[mainProductIdx].name,
-      mainProductId: order.items[mainProductIdx].productId,
-      mainProductVariantId: order.items[mainProductIdx].variantId,
       customerId: order.customerId,
       email: order.customerEmail,
-      products
+      productRows
     };
   }
 
