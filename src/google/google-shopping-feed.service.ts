@@ -9,6 +9,7 @@ import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductWithQty } from '../product/models/product-with-qty.model';
 import { AttributeService } from '../attribute/attribute.service';
 import { ProductSelectedAttribute } from '../product/models/product-selected-attribute.model';
+import { priceThresholdForFreeShipping } from '../shared/constants';
 
 type cdata = { $: string };
 
@@ -133,6 +134,14 @@ export class GoogleShoppingFeedService {
           price = variant.priceInDefaultCurrency;
         }
 
+        const isFreeShippingAvailable: boolean = price >= priceThresholdForFreeShipping;
+        const freeShipping = {
+          'g:shipping': {
+            'g:country': 'UA',
+            'g:price': '0.00 UAH'
+          }
+        };
+
         const item: IShoppingFeedItem = {
           'g:id': { $: variant.sku },
           'g:title': { $: variant.googleAdsProductTitle || variant.name },
@@ -147,7 +156,8 @@ export class GoogleShoppingFeedService {
           'g:availability': variant.qtyInStock > variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0) ? 'in_stock' : 'out_of_stock',
           'g:brand': { $: brand },
           'g:mpn': { $: variant.vendorCode || '' },
-          'g:gtin': { $: variant.gtin || '' }
+          'g:gtin': { $: variant.gtin || '' },
+          ...(isFreeShippingAvailable ? freeShipping : {})
         };
 
         items.push(item);
