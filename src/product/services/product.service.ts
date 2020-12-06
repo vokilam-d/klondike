@@ -890,9 +890,9 @@ export class ProductService implements OnApplicationBootstrap {
         let secondaryMediaUrl;
         let mediaAltText;
         variant.medias.forEach(media => {
-          if (!productMediaUrl) { productMediaUrl = media.variantsUrls.small; }
-
           if (media.isHidden) { return; }
+
+          if (!productMediaUrl) { productMediaUrl = media.variantsUrls.small; }
 
           if (!primaryMediaUrl) {
             primaryMediaUrl = media.variantsUrls.small;
