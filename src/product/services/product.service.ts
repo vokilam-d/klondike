@@ -1002,6 +1002,8 @@ export class ProductService implements OnApplicationBootstrap {
             );
             if (!isMatched) { continue; }
 
+            if (!productVariant.isEnabled) { continue; }
+
             const isInStock = productVariant.sellableQty > 0;
             if (!isInStock) { continue; }
 
@@ -1107,7 +1109,7 @@ export class ProductService implements OnApplicationBootstrap {
           const isMatched = restGroups.every(group =>
             productVariant.attributes.find(attr => attr.attributeId === group.attribute.id && attr.valueIds.includes(group.attributeValueId))
           );
-          if (!isMatched) { continue; }
+          if (!isMatched || !productVariant.isEnabled) { continue; }
 
           const selectedAttribute = productVariant.attributes.find(attr => attr.attributeId === variantGroups[i].attribute.id);
           const attributeValue = variantGroups[i].attribute.values.find(value => selectedAttribute.valueIds.includes(value.id));
