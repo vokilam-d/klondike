@@ -1378,7 +1378,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async fixProductSortOrder(reorderDto: ProductReorderDto) {
+  async lockProductSortOrder(reorderDto: ProductReorderDto) {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
@@ -1431,7 +1431,7 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async unFixProductSortOrder(unfixDto: UnfixProductOrderDto) {
+  async unlockProductSortOrder(unfixDto: UnfixProductOrderDto) {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 

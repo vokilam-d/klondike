@@ -94,7 +94,7 @@ export class AdminProductController {
     @Query() spf: AdminSPFDto
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    await this.productsService.fixProductSortOrder(reorderDto);
+    await this.productsService.lockProductSortOrder(reorderDto);
     return this.productsService.getAdminProductsList(spf, false);
   }
 
@@ -104,7 +104,7 @@ export class AdminProductController {
     @Query() spf: AdminSPFDto
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    await this.productsService.unFixProductSortOrder(unfixDto);
+    await this.productsService.unlockProductSortOrder(unfixDto);
     return this.productsService.getAdminProductsList(spf, false);
   }
 
