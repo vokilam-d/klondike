@@ -5,6 +5,7 @@ import * as puppeteer from 'puppeteer';
 import { Order } from '../order/models/order.model';
 import { readableDate } from '../shared/helpers/readable-date.function';
 import { isInDocker } from '../shared/helpers/is-in-docker';
+import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-order.function';
 
 @Injectable()
 export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -55,7 +56,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       addressBuildingNumber: order.shipment.recipient.buildingNumber,
       addressFlatNumber: order.shipment.recipient.flat,
       shipping: order.shippingMethodName,
-      shippingTip: order.prices.totalCost < 1000 ? 'оплачивается получателем' : 'бесплатная доставка',
+      shippingTip: isFreeShippingForOrder(order) ? 'бесплатная доставка' : 'оплачивается получателем',
       payment: order.paymentMethodClientName,
       products: order.items.map(item => ({
         name: item.name,

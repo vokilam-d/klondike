@@ -183,7 +183,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       const newOrder = await this.createOrder(orderDto, customer, session);
       newOrder.source = 'manager';
-      newOrder.logs.push({ time: new Date(), text: `Created order. Manager login: ${user?.login}` });
+      newOrder.logs.push({ time: new Date(), text: `Created order by manager, userLogin=${user?.login}` });
       newOrder.status = OrderStatusEnum.PROCESSING;
       await this.fetchShipmentStatus(newOrder);
 
@@ -191,7 +191,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       await session.commitTransaction();
 
-      this.logger.log(`Created order by admin, orderId=${newOrder.id}, userLogin=${user?.login}`);
+      this.logger.log(`Created order by manager, orderId=${newOrder.id}, userLogin=${user?.login}`);
 
       this.addSearchData(newOrder).then();
       this.updateCachedOrderCount();
@@ -556,7 +556,9 @@ export class OrderService implements OnApplicationBootstrap {
     const isCashOnDelivery = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
-    const isReadyToShip = order.status === OrderStatusEnum.PACKED || order.status === OrderStatusEnum.READY_TO_SHIP;
+    const isReadyToShip = order.status === OrderStatusEnum.READY_TO_PACK
+      || order.status === OrderStatusEnum.PACKED
+      || order.status === OrderStatusEnum.READY_TO_SHIP;
     const isJustSent = isReadyToShip && order.shipment.status === ShipmentStatusEnum.HEADING_TO_CITY;
 
     if (!isCashOnDelivery && isReceived || isCashOnDelivery && isCashPickedUp) {

@@ -8,6 +8,7 @@ import { readableDate } from '../shared/helpers/readable-date.function';
 import { Customer } from '../customer/models/customer.model';
 import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { AdminStoreReviewDto } from '../shared/dtos/admin/store-review.dto';
+import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-order.function';
 
 enum EEmailType {
   EmailConfirmation = 'email-confirmation',
@@ -186,7 +187,7 @@ export class EmailService {
       addressBuildingNumber: order.shipment.recipient.buildingNumber,
       addressFlatNumber: order.shipment.recipient.flat,
       shipping: order.shippingMethodName,
-      shippingTip: order.prices.totalCost < 1000 ? 'оплачивается получателем' : 'бесплатная доставка',
+      shippingTip: isFreeShippingForOrder(order) ? 'бесплатная доставка' : 'оплачивается получателем',
       payment: order.paymentMethodClientName,
       products: order.items.map(item => ({
         name: item.name,
