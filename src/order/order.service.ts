@@ -851,11 +851,6 @@ export class OrderService implements OnApplicationBootstrap {
       errors.push(__('Cash on delivery is not available with address delivery', 'ru'));
     }
 
-    const COST_BREAKPOINT = 100;
-    if (order.prices.itemsCost < COST_BREAKPOINT) {
-      errors.push(__('Cash on delivery is not available for orders less than $1 uah', 'ru', COST_BREAKPOINT));
-    }
-
     const disallowedItem = order.items.find(item => item.name.toLowerCase().match(/сусаль([ ,])/g));
     if (disallowedItem) {
       errors.push(__('Cash on delivery is not available for gold leaf', 'ru'));
