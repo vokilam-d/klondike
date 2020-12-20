@@ -82,7 +82,7 @@ export class EmailService {
     const emailType = EEmailType.LeaveReview;
     const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
 
-    const subject = `${order.customerFirstName}, оставьте отзыв о товаре`;
+    const subject = `${order.customerFirstName}, поделитесь мнением о покупке, пожалуйста`;
 
     const context = this.getLeaveReviewTemplateContext(order);
     const html = this.getEmailHtml(emailType, context);
