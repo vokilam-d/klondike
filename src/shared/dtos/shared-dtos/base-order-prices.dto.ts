@@ -1,9 +1,8 @@
 import { OrderPrices } from '../../models/order-prices.model';
 import { Expose } from 'class-transformer';
-import { IsNumber, IsString } from 'class-validator';
-import { TrimString } from '../../decorators/trim-string.decorator';
+import { IsNumber } from 'class-validator';
 
-export class OrderPricesDto implements OrderPrices {
+export abstract class BaseOrderPricesDto implements OrderPrices {
   @Expose()
   @IsNumber()
   discountPercent: number;
@@ -12,10 +11,7 @@ export class OrderPricesDto implements OrderPrices {
   @IsNumber()
   discountValue: number;
 
-  @Expose()
-  @IsString()
-  @TrimString()
-  discountLabel: string;
+  abstract discountLabel: any;
 
   @Expose()
   @IsNumber()

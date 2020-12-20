@@ -1,17 +1,18 @@
 import { BlogCategory } from '../../../blog/models/blog-category.model';
-import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { AdminMetaTagsDto } from './meta-tags.dto';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
+import { clientDefaultLanguage } from '../../constants';
 
 export class AdminBlogCategoryCreateOrUpdateDto implements Omit<BlogCategory, '_id' | 'id'> {
   id?: any;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  content: string;
+  @Type(() => MultilingualTextDto)
+  content: MultilingualTextDto;
 
   @Expose()
   @IsBoolean()
@@ -19,17 +20,18 @@ export class AdminBlogCategoryCreateOrUpdateDto implements Omit<BlogCategory, '_
 
   @Expose()
   @ValidateNested()
-  @Type(() => MetaTagsDto)
-  metaTags: MetaTagsDto;
+  @Type(() => AdminMetaTagsDto)
+  metaTags: AdminMetaTagsDto;
+
+  @Expose()
+  @Type(() => MultilingualTextDto)
+  name: MultilingualTextDto;
 
   @Expose()
   @IsString()
-  @TrimString()
-  name: string;
-
-  @Expose()
-  @IsString()
-  @Transform((slug, category) => slug === '' ? transliterate(category.name) : slug)
+  @Transform(
+    (slug, category: AdminBlogCategoryCreateOrUpdateDto) => slug === '' ? transliterate(category.name[clientDefaultLanguage]) : slug
+  )
   @TrimString()
   slug: string;
 

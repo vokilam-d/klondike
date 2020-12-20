@@ -1,21 +1,19 @@
 import { Aggregator } from '../../../aggregator/models/aggregator.model';
-import { Expose } from 'class-transformer';
-import { IsBoolean, IsNumber, IsString } from 'class-validator';
-import { TrimString } from '../../decorators/trim-string.decorator';
+import { Expose, Type } from 'class-transformer';
+import { IsBoolean, IsNumber } from 'class-validator';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
-export class AdminAggregatorDto implements Pick<Aggregator, 'id' | 'isVisibleOnProductPage' | 'productIds'> {
+export class AdminAggregatorDto implements Omit<Aggregator, '_id'> {
   @Expose()
   id: number;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  name: string;
+  @Type(() => MultilingualTextDto)
+  name: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  clientName: string;
+  @Type(() => MultilingualTextDto)
+  clientName: MultilingualTextDto;
 
   @Expose()
   @IsBoolean()

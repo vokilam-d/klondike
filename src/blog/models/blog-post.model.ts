@@ -5,6 +5,7 @@ import { LinkedProduct } from '../../product/models/linked-product.model';
 import { LinkedBlogPost } from './linked-blog-post.model';
 import { Media } from '../../shared/models/media.model';
 import { LinkedBlogCategory } from './linked-blog-category.model';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class BlogPost {
   @prop()
@@ -15,7 +16,7 @@ export class BlogPost {
   get id(): number { return this._id; }
 
   @prop({ required: true })
-  name: string;
+  name: MultilingualText;
 
   @prop({ required: true })
   slug: string;
@@ -33,10 +34,10 @@ export class BlogPost {
   metaTags: MetaTags;
 
   @prop()
-  content: string;
+  content: MultilingualText;
 
   @prop()
-  shortContent: string;
+  shortContent: MultilingualText;
 
   @prop()
   createdAt: Date;

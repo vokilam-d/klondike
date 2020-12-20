@@ -1,16 +1,12 @@
-import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
-import { TrimString } from '../../decorators/trim-string.decorator';
+import { BaseOrderItemDto } from '../shared-dtos/base-order-item.dto';
+import { Expose, Type } from 'class-transformer';
+import { ClientOrderItemAdditionalServiceDto } from './order-item-additional-service.dto';
 
-export class ClientAddOrUpdateOrderItemDto {
-  @IsString()
-  @TrimString()
-  sku: string;
+export class ClientOrderItemDto extends BaseOrderItemDto {
+  @Expose()
+  name: string;
 
-  @IsNumber()
-  @IsPositive()
-  qty: number;
-
-  @IsNumber(undefined, { each: true })
-  @IsOptional()
-  additionalServiceIds: number[];
+  @Expose()
+  @Type(() => ClientOrderItemAdditionalServiceDto)
+  additionalServices: ClientOrderItemAdditionalServiceDto[];
 }

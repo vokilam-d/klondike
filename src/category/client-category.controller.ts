@@ -1,9 +1,9 @@
 import { ClassSerializerInterceptor, Controller, Get, Param, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
-import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientCategoryDto } from '../shared/dtos/client/category.dto';
+import { ClientCategoryTreeItemDto } from '../shared/dtos/client/category-tree-item.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -13,10 +13,10 @@ export class ClientCategoryController {
   }
 
   @Get('tree')
-  async getCategoriesTree(): Promise<ResponseDto<CategoryTreeItem[]>> {
+  async getCategoriesTree(): Promise<ResponseDto<ClientCategoryTreeItemDto[]>> {
     const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: true });
     return {
-      data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
+      data: plainToClass(ClientCategoryTreeItemDto, tree, { excludeExtraneousValues: true })
     };
   }
 

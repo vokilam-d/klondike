@@ -1,5 +1,6 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class ShippingMethod {
   _id: Types.ObjectId;
@@ -8,10 +9,10 @@ export class ShippingMethod {
   isEnabled: boolean;
 
   @prop()
-  adminName: string;
+  adminName: MultilingualText;
 
   @prop()
-  clientName: string;
+  clientName: MultilingualText;
 
   @prop({ default: 0 })
   price: number;

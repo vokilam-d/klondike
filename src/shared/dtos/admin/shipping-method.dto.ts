@@ -1,9 +1,9 @@
-import { Expose, Transform } from 'class-transformer';
-import { IsBoolean, IsNumber, IsString, Matches } from 'class-validator';
-import { notEmptyStringRegex } from '../../constants';
-import { TrimString } from '../../decorators/trim-string.decorator';
+import { Expose, Transform, Type } from 'class-transformer';
+import { IsBoolean, IsNumber } from 'class-validator';
+import { ShippingMethod } from '../../../shipping-method/models/shipping-method.model';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
-export class AdminShippingMethodDto {
+export class AdminShippingMethodDto implements Omit<ShippingMethod, '_id'> {
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id: string;
@@ -13,16 +13,12 @@ export class AdminShippingMethodDto {
   isEnabled: boolean;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  @Matches(notEmptyStringRegex, { message: 'Field \'clientName\' should not be empty'})
-  clientName: string;
+  @Type(() => MultilingualTextDto)
+  clientName: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  @Matches(notEmptyStringRegex, { message: 'Field \'adminName\' should not be empty'})
-  adminName: string;
+  @Type(() => MultilingualTextDto)
+  adminName: MultilingualTextDto;
 
   @Expose()
   @IsNumber()

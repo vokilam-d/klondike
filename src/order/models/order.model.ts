@@ -6,6 +6,8 @@ import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { Log } from '../../shared/models/log.model';
 import { OrderPrices } from '../../shared/models/order-prices.model';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { Language } from '../../shared/enums/language.enum';
 
 export class Order {
   @prop()
@@ -51,10 +53,10 @@ export class Order {
   paymentType: PaymentTypeEnum;
 
   @prop()
-  paymentMethodClientName: string;
+  paymentMethodClientName: MultilingualText;
 
   @prop()
-  paymentMethodAdminName: string;
+  paymentMethodAdminName: MultilingualText;
 
   @prop()
   shippingMethodName: string;
@@ -69,12 +71,9 @@ export class Order {
   items: OrderItem[];
 
   @prop()
-  state: any;
-
-  @prop()
   status: OrderStatusEnum;
 
-  get statusDescription(): string { return __(this.status, 'ru'); }
+  getStatusDescription(lang: Language): string { return __(this.status, lang); }
 
   @prop()
   clientNote: string;

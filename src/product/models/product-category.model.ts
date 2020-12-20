@@ -1,4 +1,5 @@
 import { prop } from '@typegoose/typegoose';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 // todo convert product breadcrumbs into ids[], then use this as reference to build them
 export class ProductCategory {
@@ -6,7 +7,7 @@ export class ProductCategory {
   id: number;
 
   @prop()
-  name: string;
+  name: MultilingualText;
 
   @prop()
   slug: string;

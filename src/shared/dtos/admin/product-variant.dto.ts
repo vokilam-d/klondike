@@ -4,10 +4,11 @@ import { AdminMediaDto } from './media.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { transliterate } from '../../helpers/transliterate.function';
 import { CurrencyCodeEnum } from '../../enums/currency.enum';
-import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { ProductVariantWithQty } from '../../../product/models/product-with-qty.model';
 import { AdminLinkedProductDto } from './linked-product.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { ClientMetaTagsDto } from '../client/meta-tags.dto';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
 export class AdminAddOrUpdateProductVariantDto {
   @Exclude()
@@ -18,9 +19,8 @@ export class AdminAddOrUpdateProductVariantDto {
   id: string;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  name: string;
+  @Type(() => MultilingualTextDto)
+  name: MultilingualTextDto;
 
   @Expose()
   sku: string;
@@ -87,18 +87,16 @@ export class AdminAddOrUpdateProductVariantDto {
   medias: AdminMediaDto[];
 
   @Expose()
-  @IsString()
-  @TrimString()
-  fullDescription: string;
+  @Type(() => MultilingualTextDto)
+  fullDescription: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  shortDescription: string;
+  @Type(() => MultilingualTextDto)
+  shortDescription: MultilingualTextDto;
 
   @Expose()
   @ValidateNested()
-  metaTags: MetaTagsDto;
+  metaTags: ClientMetaTagsDto;
 
   @Expose()
   @Transform((price, obj: ProductVariantWithQty) => price ? parseFloat(price) : obj.qtyInStock)

@@ -1,4 +1,3 @@
-import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { BlogPost } from '../../../blog/models/blog-post.model';
 import { AdminLinkedProductDto } from './linked-product.dto';
 import { LinkedBlogPost } from '../../../blog/models/linked-blog-post.model';
@@ -8,6 +7,9 @@ import { AdminMediaDto } from './media.dto';
 import { transliterate } from '../../helpers/transliterate.function';
 import { LinkedBlogCategory } from '../../../blog/models/linked-blog-category.model';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
+import { clientDefaultLanguage } from '../../constants';
+import { AdminMetaTagsDto } from './meta-tags.dto';
 
 export class LinkedBlogCategoryDto implements LinkedBlogCategory {
   @Expose()
@@ -15,9 +17,8 @@ export class LinkedBlogCategoryDto implements LinkedBlogCategory {
   id: number;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  name: string;
+  @Type(() => MultilingualTextDto)
+  name: MultilingualTextDto;
 
   @Expose()
   @IsString()
@@ -31,9 +32,8 @@ export class LinkedBlogPostDto implements LinkedBlogPost {
   id: number;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  name: string;
+  @Type(() => MultilingualTextDto)
+  name: MultilingualTextDto;
 
   @Expose()
   @IsString()
@@ -46,15 +46,14 @@ export class LinkedBlogPostDto implements LinkedBlogPost {
   sortOrder: number;
 }
 
-export class AdminBlogPostCreateOrUpdateDto implements Record<keyof Omit<BlogPost, '_id' | 'id'>, any> {
+export class AdminBlogPostCreateOrUpdateDto implements Omit<BlogPost, '_id' | 'id'> {
   @Expose()
-  @IsString()
-  @TrimString()
-  name: string;
+  @Type(() => MultilingualTextDto)
+  name: MultilingualTextDto;
 
   @Expose()
+  @Transform((slug, post: AdminBlogPostCreateOrUpdateDto) => slug === '' ? transliterate(post.name[clientDefaultLanguage]) : slug)
   @IsString()
-  @Transform((slug, post) => slug === '' ? transliterate(post.name) : slug)
   @TrimString()
   slug: string;
 
@@ -64,14 +63,12 @@ export class AdminBlogPostCreateOrUpdateDto implements Record<keyof Omit<BlogPos
   category: LinkedBlogCategoryDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  content: string;
+  @Type(() => MultilingualTextDto)
+  content: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  shortContent: string;
+  @Type(() => MultilingualTextDto)
+  shortContent: MultilingualTextDto;
 
   @Expose()
   @IsDate()
@@ -109,8 +106,8 @@ export class AdminBlogPostCreateOrUpdateDto implements Record<keyof Omit<BlogPos
 
   @Expose()
   @ValidateNested()
-  @Type(() => MetaTagsDto)
-  metaTags: MetaTagsDto;
+  @Type(() => AdminMetaTagsDto)
+  metaTags: AdminMetaTagsDto;
 
   @Expose()
   @IsOptional()

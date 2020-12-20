@@ -8,6 +8,7 @@ import {
   elasticTextType
 } from '../../shared/constants';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
+import { ElasticMultilingualText } from '../../shared/models/elastic-multilingual-text.model';
 
 export class ElasticProductVariant implements Record<keyof AdminProductVariantListItem, any> {
   currency = elasticTextType;
@@ -16,7 +17,10 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   mediaUrl = elasticTextType;
   mediaHoverUrl = elasticTextType;
   mediaAltText = elasticTextType;
-  name = elasticAutocompleteTextType;
+  name = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('autocomplete')
+  };
   slug = elasticTextType;
   price = elasticFloatType;
   oldPrice = elasticFloatType;

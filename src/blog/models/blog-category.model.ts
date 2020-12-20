@@ -1,6 +1,7 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 import { Expose } from 'class-transformer';
 import { MetaTags } from '../../shared/models/meta-tags.model';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class BlogCategory {
   @prop()
@@ -11,7 +12,7 @@ export class BlogCategory {
   get id(): number { return this._id; }
 
   @prop({ required: true })
-  name: string;
+  name: MultilingualText;
 
   @prop({ required: true })
   slug: string;
@@ -26,7 +27,7 @@ export class BlogCategory {
   metaTags: MetaTags;
 
   @prop()
-  content: string;
+  content: MultilingualText;
 
 
   static collectionName: string = 'blog-category';

@@ -1,6 +1,7 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
 import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class PaymentMethod {
   _id: Types.ObjectId;
@@ -12,10 +13,10 @@ export class PaymentMethod {
   paymentType: PaymentTypeEnum;
 
   @prop()
-  adminName: string;
+  adminName: MultilingualText;
 
   @prop()
-  clientName: string;
+  clientName: MultilingualText;
 
   @prop({ default: 0 })
   price: number;

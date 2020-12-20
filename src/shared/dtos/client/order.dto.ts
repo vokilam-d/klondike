@@ -1,15 +1,19 @@
 import { ArrayMinSize, IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
-import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { Order } from '../../../order/models/order.model';
 import { ShipmentDto } from '../admin/shipment.dto';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { __ } from '../../helpers/translate/translate.function';
 import { AdminOrderDto } from '../admin/order.dto';
-import { OrderPricesDto } from '../shared-dtos/order-prices.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { ClientOrderItemDto } from './order-item.dto';
+import { ClientOrderPricesDto } from './order-prices.dto';
+import { clientDefaultLanguage } from '../../constants';
 
-export class ClientAddOrderDto implements Pick<Order, 'paymentMethodId' | 'isCallbackNeeded' | 'items' | 'clientNote'> {
+export class ClientAddOrderDto implements
+  Pick<Order, 'paymentMethodId' | 'isCallbackNeeded' | 'clientNote'>,
+  Record<keyof Pick<Order, 'items'>, ClientOrderItemDto[]>
+{
   @Expose()
   @IsOptional()
   @IsString()
@@ -35,8 +39,8 @@ export class ClientAddOrderDto implements Pick<Order, 'paymentMethodId' | 'isCal
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
-  @Type(() => OrderItemDto)
-  items: OrderItemDto[];
+  @Type(() => ClientOrderItemDto)
+  items: ClientOrderItemDto[];
 
   @Expose()
   @IsOptional()
@@ -45,7 +49,10 @@ export class ClientAddOrderDto implements Pick<Order, 'paymentMethodId' | 'isCal
   clientNote: string;
 }
 
-export class ClientOrderDto extends ClientAddOrderDto implements Pick<Order, 'shipment' | 'shippingMethodName' | 'prices' | 'createdAt'> {
+export class ClientOrderDto extends ClientAddOrderDto implements
+  Pick<Order, 'shipment' | 'shippingMethodName' | 'createdAt'>,
+  Record<keyof Pick<Order, 'prices'>, ClientOrderPricesDto>
+{
   @Expose()
   @Transform(((value, obj: Order) => obj.idForCustomer))
   id: string;
@@ -54,7 +61,7 @@ export class ClientOrderDto extends ClientAddOrderDto implements Pick<Order, 'sh
   shippingMethodName: string;
 
   @Expose()
-  @Transform(((value, obj: Order) => value ? value : obj.paymentMethodClientName))
+  @Transform(((value, obj: Order) => value ? value : obj.paymentMethodClientName[clientDefaultLanguage]))
   paymentMethodName: string;
 
   @Expose()
@@ -62,12 +69,12 @@ export class ClientOrderDto extends ClientAddOrderDto implements Pick<Order, 'sh
   shipment: ShipmentDto;
 
   @Expose()
-  @Transform(((value, order: AdminOrderDto) => order.statusDescription || __(order.status, 'ru') || value))
+  @Transform(((value, order: AdminOrderDto) => order.statusDescription || __(order.status, clientDefaultLanguage) || value))
   status: string;
 
   @Expose()
-  @Type(() => OrderPricesDto)
-  prices: OrderPricesDto;
+  @Type(() => ClientOrderPricesDto)
+  prices: ClientOrderPricesDto;
 
   @Expose()
   createdAt: Date;

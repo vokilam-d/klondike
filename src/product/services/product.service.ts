@@ -26,14 +26,12 @@ import { ProductWithQty } from '../models/product-with-qty.model';
 import { AdminProductVariantListItem } from '../../shared/dtos/admin/product-variant-list-item.dto';
 import { DEFAULT_CURRENCY } from '../../shared/enums/currency.enum';
 import { ElasticProduct } from '../models/elastic-product.model';
-import { CategoryTreeItem } from '../../shared/dtos/shared-dtos/category.dto';
 import { IFilter, SortingPaginatingFilterDto } from '../../shared/dtos/shared-dtos/spf.dto';
 import { ClientProductListItemDto, ClientProductVariantDto, ClientProductVariantGroupDto } from '../../shared/dtos/client/product-list-item.dto';
 import { AttributeService } from '../../attribute/attribute.service';
 import { ClientProductCategoryDto, ClientProductCharacteristic, ClientProductDto } from '../../shared/dtos/client/product.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
-import { MetaTagsDto } from '../../shared/dtos/shared-dtos/meta-tags.dto';
 import { ClientProductSPFDto } from '../../shared/dtos/client/product-spf.dto';
 import { areArraysEqual } from '../../shared/helpers/are-arrays-equal.function';
 import { CurrencyService } from '../../currency/currency.service';
@@ -58,6 +56,9 @@ import { createClientProductId } from '../../shared/helpers/client-product-id';
 import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
 import { Category } from '../../category/models/category.model';
 import { sortByLabel } from '../../shared/helpers/sort-by-label.function';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { ClientMetaTagsDto } from '../../shared/dtos/client/meta-tags.dto';
+import { AdminCategoryTreeItemDto } from '../../shared/dtos/admin/category-tree-item.dto';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -709,7 +710,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  async updateProductCategory(categoryId: number, categoryName: string, categorySlug: string, categoryIsEnabled: boolean, session: ClientSession): Promise<any> {
+  async updateProductCategory(categoryId: number, categoryName: MultilingualText, categorySlug: string, categoryIsEnabled: boolean, session: ClientSession): Promise<any> {
     const categoriesProp: keyof Product = 'categories';
     const categoryIdProp: keyof ProductCategory = 'id';
     const categoryNameProp: keyof ProductCategory = 'name';
@@ -745,7 +746,7 @@ export class ProductService implements OnApplicationBootstrap {
   private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto, categoryTreeItems?): Promise<void> {
     const breadcrumbsVariants: Breadcrumb[][] = [];
 
-    const populate = (treeItems: CategoryTreeItem[], breadcrumbs: Breadcrumb[] = []) => {
+    const populate = (treeItems: AdminCategoryTreeItemDto[], breadcrumbs: Breadcrumb[] = []) => {
 
       for (const treeItem of treeItems) {
         const newBreadcrumbs: Breadcrumb[] = JSON.parse(JSON.stringify(breadcrumbs));
@@ -1140,7 +1141,7 @@ export class ProductService implements OnApplicationBootstrap {
       fullDescription: selectedVariant.fullDescription,
       shortDescription: selectedVariant.shortDescription,
       medias: plainToClass(ClientMediaDto, selectedVariant.medias, { excludeExtraneousValues: true }),
-      metaTags: plainToClass(MetaTagsDto, selectedVariant.metaTags, { excludeExtraneousValues: true }),
+      metaTags: plainToClass(ClientMetaTagsDto, selectedVariant.metaTags, { excludeExtraneousValues: true }),
       name: selectedVariant.name,
       slug: selectedVariant.slug,
       sku: selectedVariant.sku,

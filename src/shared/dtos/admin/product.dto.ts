@@ -3,9 +3,9 @@ import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminAddOrUpdateProductVariantDto } from './product-variant.dto';
 import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
-import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { AdminProductCategoryDto } from './product-category.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { AdminBreadcrumbDto } from './breadcrumb.dto';
 
 export class AdminAddOrUpdateProductDto {
   @Expose()
@@ -24,8 +24,8 @@ export class AdminAddOrUpdateProductDto {
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => BreadcrumbDto)
-  breadcrumbs: BreadcrumbDto[];
+  @Type(() => AdminBreadcrumbDto)
+  breadcrumbs: AdminBreadcrumbDto[];
 
   @Expose()
   @ValidateNested({ each: true })

@@ -1,4 +1,5 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class AdditionalService {
   @prop()
@@ -8,10 +9,10 @@ export class AdditionalService {
   get id(): number { return this._id; }
 
   @prop()
-  name: string;
+  name: MultilingualText;
 
   @prop()
-  clientName: string;
+  clientName: MultilingualText;
 
   @prop()
   isEnabled: boolean;

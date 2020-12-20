@@ -2,10 +2,14 @@ import { BlogPost } from '../../../blog/models/blog-post.model';
 import { LinkedBlogCategoryDto, LinkedBlogPostDto } from '../admin/blog-post.dto';
 import { ClientLinkedProductDto } from './linked-product.dto';
 import { Expose, Type } from 'class-transformer';
-import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { ClientMediaDto } from './media.dto';
+import { ClientMetaTagsDto } from './meta-tags.dto';
 
-export class ClientBlogPostDto implements Pick<BlogPost, 'category' | 'content' | 'name' | 'metaTags' | 'linkedPosts' | 'publishedAt' | 'updatedAt' | 'slug'>, Record<keyof Pick<BlogPost, 'linkedProducts' | 'medias'>, any> {
+export class ClientBlogPostDto implements
+  Pick<BlogPost, 'category' | 'linkedPosts' | 'publishedAt' | 'updatedAt' | 'slug'>,
+  Record<keyof Pick<BlogPost, 'linkedProducts' | 'medias'>, any>,
+  Record<keyof Pick<BlogPost, 'metaTags'>, ClientMetaTagsDto>,
+  Record<keyof Pick<BlogPost, 'name' | 'content'>, string> {
 
   @Expose()
   @Type(() => LinkedBlogCategoryDto)
@@ -27,8 +31,8 @@ export class ClientBlogPostDto implements Pick<BlogPost, 'category' | 'content' 
   medias: ClientMediaDto[];
 
   @Expose()
-  @Type(() => MetaTagsDto)
-  metaTags: MetaTagsDto;
+  @Type(() => ClientMetaTagsDto)
+  metaTags: ClientMetaTagsDto;
 
   @Expose()
   name: string;

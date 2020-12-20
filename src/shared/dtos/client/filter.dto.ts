@@ -1,7 +1,10 @@
 import { Expose } from 'class-transformer';
 import { Attribute, AttributeValue } from '../../../attribute/models/attribute.model';
 
-export class ClientFilterValueDto implements Pick<AttributeValue, 'label'>, Record<keyof Pick<AttributeValue, 'id'>, any> {
+export class ClientFilterValueDto implements
+  Record<keyof Pick<AttributeValue, 'label'>, string>,
+  Record<keyof Pick<AttributeValue, 'id'>, any>
+{
   @Expose()
   id: string | number;
 
@@ -28,7 +31,11 @@ export class ClientFilterRangeValuesDto {
   selected: Range;
 }
 
-export class ClientFilterDto implements Pick<Attribute, 'id' | 'label'>, Partial<Record<keyof Pick<Attribute, 'values'>, any>> {
+export class ClientFilterDto implements
+  Pick<Attribute, 'id'>,
+  Record<keyof Pick<Attribute, 'label'>, string>,
+  Partial<Record<keyof Pick<Attribute, 'values'>, ClientFilterValueDto[]>>
+{
   @Expose()
   id: string;
 

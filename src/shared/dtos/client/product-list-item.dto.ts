@@ -39,7 +39,8 @@ export class ClientProductVariantGroupDto {
 }
 
 type PickedProduct = Pick<Product, 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating'>;
-type PickedVariant = Record<keyof Pick<ProductVariant, 'slug' | 'sku' | 'name' | 'price'>, any>;
+type PickedVariant = Pick<ProductVariant, 'slug' | 'sku' | 'price'>
+  & Record<keyof Pick<ProductVariant, 'name'>, string>;
 
 export class ClientProductListItemDto implements PickedProduct, PickedVariant {
   @Expose()

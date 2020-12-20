@@ -1,8 +1,9 @@
 import { BlogCategory } from '../../../blog/models/blog-category.model';
-import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { Expose, Type } from 'class-transformer';
+import { ClientMetaTagsDto } from './meta-tags.dto';
 
-export class ClientBlogCategoryDto implements Pick<BlogCategory, 'id' | 'name' | 'content' | 'metaTags'> {
+export class ClientBlogCategoryDto implements Pick<BlogCategory, 'id'>, Record<keyof Pick<BlogCategory, 'metaTags'>, ClientMetaTagsDto>, Record<keyof Pick<BlogCategory, 'name' | 'content'>, string> {
+
   @Expose()
   content: string;
 
@@ -10,8 +11,8 @@ export class ClientBlogCategoryDto implements Pick<BlogCategory, 'id' | 'name' |
   id: number;
 
   @Expose()
-  @Type(() => MetaTagsDto)
-  metaTags: MetaTagsDto;
+  @Type(() => ClientMetaTagsDto)
+  metaTags: ClientMetaTagsDto;
 
   @Expose()
   name: string;

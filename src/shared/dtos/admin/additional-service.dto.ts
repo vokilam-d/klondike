@@ -1,22 +1,19 @@
 import { AdditionalService } from '../../../additional-service/models/additional-service.model';
-import { Expose } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
-import { TrimString } from '../../decorators/trim-string.decorator';
+import { Expose, Type } from 'class-transformer';
+import { IsBoolean, IsNumber } from 'class-validator';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
 export class AdminAdditionalServiceDto implements Pick<AdditionalService, 'id' | 'isEnabled' | 'name' | 'clientName' | 'price'> {
   @Expose()
   id: number;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  name: string;
+  @Type(() => MultilingualTextDto)
+  name: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  clientName: string;
+  @Type(() => MultilingualTextDto)
+  clientName: MultilingualTextDto;
 
   @Expose()
   @IsBoolean()

@@ -1,23 +1,30 @@
 import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
 import { ElasticShipmentAddressModel } from '../../shared/models/elastic-shipment-address.model';
 import { elasticBooleanType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
-import { OrderItemDto } from '../../shared/dtos/shared-dtos/order-item.dto';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { ElasticLog } from '../../shared/models/elastic-log.model';
-import { OrderPricesDto } from '../../shared/dtos/shared-dtos/order-prices.dto';
 import { OrderItemAdditionalService } from './order-item-additional-service.model';
+import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
+import { AdminOrderPricesDto } from '../../shared/dtos/admin/order-prices.dto';
+import { ElasticMultilingualText } from '../../shared/models/elastic-multilingual-text.model';
 
 class ElasticOrderItemAdditionalService implements Record<keyof OrderItemAdditionalService, any> {
   id = elasticIntegerType;
-  name = elasticTextType;
+  name = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('text')
+  };
   price = elasticFloatType;
 }
 
-class ElasticOrderItemModel implements Omit<Record<keyof OrderItemDto, any>, 'crossSellProducts'> {
+class ElasticOrderItemModel implements Omit<Record<keyof AdminOrderItemDto, any>, 'crossSellProducts'> {
   cost = elasticFloatType;
   oldCost = elasticFloatType;
   imageUrl = elasticTextType;
-  name = elasticTextType;
+  name = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('text')
+  };
   price = elasticFloatType;
   oldPrice = elasticFloatType;
   productId = elasticIntegerType;
@@ -42,8 +49,11 @@ class ElasticShipmentModel implements Record<keyof Pick<ShipmentDto, 'trackingNu
   };
 }
 
-class ElasticOrderPrices implements Record<keyof Pick<OrderPricesDto, 'totalCost' | 'discountLabel' | 'discountPercent' | 'discountValue' | 'itemsCost'>, any> {
-  discountLabel = elasticTextType;
+class ElasticOrderPrices implements Record<keyof Pick<AdminOrderPricesDto, 'totalCost' | 'discountLabel' | 'discountPercent' | 'discountValue' | 'itemsCost'>, any> {
+  discountLabel = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('text')
+  };
   discountPercent = elasticIntegerType;
   discountValue = elasticIntegerType;
   itemsCost = elasticIntegerType;
@@ -75,8 +85,14 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
     type: 'nested',
     properties: new ElasticShipmentModel()
   };
-  paymentMethodAdminName = elasticTextType;
-  paymentMethodClientName = elasticTextType;
+  paymentMethodAdminName = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('text')
+  };
+  paymentMethodClientName = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('text')
+  };
   paymentMethodId = elasticTextType;
   paymentType = elasticTextType;
   shippingMethodName = elasticTextType;

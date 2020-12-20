@@ -5,6 +5,7 @@ import { ProductSelectedAttribute } from './product-selected-attribute.model';
 import { Types } from 'mongoose';
 import { CurrencyCodeEnum } from '../../shared/enums/currency.enum';
 import { LinkedProduct } from './linked-product.model';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class ProductVariant {
   @prop({ index: true })
@@ -14,7 +15,7 @@ export class ProductVariant {
   set id(id) { this._id = id || new Types.ObjectId(); }
 
   @prop({ required: true })
-  name: string;
+  name: MultilingualText;
 
   @prop({ required: true, index: true, unique: true })
   sku: string;
@@ -53,10 +54,10 @@ export class ProductVariant {
   medias: Media[];
 
   @prop()
-  fullDescription: string;
+  fullDescription: MultilingualText;
 
   @prop()
-  shortDescription: string;
+  shortDescription: MultilingualText;
 
   @prop()
   metaTags: MetaTags;
@@ -71,7 +72,7 @@ export class ProductVariant {
   isIncludedInShoppingFeed: boolean;
 
   @prop()
-  googleAdsProductTitle: string;
+  googleAdsProductTitle: MultilingualText;
 
   @arrayProp({ items: LinkedProduct, default: [] })
   relatedProducts: LinkedProduct[];

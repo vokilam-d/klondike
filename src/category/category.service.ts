@@ -9,7 +9,6 @@ import { CounterService } from '../shared/services/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
 import { ClientSession } from 'mongoose';
-import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ReorderPositionEnum } from '../shared/enums/reorder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
@@ -25,6 +24,7 @@ import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { SearchService } from '../shared/services/search/search.service';
 import { ElasticCategory } from './models/elastic-category.model';
 import { IFilter, ISorting } from '../shared/dtos/shared-dtos/spf.dto';
+import { AdminCategoryTreeItemDto } from '../shared/dtos/admin/category-tree-item.dto';
 
 @Injectable()
 export class CategoryService implements OnApplicationBootstrap {
@@ -52,9 +52,9 @@ export class CategoryService implements OnApplicationBootstrap {
     return categories;
   }
 
-  async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean } = { }): Promise<CategoryTreeItem[]> {
-    const treeItems: CategoryTreeItem[] = [];
-    const childrenMap: { [parentId: number]: CategoryTreeItem[] } = {};
+  async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean } = { }): Promise<AdminCategoryTreeItemDto[]> {
+    const treeItems: AdminCategoryTreeItemDto[] = [];
+    const childrenMap: { [parentId: number]: AdminCategoryTreeItemDto[] } = {};
 
     const allCategories = await this.getAllCategories();
     for (let category of allCategories) {
@@ -64,7 +64,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
       category = this.handleCloneCategory(category, allCategories, options.adminTree);
 
-      const item: CategoryTreeItem = plainToClass(CategoryTreeItem, category, { excludeExtraneousValues: true });
+      const item: AdminCategoryTreeItemDto = plainToClass(AdminCategoryTreeItemDto, category, { excludeExtraneousValues: true });
       item.children = [];
 
       if (category.parentId === 0) {
@@ -76,7 +76,7 @@ export class CategoryService implements OnApplicationBootstrap {
       childrenMap[category.parentId].push(item);
     }
 
-    const populateChildrenArray = (array: CategoryTreeItem[]) => {
+    const populateChildrenArray = (array: AdminCategoryTreeItemDto[]) => {
       for (const arrayItem of array) {
         const children = childrenMap[arrayItem.id] || [];
         arrayItem.children.push(...children);

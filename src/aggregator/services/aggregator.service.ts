@@ -18,6 +18,7 @@ import { IFilter } from '../../shared/dtos/shared-dtos/spf.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { ClientAggregatedProductDto } from '../../shared/dtos/client/aggregated-product.dto';
 import { CounterService } from '../../shared/services/counter/counter.service';
+import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()
 export class AggregatorService {
@@ -130,7 +131,7 @@ export class AggregatorService {
     return this.aggregatorModel.estimatedDocumentCount().exec();
   }
 
-  async getClientAggregators(productId: number): Promise<ClientAggregatedProductsTableDto[]> {
+  async getClientAggregators(productId: number, lang: Language): Promise<ClientAggregatedProductsTableDto[]> {
     const aggregators = await this.aggregatorModel.find({ productIds: productId }).exec();
     const productIds = aggregators.flatMap(aggregator => aggregator.productIds);
 
@@ -154,6 +155,7 @@ export class AggregatorService {
         for (const variant of product.variants) {
           aggregatedProducts.push({
             ...variant,
+            name: variant.name[lang],
             price: variant.priceInDefaultCurrency
           });
         }

@@ -1,7 +1,8 @@
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { BaseOrderItemDto } from './base-order-item.dto';
 
-export class AdminCreateOrderItemDto {
+export class CreateOrderItemDto implements Pick<BaseOrderItemDto, 'sku' | 'qty'> {
   @IsString()
   @TrimString()
   sku: string;

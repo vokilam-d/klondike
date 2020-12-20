@@ -1,4 +1,7 @@
-import { MediaDto } from '../shared-dtos/media.dto';
+import { BaseMediaDto } from '../shared-dtos/base-media.dto';
+import { Expose } from 'class-transformer';
 
-export class ClientMediaDto extends MediaDto {
+export class ClientMediaDto extends BaseMediaDto {
+  @Expose()
+  altText: string;
 }

@@ -4,6 +4,7 @@ import { Expose } from 'class-transformer';
 import { Breadcrumb } from '../../shared/models/breadcrumb.model';
 import { Media } from '../../shared/models/media.model';
 import { EProductsSort } from '../../shared/enums/product-sort.enum';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class Category {
   @prop()
@@ -14,10 +15,10 @@ export class Category {
   get id(): number { return this._id; }
 
   @prop({ required: true })
-  name: string;
+  name: MultilingualText;
 
   @prop({ required: true, unique: true, index: true })
-  slug: string; // TODO add validation to spaces, only latin chars, number of chars
+  slug: string;
 
   @prop({ default: true })
   isEnabled: boolean;
@@ -32,7 +33,7 @@ export class Category {
   metaTags: MetaTags;
 
   @prop({ default: '' })
-  description: string;
+  description: MultilingualText;
 
   @prop({ default: '' })
   imageUrl: string;
