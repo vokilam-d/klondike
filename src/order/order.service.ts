@@ -52,6 +52,7 @@ import { OrderItemService } from './order-item.service';
 import { OrderItem } from './models/order-item.model';
 import { AddressTypeEnum } from '../shared/enums/address-type.enum';
 import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -77,6 +78,7 @@ export class OrderService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
+    // this.reindexAllSearchData();
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
@@ -487,7 +489,7 @@ export class OrderService implements OnApplicationBootstrap {
               break;
           }
 
-          order.logs.push({ time: new Date(), text: `Updated order status by shipment status to "${order.status}" - ${order.statusDescription}` });
+          order.logs.push({ time: new Date(), text: `Updated order status by shipment status to "${order.status}" - ${order.getStatusDescription(Language.RU)}` });
         }
 
         await order.save({ session });
