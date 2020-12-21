@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 import { TrimString } from '../../decorators/trim-string.decorator';
 import { BaseOrderItemDto } from './base-order-item.dto';
 
@@ -14,4 +14,8 @@ export class CreateOrderItemDto implements Pick<BaseOrderItemDto, 'sku' | 'qty'>
   @IsNumber(undefined, { each: true })
   @IsOptional()
   additionalServiceIds: number[];
+
+  @IsBoolean()
+  @IsOptional()
+  omitReserved: boolean;
 }

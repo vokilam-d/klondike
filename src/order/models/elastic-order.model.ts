@@ -100,6 +100,7 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   state = elasticTextType;
   status = elasticTextType;
   statusDescription = elasticTextType;
+  source = elasticTextType;
   prices = {
     type: 'nested',
     properties: new ElasticOrderPrices()

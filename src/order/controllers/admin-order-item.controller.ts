@@ -16,13 +16,14 @@ import { AdminOrderPricesDto } from '../../shared/dtos/admin/order-prices.dto';
 @Controller('admin/order-items')
 export class AdminOrderItemController {
 
-  constructor(private orderItemService: OrderItemService,
-              private readonly customerService: CustomerService
+  constructor(
+    private orderItemService: OrderItemService,
+    private readonly customerService: CustomerService
   ) { }
 
   @Post()
   async createOrderItem(@Body() body: CreateOrderItemDto): Promise<ResponseDto<AdminOrderItemDto>> {
-    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty, body.additionalServiceIds, false);
+    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty, body.additionalServiceIds, false, body.omitReserved);
 
     return {
       data: orderItem
