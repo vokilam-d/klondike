@@ -162,7 +162,7 @@ export class AggregatorService {
       }
 
       tables.push({
-        name: aggregator.clientName,
+        name: aggregator.clientName[lang],
         products: aggregatedProducts
       });
     }

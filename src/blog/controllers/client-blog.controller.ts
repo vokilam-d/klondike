@@ -5,9 +5,10 @@ import { ClientBlogCategoryListItemDto } from '../../shared/dtos/client/blog-cat
 import { ClientBlogCategoryDto } from '../../shared/dtos/client/blog-category.dto';
 import { ClientBlogPostListItemDto } from '../../shared/dtos/client/blog-post-list-item.dto';
 import { ClientBlogPostDto } from '../../shared/dtos/client/blog-post.dto';
-import { plainToClass } from 'class-transformer';
 import { ClientSPFDto } from '../../shared/dtos/client/spf.dto';
 import { BlogCategoryService } from '../services/blog-category.service';
+import { ClientLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('blog')
@@ -18,26 +19,25 @@ export class ClientBlogController {
   ) { }
 
   @Get('categories')
-  async getCategoriesList(): Promise<ResponseDto<ClientBlogCategoryListItemDto[]>> {
+  async getCategoriesList(@ClientLang() lang: Language): Promise<ResponseDto<ClientBlogCategoryListItemDto[]>> {
     const categories = await this.blogCategoryService.getAllEnabledCategories();
-    const populated = await this.blogCategoryService.populateCategoriesWithPostsCount(categories);
 
     return {
-      data: plainToClass(ClientBlogCategoryListItemDto, populated, { excludeExtraneousValues: true })
+      data: await this.blogCategoryService.transformToClientListDto(categories, lang)
     };
   }
 
   @Get('categories/:slug')
-  async getCategory(@Param('slug') slug: string): Promise<ResponseDto<ClientBlogCategoryDto>> {
+  async getCategory(@Param('slug') slug: string, @ClientLang() lang: Language): Promise<ResponseDto<ClientBlogCategoryDto>> {
     const category = await this.blogCategoryService.getEnabledCategoryBySlug(slug);
 
     return {
-      data: plainToClass(ClientBlogCategoryDto, category, { excludeExtraneousValues: true })
+      data: ClientBlogCategoryDto.transformToDto(category, lang)
     };
   }
 
   @Get('posts')
-  async getPostsList(@Query() spf: ClientSPFDto): Promise<ResponseDto<ClientBlogPostListItemDto[]>> {
+  async getPostsList(@Query() spf: ClientSPFDto, @ClientLang() lang: Language): Promise<ResponseDto<ClientBlogPostListItemDto[]>> {
     const list = spf.lastPosts
       ? await this.blogPostService.getEnabledLastPostsList(spf)
       : await this.blogPostService.getEnabledPostsList(spf);
@@ -45,17 +45,17 @@ export class ClientBlogController {
     const itemsTotal = await this.blogPostService.countPosts({ categoryId: spf.categoryId });
 
     return {
-      data: plainToClass(ClientBlogPostListItemDto, list, { excludeExtraneousValues: true }),
+      data: list.map(post => ClientBlogPostListItemDto.transformToDto(post, lang)),
       pagesTotal: Math.ceil(itemsTotal / spf.limit)
     };
   }
 
   @Get('posts/:slug')
-  async getPost(@Param('slug') slug: string): Promise<ResponseDto<ClientBlogPostDto>> {
+  async getPost(@Param('slug') slug: string, @ClientLang() lang: Language): Promise<ResponseDto<ClientBlogPostDto>> {
     const post = await this.blogPostService.getEnabledPostBySlug(slug);
 
     return {
-      data: plainToClass(ClientBlogPostDto, post, { excludeExtraneousValues: true })
+      data: ClientBlogPostDto.transformToDto(post, lang)
     };
   }
 }

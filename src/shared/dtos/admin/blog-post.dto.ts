@@ -10,40 +10,19 @@ import { TrimString } from '../../decorators/trim-string.decorator';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { clientDefaultLanguage } from '../../constants';
 import { AdminMetaTagsDto } from './meta-tags.dto';
+import { BaseLinkedBlogCategoryDto } from '../shared-dtos/base-linked-blog-category.dto';
+import { BaseLinkedBlogPostDto } from '../shared-dtos/base-linked-blog-post.dto';
 
-export class LinkedBlogCategoryDto implements LinkedBlogCategory {
-  @Expose()
-  @IsNumber()
-  id: number;
-
+export class AdminLinkedBlogCategoryDto extends BaseLinkedBlogCategoryDto {
   @Expose()
   @Type(() => MultilingualTextDto)
   name: MultilingualTextDto;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  slug: string;
 }
 
-export class LinkedBlogPostDto implements LinkedBlogPost {
-  @Expose()
-  @IsNumber()
-  id: number;
-
+export class AdminLinkedBlogPostDto extends BaseLinkedBlogPostDto {
   @Expose()
   @Type(() => MultilingualTextDto)
   name: MultilingualTextDto;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  slug: string;
-
-  @Expose()
-  @IsNumber()
-  @IsOptional()
-  sortOrder: number;
 }
 
 export class AdminBlogPostCreateOrUpdateDto implements Omit<BlogPost, '_id' | 'id'> {
@@ -59,8 +38,8 @@ export class AdminBlogPostCreateOrUpdateDto implements Omit<BlogPost, '_id' | 'i
 
   @Expose()
   @ValidateNested()
-  @Type(() => LinkedBlogCategoryDto)
-  category: LinkedBlogCategoryDto;
+  @Type(() => AdminLinkedBlogCategoryDto)
+  category: AdminLinkedBlogCategoryDto;
 
   @Expose()
   @Type(() => MultilingualTextDto)
@@ -91,8 +70,8 @@ export class AdminBlogPostCreateOrUpdateDto implements Omit<BlogPost, '_id' | 'i
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => LinkedBlogPostDto)
-  linkedPosts: LinkedBlogPostDto[];
+  @Type(() => AdminLinkedBlogPostDto)
+  linkedPosts: AdminLinkedBlogPostDto[];
 
   @Expose()
   @ValidateNested({ each: true })

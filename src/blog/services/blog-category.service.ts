@@ -15,6 +15,8 @@ import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticBlogCategory } from '../models/elastic-blog-category.model';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
+import { ClientBlogCategoryListItemDto } from '../../shared/dtos/client/blog-category-list-item.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()
 export class BlogCategoryService {
@@ -133,18 +135,15 @@ export class BlogCategoryService {
     return category.toJSON();
   }
 
-  async populateCategoriesWithPostsCount(categories: BlogCategory[]): Promise<BlogCategory[] & { postsCount:number }[]> {
-    const result = [];
-
+  async transformToClientListDto(categories: BlogCategory[], lang: Language): Promise<ClientBlogCategoryListItemDto[]> {
+    const dtos: ClientBlogCategoryListItemDto[] = [];
     for (const category of categories) {
       const postsCount = await this.blogPostService.countPosts({ categoryId: category.id });
-      result.push({
-        ...category,
-        postsCount
-      });
+      const dto = ClientBlogCategoryListItemDto.transformToDto(category, lang, postsCount);
+      dtos.push(dto);
     }
 
-    return result;
+    return dtos;
   }
 
   private async addSearchData(blogCategory: BlogCategory) {

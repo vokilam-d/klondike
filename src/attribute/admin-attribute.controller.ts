@@ -18,6 +18,8 @@ import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
+import { AdminLang } from '../shared/decorators/lang.decorator';
+import { Language } from '../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -43,10 +45,12 @@ export class AdminAttributeController {
     };
   }
 
-
   @Post()
-  async createAttribute(@Body() attributeDto: AdminCreateAttributeDto): Promise<ResponseDto<AdminAttributeDto>> {
-    const created = await this.attributeService.createAttribute(attributeDto);
+  async createAttribute(
+    @Body() attributeDto: AdminCreateAttributeDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAttributeDto>> {
+    const created = await this.attributeService.createAttribute(attributeDto, lang);
 
     return {
       data: plainToClass(AdminAttributeDto, created, { excludeExtraneousValues: true })
@@ -54,10 +58,12 @@ export class AdminAttributeController {
   }
 
   @Put(':id')
-  async updateAttribute(@Param('id') attributeId: string,
-                        @Body() attributeDto: AdminUpdateAttributeDto
+  async updateAttribute(
+    @Param('id') attributeId: string,
+    @Body() attributeDto: AdminUpdateAttributeDto,
+    @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminAttributeDto>> {
-    const updated = await this.attributeService.updateAttribute(attributeId, attributeDto);
+    const updated = await this.attributeService.updateAttribute(attributeId, attributeDto, lang);
 
     return {
       data: plainToClass(AdminAttributeDto, updated, { excludeExtraneousValues: true })

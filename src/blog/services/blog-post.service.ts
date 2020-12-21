@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AdminBlogPostCreateOrUpdateDto, AdminBlogPostDto } from '../../shared/dtos/admin/blog-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { BlogPost } from '../models/blog-post.model';

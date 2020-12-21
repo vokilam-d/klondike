@@ -59,6 +59,7 @@ import { sortByLabel } from '../../shared/helpers/sort-by-label.function';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { ClientMetaTagsDto } from '../../shared/dtos/client/meta-tags.dto';
 import { AdminCategoryTreeItemDto } from '../../shared/dtos/admin/category-tree-item.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -131,13 +132,13 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async getClientProductListAutocomplete(query: string): Promise<ClientProductListItemDto[]> {
+  async getClientProductListAutocomplete(query: string, lang: Language): Promise<ClientProductListItemDto[]> {
     const spf = new ClientProductSPFDto();
     spf.limit = 5;
 
     const [ adminListItems ] = await this.findEnabledProductListItems(spf, { query });
     const attributes = await this.attributeService.getAllAttributes();
-    const clientListItems = await this.transformToClientListDto(adminListItems, attributes);
+    const clientListItems = await this.transformToClientListDto(adminListItems, attributes, lang);
 
     return clientListItems;
   }
@@ -950,7 +951,8 @@ export class ProductService implements OnApplicationBootstrap {
 
   private async transformToClientListDto(
     adminListItemDtos: AdminProductListItemDto[],
-    attributes: Attribute[]
+    attributes: Attribute[],
+    lang: Language
   ): Promise<ClientProductListItemDto[]> {
 
     return adminListItemDtos.map(product => {
@@ -974,7 +976,7 @@ export class ProductService implements OnApplicationBootstrap {
           if (!attrValue) { continue; }
 
           const itemVariant: ClientProductVariantDto = {
-            label: attrValue.label,
+            label: attrValue.label[lang],
             isSelected: true,
             slug: selectedVariant.slug,
             isInStock: selectedVariant.sellableQty > 0,
@@ -984,7 +986,7 @@ export class ProductService implements OnApplicationBootstrap {
           variantGroups.push({
             attribute: attribute,
             attributeValueId: attrValue.id,
-            label: attribute.label,
+            label: attribute.label[lang],
             hasColor: attribute.hasColor,
             variants: [ itemVariant ],
             selectedVariantLabel: itemVariant.label
@@ -1011,7 +1013,7 @@ export class ProductService implements OnApplicationBootstrap {
             const selectedAttribute = productVariant.attributes.find(attr => attr.attributeId === variantGroups[i].attribute.id);
             const attributeValue = variantGroups[i].attribute.values.find(value => selectedAttribute.valueIds.includes(value.id));
             variantGroups[i].variants.push({
-              label: attributeValue.label,
+              label: attributeValue.label[lang],
               color: attributeValue.color,
               isSelected: false,
               slug: productVariant.slug,
@@ -1032,7 +1034,7 @@ export class ProductService implements OnApplicationBootstrap {
         variantId: selectedVariant.id,
         sku: selectedVariant.sku,
         isInStock: selectedVariant.sellableQty > 0,
-        name: selectedVariant.name,
+        name: selectedVariant.name[lang],
         price: selectedVariant.priceInDefaultCurrency,
         oldPrice: selectedVariant.oldPriceInDefaultCurrency,
         slug: selectedVariant.slug,

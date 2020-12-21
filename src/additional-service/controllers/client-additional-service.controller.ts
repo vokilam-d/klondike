@@ -21,7 +21,7 @@ export class ClientAdditionalServiceController {
     const additionalServices = await this.additionalServiceService.getAdditionalServicesForClient(queryDto);
 
     return {
-      data: this.additionalServiceService.transformToClientAdditionalServices(additionalServices, lang)
+      data: additionalServices.map(service => ClientAdditionalServiceDto.transformToDto(service, lang))
     };
   }
 }

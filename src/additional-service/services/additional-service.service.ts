@@ -124,14 +124,6 @@ export class AdditionalServiceService {
     return this.additionalServiceModel.estimatedDocumentCount().exec();
   }
 
-  transformToClientAdditionalServices(additionalServices: (AdditionalService | AdminAdditionalServiceDto)[], lang: Language): ClientAdditionalServiceDto[] {
-    return additionalServices.map(service => ({
-      id: service.id,
-      name: service.clientName[lang],
-      price: service.price
-    }));
-  }
-
   private async addSearchData(additionalService: AdditionalService) {
     const additionalServiceDto = plainToClass(AdminAdditionalServiceDto, additionalService, { excludeExtraneousValues: true });
     await this.searchService.addDocument(AdditionalService.collectionName, additionalService.id, additionalServiceDto);
