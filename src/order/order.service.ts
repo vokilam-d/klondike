@@ -293,7 +293,7 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const additionalServiceIds = additionalServices.map(service => service.id);
-      newOrder.items[i] = await this.orderItemService.createOrderItem(sku, qty, additionalServiceIds, false, product, variant);
+      newOrder.items[i] = await this.orderItemService.createOrderItem(sku, qty, additionalServiceIds, false, false, product, variant);
 
       await this.inventoryService.addToOrdered(sku, qty, newOrder.id, session);
       await this.productService.updateSearchDataById(productId, session);

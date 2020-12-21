@@ -26,7 +26,15 @@ export class OrderItemService {
     private readonly additionalServiceService: AdditionalServiceService
   ) { }
 
-  async createOrderItem(sku: string, qty: number, additionalServiceIds: number[], withCrossSell: boolean, product?: ProductWithQty, variant?: ProductVariantWithQty): Promise<OrderItem> {
+  async createOrderItem(
+    sku: string,
+    qty: number,
+    additionalServiceIds: number[],
+    withCrossSell: boolean,
+    omitReserved: boolean,
+    product?: ProductWithQty,
+    variant?: ProductVariantWithQty
+  ): Promise<OrderItem> {
 
     if (!product) {
       product = await this.productService.getProductWithQtyBySku(sku);
@@ -34,7 +42,7 @@ export class OrderItemService {
       if (!product || !variant) { throw new BadRequestException(__('Product with sku "$1" not found', 'ru', sku)); }
     }
 
-    this.assertIsInStock(qty, variant);
+    this.assertIsInStock(qty, variant, omitReserved);
 
     let orderItem = new OrderItem();
     orderItem.name = variant.name;
@@ -77,8 +85,10 @@ export class OrderItemService {
     return orderItem;
   }
 
-  assertIsInStock(qty: number, variant: ProductVariantWithQty): void {
-    const qtyAvailable = variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0);
+  assertIsInStock(qty: number, variant: ProductVariantWithQty, omitReserved: boolean): void {
+    const reservedAmount = variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0);
+    const qtyAvailable = omitReserved ? variant.qtyInStock : variant.qtyInStock - reservedAmount;
+
     if (qty > qtyAvailable) {
       throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, qtyAvailable));
     }

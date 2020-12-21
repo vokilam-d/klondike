@@ -16,13 +16,14 @@ import { Customer } from '../../customer/models/customer.model';
 @Controller('admin/order-items')
 export class AdminOrderItemController {
 
-  constructor(private orderItemService: OrderItemService,
-              private readonly customerService: CustomerService
+  constructor(
+    private orderItemService: OrderItemService,
+    private readonly customerService: CustomerService
   ) { }
 
   @Post()
   async createOrderItem(@Body() body: AdminCreateOrderItemDto): Promise<ResponseDto<OrderItemDto>> {
-    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty, body.additionalServiceIds, false);
+    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty, body.additionalServiceIds, false, body.omitReserved);
 
     return {
       data: orderItem
