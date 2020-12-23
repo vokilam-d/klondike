@@ -2,7 +2,7 @@ import { Expose, Transform, Type } from 'class-transformer';
 import { ArrayMinSize, IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ShipmentDto } from './shipment.dto';
 import { OrderStatusEnum } from '../../enums/order-status.enum';
-import { __ } from '../../helpers/translate/translate.function';
+import { __, getTranslations } from '../../helpers/translate/translate.function';
 import { PaymentTypeEnum } from '../../enums/payment-type.enum';
 import { Log } from '../../models/log.model';
 import { Order } from '../../../order/models/order.model';
@@ -82,9 +82,6 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   items: AdminOrderItemDto[];
 
   @Expose()
-  state: any;
-
-  @Expose()
   status: OrderStatusEnum;
 
   @Expose()
@@ -125,8 +122,8 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Orde
   idForCustomer: string;
 
   @Expose()
-  @Transform(((value, order: AdminOrderDto) => value || __(order.status, 'ru')))
-  statusDescription: string;
+  @Transform(((value, order: AdminOrderDto) => value || getTranslations(order.status)))
+  statusDescription: MultilingualTextDto;
 
   @Expose()
   @IsOptional()
@@ -139,10 +136,7 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Orde
   paymentMethodAdminName: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  shippingMethodName: string;
+  shippingMethodName: MultilingualTextDto;
 
   @Expose()
   source: 'client' | 'manager';

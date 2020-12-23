@@ -63,7 +63,4 @@ export abstract class BaseOrderItemDto implements OrderItem {
   slug: string;
 
   abstract additionalServices: BaseOrderItemAdditionalServiceDto[];
-
-  @Expose()
-  crossSellProducts?: ClientProductListItemDto[];
 }

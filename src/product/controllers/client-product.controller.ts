@@ -27,6 +27,8 @@ import { ClientProductResponseDto } from '../../shared/dtos/client/product-respo
 import { CategoryService } from '../../category/category.service';
 import { plainToClass } from 'class-transformer';
 import { ClientLinkedCategoryDto } from '../../shared/dtos/client/linked-category.dto';
+import { ClientLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -50,11 +52,11 @@ export class ClientProductController {
   }
 
   @Get(':slug')
-  async getProductBySlug(@Param('slug') slug: string): Promise<ClientProductResponseDto> {
+  async getProductBySlug(@Param('slug') slug: string, @ClientLang() lang: Language): Promise<ClientProductResponseDto> {
     const dto = await this.productService.getEnabledClientProductDtoBySlug(slug);
 
     const lastBreadcrumb = dto.breadcrumbs[dto.breadcrumbs.length - 1];
-    const categories = await this.categoryService.getClientSiblingCategories(lastBreadcrumb.id)
+    const categories = await this.categoryService.getClientSiblingCategories(lastBreadcrumb.id, lang);
 
     return {
       data: dto,

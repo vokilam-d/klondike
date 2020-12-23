@@ -3,11 +3,10 @@ import { OrderItem } from './order-item.model';
 import { OrderStatusEnum } from '../../shared/enums/order-status.enum';
 import { Shipment } from './shipment.model';
 import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
-import { __ } from '../../shared/helpers/translate/translate.function';
+import { getTranslations } from '../../shared/helpers/translate/translate.function';
 import { Log } from '../../shared/models/log.model';
 import { OrderPrices } from '../../shared/models/order-prices.model';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
-import { Language } from '../../shared/enums/language.enum';
 
 export class Order {
   @prop()
@@ -59,7 +58,7 @@ export class Order {
   paymentMethodAdminName: MultilingualText;
 
   @prop()
-  shippingMethodName: string;
+  shippingMethodName: MultilingualText;
 
   @prop()
   isCallbackNeeded: boolean;
@@ -73,7 +72,7 @@ export class Order {
   @prop()
   status: OrderStatusEnum;
 
-  getStatusDescription(lang: Language): string { return __(this.status, lang); }
+  get statusDescription(): MultilingualText { return getTranslations(this.status); }
 
   @prop()
   clientNote: string;

@@ -12,6 +12,8 @@ import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { ChangeOrderStatusDto } from '../../shared/dtos/admin/change-order-status.dto';
 import { AuthService } from '../../auth/services/auth.service';
+import { AdminLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -47,9 +49,13 @@ export class AdminOrderController {
   }
 
   @Post()
-  async addOrder(@Body() orderDto: AdminAddOrUpdateOrderDto, @Req() req: FastifyRequest): Promise<ResponseDto<AdminOrderDto>> {
+  async addOrder(
+    @Body() orderDto: AdminAddOrUpdateOrderDto,
+    @Req() req: FastifyRequest,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
     const user = await this.authService.getUserFromReq(req);
-    const created = await this.orderService.createOrderAdmin(orderDto, user);
+    const created = await this.orderService.createOrderAdmin(orderDto, lang, user);
 
     return {
       data: plainToClass(AdminOrderDto, created, { excludeExtraneousValues: true })

@@ -1,6 +1,7 @@
 import { BaseCategoryTreeItemDto } from '../shared-dtos/base-category.dto';
 import { Expose, Type } from 'class-transformer';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
+import { AdminMediaDto } from './media.dto';
 
 export class AdminCategoryTreeItemDto extends BaseCategoryTreeItemDto {
   @Expose()
@@ -9,5 +10,10 @@ export class AdminCategoryTreeItemDto extends BaseCategoryTreeItemDto {
 
   @Expose()
   @Type(() => AdminCategoryTreeItemDto)
-  children: BaseCategoryTreeItemDto[];
+  children: AdminCategoryTreeItemDto[];
+
+
+  @Expose()
+  @Type(() => AdminMediaDto)
+  medias: AdminMediaDto[];
 }

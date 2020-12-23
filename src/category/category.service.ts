@@ -25,6 +25,10 @@ import { SearchService } from '../shared/services/search/search.service';
 import { ElasticCategory } from './models/elastic-category.model';
 import { IFilter, ISorting } from '../shared/dtos/shared-dtos/spf.dto';
 import { AdminCategoryTreeItemDto } from '../shared/dtos/admin/category-tree-item.dto';
+import { Language } from '../shared/enums/language.enum';
+import { ClientMediaDto } from '../shared/dtos/client/media.dto';
+import { MultilingualText } from '../shared/models/multilingual-text.model';
+import { areMultilingualTextsEqual } from '../shared/helpers/are-multilingual-texts-equal.function';
 
 @Injectable()
 export class CategoryService implements OnApplicationBootstrap {
@@ -101,7 +105,7 @@ export class CategoryService implements OnApplicationBootstrap {
     return found;
   }
 
-  async getClientCategoryBySlug(slug: string): Promise<ClientCategoryDto> {
+  async getClientCategoryBySlug(slug: string, lang: Language): Promise<ClientCategoryDto> {
     const found = await this.categoryModel.findOne({ slug, isEnabled: true }).exec();
     if (!found) {
       throw new NotFoundException(__('Category with slug "$1" not found', 'ru', slug));
@@ -117,8 +121,9 @@ export class CategoryService implements OnApplicationBootstrap {
 
       const linked: ClientLinkedCategoryDto = {
         ...category,
+        name: category.name[lang],
         id: category.id,
-        medias: category.medias.filter(media => !media.isHidden),
+        medias: category.medias.filter(media => !media.isHidden).map(media => ClientMediaDto.transformToDto(media, lang)),
         isSelected: found.id === category.id
       };
 
@@ -132,7 +137,7 @@ export class CategoryService implements OnApplicationBootstrap {
     return plainToClass(ClientCategoryDto, { ...found.toJSON(), siblingCategories, childCategories }, { excludeExtraneousValues: true });
   }
 
-  async getClientSiblingCategories(categoryId: number): Promise<ClientLinkedCategoryDto[]> {
+  async getClientSiblingCategories(categoryId: number, lang: Language): Promise<ClientLinkedCategoryDto[]> {
     const found = await this.categoryModel.findById(categoryId).exec();
 
     const linkedCategories: ClientLinkedCategoryDto[] = [];
@@ -145,8 +150,9 @@ export class CategoryService implements OnApplicationBootstrap {
 
       linkedCategories.push({
         ...category,
+        name: category.name[lang],
         id: category.id,
-        medias: category.medias.filter(media => !media.isHidden),
+        medias: category.medias.filter(media => !media.isHidden).map(media => ClientMediaDto.transformToDto(media, lang)),
         isSelected: found.id === category.id
       });
     }
@@ -204,7 +210,7 @@ export class CategoryService implements OnApplicationBootstrap {
     try {
       const category = await this.getCategoryById(categoryId, session);
       const oldSlug = category.slug;
-      const oldName = category.name;
+      const oldName: MultilingualText = { ...category.name };
       const oldIsEnabled = category.isEnabled;
 
       const mediasToDelete: Media[] = [];
@@ -230,7 +236,7 @@ export class CategoryService implements OnApplicationBootstrap {
       if (oldSlug !== categoryDto.slug) {
         await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, categoryDto.createRedirect, session);
       }
-      if (oldSlug !== categoryDto.slug || oldName !== categoryDto.name || oldIsEnabled !== categoryDto.isEnabled) {
+      if (oldSlug !== categoryDto.slug || !areMultilingualTextsEqual(oldName, categoryDto.name) || oldIsEnabled !== categoryDto.isEnabled) {
         await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session);
         await this.updateBreadcrumbs(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session)
       }
@@ -415,7 +421,7 @@ export class CategoryService implements OnApplicationBootstrap {
     return this.mediaService.upload(request, Category.collectionName);
   }
 
-  private async updateBreadcrumbs(categoryId: number, name: string, slug: string, isEnabled: boolean, session: ClientSession): Promise<void> {
+  private async updateBreadcrumbs(categoryId: number, name: MultilingualText, slug: string, isEnabled: boolean, session: ClientSession): Promise<void> {
     const breadcrumbsProp: keyof Category = 'breadcrumbs';
     const breadcrumbIdProp: keyof Breadcrumb = 'id';
     const breadcrumbNameProp: keyof Breadcrumb = 'name';

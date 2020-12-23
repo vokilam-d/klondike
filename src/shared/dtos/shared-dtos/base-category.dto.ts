@@ -23,8 +23,5 @@ export abstract class BaseCategoryTreeItemDto implements Pick<Category, 'id' | '
   reversedSortOrder: Category['reversedSortOrder'];
 
   abstract children: BaseCategoryTreeItemDto[];
-
-  @Expose()
-  @Type(() => BaseMediaDto)
-  medias: BaseMediaDto[];
+  abstract medias: BaseMediaDto[];
 }

@@ -1,4 +1,4 @@
-import { elasticAutocompleteTextType, elasticKeywordType, elasticTextType } from '../../shared/constants';
+import { elasticAutocompleteTextType, elasticKeywordType } from '../../shared/constants';
 import { WarehouseDto } from '../../shared/dtos/shared-dtos/warehouse.dto';
 
 export class ElasticWarehouse implements Record<keyof WarehouseDto, any> {

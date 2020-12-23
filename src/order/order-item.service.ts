@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable
 import { ProductService } from '../product/services/product.service';
 import { CustomerService } from '../customer/customer.service';
 import { OrderItem } from './models/order-item.model';
-import { __ } from '../shared/helpers/translate/translate.function';
+import { __, getTranslations } from '../shared/helpers/translate/translate.function';
 import { LinkedProduct } from '../product/models/linked-product.model';
 import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
 import { ClientProductSPFDto } from '../shared/dtos/client/product-spf.dto';
@@ -12,6 +12,8 @@ import { ProductVariantWithQty, ProductWithQty } from '../product/models/product
 import { OrderPrices } from '../shared/models/order-prices.model';
 import { EProductsSort } from '../shared/enums/product-sort.enum';
 import { AdditionalServiceService } from '../additional-service/services/additional-service.service';
+import { ClientOrderItemDto } from '../shared/dtos/client/order-item.dto';
+import { MultilingualText } from '../shared/models/multilingual-text.model';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [
   { totalCostBreakpoint: 500, discountPercent: 5 },
@@ -94,7 +96,7 @@ export class OrderItemService {
     }
   }
 
-  async calcOrderPrices(orderItems: OrderItem[], customer: Customer): Promise<OrderPrices> {
+  async calcOrderPrices(orderItems: (OrderItem | ClientOrderItemDto)[], customer: Customer): Promise<OrderPrices> {
     const products = await this.productService.getProductsWithQtyBySkus(orderItems.map(item => item.sku));
     let itemsCost: number = 0;
     let itemsCostForDiscountPercentCalculation: number = 0;
@@ -122,13 +124,13 @@ export class OrderItemService {
     const [totalCostDiscountPercent, totalCostBreakpoint] = OrderItemService.getDiscountPercent(itemsCostForDiscountPercentCalculation);
 
     let discountPercent: number = 0;
-    let discountLabel: string = '';
+    let discountLabel: MultilingualText;
     if (totalCostDiscountPercent > customerDiscountPercent) {
       discountPercent = totalCostDiscountPercent;
-      discountLabel = __('Order amount over $1 uah', 'ru', totalCostBreakpoint);
+      discountLabel = getTranslations('Order amount over $1 uah', totalCostBreakpoint);
     } else if (customerDiscountPercent >= totalCostDiscountPercent) {
       discountPercent = customerDiscountPercent;
-      discountLabel = __('Cumulative discount', 'ru');
+      discountLabel = getTranslations('Cumulative discount');
     }
 
     const discountValue = Math.round(itemsCostApplicableForDiscount * discountPercent / 100);

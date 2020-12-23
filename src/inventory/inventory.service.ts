@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Inventory } from './models/inventory.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { ClientSession } from 'mongoose';

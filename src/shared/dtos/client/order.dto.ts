@@ -9,6 +9,7 @@ import { TrimString } from '../../decorators/trim-string.decorator';
 import { ClientOrderItemDto } from './order-item.dto';
 import { ClientOrderPricesDto } from './order-prices.dto';
 import { clientDefaultLanguage } from '../../constants';
+import { Language } from '../../enums/language.enum';
 
 export class ClientAddOrderDto implements
   Pick<Order, 'paymentMethodId' | 'isCallbackNeeded' | 'clientNote'>,
@@ -18,7 +19,6 @@ export class ClientAddOrderDto implements
   @IsOptional()
   @IsString()
   @TrimString()
-  @Transform(((value, obj: Order) => value ? value : obj.customerEmail))
   email: string;
 
   @Expose()
@@ -50,30 +50,26 @@ export class ClientAddOrderDto implements
 }
 
 export class ClientOrderDto extends ClientAddOrderDto implements
-  Pick<Order, 'shipment' | 'shippingMethodName' | 'createdAt'>,
-  Record<keyof Pick<Order, 'prices'>, ClientOrderPricesDto>
+  Pick<Order, 'shipment' | 'createdAt'>,
+  Record<keyof Pick<Order, 'prices'>, ClientOrderPricesDto>,
+  Record<keyof Pick<Order, 'shippingMethodName'>, string>
 {
   @Expose()
-  @Transform(((value, obj: Order) => obj.idForCustomer))
   id: string;
 
   @Expose()
   shippingMethodName: string;
 
   @Expose()
-  @Transform(((value, obj: Order) => value ? value : obj.paymentMethodClientName[clientDefaultLanguage]))
   paymentMethodName: string;
 
   @Expose()
-  @Type(() => ShipmentDto)
   shipment: ShipmentDto;
 
   @Expose()
-  @Transform(((value, order: AdminOrderDto) => order.statusDescription || __(order.status, clientDefaultLanguage) || value))
   status: string;
 
   @Expose()
-  @Type(() => ClientOrderPricesDto)
   prices: ClientOrderPricesDto;
 
   @Expose()
@@ -81,4 +77,23 @@ export class ClientOrderDto extends ClientAddOrderDto implements
 
   @Expose()
   isOnlinePayment: boolean;
+
+  static transformToDto(order: Order, lang: Language): ClientOrderDto {
+    return {
+      address: order.shipment.recipient,
+      clientNote: order.clientNote,
+      createdAt: order.createdAt,
+      email: order.customerEmail,
+      id: order.idForCustomer,
+      isCallbackNeeded: order.isCallbackNeeded,
+      isOnlinePayment: false,
+      items: order.items.map(item => ClientOrderItemDto.transformToDto(item, lang)),
+      paymentMethodId: order.paymentMethodId,
+      paymentMethodName: order.paymentMethodClientName[lang],
+      prices: ClientOrderPricesDto.transformToDto(order.prices, lang),
+      shipment: order.shipment,
+      shippingMethodName: order.shippingMethodName[lang],
+      status: order.statusDescription[lang]
+    };
+  }
 }

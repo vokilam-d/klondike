@@ -31,7 +31,7 @@ import { ClientSession, FilterQuery } from 'mongoose';
 import { PaymentMethodService } from '../payment-method/payment-method.service';
 import { ClientAddOrderDto } from '../shared/dtos/client/order.dto';
 import { TasksService } from '../tasks/tasks.service';
-import { __ } from '../shared/helpers/translate/translate.function';
+import { __, getTranslations } from '../shared/helpers/translate/translate.function';
 import { NovaPoshtaService } from '../nova-poshta/nova-poshta.service';
 import { ShipmentSenderService } from '../nova-poshta/shipment-sender.service';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
@@ -53,6 +53,9 @@ import { OrderItem } from './models/order-item.model';
 import { AddressTypeEnum } from '../shared/enums/address-type.enum';
 import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
 import { Language } from '../shared/enums/language.enum';
+import { AdminOrderItemDto } from '../shared/dtos/admin/order-item.dto';
+import { ClientOrderItemDto } from '../shared/dtos/client/order-item.dto';
+import { clientDefaultLanguage } from '../shared/constants';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -148,7 +151,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async createOrderAdmin(orderDto: AdminAddOrUpdateOrderDto, user: DocumentType<User>): Promise<Order> {
+  async createOrderAdmin(orderDto: AdminAddOrUpdateOrderDto, lang: Language, user: DocumentType<User>): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
@@ -183,7 +186,7 @@ export class OrderService implements OnApplicationBootstrap {
         orderDto.customerId = customer.id;
       }
 
-      const newOrder = await this.createOrder(orderDto, customer, session);
+      const newOrder = await this.createOrder(orderDto, lang, customer, session);
       newOrder.source = 'manager';
       newOrder.logs.push({ time: new Date(), text: `Created order by manager, userLogin=${user?.login}` });
       newOrder.status = OrderStatusEnum.PROCESSING;
@@ -208,7 +211,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async createOrderClient(orderDto: ClientAddOrderDto, customer: DocumentType<Customer>): Promise<Order> {
+  async createOrderClient(orderDto: ClientAddOrderDto, lang: Language, customer: DocumentType<Customer>): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
@@ -241,7 +244,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       const prices = await this.orderItemService.calcOrderPrices(orderDto.items, customer);
 
-      const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, customer, session);
+      const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, lang, customer, session);
 
       OrderService.checkForCheckoutRules(newOrder);
 
@@ -271,7 +274,13 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  private async createOrder(orderDto: AdminAddOrUpdateOrderDto | ClientAddOrderDto, customer: Customer, session: ClientSession): Promise<DocumentType<Order>> {
+  private async createOrder(
+    orderDto: AdminAddOrUpdateOrderDto | ClientAddOrderDto,
+    lang: Language,
+    customer: Customer,
+    session: ClientSession
+  ): Promise<DocumentType<Order>> {
+
     const newOrder = new this.orderModel(orderDto);
 
     newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
@@ -285,13 +294,14 @@ export class OrderService implements OnApplicationBootstrap {
     newOrder.createdAt = new Date();
     newOrder.status = OrderStatusEnum.NEW;
 
-    const products = await this.productService.getProductsWithQtyBySkus(orderDto.items.map(item => item.sku));
+    const skus: string[] = (orderDto.items as (AdminOrderItemDto | ClientOrderItemDto)[]).map(item => item.sku);
+    const products = await this.productService.getProductsWithQtyBySkus(skus);
     for (let i = 0; i < newOrder.items.length; i++) {
       const { productId, variantId, sku, qty, additionalServices } = newOrder.items[i];
       const product = products.find(product => product._id === productId);
       const variant = product?.variants.find(variant => variant._id.equals(variantId));
       if (!product || !variant) {
-        throw new BadRequestException(__('Product with sku "$1" not found', 'ru', sku));
+        throw new BadRequestException(__('Product with sku "$1" not found', lang, sku));
       }
 
       const additionalServiceIds = additionalServices.map(service => service.id);
@@ -303,7 +313,7 @@ export class OrderService implements OnApplicationBootstrap {
 
     await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
 
-    newOrder.shippingMethodName = __(newOrder.shipment.recipient.addressType, 'ru');
+    newOrder.shippingMethodName = getTranslations(newOrder.shipment.recipient.addressType);
 
     await this.setPaymentInfoByMethodId(newOrder, orderDto.paymentMethodId);
 
@@ -573,7 +583,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async getPaymentDetails(orderId: number): Promise<OnlinePaymentDetailsDto> {
+  async getPaymentDetails(orderId: number, lang: Language): Promise<OnlinePaymentDetailsDto> {
     const order = await this.getOrderById(orderId);
 
     const merchantAccount = process.env.MERCHANT_ACCOUNT;
@@ -587,7 +597,7 @@ export class OrderService implements OnApplicationBootstrap {
     const itemPrices: number[] = [];
     const itemCounts: number[] = [];
     for (const item of order.items) {
-      itemNames.push(item.name);
+      itemNames.push(item.name[lang]);
       itemPrices.push(item.price);
       itemCounts.push(item.qty);
     }
@@ -853,7 +863,7 @@ export class OrderService implements OnApplicationBootstrap {
       errors.push(__('Cash on delivery is not available with address delivery', 'ru'));
     }
 
-    const disallowedItem = order.items.find(item => item.name.toLowerCase().match(/сусаль([ ,])/g));
+    const disallowedItem = order.items.find(item => item.name[clientDefaultLanguage].toLowerCase().match(/сусаль([ ,])/g));
     if (disallowedItem) {
       errors.push(__('Cash on delivery is not available for gold leaf', 'ru'));
     }
