@@ -200,7 +200,7 @@ export class BlogPostService {
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
-    const blogPosts = await this.blogPostModel.find().exec();
+    const blogPosts = await this.blogPostModel.find().sort({ _id: -1 }).exec();
 
     await this.searchService.deleteCollection(BlogPost.collectionName);
     await this.searchService.ensureCollection(BlogPost.collectionName, new ElasticBlogPost());

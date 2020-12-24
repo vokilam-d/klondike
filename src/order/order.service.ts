@@ -77,6 +77,7 @@ export class OrderService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
+    this.reindexAllSearchData();
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
@@ -619,9 +620,9 @@ export class OrderService implements OnApplicationBootstrap {
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   private async reindexAllSearchData() {
     this.logger.log(`Start reindex all search data`);
+    const orders = await this.orderModel.find().sort({ _id: -1 }).exec();
     await this.searchService.deleteCollection(Order.collectionName);
     await this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
-    const orders = await this.orderModel.find().exec();
 
     for (const ordersBatch of getBatches(orders, 20)) {
       await Promise.all(ordersBatch.map(order => this.addSearchData(order)));
