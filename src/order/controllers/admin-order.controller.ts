@@ -36,9 +36,19 @@ export class AdminOrderController {
     };
   }
 
-  @Get(':id/invoice')
+  @Get(':id/order-pdf')
   async printOrder(@Param('id') id: string, @Res() reply: FastifyReply<ServerResponse>) {
     const { fileName, pdf } = await this.orderService.printOrder(parseInt(id));
+
+    reply
+      .type('application/pdf')
+      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(fileName)}`)
+      .send(pdf);
+  }
+
+  @Get(':id/invoice-pdf')
+  async printInvoice(@Param('id') id: string, @Res() reply: FastifyReply<ServerResponse>) {
+    const { fileName, pdf } = await this.orderService.printInvoice(parseInt(id));
 
     reply
       .type('application/pdf')
