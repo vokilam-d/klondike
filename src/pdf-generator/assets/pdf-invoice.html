@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/typography.css">
+    <link rel="stylesheet" href="css/pdf-invoice.css">
+
+</head>
+<body>
+<div class="page">
+    <header class="header">
+        <p class="header__logo">Інтернет-магазин &#8212; "Klondike"</p>
+        <p class="header__invoice-info">Рахунок на оплату №{{orderId}} від {{orderDateTime}}</p>
+    </header>
+    <main class="invoice-details">
+        <div class="invoice-details__supplier">
+            <p class="invoice-details__party">Постачальник:</p>
+            <div class="invoice-details__bank-info">
+                <p class="invoice-details__bank-info--name">Фізична особа-підприємець {{manager}}</p>
+                <p class="invoice-details__bank-info--account">П/р {{bankAccount}}, Банк ДОНЕЦЬКЕ РУ АТ КБ "ПРИВАТБАНК", Код отримувача {{idCode}}</p>
+                <p class="invoice-details__bank-info--card">Якщо ви проводите оплату через платіжний термінал, можете використовувати тільки номер картки {{bankCard}} ФОП {{manager}}</p>
+            </div>
+        </div>
+        <div class="invoice-details__customer">
+            <p class="invoice-details__party">Покупець:</p>
+            <p class="invoice-details__customer-name">{{addressName}}</p>
+        </div>
+    </main>
+
+    <table class="products">
+        <thead>
+        <tr>
+            <th class="products__number">№</th>
+            <th class="products__name">Товари</th>
+            <th class="products__qty">Кіл-сть</th>
+            <th class="products__price">Ціна</th>
+            <th class="products__cost">Сума</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#each products}}
+        <tr class="products__product">
+            <td class="products__number">{{this.index}}</td>
+            <td class="products__name">
+                {{ this.name }} <span class="products__sku">(SKU: {{ this.sku }})</span>
+
+                {{#each this.additionalServices}}
+                <div class="products__additional-service">
+                    {{ this }}
+                </div>
+                {{/each}}
+            </td>
+            <td class="products__qty">
+                {{ this.qty }}
+            </td>
+            <td class="products__price">
+                {{ this.price }} грн
+                {{#if this.oldPrice}}
+                <div class="products__old-price"> {{ this.oldPrice }} грн</div>
+                {{/if}}
+            </td>
+            <td class="products__cost">
+                {{ this.cost }} грн
+            </td>
+        </tr>
+        {{/each}}
+        </tbody>
+    </table>
+
+    <div class="summary">
+        {{#if discountValue}}
+        <div class="summary__row">
+            <div class="summary__key">Вартість товарів</div>
+            <div class="summary__value">{{ totalProductsCost }} грн</div>
+        </div>
+        <div class="summary__row">
+            <div class="summary__key">Знижка {{#if discountLabel}} ({{ discountLabel }}, {{ discountPercent }}%) {{/if}}</div>
+            <div class="summary__value">{{ discountValue }} грн</div>
+        </div>
+        {{/if}}
+        <div class="summary__row">
+            <div class="summary__key">Всього:</div>
+            <div class="summary__value summary__value--total">{{ totalOrderCost }} грн</div>
+        </div>
+    </div>
+
+    <div class="detailed-summary">
+        <p class="detailed-summary--numbers">Всього найменувань {{productsAmount}}, на суму {{totalOrderCost}} грн</p>
+        <p class="detailed-summary--words">{{totalOrderCostInWords}}</p>
+    </div>
+
+    <div class="signature">
+        Виписав(ла):
+    </div>
+</div>
+</body>
+</html>
