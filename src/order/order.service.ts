@@ -408,6 +408,14 @@ export class OrderService implements OnApplicationBootstrap {
     };
   }
 
+  async printInvoice(orderId: number) {
+    const order = await this.getOrderById(orderId);
+    return {
+      fileName: `Рахунок-фактура №${order.id}.pdf`,
+      pdf: await this.pdfGeneratorService.generateInvoicePdf(order.toJSON())
+    };
+  }
+
   private async addSearchData(order: Order) {
     const orderDto = plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true });
     await this.searchService.addDocument(Order.collectionName, order.id, orderDto);
