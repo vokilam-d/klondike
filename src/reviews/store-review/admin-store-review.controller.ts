@@ -52,6 +52,7 @@ export class AdminStoreReviewController {
 
   @Post()
   async createStoreReview(@Body() storeReviewDto: AdminStoreReviewDto): Promise<ResponseDto<AdminStoreReviewDto>> {
+    storeReviewDto.source = 'manager';
     const review = await this.storeReviewService.createReview(storeReviewDto);
     return {
       data: plainToClass(AdminStoreReviewDto, review, { excludeExtraneousValues: true })

@@ -15,4 +15,5 @@ export class ElasticBaseReviewModel implements Record<keyof AdminBaseReviewDto, 
   text = elasticTextType;
   votesCount = elasticIntegerType;
   managerComment = elasticTextType;
+  source = elasticTextType;
 }

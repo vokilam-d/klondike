@@ -78,7 +78,7 @@ export class ClientStoreReviewController {
   @Get('from-email')
   @Redirect('/')
   async createReviewFromEmail(@Query() storeReviewDto: ClientAddStoreReviewFromEmailDto) {
-    await this.storeReviewService.createReview(storeReviewDto);
+    await this.storeReviewService.createReview({ ...storeReviewDto, source: 'email' });
 
     return {
       url: `/otzyvy?review-from-email=true`
@@ -94,13 +94,14 @@ export class ClientStoreReviewController {
   }
 
   @Post()
-  async createStoreReview(@Req() req,
-                          @Body() storeReviewDto: ClientAddStoreReviewDto
+  async createStoreReview(
+    @Req() req,
+    @Body() storeReviewDto: ClientAddStoreReviewDto
   ): Promise<ResponseDto<ClientStoreReviewDto>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
-    const review = await this.storeReviewService.createReview({ ...storeReviewDto, customerId });
+    const review = await this.storeReviewService.createReview({ ...storeReviewDto, customerId, source: 'website' });
 
     return {
       data: plainToClass(ClientStoreReviewDto, review, { excludeExtraneousValues: true })

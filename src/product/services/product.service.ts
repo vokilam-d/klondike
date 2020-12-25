@@ -1177,6 +1177,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     const spf = new AdminSPFDto();
     spf.limit = 10000;
+    spf.sort = '-_id';
     const products: ProductWithQty[] = await this.getProductsWithQty(spf);
     const listItems = this.transformToAdminListDto(products);
 

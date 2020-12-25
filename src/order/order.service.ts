@@ -420,6 +420,14 @@ export class OrderService implements OnApplicationBootstrap {
     };
   }
 
+  async printInvoice(orderId: number) {
+    const order = await this.getOrderById(orderId);
+    return {
+      fileName: `Рахунок-фактура №${order.id}.pdf`,
+      pdf: await this.pdfGeneratorService.generateInvoicePdf(order.toJSON())
+    };
+  }
+
   private async addSearchData(order: Order) {
     const orderDto = plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true });
     await this.searchService.addDocument(Order.collectionName, order.id, orderDto);
@@ -631,9 +639,9 @@ export class OrderService implements OnApplicationBootstrap {
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   private async reindexAllSearchData() {
     this.logger.log(`Start reindex all search data`);
+    const orders = await this.orderModel.find().sort({ _id: -1 }).exec();
     await this.searchService.deleteCollection(Order.collectionName);
     await this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
-    const orders = await this.orderModel.find().exec();
 
     for (const ordersBatch of getBatches(orders, 20)) {
       await Promise.all(ordersBatch.map(order => this.addSearchData(order)));
