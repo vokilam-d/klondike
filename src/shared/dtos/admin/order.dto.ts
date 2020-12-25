@@ -10,6 +10,7 @@ import { TrimString } from '../../decorators/trim-string.decorator';
 import { AdminOrderItemDto } from './order-item.dto';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { AdminOrderPricesDto } from './order-prices.dto';
+import { AdminLogDto } from './log.dto';
 
 export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid'> {
   @Expose()
@@ -110,7 +111,7 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   isOrderPaid: boolean;
 }
 
-export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Order, 'id' | 'idForCustomer' | 'paymentMethodClientName' | 'paymentMethodAdminName' | 'shippingMethodName' | 'source'> {
+export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Order, 'id' | 'idForCustomer' | 'paymentMethodClientName' | 'paymentMethodAdminName' | 'shippingMethodName' | 'source' | 'logs'> {
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id: number;
@@ -140,6 +141,10 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Orde
 
   @Expose()
   source: 'client' | 'manager';
+
+  @Expose()
+  @Type(() => AdminLogDto)
+  logs: AdminLogDto[];
 }
 
 export class UpdateOrderAdminNote implements Pick<Order, 'adminNote'>{
