@@ -100,6 +100,8 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
   }
 
   private buildTemplateContextForInvoice(order: Order): any {
+    const lang: Language = Language.UK;
+
     return {
       orderId: order.id,
       orderDateTime: readableDate(order.createdAt),
@@ -108,17 +110,17 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       totalOrderCostInWords: this.convertDigitsToWords(order.prices.totalCost),
       products: order.items.map((item, index) => ({
         index: index + 1,
-        name: item.name,
+        name: item.name[lang],
         sku: item.sku,
         qty: item.qty,
         price: item.price,
         oldPrice: item.oldPrice,
         cost: item.cost,
-        additionalServices: item.additionalServices.map(service => `${service.name} (+${service.price}грн)`)
+        additionalServices: item.additionalServices.map(service => `${service.name[lang]} (+${service.price}грн)`)
       })),
       productsAmount: order.items.length,
       totalProductsCost: order.prices.itemsCost,
-      discountLabel: order.prices.discountLabel,
+      discountLabel: order.prices.discountLabel[lang],
       discountPercent: order.prices.discountPercent,
       discountValue: order.prices.discountValue,
       manager: process.env.BANK_DETAILS_NAME,
