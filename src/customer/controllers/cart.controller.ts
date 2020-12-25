@@ -26,7 +26,7 @@ export class CartController {
     @Body() body: CreateOrderItemDto,
     @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientOrderItemDto>> {
-    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty, body.additionalServiceIds, true, false);
+    const orderItem = await this.orderItemService.createOrderItem({ ...body, omitReserved: false }, lang, true);
 
     const customer = await this.authService.getCustomerFromReq(req);
     if (customer) {

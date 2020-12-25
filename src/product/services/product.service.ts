@@ -60,6 +60,7 @@ import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { ClientMetaTagsDto } from '../../shared/dtos/client/meta-tags.dto';
 import { AdminCategoryTreeItemDto } from '../../shared/dtos/admin/category-tree-item.dto';
 import { Language } from '../../shared/enums/language.enum';
+import { ClientBreadcrumbDto } from '../../shared/dtos/client/breadcrumb.dto';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -113,7 +114,7 @@ export class ProductService implements OnApplicationBootstrap {
     };
   }
 
-  async getClientProductList(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
+  async getClientProductList(spf: ClientProductSPFDto, lang: Language): Promise<ClientProductListResponseDto> {
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
 
     spf[isEnabledProp] = true;
@@ -122,7 +123,7 @@ export class ProductService implements OnApplicationBootstrap {
     const adminDtos = searchResponse[0];
     const itemsTotal = searchResponse[1];
     const attributes = await this.attributeService.getAllAttributes();
-    const clientDtos = await this.transformToClientListDto(adminDtos, attributes);
+    const clientDtos = await this.transformToClientListDto(adminDtos, attributes, lang);
 
     return {
       data: clientDtos,
@@ -143,7 +144,7 @@ export class ProductService implements OnApplicationBootstrap {
     return clientListItems;
   }
 
-  async getClientProductListLastAdded(): Promise<ClientProductListResponseDto> {
+  async getClientProductListLastAdded(lang: Language): Promise<ClientProductListResponseDto> {
     const spf = new ClientProductSPFDto();
     spf.limit = 11;
 
@@ -152,14 +153,14 @@ export class ProductService implements OnApplicationBootstrap {
 
     const [ adminListItems ] = await this.findEnabledProductListItems(spf);
     const attributes = await this.attributeService.getAllAttributes();
-    const clientListItems = await this.transformToClientListDto(adminListItems, attributes);
+    const clientListItems = await this.transformToClientListDto(adminListItems, attributes, lang);
 
     return {
       data: clientListItems
     };
   }
 
-  async getClientProductListWithFilters(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
+  async getClientProductListWithFilters(spf: ClientProductSPFDto, lang: Language): Promise<ClientProductListResponseDto> {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
     const [ adminListItems ] = await this.findEnabledProductListItems(spf, { categoryId: spf.categoryId, query: spf.q, limit: 10000 });
@@ -267,9 +268,9 @@ export class ProductService implements OnApplicationBootstrap {
     if (spfFilters.length || filterMinPrice >= 0) { itemsFiltered = filteredAdminListItems.length; }
 
     filteredAdminListItems = filteredAdminListItems.slice(spf.skip, spf.skip + spf.limit);
-    const clientListItems = await this.transformToClientListDto(filteredAdminListItems, attributes);
+    const clientListItems = await this.transformToClientListDto(filteredAdminListItems, attributes, lang);
 
-    let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, spfFilters);
+    let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, spfFilters, lang);
     if (itemsTotal > 0) {
       filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
     }
@@ -419,7 +420,7 @@ export class ProductService implements OnApplicationBootstrap {
     return found;
   }
 
-  async getEnabledClientProductDtoBySlug(slug: string): Promise<ClientProductDto> {
+  async getEnabledClientProductDtoBySlug(slug: string, lang: Language): Promise<ClientProductDto> {
     const variantsProp = getPropertyOf<Product>('variants');
     const slugProp = getPropertyOf<ProductVariant>('slug');
     const skuProp = getPropertyOf<Inventory>('sku');
@@ -443,10 +444,10 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
 
     if (!found || !(found as ProductWithQty).isEnabled) {
-      throw new NotFoundException(__('Product with slug "$1" not found', 'ru', slug));
+      throw new NotFoundException(__('Product with slug "$1" not found', lang, slug));
     }
 
-    return this.transformToClientProductDto(found, slug);
+    return this.transformToClientProductDto(found, slug, lang);
   }
 
   async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
@@ -1049,7 +1050,7 @@ export class ProductService implements OnApplicationBootstrap {
     });
   }
 
-  async transformToClientProductDto(productWithQty: ProductWithQty, slug: string): Promise<ClientProductDto> {
+  async transformToClientProductDto(productWithQty: ProductWithQty, slug: string, lang: Language): Promise<ClientProductDto> {
     const selectedVariantIdx = productWithQty.variants.findIndex(v => v.slug === slug);
     const selectedVariant = productWithQty.variants[selectedVariantIdx];
 
@@ -1070,7 +1071,7 @@ export class ProductService implements OnApplicationBootstrap {
       if (!foundAttrValues.length) { continue; }
 
       const value = foundAttrValues.map(value => value.label).join(', ');
-      characteristics.push({ label: foundAttr.label, code: foundAttr._id, value });
+      characteristics.push({ label: foundAttr.label[lang], code: foundAttr._id, value });
     }
 
     let variantGroups: ClientProductVariantGroupDto[] = [];
@@ -1083,7 +1084,7 @@ export class ProductService implements OnApplicationBootstrap {
         if (!attrValue) { continue; }
 
         const itemVariant: ClientProductVariantDto = {
-          label: attrValue.label,
+          label: attrValue.label[lang],
           color: attrValue.color,
           isSelected: true,
           slug: selectedVariant.slug,
@@ -1093,13 +1094,13 @@ export class ProductService implements OnApplicationBootstrap {
         variantGroups.push({
           attribute: attribute,
           attributeValueId: attrValue.id,
-          label: attribute.label,
+          label: attribute.label[lang],
           hasColor: attribute.hasColor,
           variants: [ itemVariant ],
           selectedVariantLabel: itemVariant.label
         });
 
-        characteristics.push({ label: attribute.label, code: attribute.id, value: attrValue.label });
+        characteristics.push({ label: attribute.label[lang], code: attribute.id, value: attrValue.label[lang] });
       }
 
       for (let i = 0; i < variantGroups.length; i++) {
@@ -1117,7 +1118,7 @@ export class ProductService implements OnApplicationBootstrap {
           const selectedAttribute = productVariant.attributes.find(attr => attr.attributeId === variantGroups[i].attribute.id);
           const attributeValue = variantGroups[i].attribute.values.find(value => selectedAttribute.valueIds.includes(value.id));
           variantGroups[i].variants.push({
-            label: attributeValue.label,
+            label: attributeValue.label[lang],
             color: attributeValue.color,
             isSelected: false,
             slug: productVariant.slug,
@@ -1139,12 +1140,12 @@ export class ProductService implements OnApplicationBootstrap {
       categories,
       variantGroups,
       characteristics,
-      breadcrumbs: productWithQty.breadcrumbs,
-      fullDescription: selectedVariant.fullDescription,
-      shortDescription: selectedVariant.shortDescription,
+      breadcrumbs: productWithQty.breadcrumbs.map(breadcrumb => ClientBreadcrumbDto.transformTodo(breadcrumb, lang)),
+      fullDescription: selectedVariant.fullDescription[lang],
+      shortDescription: selectedVariant.shortDescription[lang],
       medias: plainToClass(ClientMediaDto, selectedVariant.medias, { excludeExtraneousValues: true }),
       metaTags: plainToClass(ClientMetaTagsDto, selectedVariant.metaTags, { excludeExtraneousValues: true }),
-      name: selectedVariant.name,
+      name: selectedVariant.name[lang],
       slug: selectedVariant.slug,
       sku: selectedVariant.sku,
       vendorCode: selectedVariant.vendorCode,
@@ -1559,7 +1560,8 @@ export class ProductService implements OnApplicationBootstrap {
     attributeProductCountMap: AttributeProductCountMap,
     attributes: Attribute[],
     totalFound: number,
-    spfFilters: IFilter[]
+    spfFilters: IFilter[],
+    lang: Language
   ): ClientFilterDto[] {
 
     const clientFilters: ClientFilterDto[] = [];
@@ -1588,7 +1590,7 @@ export class ProductService implements OnApplicationBootstrap {
 
         values.push({
           id: attributeValue.id,
-          label: attributeValue.label,
+          label: attributeValue.label[lang],
           isDisabled: productsCount === 0,
           productsCount,
           isSelected
@@ -1601,7 +1603,7 @@ export class ProductService implements OnApplicationBootstrap {
 
       clientFilters.push({
         id: attribute.id,
-        label: attribute.label,
+        label: attribute.label[lang],
         isDisabled: valuesProductsCount === 0,
         type: 'checkbox',
         values

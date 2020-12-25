@@ -14,6 +14,8 @@ import { EProductsSort } from '../shared/enums/product-sort.enum';
 import { AdditionalServiceService } from '../additional-service/services/additional-service.service';
 import { ClientOrderItemDto } from '../shared/dtos/client/order-item.dto';
 import { MultilingualText } from '../shared/models/multilingual-text.model';
+import { CreateOrderItemDto } from '../shared/dtos/shared-dtos/create-order-item.dto';
+import { Language } from '../shared/enums/language.enum';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [
   { totalCostBreakpoint: 500, discountPercent: 5 },
@@ -29,11 +31,9 @@ export class OrderItemService {
   ) { }
 
   async createOrderItem(
-    sku: string,
-    qty: number,
-    additionalServiceIds: number[],
+    { sku, qty, additionalServiceIds, omitReserved }: CreateOrderItemDto,
+    lang: Language,
     withCrossSell: boolean,
-    omitReserved: boolean,
     product?: ProductWithQty,
     variant?: ProductVariantWithQty
   ): Promise<OrderItem> {
@@ -81,7 +81,7 @@ export class OrderItemService {
     }
 
     if (withCrossSell) {
-      orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
+      orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts, lang);
     }
 
     return orderItem;
@@ -145,7 +145,7 @@ export class OrderItemService {
     };
   }
 
-  private async getCrossSellProducts(crossSellProducts: LinkedProduct[]): Promise<ClientProductListItemDto[]> {
+  private async getCrossSellProducts(crossSellProducts: LinkedProduct[], lang: Language): Promise<ClientProductListItemDto[]> {
     if (!crossSellProducts.length) { return []; }
 
     const idsArr = crossSellProducts.map(p => p.productId);
@@ -154,7 +154,7 @@ export class OrderItemService {
     spf.limit = crossSellProducts.length;
     spf.id = idsArr.join(queryParamArrayDelimiter);
     spf.sort = EProductsSort.SalesCount;
-    let { data: products } = await this.productService.getClientProductList(spf);
+    let { data: products } = await this.productService.getClientProductList(spf, lang);
 
     return products.filter(product => product.isInStock);
   }

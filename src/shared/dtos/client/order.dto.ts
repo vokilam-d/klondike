@@ -1,14 +1,11 @@
 import { ArrayMinSize, IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Expose, Transform, Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { Order } from '../../../order/models/order.model';
 import { ShipmentDto } from '../admin/shipment.dto';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
-import { __ } from '../../helpers/translate/translate.function';
-import { AdminOrderDto } from '../admin/order.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
 import { ClientOrderItemDto } from './order-item.dto';
 import { ClientOrderPricesDto } from './order-prices.dto';
-import { clientDefaultLanguage } from '../../constants';
 import { Language } from '../../enums/language.enum';
 
 export class ClientAddOrderDto implements

@@ -1,4 +1,4 @@
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { AdminMediaDto } from './media.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
@@ -7,13 +7,16 @@ import { CurrencyCodeEnum } from '../../enums/currency.enum';
 import { ProductVariantWithQty } from '../../../product/models/product-with-qty.model';
 import { AdminLinkedProductDto } from './linked-product.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
-import { ClientMetaTagsDto } from '../client/meta-tags.dto';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
+import { AdminMetaTagsDto } from './meta-tags.dto';
 
-export class AdminAddOrUpdateProductVariantDto {
-  @Exclude()
-  _id: string;
+type PickedVariant = Pick<ProductVariantWithQty, 'name' | 'sku' | 'vendorCode' | 'gtin' | 'slug' | 'attributes' | 'isEnabled' | 'price'
+  | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'medias' | 'fullDescription' | 'shortDescription'
+  | 'metaTags' | 'qtyInStock' | 'isDiscountApplicable' | 'salesCount' | 'isIncludedInShoppingFeed' | 'googleAdsProductTitle'
+  | 'relatedProducts' | 'crossSellProducts'>;
+type VariantStringProps = Record<keyof Pick<ProductVariantWithQty, 'id'>, string>;
 
+export class AdminAddOrUpdateProductVariantDto implements PickedVariant, VariantStringProps {
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id: string;
@@ -96,7 +99,7 @@ export class AdminAddOrUpdateProductVariantDto {
 
   @Expose()
   @ValidateNested()
-  metaTags: ClientMetaTagsDto;
+  metaTags: AdminMetaTagsDto;
 
   @Expose()
   @Transform((price, obj: ProductVariantWithQty) => price ? parseFloat(price) : obj.qtyInStock)
@@ -125,7 +128,7 @@ export class AdminAddOrUpdateProductVariantDto {
   @IsOptional()
   @IsString()
   @TrimString()
-  googleAdsProductTitle: string;
+  googleAdsProductTitle: MultilingualTextDto;
 
   @Expose()
   @ValidateNested({ each: true })

@@ -10,6 +10,8 @@ import { AdminCalculatePricesDto } from '../../shared/dtos/admin/calculate-price
 import { Customer } from '../../customer/models/customer.model';
 import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
 import { AdminOrderPricesDto } from '../../shared/dtos/admin/order-prices.dto';
+import { AdminLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -22,8 +24,8 @@ export class AdminOrderItemController {
   ) { }
 
   @Post()
-  async createOrderItem(@Body() body: CreateOrderItemDto): Promise<ResponseDto<AdminOrderItemDto>> {
-    const orderItem = await this.orderItemService.createOrderItem(body.sku, body.qty, body.additionalServiceIds, false, body.omitReserved);
+  async createOrderItem(@Body() body: CreateOrderItemDto, @AdminLang() lang: Language): Promise<ResponseDto<AdminOrderItemDto>> {
+    const orderItem = await this.orderItemService.createOrderItem(body, lang, false);
 
     return {
       data: orderItem

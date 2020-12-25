@@ -58,7 +58,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   }
 
   async createReview(reviewDto: AdminProductReviewDto | ClientAddProductReviewDto): Promise<AdminProductReviewDto> {
-    const review = await super.createReview(reviewDto, (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session));
+    const review = await super.createReview((reviewDto as AdminProductReviewDto), (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session));
     this.emailService.sendNewProductReviewEmail(review).then();
     return review;
   }

@@ -55,7 +55,7 @@ import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
 import { Language } from '../shared/enums/language.enum';
 import { AdminOrderItemDto } from '../shared/dtos/admin/order-item.dto';
 import { ClientOrderItemDto } from '../shared/dtos/client/order-item.dto';
-import { clientDefaultLanguage } from '../shared/constants';
+import { adminDefaultLanguage, clientDefaultLanguage } from '../shared/constants';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -305,7 +305,7 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const additionalServiceIds = additionalServices.map(service => service.id);
-      newOrder.items[i] = await this.orderItemService.createOrderItem(sku, qty, additionalServiceIds, false, false, product, variant);
+      newOrder.items[i] = await this.orderItemService.createOrderItem({ sku, qty, additionalServiceIds, omitReserved: false }, lang, false, product, variant);
 
       await this.inventoryService.addToOrdered(sku, qty, newOrder.id, session);
       await this.productService.updateSearchDataById(productId, session);
@@ -499,7 +499,7 @@ export class OrderService implements OnApplicationBootstrap {
               break;
           }
 
-          order.logs.push({ time: new Date(), text: `Updated order status by shipment status to "${order.status}" - ${order.getStatusDescription(Language.RU)}` });
+          order.logs.push({ time: new Date(), text: `Updated order status by shipment status to "${order.status}" - ${order.statusDescription[adminDefaultLanguage]}` });
         }
 
         await order.save({ session });
