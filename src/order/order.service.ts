@@ -260,8 +260,8 @@ export class OrderService implements OnApplicationBootstrap {
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
 
-      this.emailService.sendOrderConfirmationEmail(newOrder, isProdEnv()).then();
-      this.tasksService.sendLeaveReviewEmail(newOrder)
+      this.emailService.sendOrderConfirmationEmail(newOrder, lang, isProdEnv()).then();
+      this.tasksService.sendLeaveReviewEmail(newOrder, lang)
         .catch(err => this.logger.error(`Could not create task to send "Leave a review" email: ${err.message}`));
 
       return newOrder;
@@ -412,11 +412,11 @@ export class OrderService implements OnApplicationBootstrap {
     return order;
   }
 
-  async printOrder(orderId: number) {
+  async printOrder(orderId: number, lang: Language) {
     const order = await this.getOrderById(orderId);
     return {
       fileName: `Заказ №${order.idForCustomer}.pdf`,
-      pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON())
+      pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON(), lang)
     };
   }
 

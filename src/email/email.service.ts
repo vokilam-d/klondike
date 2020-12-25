@@ -9,6 +9,7 @@ import { Customer } from '../customer/models/customer.model';
 import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { AdminStoreReviewDto } from '../shared/dtos/admin/store-review.dto';
 import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-order.function';
+import { Language } from '../shared/enums/language.enum';
 
 enum EEmailType {
   EmailConfirmation = 'email-confirmation',
@@ -56,7 +57,7 @@ export class EmailService {
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
 
-  async sendOrderConfirmationEmail(order: Order, notifyManager: boolean) {
+  async sendOrderConfirmationEmail(order: Order, lang: Language, notifyManager: boolean) {
     const emailType = EEmailType.OrderConfirmation;
     const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
 
@@ -67,7 +68,7 @@ export class EmailService {
 
     const attachment = {
       filename: `Заказ №${order.idForCustomer}.pdf`,
-      content: await this.pdfGeneratorService.generateOrderPdf(order)
+      content: await this.pdfGeneratorService.generateOrderPdf(order, lang)
     };
 
     if (notifyManager) {
@@ -78,13 +79,13 @@ export class EmailService {
     return this.sendEmail({ to, subject, html, attachment, emailType });
   }
 
-  async sendLeaveReviewEmail(order: Order) {
+  async sendLeaveReviewEmail(order: Order, lang: Language) {
     const emailType = EEmailType.LeaveReview;
     const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
 
     const subject = `${order.customerFirstName}, поделитесь мнением о покупке, пожалуйста`;
 
-    const context = this.getLeaveReviewTemplateContext(order);
+    const context = this.getLeaveReviewTemplateContext(order, lang);
     const html = this.getEmailHtml(emailType, context);
 
     return this.sendEmail({ to, subject, html, emailType });
@@ -209,7 +210,7 @@ export class EmailService {
     };
   }
 
-  private getLeaveReviewTemplateContext(order: Order): any {
+  private getLeaveReviewTemplateContext(order: Order, lang: Language): any {
 
     const productsInRow = 3;
     const productRows: EmailProduct[][] = [];
@@ -219,7 +220,7 @@ export class EmailService {
       const rowIndex = Math.floor(i / productsInRow);
       productRows[rowIndex] = productRows[rowIndex] || [];
 
-      productRows[rowIndex].push({ name: item.name, imageUrl: item.imageUrl, slug: item.slug });
+      productRows[rowIndex].push({ name: item.name[lang], imageUrl: item.imageUrl, slug: item.slug });
     }
 
     return {

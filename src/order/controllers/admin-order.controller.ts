@@ -39,8 +39,12 @@ export class AdminOrderController {
   }
 
   @Get(':id/order-pdf')
-  async printOrder(@Param('id') id: string, @Res() reply: FastifyReply<ServerResponse>) {
-    const { fileName, pdf } = await this.orderService.printOrder(parseInt(id));
+  async printOrder(
+    @Param('id') id: string,
+    @Res() reply: FastifyReply<ServerResponse>,
+    @AdminLang() lang: Language
+  ) {
+    const { fileName, pdf } = await this.orderService.printOrder(parseInt(id), lang);
 
     reply
       .type('application/pdf')

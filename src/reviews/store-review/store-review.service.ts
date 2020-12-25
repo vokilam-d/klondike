@@ -10,6 +10,7 @@ import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticStoreReviewModel } from './models/elastic-store-review.model';
 import { plainToClass } from 'class-transformer';
 import { EmailService } from '../../email/email.service';
+import { ClientAddStoreReviewDto } from '../../shared/dtos/client/add-store-review.dto';
 
 @Injectable()
 export class StoreReviewService extends BaseReviewService<StoreReview, AdminStoreReviewDto> implements OnApplicationBootstrap {
@@ -25,8 +26,8 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
     super();
   }
 
-  async createReview(reviewDto: AdminStoreReviewDto): Promise<AdminStoreReviewDto> {
-    const review = await super.createReview(reviewDto);
+  async createReview(reviewDto: AdminStoreReviewDto | ClientAddStoreReviewDto): Promise<AdminStoreReviewDto> {
+    const review = await super.createReview((reviewDto as AdminStoreReviewDto));
     this.emailService.sendNewStoreReviewEmail(review).then();
     return review;
   }
