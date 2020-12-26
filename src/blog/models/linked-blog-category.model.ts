@@ -5,7 +5,7 @@ export class LinkedBlogCategory {
   @prop({ index: true })
   id: number;
 
-  @prop()
+  @prop({ _id: false })
   name: MultilingualText;
 
   @prop()

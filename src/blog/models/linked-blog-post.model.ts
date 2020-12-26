@@ -5,7 +5,7 @@ export class LinkedBlogPost {
   @prop()
   id: number;
 
-  @prop()
+  @prop({ _id: false })
   name: MultilingualText;
 
   @prop()

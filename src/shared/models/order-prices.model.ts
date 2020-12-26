@@ -8,7 +8,7 @@ export class OrderPrices {
   @prop()
   discountPercent: number;
 
-  @prop()
+  @prop({ _id: false })
   discountLabel: MultilingualText;
 
   @prop()

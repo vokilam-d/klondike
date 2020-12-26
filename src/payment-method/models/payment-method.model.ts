@@ -12,10 +12,10 @@ export class PaymentMethod {
   @prop()
   paymentType: PaymentTypeEnum;
 
-  @prop()
+  @prop({ _id: false })
   adminName: MultilingualText;
 
-  @prop()
+  @prop({ _id: false })
   clientName: MultilingualText;
 
   @prop({ default: 0 })

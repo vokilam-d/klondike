@@ -10,12 +10,12 @@ export class MetaTags {
   @Exclude()
   __v?: any;
 
-  @prop({ default: new MultilingualText() })
+  @prop({ default: new MultilingualText(), _id: false })
   title: MultilingualText;
 
-  @prop({ default: new MultilingualText() })
+  @prop({ default: new MultilingualText(), _id: false })
   description: MultilingualText;
 
-  @prop({ default: new MultilingualText() })
+  @prop({ default: new MultilingualText(), _id: false })
   keywords: MultilingualText;
 }

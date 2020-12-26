@@ -8,10 +8,10 @@ export class Aggregator {
   set id(id: number) { this._id = id; }
   get id(): number { return this._id; }
 
-  @prop()
+  @prop({ _id: false })
   name: MultilingualText;
 
-  @prop()
+  @prop({ _id: false })
   clientName: MultilingualText;
 
   @prop()

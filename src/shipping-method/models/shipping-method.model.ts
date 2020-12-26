@@ -8,10 +8,10 @@ export class ShippingMethod {
   @prop({ default: true })
   isEnabled: boolean;
 
-  @prop()
+  @prop({ _id: false })
   adminName: MultilingualText;
 
-  @prop()
+  @prop({ _id: false })
   clientName: MultilingualText;
 
   @prop({ default: 0 })

@@ -6,7 +6,7 @@ export class AttributeValue {
   @prop()
   id: string;
 
-  @prop()
+  @prop({ _id: false })
   label: MultilingualText;
 
   @prop({ default: false })
@@ -23,7 +23,7 @@ export class Attribute {
   set id(id: string) { this._id = id; }
   get id(): string { return this._id; }
 
-  @prop()
+  @prop({ _id: false })
   label: MultilingualText;
 
   @arrayProp({ items: AttributeValue, default: [], _id: false })

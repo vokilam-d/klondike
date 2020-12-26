@@ -51,13 +51,13 @@ export class Order {
   @prop()
   paymentType: PaymentTypeEnum;
 
-  @prop()
+  @prop({ _id: false })
   paymentMethodClientName: MultilingualText;
 
-  @prop()
+  @prop({ _id: false })
   paymentMethodAdminName: MultilingualText;
 
-  @prop()
+  @prop({ _id: false })
   shippingMethodName: MultilingualText;
 
   @prop()

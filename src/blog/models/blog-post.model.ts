@@ -15,7 +15,7 @@ export class BlogPost {
   set id(id: number) { this._id = id; }
   get id(): number { return this._id; }
 
-  @prop({ required: true })
+  @prop({ required: true, _id: false })
   name: MultilingualText;
 
   @prop({ required: true })
@@ -33,10 +33,10 @@ export class BlogPost {
   @prop({ _id: false })
   metaTags: MetaTags;
 
-  @prop()
+  @prop({ _id: false })
   content: MultilingualText;
 
-  @prop()
+  @prop({ _id: false })
   shortContent: MultilingualText;
 
   @prop()

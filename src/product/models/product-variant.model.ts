@@ -14,7 +14,7 @@ export class ProductVariant {
   get id() { return this._id; }
   set id(id) { this._id = id || new Types.ObjectId(); }
 
-  @prop({ required: true })
+  @prop({ required: true, _id: false })
   name: MultilingualText;
 
   @prop({ required: true, index: true, unique: true })
@@ -53,10 +53,10 @@ export class ProductVariant {
   @arrayProp({ items: Media, default: [] })
   medias: Media[];
 
-  @prop()
+  @prop({ _id: false })
   fullDescription: MultilingualText;
 
-  @prop()
+  @prop({ _id: false })
   shortDescription: MultilingualText;
 
   @prop()
@@ -71,7 +71,7 @@ export class ProductVariant {
   @prop({ default: true })
   isIncludedInShoppingFeed: boolean;
 
-  @prop()
+  @prop({ _id: false })
   googleAdsProductTitle: MultilingualText;
 
   @arrayProp({ items: LinkedProduct, default: [] })

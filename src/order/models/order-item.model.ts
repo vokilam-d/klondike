@@ -4,7 +4,7 @@ import { OrderItemAdditionalService } from './order-item-additional-service.mode
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class OrderItem {
-  @prop()
+  @prop({ _id: false })
   name: MultilingualText;
 
   @prop()

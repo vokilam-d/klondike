@@ -15,7 +15,7 @@ export class Product {
   @prop({ default: true })
   isEnabled: boolean;
 
-  @prop({ required: true })
+  @prop({ required: true, _id: false })
   name: MultilingualText;
 
   @arrayProp({ items: ProductCategory, _id: false })
