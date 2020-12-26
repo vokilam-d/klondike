@@ -36,7 +36,7 @@ export class UserController {
   @Get()
   async getUser(@Req() req): Promise<ResponseDto<UserDto>> {
     const user: DocumentType<User> = await this.authService.getUserFromReq(req);
-    const dto = plainToClass(UserDto, user.toJSON(), { excludeExtraneousValues: true });
+    const dto = plainToClass(UserDto, user?.toJSON(), { excludeExtraneousValues: true });
 
     return {
       data: dto
