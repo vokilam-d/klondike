@@ -23,7 +23,7 @@ import { SearchService } from '../../shared/services/search/search.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { ProductWithQty } from '../models/product-with-qty.model';
-import { AdminProductVariantListItem } from '../../shared/dtos/admin/product-variant-list-item.dto';
+import { AdminProductVariantListItemDto } from '../../shared/dtos/admin/product-variant-list-item.dto';
 import { DEFAULT_CURRENCY } from '../../shared/enums/currency.enum';
 import { ElasticProduct } from '../models/elastic-product.model';
 import { IFilter, SortingPaginatingFilterDto } from '../../shared/dtos/shared-dtos/spf.dto';
@@ -206,7 +206,7 @@ export class ProductService implements OnApplicationBootstrap {
     let filteredAdminListItems: AdminProductListItemDto[] = [];
 
     for (const adminListItem of adminListItems) {
-      const filteredVariants: AdminProductVariantListItem[] = [];
+      const filteredVariants: AdminProductVariantListItemDto[] = [];
       let isProductAttributesSetInProductCount = false;
 
       for (const variant of adminListItem.variants) {
@@ -817,9 +817,9 @@ export class ProductService implements OnApplicationBootstrap {
     }
     if (query) {
       const variantsProp: keyof AdminProductListItemDto = 'variants';
-      const nameProp: keyof AdminProductVariantListItem = 'name';
-      const skuProp: keyof AdminProductVariantListItem = 'sku';
-      const vendorCodeProp: keyof AdminProductVariantListItem = 'vendorCode';
+      const nameProp: keyof AdminProductVariantListItemDto = 'name';
+      const skuProp: keyof AdminProductVariantListItemDto = 'sku';
+      const vendorCodeProp: keyof AdminProductVariantListItemDto = 'vendorCode';
 
       const namePropPath = `${variantsProp}.${nameProp}`;
       const skuPropPath = `${variantsProp}.${skuProp}`;
@@ -877,7 +877,7 @@ export class ProductService implements OnApplicationBootstrap {
       const prices: string[] = [];
       const quantitiesInStock: number[] = [];
       const sellableQuantities: number[] = [];
-      const variants: AdminProductVariantListItem[] = [];
+      const variants: AdminProductVariantListItemDto[] = [];
       let salesCount: number = 0;
       let productMediaUrl: string = null;
 

@@ -3,7 +3,7 @@ import { IsNumberString, IsOptional } from 'class-validator';
 import { Product } from '../../../product/models/product.model';
 import { ISorting } from '../shared-dtos/spf.dto';
 import { AdminProductListItemDto } from '../admin/product-list-item.dto';
-import { AdminProductVariantListItem } from '../admin/product-variant-list-item.dto';
+import { AdminProductVariantListItemDto } from '../admin/product-variant-list-item.dto';
 import { AdminProductCategoryDto } from '../admin/product-category.dto';
 import { ProductCategory } from '../../../product/models/product-category.model';
 import { EProductsSort } from '../../enums/product-sort.enum';
@@ -32,11 +32,11 @@ export class ClientProductSPFDto extends ClientSPFDto {
   getSortAsObj(): ISorting {
     const variantsProp: keyof AdminProductListItemDto = 'variants';
     const createdAtProp: keyof AdminProductListItemDto = 'createdAt';
-    const priceProp: keyof AdminProductVariantListItem = 'priceInDefaultCurrency';
+    const priceProp: keyof AdminProductVariantListItemDto = 'priceInDefaultCurrency';
     const categoriesProp: keyof AdminProductListItemDto = 'categories';
     const sortOrderProp: keyof AdminProductCategoryDto = 'reversedSortOrder';
-    const qtyProp: keyof AdminProductVariantListItem = 'sellableQty';
-    const salesCountProp: keyof AdminProductVariantListItem = 'salesCount';
+    const qtyProp: keyof AdminProductVariantListItemDto = 'sellableQty';
+    const salesCountProp: keyof AdminProductVariantListItemDto = 'salesCount';
 
     const sort: ISorting = {
       '_script': {

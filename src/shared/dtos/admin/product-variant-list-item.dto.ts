@@ -3,7 +3,7 @@ import { AdminProductSelectedAttributeDto } from './product-selected-attribute.d
 import { AdminProductVariantDto } from './product-variant.dto';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
-export class AdminProductVariantListItem implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty' | 'vendorCode' | 'salesCount'> {
+export class AdminProductVariantListItemDto implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty' | 'vendorCode' | 'salesCount'> {
   id: string;
   isEnabled: boolean;
   mediaUrl: string;

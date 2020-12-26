@@ -1,16 +1,9 @@
-import { AdminProductVariantListItem } from '../../shared/dtos/admin/product-variant-list-item.dto';
-import {
-  elasticAutocompleteTextType,
-  elasticBooleanType,
-  elasticFloatType,
-  elasticIntegerType,
-  elasticKeywordType,
-  elasticTextType
-} from '../../shared/constants';
+import { AdminProductVariantListItemDto } from '../../shared/dtos/admin/product-variant-list-item.dto';
+import { elasticBooleanType, elasticFloatType, elasticIntegerType, elasticKeywordType, elasticTextType } from '../../shared/constants';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
 import { ElasticMultilingualText } from '../../shared/models/elastic-multilingual-text.model';
 
-export class ElasticProductVariant implements Record<keyof AdminProductVariantListItem, any> {
+export class ElasticProductVariant implements Record<keyof AdminProductVariantListItemDto, any> {
   currency = elasticTextType;
   id = elasticTextType;
   isEnabled = elasticBooleanType;
