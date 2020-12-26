@@ -35,7 +35,6 @@ import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-c
 import { CronExpression } from '@nestjs/schedule';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
 import { OrderService } from '../order/order.service';
-import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {

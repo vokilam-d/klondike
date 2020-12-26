@@ -2,7 +2,7 @@ import { Expose, Transform, Type } from 'class-transformer';
 import { ArrayMinSize, IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ShipmentDto } from './shipment.dto';
 import { OrderStatusEnum } from '../../enums/order-status.enum';
-import { __, getTranslations } from '../../helpers/translate/translate.function';
+import { getTranslations } from '../../helpers/translate/translate.function';
 import { PaymentTypeEnum } from '../../enums/payment-type.enum';
 import { Log } from '../../models/log.model';
 import { Order } from '../../../order/models/order.model';

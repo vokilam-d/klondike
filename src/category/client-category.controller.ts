@@ -1,7 +1,6 @@
 import { ClassSerializerInterceptor, Controller, Get, Param, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
-import { plainToClass } from 'class-transformer';
 import { ClientCategoryDto } from '../shared/dtos/client/category.dto';
 import { ClientCategoryTreeItemDto } from '../shared/dtos/client/category-tree-item.dto';
 import { ClientLang } from '../shared/decorators/lang.decorator';

@@ -1,8 +1,10 @@
 import {
   Body,
   ClassSerializerInterceptor,
-  Controller, forwardRef,
-  Get, Inject,
+  Controller,
+  forwardRef,
+  Get,
+  Inject,
   Param,
   Post,
   Query,

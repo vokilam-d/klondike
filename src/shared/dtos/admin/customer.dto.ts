@@ -1,14 +1,5 @@
 import { Expose, Transform, Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsDate,
-  IsEmail,
-  IsNumber,
-  IsOptional,
-  IsString,
-  ValidateIf,
-  ValidateNested
-} from 'class-validator';
+import { IsBoolean, IsDate, IsEmail, IsNumber, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
 import { TrimString } from '../../decorators/trim-string.decorator';

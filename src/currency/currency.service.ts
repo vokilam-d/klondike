@@ -1,7 +1,7 @@
 import { HttpService, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Currency } from './models/currency.model';
 import { ReturnModelType } from '@typegoose/typegoose';
-import { DEFAULT_CURRENCY, CurrencyCodeEnum } from '../shared/enums/currency.enum';
+import { CurrencyCodeEnum, DEFAULT_CURRENCY } from '../shared/enums/currency.enum';
 import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { CronExpression } from '@nestjs/schedule';

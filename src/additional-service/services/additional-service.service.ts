@@ -14,8 +14,6 @@ import { AdminAdditionalServiceDto } from '../../shared/dtos/admin/additional-se
 import { CounterService } from '../../shared/services/counter/counter.service';
 import { GetClientAdditionalServicesQueryDto } from '../../shared/dtos/client/get-client-additional-services-query.dto';
 import { IFilter } from '../../shared/dtos/shared-dtos/spf.dto';
-import { ClientAdditionalServiceDto } from '../../shared/dtos/client/additional-service.dto';
-import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()
 export class AdditionalServiceService {
