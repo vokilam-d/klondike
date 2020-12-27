@@ -57,7 +57,7 @@ export class ClientBlogPostDto implements
       content: blogPost.content[lang],
       linkedPosts: blogPost.linkedPosts.map(linkedPost => ClientLinkedBlogPostDto.transformToDto(linkedPost, lang)),
       linkedProducts: plainToClass(ClientLinkedProductDto, blogPost.linkedProducts, { excludeExtraneousValues: true }),
-      medias: blogPost.medias.map(media => ClientMediaDto.transformToDto(media, lang)),
+      medias: ClientMediaDto.transformToDtosArray(blogPost.medias, lang),
       metaTags: ClientMetaTagsDto.transformToDto(blogPost.metaTags, lang),
       name: blogPost.name[lang],
       slug: blogPost.slug,

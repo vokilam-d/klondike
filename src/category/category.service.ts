@@ -119,13 +119,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
       category = this.handleCloneCategory(category, allCategories, false);
 
-      const linked: ClientLinkedCategoryDto = {
-        ...category,
-        name: category.name[lang],
-        id: category.id,
-        medias: category.medias.filter(media => !media.isHidden).map(media => ClientMediaDto.transformToDto(media, lang)),
-        isSelected: found.id === category.id
-      };
+      const linked: ClientLinkedCategoryDto = ClientLinkedCategoryDto.transformToDto(category, lang, found.id === category.id);
 
       if (found.parentId === category.parentId) {
         siblingCategories.push(linked);
@@ -134,7 +128,7 @@ export class CategoryService implements OnApplicationBootstrap {
       }
     }
 
-    return plainToClass(ClientCategoryDto, { ...found.toJSON(), siblingCategories, childCategories }, { excludeExtraneousValues: true });
+    return ClientCategoryDto.transformToDto(found.toJSON(), lang, siblingCategories, childCategories);
   }
 
   async getClientSiblingCategories(categoryId: number, lang: Language): Promise<ClientLinkedCategoryDto[]> {

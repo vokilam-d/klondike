@@ -23,7 +23,7 @@ export class ClientCategoryTreeItemDto extends BaseCategoryTreeItemDto {
       parentId: treeItem.parentId,
       slug: treeItem.slug,
       reversedSortOrder: treeItem.reversedSortOrder,
-      medias: treeItem.medias.map(media => ClientMediaDto.transformToDto(media, lang)),
+      medias: ClientMediaDto.transformToDtosArray(treeItem.medias, lang),
       children: treeItem.children.map(childTreeItem => ClientCategoryTreeItemDto.transformToDto(childTreeItem, lang)),
       name: treeItem.name[lang]
     };

@@ -7,6 +7,9 @@ import { TrimString } from '../../decorators/trim-string.decorator';
 import { ClientOrderItemDto } from './order-item.dto';
 import { ClientOrderPricesDto } from './order-prices.dto';
 import { Language } from '../../enums/language.enum';
+import { AdminOrderDto } from '../admin/order.dto';
+import { AdminOrderItemDto } from '../admin/order-item.dto';
+import { OrderItem } from '../../../order/models/order-item.model';
 
 export class ClientAddOrderDto implements
   Pick<Order, 'paymentMethodId' | 'isCallbackNeeded' | 'clientNote'>,
@@ -75,7 +78,8 @@ export class ClientOrderDto extends ClientAddOrderDto implements
   @Expose()
   isOnlinePayment: boolean;
 
-  static transformToDto(order: Order, lang: Language): ClientOrderDto {
+  static transformToDto(order: Order | AdminOrderDto, lang: Language): ClientOrderDto {
+    const orderItems = order.items as (OrderItem | AdminOrderItemDto)[];
     return {
       address: order.shipment.recipient,
       clientNote: order.clientNote,
@@ -84,7 +88,7 @@ export class ClientOrderDto extends ClientAddOrderDto implements
       id: order.idForCustomer,
       isCallbackNeeded: order.isCallbackNeeded,
       isOnlinePayment: false,
-      items: order.items.map(item => ClientOrderItemDto.transformToDto(item, lang)),
+      items: orderItems.map(item => ClientOrderItemDto.transformToDto(item, lang)),
       paymentMethodId: order.paymentMethodId,
       paymentMethodName: order.paymentMethodClientName[lang],
       prices: ClientOrderPricesDto.transformToDto(order.prices, lang),

@@ -36,6 +36,8 @@ import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ClientOrderDto } from '../../shared/dtos/client/order.dto';
 import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
 import { ConfirmEmailDto } from '../../shared/dtos/client/confirm-email.dto';
+import { ClientLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -79,7 +81,10 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Get('order')
-  async getOrders(@Req() req): Promise<ResponseDto<ClientOrderDto[]>> {
+  async getOrders(
+    @Req() req,
+    @ClientLang() lang: Language
+  ): Promise<ResponseDto<ClientOrderDto[]>> {
     const customer: DocumentType<Customer> = req.user;
 
     const orderFilterDto = new OrderFilterDto();
@@ -88,7 +93,7 @@ export class ClientCustomerController {
     const { data: orders } = await this.orderService.getOrdersList(orderFilterDto);
 
     return {
-      data: plainToClass(ClientOrderDto, orders, { excludeExtraneousValues: true })
+      data: orders.map(order => ClientOrderDto.transformToDto(order, lang))
     };
   }
 

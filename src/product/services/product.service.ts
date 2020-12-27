@@ -1055,11 +1055,9 @@ export class ProductService implements OnApplicationBootstrap {
     const selectedVariantIdx = productWithQty.variants.findIndex(v => v.slug === slug);
     const selectedVariant = productWithQty.variants[selectedVariantIdx];
 
-    const categories: ClientProductCategoryDto[] = plainToClass(
-      ClientProductCategoryDto,
-      productWithQty.categories.filter(category => category.isEnabled),
-      { excludeExtraneousValues: true }
-    );
+    const categories: ClientProductCategoryDto[] = productWithQty.categories
+      .filter(category => category.isEnabled)
+      .map(category => ClientProductCategoryDto.transformToDto(category, lang));
 
     const attributeModels = await this.attributeService.getAllAttributes();
 
@@ -1071,7 +1069,7 @@ export class ProductService implements OnApplicationBootstrap {
       const foundAttrValues = foundAttr.values.filter(v => attribute.valueIds.includes(v.id));
       if (!foundAttrValues.length) { continue; }
 
-      const value = foundAttrValues.map(value => value.label).join(', ');
+      const value = foundAttrValues.map(value => value.label[lang]).join(', ');
       characteristics.push({ label: foundAttr.label[lang], code: foundAttr._id, value });
     }
 
@@ -1144,8 +1142,8 @@ export class ProductService implements OnApplicationBootstrap {
       breadcrumbs: productWithQty.breadcrumbs.map(breadcrumb => ClientBreadcrumbDto.transformTodo(breadcrumb, lang)),
       fullDescription: selectedVariant.fullDescription[lang],
       shortDescription: selectedVariant.shortDescription[lang],
-      medias: plainToClass(ClientMediaDto, selectedVariant.medias, { excludeExtraneousValues: true }),
-      metaTags: plainToClass(ClientMetaTagsDto, selectedVariant.metaTags, { excludeExtraneousValues: true }),
+      medias: ClientMediaDto.transformToDtosArray(selectedVariant.medias, lang),
+      metaTags: ClientMetaTagsDto.transformToDto(selectedVariant.metaTags, lang),
       name: selectedVariant.name[lang],
       slug: selectedVariant.slug,
       sku: selectedVariant.sku,

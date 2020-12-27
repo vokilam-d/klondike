@@ -6,6 +6,8 @@ import { ClientMediaDto } from './media.dto';
 import { ClientLinkedProductDto } from './linked-product.dto';
 import { ClientMetaTagsDto } from './meta-tags.dto';
 import { ClientBreadcrumbDto } from './breadcrumb.dto';
+import { Language } from '../../enums/language.enum';
+import { ProductCategory } from '../../../product/models/product-category.model';
 
 export class ClientProductCharacteristic {
   label: string;
@@ -22,6 +24,14 @@ export class ClientProductCategoryDto {
 
   @Expose()
   slug: string;
+
+  static transformToDto(productCategory: ProductCategory, lang: Language): ClientProductCategoryDto {
+    return {
+      id: productCategory.id,
+      name: productCategory.name[lang],
+      slug: productCategory.slug
+    };
+  }
 }
 
 type PickedProduct = Pick<Product, 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating' | 'additionalServiceIds'>

@@ -11,6 +11,12 @@ export class ClientMediaDto extends BaseMediaDto {
     return {
       variantsUrls: media.variantsUrls,
       altText: media.altText[lang]
-    }
+    };
+  }
+
+  static transformToDtosArray(medias: Media[], lang: Language): ClientMediaDto[] {
+    return medias
+      .filter(media => !media.isHidden)
+      .map(media => ClientMediaDto.transformToDto(media, lang));
   }
 }

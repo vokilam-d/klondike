@@ -41,7 +41,7 @@ export class ClientBlogPostListItemDto implements
       updatedAt: blogPost.updatedAt,
       shortContent: blogPost.shortContent[lang],
       slug: blogPost.slug,
-      featuredMedia: ClientMediaDto.transformToDto(blogPost.featuredMedia, lang)
+      featuredMedia: blogPost.featuredMedia ? ClientMediaDto.transformToDto(blogPost.featuredMedia, lang) : undefined
     }
   }
 }
