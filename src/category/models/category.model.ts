@@ -32,7 +32,7 @@ export class Category {
   @prop({ _id: false })
   metaTags: MetaTags;
 
-  @prop({ default: '', _id: false })
+  @prop({ default: new MultilingualText(), _id: false })
   description: MultilingualText;
 
   @prop({ default: '' })
