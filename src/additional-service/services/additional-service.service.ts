@@ -159,22 +159,4 @@ export class AdditionalServiceService {
     await this.searchService.addDocuments(AdditionalService.collectionName, dtos);
     this.logger.log('Reindexed');
   }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
-  }
 }
