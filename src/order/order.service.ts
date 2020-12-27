@@ -632,7 +632,7 @@ export class OrderService implements OnApplicationBootstrap {
       clientLastName: order.customerLastName,
       clientEmail: order.customerEmail,
       clientPhone: order.customerPhoneNumber || order.shipment.recipient.phone,
-      language: 'RU'
+      language: Language.RU.toUpperCase()
     }
   }
 
