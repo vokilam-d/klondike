@@ -22,6 +22,7 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
     properties: new ElasticMultilingualText('autocomplete')
   };
   prices = elasticTextType;
+  currency = elasticTextType;
   quantitiesInStock = elasticTextType;
   sellableQuantities = elasticTextType;
   skus = elasticTextType;
