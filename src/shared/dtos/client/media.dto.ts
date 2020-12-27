@@ -1,4 +1,22 @@
-import { MediaDto } from '../shared-dtos/media.dto';
+import { BaseMediaDto } from '../shared-dtos/base-media.dto';
+import { Expose } from 'class-transformer';
+import { Media } from '../../models/media.model';
+import { Language } from '../../enums/language.enum';
 
-export class ClientMediaDto extends MediaDto {
+export class ClientMediaDto extends BaseMediaDto {
+  @Expose()
+  altText: string;
+
+  static transformToDto(media: Media, lang: Language): ClientMediaDto {
+    return {
+      variantsUrls: media.variantsUrls,
+      altText: media.altText[lang]
+    };
+  }
+
+  static transformToDtosArray(medias: Media[], lang: Language): ClientMediaDto[] {
+    return medias
+      .filter(media => !media.isHidden)
+      .map(media => ClientMediaDto.transformToDto(media, lang));
+  }
 }

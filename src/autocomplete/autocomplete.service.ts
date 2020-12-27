@@ -4,6 +4,7 @@ import { AutocompleteItemDto } from '../shared/dtos/client/autocomplete-item.dto
 import { CategoryService } from '../category/category.service';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { AutocompleteItemType } from '../shared/enums/autocomplete-item-type.enum';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class AutocompleteService {
@@ -12,17 +13,17 @@ export class AutocompleteService {
               private readonly categoryService: CategoryService
   ) { }
 
-  async findByQuery(query: string): Promise<AutocompleteItemDto[]> {
+  async findByQuery(query: string, lang: Language): Promise<AutocompleteItemDto[]> {
     const items: AutocompleteItemDto[] = [];
 
     const spf = new AdminSPFDto();
     spf.limit = 3;
     const categories = await this.categoryService.searchEnabledByName(spf, query);
-    const products = await this.productService.getClientProductListAutocomplete(query);
+    const products = await this.productService.getClientProductListAutocomplete(query, lang);
 
     for (const category of categories) {
       items.push({
-        name: category.name,
+        name: category.name[lang],
         slug: category.slug,
         mediaUrl: category.medias[0]?.variantsUrls.small,
         type: AutocompleteItemType.Category

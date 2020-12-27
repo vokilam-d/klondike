@@ -1,15 +1,16 @@
 import { CurrencyCodeEnum } from '../../enums/currency.enum';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductVariantDto } from './product-variant.dto';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
-export class AdminProductVariantListItem implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty' | 'vendorCode' | 'salesCount'> {
+export class AdminProductVariantListItemDto implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty' | 'vendorCode' | 'salesCount'> {
   id: string;
   isEnabled: boolean;
   mediaUrl: string;
   mediaHoverUrl: string;
-  mediaAltText: string;
+  mediaAltText: MultilingualTextDto;
   attributes: AdminProductSelectedAttributeDto[];
-  name: string;
+  name: MultilingualTextDto;
   slug: string;
   sku: string;
   vendorCode: string;

@@ -14,7 +14,7 @@ export class PaymentMethodService {
     return this.paymentMethodModel.find().exec();
   }
 
-  async getAllPaymentMethodsForClient(): Promise<PaymentMethod[]> {
+  async getEnabledSortedPaymentMethods(): Promise<PaymentMethod[]> {
     const sortProp: keyof PaymentMethod = 'sortOrder';
 
     return this.paymentMethodModel

@@ -1,6 +1,7 @@
 import { IsEmail, IsString, Matches } from 'class-validator';
-import { validPasswordRegex } from '../../constants';
+import { clientDefaultLanguage, validPasswordRegex } from '../../constants';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { __ } from '../../helpers/translate/translate.function';
 
 export class ClientRegisterDto {
   @IsString()
@@ -14,6 +15,6 @@ export class ClientRegisterDto {
   @IsEmail()
   email: string;
 
-  @Matches(validPasswordRegex, { message: 'Пароль должен быть не менее 6 символов, состоять из цифр и латинских букв, в том числе заглавных' })
+  @Matches(validPasswordRegex, { message: __('Password must be at least 8 characters long, consist of numbers and Latin letters, including capital letters', clientDefaultLanguage) })
   password: string;
 }

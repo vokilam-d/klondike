@@ -6,9 +6,9 @@ export class ElasticShipmentAddressModel implements Record<keyof ShipmentAddress
   id = elasticTextType;
   addressType = elasticTextType;
   settlementId = elasticTextType;
-  settlement = elasticAutocompleteType;
+  settlement = elasticTextType;
   addressId = elasticTextType;
-  address = elasticAutocompleteType;
+  address = elasticTextType;
   phone = elasticAutocompleteType;
   firstName = elasticAutocompleteType;
   middleName = elasticAutocompleteType;

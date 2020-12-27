@@ -1,12 +1,18 @@
 import { BlogPost } from '../../../blog/models/blog-post.model';
-import { LinkedBlogCategoryDto } from '../admin/blog-post.dto';
 import { Expose, Type } from 'class-transformer';
 import { ClientMediaDto } from './media.dto';
+import { Language } from '../../enums/language.enum';
+import { ClientLinkedBlogCategoryDto } from './linked-blog-category.dto';
 
-export class ClientBlogPostListItemDto implements Pick<BlogPost, 'name' | 'slug' | 'shortContent' | 'category' | 'publishedAt' | 'updatedAt'>, Record<keyof Pick<BlogPost, 'featuredMedia'>, ClientMediaDto> {
+export class ClientBlogPostListItemDto implements
+  Pick<BlogPost, 'slug' | 'publishedAt' | 'updatedAt'>,
+  Record<keyof Pick<BlogPost, 'featuredMedia'>, ClientMediaDto>,
+  Record<keyof Pick<BlogPost, 'category'>, ClientLinkedBlogCategoryDto>,
+  Record<keyof Pick<BlogPost, 'name' | 'shortContent'>, string>
+{
   @Expose()
-  @Type(() => LinkedBlogCategoryDto)
-  category: LinkedBlogCategoryDto;
+  @Type(() => ClientLinkedBlogCategoryDto)
+  category: ClientLinkedBlogCategoryDto;
 
   @Expose()
   name: string;
@@ -26,4 +32,16 @@ export class ClientBlogPostListItemDto implements Pick<BlogPost, 'name' | 'slug'
   @Expose()
   @Type(() => ClientMediaDto)
   featuredMedia: ClientMediaDto;
+
+  static transformToDto(blogPost: BlogPost, lang: Language): ClientBlogPostListItemDto {
+    return {
+      category: ClientLinkedBlogCategoryDto.transformToDto(blogPost, lang),
+      name: blogPost.name[lang],
+      publishedAt: blogPost.publishedAt,
+      updatedAt: blogPost.updatedAt,
+      shortContent: blogPost.shortContent[lang],
+      slug: blogPost.slug,
+      featuredMedia: blogPost.featuredMedia ? ClientMediaDto.transformToDto(blogPost.featuredMedia, lang) : undefined
+    }
+  }
 }

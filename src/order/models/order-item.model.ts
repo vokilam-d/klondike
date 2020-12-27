@@ -1,10 +1,11 @@
 import { arrayProp, prop } from '@typegoose/typegoose';
 import { ClientProductListItemDto } from '../../shared/dtos/client/product-list-item.dto';
 import { OrderItemAdditionalService } from './order-item-additional-service.model';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class OrderItem {
-  @prop()
-  name: string;
+  @prop({ _id: false })
+  name: MultilingualText;
 
   @prop()
   productId: number;
@@ -42,5 +43,5 @@ export class OrderItem {
   @arrayProp({ items: OrderItemAdditionalService, _id: false, default: [] })
   additionalServices: OrderItemAdditionalService[];
 
-  crossSellProducts: ClientProductListItemDto[] = [];
+  crossSellProducts?: ClientProductListItemDto[] = [];
 }

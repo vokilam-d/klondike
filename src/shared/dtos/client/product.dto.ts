@@ -3,9 +3,11 @@ import { Product } from '../../../product/models/product.model';
 import { ClientProductVariantGroupDto } from './product-list-item.dto';
 import { Expose, Type } from 'class-transformer';
 import { ClientMediaDto } from './media.dto';
-import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
-import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { ClientLinkedProductDto } from './linked-product.dto';
+import { ClientMetaTagsDto } from './meta-tags.dto';
+import { ClientBreadcrumbDto } from './breadcrumb.dto';
+import { Language } from '../../enums/language.enum';
+import { ProductCategory } from '../../../product/models/product-category.model';
 
 export class ClientProductCharacteristic {
   label: string;
@@ -15,7 +17,6 @@ export class ClientProductCharacteristic {
 
 export class ClientProductCategoryDto {
   @Expose()
-
   id: number;
 
   @Expose()
@@ -23,10 +24,20 @@ export class ClientProductCategoryDto {
 
   @Expose()
   slug: string;
+
+  static transformToDto(productCategory: ProductCategory, lang: Language): ClientProductCategoryDto {
+    return {
+      id: productCategory.id,
+      name: productCategory.name[lang],
+      slug: productCategory.slug
+    };
+  }
 }
 
-type PickedProduct = Pick<Product, 'breadcrumbs' | 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating' | 'additionalServiceIds'>;
-type PickedVariant = Pick<ProductVariant, 'name' | 'sku' | 'vendorCode' | 'slug' | 'price' | 'oldPrice' | 'fullDescription' | 'shortDescription' | 'isDiscountApplicable'>;
+type PickedProduct = Pick<Product, 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating' | 'additionalServiceIds'>
+  & Record<keyof Pick<Product, 'breadcrumbs'>, ClientBreadcrumbDto[]>;
+type PickedVariant = Pick<ProductVariant, 'sku' | 'vendorCode' | 'slug' | 'price' | 'oldPrice' | 'isDiscountApplicable'>
+  & Record<keyof Pick<ProductVariant, 'fullDescription' | 'shortDescription' | 'name'>, string>;
 
 export class ClientProductDto implements PickedProduct, PickedVariant {
   @Expose()
@@ -53,7 +64,7 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
   characteristics: ClientProductCharacteristic[];
 
   @Expose()
-  breadcrumbs: BreadcrumbDto[];
+  breadcrumbs: ClientBreadcrumbDto[];
 
   @Expose()
   fullDescription: string;
@@ -65,7 +76,7 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
   medias: ClientMediaDto[];
 
   @Expose()
-  metaTags: MetaTagsDto;
+  metaTags: ClientMetaTagsDto;
 
   @Expose()
   name: string;

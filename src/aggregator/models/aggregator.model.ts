@@ -1,4 +1,5 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class Aggregator {
   @prop()
@@ -7,11 +8,11 @@ export class Aggregator {
   set id(id: number) { this._id = id; }
   get id(): number { return this._id; }
 
-  @prop()
-  name: string;
+  @prop({ _id: false })
+  name: MultilingualText;
 
-  @prop()
-  clientName: string;
+  @prop({ _id: false })
+  clientName: MultilingualText;
 
   @prop()
   isVisibleOnProductPage: boolean;

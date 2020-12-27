@@ -1,9 +1,11 @@
 import { Expose, Type } from 'class-transformer';
 import { Customer } from '../../../customer/models/customer.model';
-import { OrderItemDto } from '../shared-dtos/order-item.dto';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
+import { ClientOrderItemDto } from './order-item.dto';
 
-export class ClientCustomerDto implements Pick<Customer, 'id' | 'firstName' | 'lastName' | 'email' | 'phoneNumber' | 'cart' | 'addresses' | 'isEmailConfirmed' | 'totalOrdersCount' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'reviewIds' | 'wishlistProductIds'> {
+export class ClientCustomerDto implements
+  Pick<Customer, 'id' | 'firstName' | 'lastName' | 'email' | 'phoneNumber' | 'addresses' | 'isEmailConfirmed' | 'totalOrdersCount' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'reviewIds' | 'wishlistProductIds'>,
+  Record<keyof Pick<Customer, 'cart'>, ClientOrderItemDto[]> {
   @Expose()
   id: number;
 
@@ -20,7 +22,7 @@ export class ClientCustomerDto implements Pick<Customer, 'id' | 'firstName' | 'l
   phoneNumber: string;
 
   @Expose()
-  cart: OrderItemDto[];
+  cart: ClientOrderItemDto[];
 
   @Expose()
   @Type(() => ShipmentAddressDto)

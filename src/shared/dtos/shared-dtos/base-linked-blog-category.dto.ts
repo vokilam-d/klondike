@@ -1,23 +1,17 @@
+import { LinkedBlogCategory } from '../../../blog/models/linked-blog-category.model';
 import { Expose } from 'class-transformer';
 import { IsNumber, IsString } from 'class-validator';
 import { TrimString } from '../../decorators/trim-string.decorator';
-import { Breadcrumb } from '../../models/breadcrumb.model';
 
-export class BreadcrumbDto implements Breadcrumb {
+export abstract class BaseLinkedBlogCategoryDto implements LinkedBlogCategory {
   @Expose()
   @IsNumber()
   id: number;
 
-  @Expose()
-  @IsString()
-  @TrimString()
-  name: string;
+  abstract name: any;
 
   @Expose()
-  @IsString()
   @TrimString()
+  @IsString()
   slug: string;
-
-  @Expose()
-  isEnabled: boolean;
 }

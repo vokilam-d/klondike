@@ -1,6 +1,7 @@
-import { Exclude, Expose, Transform } from 'class-transformer';
-import { IsString, Matches } from 'class-validator';
-import { validPasswordRegex } from '../../constants';
+import { Expose, Transform } from 'class-transformer';
+import { Matches } from 'class-validator';
+import { adminDefaultLanguage, validPasswordRegex } from '../../constants';
+import { __ } from '../../helpers/translate/translate.function';
 
 export class UserDto {
   @Expose()
@@ -12,6 +13,6 @@ export class UserDto {
 }
 
 export class AddOrUpdateUserDto extends UserDto {
-  @Matches(validPasswordRegex, { message: 'Пароль должен быть не менее 6 символов, состоять из цифр и латинских букв, в том числе заглавных' })
+  @Matches(validPasswordRegex, { message: __('Password must be at least 8 characters long, consist of numbers and Latin letters, including capital letters', adminDefaultLanguage) })
   password: string;
 }

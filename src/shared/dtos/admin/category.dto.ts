@@ -1,12 +1,13 @@
 import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
 import { transliterate } from '../../helpers/transliterate.function';
-import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
-import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { AdminMediaDto } from './media.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
 import { Category } from '../../../category/models/category.model';
 import { EProductsSort } from '../../enums/product-sort.enum';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
+import { ClientMetaTagsDto } from '../client/meta-tags.dto';
+import { AdminBreadcrumbDto } from './breadcrumb.dto';
 
 export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, any>, 'id' | '_id' | 'imageUrl'> {
   @Expose()
@@ -16,12 +17,14 @@ export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, 
   @Expose()
   @IsString()
   @TrimString()
-  name: string;
+  @Type(() => MultilingualTextDto)
+  name: MultilingualTextDto;
 
   @Expose()
   @IsString()
   @TrimString()
-  description: string;
+  @Type(() => MultilingualTextDto)
+  description: MultilingualTextDto;
 
   @Expose()
   @IsString()
@@ -38,7 +41,7 @@ export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, 
   parentId: number;
 
   @Expose()
-  breadcrumbs: BreadcrumbDto[];
+  breadcrumbs: AdminBreadcrumbDto[];
 
   @Expose()
   @IsOptional()
@@ -47,7 +50,7 @@ export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, 
 
   @Expose()
   @ValidateNested()
-  metaTags: MetaTagsDto;
+  metaTags: ClientMetaTagsDto;
 
   @Expose()
   @IsArray()

@@ -1,8 +1,10 @@
 import {
   Body,
   ClassSerializerInterceptor,
-  Controller, forwardRef,
-  Get, Inject,
+  Controller,
+  forwardRef,
+  Get,
+  Inject,
   Param,
   Post,
   Query,
@@ -27,6 +29,8 @@ import { ClientProductResponseDto } from '../../shared/dtos/client/product-respo
 import { CategoryService } from '../../category/category.service';
 import { plainToClass } from 'class-transformer';
 import { ClientLinkedCategoryDto } from '../../shared/dtos/client/linked-category.dto';
+import { ClientLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -39,22 +43,22 @@ export class ClientProductController {
   }
 
   @Get()
-  async findProducts(@Query() spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
+  async findProducts(@Query() spf: ClientProductSPFDto, @ClientLang() lang: Language): Promise<ClientProductListResponseDto> {
     if (spf.lastAdded) {
-      return this.productService.getClientProductListLastAdded();
+      return this.productService.getClientProductListLastAdded(lang);
     } else if (spf.id) {
-      return this.productService.getClientProductList(spf);
+      return this.productService.getClientProductList(spf, lang);
     } else {
-      return this.productService.getClientProductListWithFilters(spf);
+      return this.productService.getClientProductListWithFilters(spf, lang);
     }
   }
 
   @Get(':slug')
-  async getProductBySlug(@Param('slug') slug: string): Promise<ClientProductResponseDto> {
-    const dto = await this.productService.getEnabledClientProductDtoBySlug(slug);
+  async getProductBySlug(@Param('slug') slug: string, @ClientLang() lang: Language): Promise<ClientProductResponseDto> {
+    const dto = await this.productService.getEnabledClientProductDtoBySlug(slug, lang);
 
     const lastBreadcrumb = dto.breadcrumbs[dto.breadcrumbs.length - 1];
-    const categories = await this.categoryService.getClientSiblingCategories(lastBreadcrumb.id)
+    const categories = await this.categoryService.getClientSiblingCategories(lastBreadcrumb.id, lang);
 
     return {
       data: dto,
@@ -67,7 +71,8 @@ export class ClientProductController {
                           @Body() quickReviewDto: AddProductQuickReviewDto,
                           @Req() req,
                           @IpAddress() ipAddress: string | null,
-                          @ClientId() clientId: string
+                          @ClientId() clientId: string,
+                          @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientProductDto>> {
 
     const [productId, variantId] = parseClientProductId(clientProductId);
@@ -78,7 +83,7 @@ export class ClientProductController {
     await this.quickReviewService.createQuickReview(productId, quickReviewDto, ipAddress, clientId, customerId);
     const productWithQty = await this.productService.getProductWithQtyById(productId);
     const slug = productWithQty.variants.find(v => v._id.equals(variantId)).slug;
-    const dto = await this.productService.transformToClientProductDto(productWithQty, slug);
+    const dto = await this.productService.transformToClientProductDto(productWithQty, slug, lang);
 
     return {
       data: dto

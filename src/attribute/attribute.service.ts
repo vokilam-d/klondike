@@ -12,7 +12,8 @@ import { __ } from '../shared/helpers/translate/translate.function';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
-import { sortByLabel } from '../shared/helpers/sort-by-label.function';
+import { sortByMultilingualLabel } from '../shared/helpers/sort-by-label.function';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {
@@ -74,12 +75,10 @@ export class AttributeService implements OnApplicationBootstrap {
       throw new NotFoundException(__('Attribute with id "$1" not found', 'ru', id));
     }
 
-    found.values = sortByLabel(found.values);
-
     return found;
   }
 
-  async createAttribute(attributeDto: AdminCreateAttributeDto): Promise<DocumentType<Attribute>> {
+  async createAttribute(attributeDto: AdminCreateAttributeDto, lang: Language): Promise<DocumentType<Attribute>> {
     const found = await this.attributeModel.findById(attributeDto.id).exec();
     if (found) {
       throw new BadRequestException(__('Attribute with id "$1" already exists', 'ru', attributeDto.id));
@@ -88,6 +87,7 @@ export class AttributeService implements OnApplicationBootstrap {
     this.checkDtoForErrors(attributeDto);
 
     const attribute = new this.attributeModel(attributeDto);
+    attribute.values = sortByMultilingualLabel(attribute.values, lang);
     await attribute.save();
     this.addSearchData(attribute);
     this.updateCachedAttributes();
@@ -95,12 +95,13 @@ export class AttributeService implements OnApplicationBootstrap {
     return attribute;
   }
 
-  async updateAttribute(attributeId: string, attributeDto: AdminUpdateAttributeDto): Promise<DocumentType<Attribute>> {
+  async updateAttribute(attributeId: string, attributeDto: AdminUpdateAttributeDto, lang: Language): Promise<DocumentType<Attribute>> {
     const attribute = await this.getAttribute(attributeId);
 
     this.checkDtoForErrors(attributeDto);
 
     Object.keys(attributeDto).forEach(key => attribute[key] = attributeDto[key]);
+    attribute.values = sortByMultilingualLabel(attribute.values, lang);
 
     await attribute.save();
     this.updateSearchData(attribute);
@@ -176,31 +177,12 @@ export class AttributeService implements OnApplicationBootstrap {
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
     const attributes = await this.attributeModel.find().exec();
+    const dtos = attributes.map(attribute => plainToClass(AdminAttributeDto, attribute, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(Attribute.collectionName);
     await this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttributeModel());
-
-    for (const batch of getBatches(attributes, 20)) {
-      await Promise.all(batch.map(attribute => this.addSearchData(attribute)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(Attribute.collectionName, dtos);
+    this.logger.log(`Reindexed`);
   }
 
   private async searchByFilters(spf: AdminSPFDto) {

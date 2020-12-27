@@ -1,12 +1,20 @@
-import { AdminCategoryDto } from '../admin/category.dto';
-import { MetaTagsDto } from '../shared-dtos/meta-tags.dto';
 import { Expose, Type } from 'class-transformer';
-import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { ClientMediaDto } from './media.dto';
 import { ClientLinkedCategoryDto } from './linked-category.dto';
 import { EProductsSort } from '../../enums/product-sort.enum';
+import { ClientMetaTagsDto } from './meta-tags.dto';
+import { ClientBreadcrumbDto } from './breadcrumb.dto';
+import { Category } from '../../../category/models/category.model';
+import { Language } from '../../enums/language.enum';
 
-export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | 'reversedSortOrder' | 'createRedirect' | 'canonicalCategoryId'> {
+export class ClientCategoryDto implements
+  Pick<Category, 'id' | 'parentId' | 'slug' | 'defaultItemsSort'>,
+  Record<keyof Pick<Category, 'description' | 'name'>, string>,
+  Record<keyof Pick<Category, 'breadcrumbs'>, ClientBreadcrumbDto[]>,
+  Record<keyof Pick<Category, 'metaTags'>, ClientMetaTagsDto>,
+  Record<keyof Pick<Category, 'medias'>, ClientMediaDto[]>
+{
+
   @Expose()
   description: string;
 
@@ -14,7 +22,7 @@ export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | '
   id: number;
 
   @Expose()
-  metaTags: MetaTagsDto;
+  metaTags: ClientMetaTagsDto;
 
   @Expose()
   name: string;
@@ -26,8 +34,8 @@ export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | '
   slug: string;
 
   @Expose()
-  @Type(() => BreadcrumbDto)
-  breadcrumbs: BreadcrumbDto[];
+  @Type(() => ClientBreadcrumbDto)
+  breadcrumbs: ClientBreadcrumbDto[];
 
   @Expose()
   @Type(() => ClientMediaDto)
@@ -43,4 +51,25 @@ export class ClientCategoryDto implements Omit<AdminCategoryDto, 'isEnabled' | '
 
   @Expose()
   defaultItemsSort: EProductsSort;
+
+  static transformToDto(
+    category: Category,
+    lang: Language,
+    siblingCategories: ClientLinkedCategoryDto[],
+    childCategories: ClientLinkedCategoryDto[]
+  ): ClientCategoryDto {
+    return {
+      breadcrumbs: category.breadcrumbs.map(breadcrumb => ClientBreadcrumbDto.transformTodo(breadcrumb, lang)),
+      childCategories: childCategories,
+      defaultItemsSort: category.defaultItemsSort,
+      description: category.description[lang],
+      id: category.id,
+      medias: ClientMediaDto.transformToDtosArray(category.medias, lang),
+      metaTags: ClientMetaTagsDto.transformToDto(category.metaTags, lang),
+      name: category.name[lang],
+      parentId: category.parentId,
+      siblingCategories: siblingCategories,
+      slug: category.slug
+    };
+  }
 }

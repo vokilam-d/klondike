@@ -9,7 +9,7 @@ import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductWithQty } from '../product/models/product-with-qty.model';
 import { AttributeService } from '../attribute/attribute.service';
 import { ProductSelectedAttribute } from '../product/models/product-selected-attribute.model';
-import { priceThresholdForFreeShipping } from '../shared/constants';
+import { clientDefaultLanguage, priceThresholdForFreeShipping } from '../shared/constants';
 
 type cdata = { $: string };
 
@@ -93,7 +93,7 @@ export class GoogleShoppingFeedService {
 
       return selectedBrandAttr.valueIds.reduce((acc, valueId) => {
         const value = manufacturerAttr.values.find(value => value.id === valueId);
-        const label = value.label.match(/\((.+)\)/)?.[1] || value.label; // get everything from inside "()", if any
+        const label = value.label[clientDefaultLanguage].match(/\((.+)\)/)?.[1] || value.label[clientDefaultLanguage]; // get everything from inside "()", if any
 
         return acc ? `${acc}, ${label}` : label;
       }, '');
@@ -144,11 +144,11 @@ export class GoogleShoppingFeedService {
 
         const item: IShoppingFeedItem = {
           'g:id': { $: variant.sku },
-          'g:title': { $: variant.googleAdsProductTitle || variant.name },
+          'g:title': { $: variant.googleAdsProductTitle[clientDefaultLanguage] || variant.name[clientDefaultLanguage] },
           'g:link': { $: `http://klondike.com.ua/${variant.slug}` },
           'g:price': { $: `${price} UAH` },
           ...(salePrice ? { 'g:sale_price': { $: `${salePrice} UAH` } } : {}),
-          'g:description': { $: stripHtmlTags(description).replace(/\r?\n|\n/g, ' ') },
+          'g:description': { $: stripHtmlTags(description[clientDefaultLanguage]).replace(/\r?\n|\n/g, ' ') },
           'g:product_type': { $: this.buildProductType(product.breadcrumbs) },
           ...(imageLink ? {'g:image_link': { $: imageLink }} : {}),
           ...(additionalImageLinks.length ? {'g:additional_image_link': { $: additionalImageLinks as any }}: {}),
@@ -208,7 +208,7 @@ export class GoogleShoppingFeedService {
               sku: { $: variant.sku }
             }
           },
-          product_name: { $: variant.name },
+          product_name: { $: variant.name[clientDefaultLanguage] },
           product_url: { $: variantUrl }
         });
       });

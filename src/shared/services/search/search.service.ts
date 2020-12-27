@@ -67,8 +67,8 @@ export class SearchService {
     }
   }
 
-  async addDocuments(collection: string, documents: any): Promise<any> {
-    if (documents.length == 0) {
+  async addDocuments(collection: string, documents: any[]): Promise<any> {
+    if (documents.length === 0) {
       return;
     }
     const body = documents.flatMap(doc => [{ index: { _index: collection, _id: doc.id } }, doc]);

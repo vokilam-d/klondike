@@ -1,25 +1,18 @@
 import { Expose, Transform, Type } from 'class-transformer';
-import {
-  ArrayMinSize,
-  IsArray,
-  IsBoolean,
-  IsDate,
-  IsNumber,
-  IsOptional,
-  IsString,
-  ValidateNested
-} from 'class-validator';
-import { OrderItemDto } from '../shared-dtos/order-item.dto';
+import { ArrayMinSize, IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ShipmentDto } from './shipment.dto';
 import { OrderStatusEnum } from '../../enums/order-status.enum';
-import { __ } from '../../helpers/translate/translate.function';
+import { getTranslations } from '../../helpers/translate/translate.function';
 import { PaymentTypeEnum } from '../../enums/payment-type.enum';
 import { Log } from '../../models/log.model';
-import { OrderPricesDto } from '../shared-dtos/order-prices.dto';
 import { Order } from '../../../order/models/order.model';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { AdminOrderItemDto } from './order-item.dto';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
+import { AdminOrderPricesDto } from './order-prices.dto';
+import { AdminLogDto } from './log.dto';
 
-export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'state' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid'>{
+export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid'> {
   @Expose()
   @IsOptional()
   @IsNumber()
@@ -86,11 +79,8 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
-  @Type(() => OrderItemDto)
-  items: OrderItemDto[];
-
-  @Expose()
-  state: any;
+  @Type(() => AdminOrderItemDto)
+  items: AdminOrderItemDto[];
 
   @Expose()
   status: OrderStatusEnum;
@@ -112,8 +102,8 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   logs: Log[];
 
   @Expose()
-  @Type(() => OrderPricesDto)
-  prices: OrderPricesDto;
+  @Type(() => AdminOrderPricesDto)
+  prices: AdminOrderPricesDto;
 
   @Expose()
   @IsOptional()
@@ -121,7 +111,7 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   isOrderPaid: boolean;
 }
 
-export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Order, 'id' | 'idForCustomer' | 'statusDescription' | 'paymentMethodClientName' | 'paymentMethodAdminName' | 'shippingMethodName' | 'source'> {
+export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Order, 'id' | 'idForCustomer' | 'paymentMethodClientName' | 'paymentMethodAdminName' | 'shippingMethodName' | 'source' | 'logs'> {
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id: number;
@@ -133,29 +123,28 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Orde
   idForCustomer: string;
 
   @Expose()
-  @Transform(((value, order: AdminOrderDto) => value || __(order.status, 'ru')))
-  statusDescription: string;
+  @Transform(((value, order: AdminOrderDto) => value || getTranslations(order.status)))
+  statusDescription: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
   @IsOptional()
-  paymentMethodClientName: string;
+  @Type(() => MultilingualTextDto)
+  paymentMethodClientName: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
   @IsOptional()
-  paymentMethodAdminName: string;
+  @Type(() => MultilingualTextDto)
+  paymentMethodAdminName: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  shippingMethodName: string;
+  shippingMethodName: MultilingualTextDto;
 
   @Expose()
   source: 'client' | 'manager';
+
+  @Expose()
+  @Type(() => AdminLogDto)
+  logs: AdminLogDto[];
 }
 
 export class UpdateOrderAdminNote implements Pick<Order, 'adminNote'>{

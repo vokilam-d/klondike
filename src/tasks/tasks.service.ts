@@ -8,6 +8,7 @@ import { Order } from '../order/models/order.model';
 import { EmailService } from '../email/email.service';
 import { TaskTypeEnum } from '../shared/enums/task-type.enum';
 import { isProdPrimaryInstance } from '../shared/helpers/is-prod-primary-instance.function';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class TasksService implements OnApplicationBootstrap {
@@ -28,12 +29,12 @@ export class TasksService implements OnApplicationBootstrap {
     }
   }
 
-  async sendLeaveReviewEmail(order: Order) {
+  async sendLeaveReviewEmail(order: Order, lang: Language) {
     const name = `${TaskTypeEnum.SendEmail}-${order._id}-${Date.now()}`;
     const time = new Date();
     time.setDate(time.getDate() + this.delaysInDays[TaskTypeEnum.SendEmail]);
 
-    await this.addTask(name, time, TaskTypeEnum.SendEmail, [order]);
+    await this.addTask(name, time, TaskTypeEnum.SendEmail, [order, lang]);
   }
 
   private async setupSavedTasks() {
@@ -73,7 +74,7 @@ export class TasksService implements OnApplicationBootstrap {
   private buildJob(taskType: TaskTypeEnum, args: any[]): () => any {
     switch (taskType) {
       case TaskTypeEnum.SendEmail:
-        return () => this.emailService.sendLeaveReviewEmail(args[0]);
+        return () => this.emailService.sendLeaveReviewEmail(args[0], args[1]);
     }
   }
 }
