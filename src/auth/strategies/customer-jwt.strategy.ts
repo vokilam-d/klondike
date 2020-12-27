@@ -5,6 +5,7 @@ import { FastifyRequest } from 'fastify';
 import { authConstants } from '../auth-constants';
 import { Customer } from '../../customer/models/customer.model';
 import { CustomerService } from '../../customer/customer.service';
+import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
 
 @Injectable()
 export class CustomerJwtStrategy extends PassportStrategy(Strategy, authConstants.CUSTOMER_JWT_STRATEGY_NAME) {
@@ -12,11 +13,14 @@ export class CustomerJwtStrategy extends PassportStrategy(Strategy, authConstant
   constructor(private customerService: CustomerService) {
     super({
       jwtFromRequest: (req: FastifyRequest) => {
-        let token = null;
-        if (req && req.cookies) {
-          token = req.cookies[authConstants.JWT_COOKIE_NAME];
+        const jwtCookie = req?.cookies?.[authConstants.JWT_COOKIE_NAME];
+
+        if (isProdEnv()) {
+          return jwtCookie || null;
+        } else {
+          const devJwt = process.env.DEV_CUSTOMER_JWT;
+          return jwtCookie || devJwt || null;
         }
-        return token;
       },
       ignoreExpiration: false,
       secretOrKey: authConstants.JWT_SECRET

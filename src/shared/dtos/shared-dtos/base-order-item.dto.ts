@@ -1,14 +1,12 @@
-import { Expose, Type } from 'class-transformer';
+import { Expose } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { ClientProductListItemDto } from '../client/product-list-item.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
-import { OrderItemAdditionalServiceDto } from './order-item-additional-service.dto';
+import { BaseOrderItemAdditionalServiceDto } from './base-order-item-additional-service.dto';
+import { OrderItem } from '../../../order/models/order-item.model';
 
-export class OrderItemDto {
-  @Expose()
-  @IsString()
-  @TrimString()
-  name: string;
+export abstract class BaseOrderItemDto implements OrderItem {
+  abstract name: any;
 
   @Expose()
   @IsNumber()
@@ -64,10 +62,5 @@ export class OrderItemDto {
   @TrimString()
   slug: string;
 
-  @Expose()
-  @Type(() => OrderItemAdditionalServiceDto)
-  additionalServices: OrderItemAdditionalServiceDto[];
-
-  @Expose()
-  crossSellProducts: ClientProductListItemDto[];
+  abstract additionalServices: BaseOrderItemAdditionalServiceDto[];
 }

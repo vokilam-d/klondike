@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post, Put,
-  Req,
-  Res,
-  UseGuards,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AddOrUpdateUserDto, UserDto } from '../shared/dtos/admin/user.dto';
@@ -36,7 +24,7 @@ export class UserController {
   @Get()
   async getUser(@Req() req): Promise<ResponseDto<UserDto>> {
     const user: DocumentType<User> = await this.authService.getUserFromReq(req);
-    const dto = plainToClass(UserDto, user.toJSON(), { excludeExtraneousValues: true });
+    const dto = plainToClass(UserDto, user?.toJSON(), { excludeExtraneousValues: true });
 
     return {
       data: dto

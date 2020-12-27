@@ -9,7 +9,6 @@ import { CounterService } from '../shared/services/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
 import { ClientSession } from 'mongoose';
-import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ReorderPositionEnum } from '../shared/enums/reorder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
@@ -25,6 +24,11 @@ import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { SearchService } from '../shared/services/search/search.service';
 import { ElasticCategory } from './models/elastic-category.model';
 import { IFilter, ISorting } from '../shared/dtos/shared-dtos/spf.dto';
+import { AdminCategoryTreeItemDto } from '../shared/dtos/admin/category-tree-item.dto';
+import { Language } from '../shared/enums/language.enum';
+import { ClientMediaDto } from '../shared/dtos/client/media.dto';
+import { MultilingualText } from '../shared/models/multilingual-text.model';
+import { areMultilingualTextsEqual } from '../shared/helpers/are-multilingual-texts-equal.function';
 
 @Injectable()
 export class CategoryService implements OnApplicationBootstrap {
@@ -52,9 +56,9 @@ export class CategoryService implements OnApplicationBootstrap {
     return categories;
   }
 
-  async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean } = { }): Promise<CategoryTreeItem[]> {
-    const treeItems: CategoryTreeItem[] = [];
-    const childrenMap: { [parentId: number]: CategoryTreeItem[] } = {};
+  async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean } = { }): Promise<AdminCategoryTreeItemDto[]> {
+    const treeItems: AdminCategoryTreeItemDto[] = [];
+    const childrenMap: { [parentId: number]: AdminCategoryTreeItemDto[] } = {};
 
     const allCategories = await this.getAllCategories();
     for (let category of allCategories) {
@@ -64,7 +68,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
       category = this.handleCloneCategory(category, allCategories, options.adminTree);
 
-      const item: CategoryTreeItem = plainToClass(CategoryTreeItem, category, { excludeExtraneousValues: true });
+      const item: AdminCategoryTreeItemDto = plainToClass(AdminCategoryTreeItemDto, category, { excludeExtraneousValues: true });
       item.children = [];
 
       if (category.parentId === 0) {
@@ -76,7 +80,7 @@ export class CategoryService implements OnApplicationBootstrap {
       childrenMap[category.parentId].push(item);
     }
 
-    const populateChildrenArray = (array: CategoryTreeItem[]) => {
+    const populateChildrenArray = (array: AdminCategoryTreeItemDto[]) => {
       for (const arrayItem of array) {
         const children = childrenMap[arrayItem.id] || [];
         arrayItem.children.push(...children);
@@ -101,7 +105,7 @@ export class CategoryService implements OnApplicationBootstrap {
     return found;
   }
 
-  async getClientCategoryBySlug(slug: string): Promise<ClientCategoryDto> {
+  async getClientCategoryBySlug(slug: string, lang: Language): Promise<ClientCategoryDto> {
     const found = await this.categoryModel.findOne({ slug, isEnabled: true }).exec();
     if (!found) {
       throw new NotFoundException(__('Category with slug "$1" not found', 'ru', slug));
@@ -115,12 +119,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
       category = this.handleCloneCategory(category, allCategories, false);
 
-      const linked: ClientLinkedCategoryDto = {
-        ...category,
-        id: category.id,
-        medias: category.medias.filter(media => !media.isHidden),
-        isSelected: found.id === category.id
-      };
+      const linked: ClientLinkedCategoryDto = ClientLinkedCategoryDto.transformToDto(category, lang, found.id === category.id);
 
       if (found.parentId === category.parentId) {
         siblingCategories.push(linked);
@@ -129,10 +128,10 @@ export class CategoryService implements OnApplicationBootstrap {
       }
     }
 
-    return plainToClass(ClientCategoryDto, { ...found.toJSON(), siblingCategories, childCategories }, { excludeExtraneousValues: true });
+    return ClientCategoryDto.transformToDto(found.toJSON(), lang, siblingCategories, childCategories);
   }
 
-  async getClientSiblingCategories(categoryId: number): Promise<ClientLinkedCategoryDto[]> {
+  async getClientSiblingCategories(categoryId: number, lang: Language): Promise<ClientLinkedCategoryDto[]> {
     const found = await this.categoryModel.findById(categoryId).exec();
 
     const linkedCategories: ClientLinkedCategoryDto[] = [];
@@ -145,8 +144,9 @@ export class CategoryService implements OnApplicationBootstrap {
 
       linkedCategories.push({
         ...category,
+        name: category.name[lang],
         id: category.id,
-        medias: category.medias.filter(media => !media.isHidden),
+        medias: category.medias.filter(media => !media.isHidden).map(media => ClientMediaDto.transformToDto(media, lang)),
         isSelected: found.id === category.id
       });
     }
@@ -204,7 +204,7 @@ export class CategoryService implements OnApplicationBootstrap {
     try {
       const category = await this.getCategoryById(categoryId, session);
       const oldSlug = category.slug;
-      const oldName = category.name;
+      const oldName: MultilingualText = { ...category.name };
       const oldIsEnabled = category.isEnabled;
 
       const mediasToDelete: Media[] = [];
@@ -230,7 +230,7 @@ export class CategoryService implements OnApplicationBootstrap {
       if (oldSlug !== categoryDto.slug) {
         await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, categoryDto.createRedirect, session);
       }
-      if (oldSlug !== categoryDto.slug || oldName !== categoryDto.name || oldIsEnabled !== categoryDto.isEnabled) {
+      if (oldSlug !== categoryDto.slug || !areMultilingualTextsEqual(oldName, categoryDto.name) || oldIsEnabled !== categoryDto.isEnabled) {
         await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session);
         await this.updateBreadcrumbs(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session)
       }
@@ -415,7 +415,7 @@ export class CategoryService implements OnApplicationBootstrap {
     return this.mediaService.upload(request, Category.collectionName);
   }
 
-  private async updateBreadcrumbs(categoryId: number, name: string, slug: string, isEnabled: boolean, session: ClientSession): Promise<void> {
+  private async updateBreadcrumbs(categoryId: number, name: MultilingualText, slug: string, isEnabled: boolean, session: ClientSession): Promise<void> {
     const breadcrumbsProp: keyof Category = 'breadcrumbs';
     const breadcrumbIdProp: keyof Breadcrumb = 'id';
     const breadcrumbNameProp: keyof Breadcrumb = 'name';
@@ -452,31 +452,12 @@ export class CategoryService implements OnApplicationBootstrap {
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
     const categorys = await this.categoryModel.find().exec();
+    const dtos = categorys.map(category => plainToClass(AdminCategoryDto, category, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(Category.collectionName);
     await this.searchService.ensureCollection(Category.collectionName, new ElasticCategory());
-
-    for (const batch of getBatches(categorys, 20)) {
-      await Promise.all(batch.map(category => this.addSearchData(category)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(Category.collectionName, dtos);
+    this.logger.log(`Reindexed`);
   }
 
   private async searchByFilters(spf: AdminSPFDto, filters?: IFilter[], sorting?: ISorting) {

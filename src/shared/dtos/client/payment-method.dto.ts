@@ -1,13 +1,13 @@
-import { Expose, Transform } from 'class-transformer';
+import { Expose } from 'class-transformer';
 import { PaymentTypeEnum } from '../../enums/payment-type.enum';
+import { PaymentMethod } from '../../../payment-method/models/payment-method.model';
+import { Language } from '../../enums/language.enum';
 
-export class ClientPaymentMethodDto {
+export class ClientPaymentMethodDto implements Pick<PaymentMethod, 'paymentType' | 'price'> {
   @Expose()
-  @Transform(((value, obj) => obj._id || value))
   id: string;
 
   @Expose()
-  @Transform(((value, obj) => value ? value : obj.clientName))
   name: string;
 
   @Expose()
@@ -15,4 +15,13 @@ export class ClientPaymentMethodDto {
 
   @Expose()
   paymentType: PaymentTypeEnum;
+
+  static transformToDto(paymentMethod: PaymentMethod, lang: Language): ClientPaymentMethodDto {
+    return {
+      id: paymentMethod._id.toString(),
+      name: paymentMethod.clientName[lang],
+      paymentType: paymentMethod.paymentType,
+      price: paymentMethod.price
+    };
+  }
 }

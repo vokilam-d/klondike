@@ -7,6 +7,7 @@ import { Order } from '../order/models/order.model';
 import { readableDate } from '../shared/helpers/readable-date.function';
 import { isInDocker } from '../shared/helpers/is-in-docker';
 import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-order.function';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -28,8 +29,8 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
     await this.closeBrowser();
   }
 
-  async generateOrderPdf(order: Order): Promise<Buffer> {
-    const context = this.buildTemplateContextForOrder(order);
+  async generateOrderPdf(order: Order, lang: Language): Promise<Buffer> {
+    const context = this.buildTemplateContextForOrder(order, lang);
     return this.generatePdf(this.orderHtmlPath, this.orderCssPath, context);
   }
 
@@ -66,7 +67,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
     return pdf;
   }
 
-  private buildTemplateContextForOrder(order: Order): any {
+  private buildTemplateContextForOrder(order: Order, lang: Language): any {
     return {
       orderId: order.idForCustomer,
       orderDateTime: readableDate(order.createdAt),
@@ -77,11 +78,11 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       address: order.shipment.recipient.address,
       addressBuildingNumber: order.shipment.recipient.buildingNumber,
       addressFlatNumber: order.shipment.recipient.flat,
-      shipping: order.shippingMethodName,
+      shipping: order.shippingMethodName[lang],
       shippingTip: isFreeShippingForOrder(order) ? 'бесплатная доставка' : 'оплачивается получателем',
-      payment: order.paymentMethodClientName,
+      payment: order.paymentMethodClientName[lang],
       products: order.items.map(item => ({
-        name: item.name,
+        name: item.name[lang],
         sku: item.sku,
         qty: item.qty,
         price: item.price,
@@ -89,16 +90,18 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
         cost: item.cost,
         imageUrl: item.imageUrl,
         slug: item.slug,
-        additionalServices: item.additionalServices.map(service => `${service.name} (+${service.price}грн)`)
+        additionalServices: item.additionalServices.map(service => `${service.name[lang]} (+${service.price}грн)`)
       })),
       totalProductsCost: order.prices.itemsCost,
-      discountLabel: order.prices.discountLabel,
+      discountLabel: order.prices.discountLabel[lang],
       discountPercent: order.prices.discountPercent,
       discountValue: order.prices.discountValue
     };
   }
 
   private buildTemplateContextForInvoice(order: Order): any {
+    const lang: Language = Language.UK;
+
     return {
       orderId: order.id,
       orderDateTime: readableDate(order.createdAt),
@@ -107,17 +110,17 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       totalOrderCostInWords: this.convertDigitsToWords(order.prices.totalCost),
       products: order.items.map((item, index) => ({
         index: index + 1,
-        name: item.name,
+        name: item.name[lang],
         sku: item.sku,
         qty: item.qty,
         price: item.price,
         oldPrice: item.oldPrice,
         cost: item.cost,
-        additionalServices: item.additionalServices.map(service => `${service.name} (+${service.price}грн)`)
+        additionalServices: item.additionalServices.map(service => `${service.name[lang]} (+${service.price}грн)`)
       })),
       productsAmount: order.items.length,
       totalProductsCost: order.prices.itemsCost,
-      discountLabel: order.prices.discountLabel,
+      discountLabel: order.prices.discountLabel[lang],
       discountPercent: order.prices.discountPercent,
       discountValue: order.prices.discountValue,
       manager: process.env.BANK_DETAILS_NAME,

@@ -1,6 +1,7 @@
-import { AdminProductVariantListItem } from './product-variant-list-item.dto';
+import { AdminProductVariantListItemDto } from './product-variant-list-item.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductCategoryDto } from './product-category.dto';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
 export class AdminProductListItemDto {
   id: number;
@@ -8,8 +9,9 @@ export class AdminProductListItemDto {
   isEnabled: boolean;
   attributes: AdminProductSelectedAttributeDto[];
   mediaUrl: string;
-  name: string;
+  name: MultilingualTextDto;
   skus: string;
+  currency: string;
   vendorCodes: string;
   prices: string;
   quantitiesInStock: string;
@@ -18,7 +20,7 @@ export class AdminProductListItemDto {
   allReviewsCount: number;
   textReviewsCount: number;
   reviewsAvgRating: number;
-  variants?: AdminProductVariantListItem[];
+  variants?: AdminProductVariantListItemDto[];
   createdAt: Date;
   updatedAt: Date;
 }

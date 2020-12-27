@@ -1,13 +1,12 @@
 import { MediaVariantEnum } from '../../enums/media-variant.enum';
 import { Expose } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
-import { TrimString } from '../../decorators/trim-string.decorator';
+import { Media } from '../../models/media.model';
 
 type VariantsUrls = {
   [k in MediaVariantEnum]: string;
 };
 
-export abstract class MediaDto {
+export abstract class BaseMediaDto implements Pick<Media, 'variantsUrls' | 'altText'> {
   @Expose()
   variantsUrls: VariantsUrls = {
     [MediaVariantEnum.Original]: '',
@@ -16,9 +15,5 @@ export abstract class MediaDto {
     [MediaVariantEnum.Small]: '',
   };
 
-  @Expose()
-  @IsOptional()
-  @IsString()
-  @TrimString()
-  altText: string;
+  abstract altText: any;
 }

@@ -3,7 +3,7 @@ import { BaseReview, ReviewVote } from './models/base-review.model';
 import { FastifyRequest } from 'fastify';
 import { Media } from '../../shared/models/media.model';
 import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
-import { ForbiddenException, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import { ForbiddenException, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { AdminBaseReviewDto } from '../../shared/dtos/admin/base-review.dto';
 import { ClientSession } from 'mongoose';
@@ -13,6 +13,8 @@ import { SearchService } from '../../shared/services/search/search.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { ClientSPFDto } from '../../shared/dtos/client/spf.dto';
+import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instance-cron.decorator';
+import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-expression-early-morning.function';
 
 type IReviewCallback<T = any> = (review: T, session: ClientSession) => Promise<any>;
 
@@ -29,6 +31,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   protected abstract mediaService: MediaService;
   protected abstract counterService: CounterService;
   protected abstract searchService: SearchService;
+  protected abstract logger: Logger;
 
 
   onApplicationBootstrap(): any {
@@ -234,7 +237,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     await this.searchService.addDocument(this.collectionName, review.id, reviewDto);
   }
 
-  private updateSearchData(review: DocumentType<T>): Promise<any> {
+  protected updateSearchData(review: DocumentType<T>): Promise<any> {
     const reviewDto = this.transformReviewToDto(review);
     return this.searchService.updateDocument(this.collectionName, review.id, reviewDto);
   }
@@ -253,5 +256,17 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       undefined,
       new this.ElasticReview()
     );
+  }
+
+  @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
+  protected async reindexAllSearchData() {
+    this.logger.log('Start reindex all search data');
+    const reviews = await this.reviewModel.find().exec();
+    const dtos = reviews.map(review => this.transformReviewToDto(review));
+
+    await this.searchService.deleteCollection(this.collectionName);
+    await this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());
+    await this.searchService.addDocuments(this.collectionName, dtos);
+    this.logger.log(`Reindexed`);
   }
 }

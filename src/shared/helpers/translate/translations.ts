@@ -269,5 +269,9 @@ export const TRANSLATIONS = {
   'Cash on delivery is not available for gold leaf': {
     en: 'Cash on delivery is not available for gold leaf',
     ru: 'Наложенный платёж недоступен для сусального золота'
+  },
+  'Password must be at least 8 characters long, consist of numbers and Latin letters, including capital letters': {
+    en: 'Password must be at least 8 characters long, consist of numbers and Latin letters, including capital letters',
+    ru: 'Пароль должен быть не менее 8 символов, состоять из цифр и латинских букв, в том числе заглавных'
   }
 }

@@ -1,12 +1,13 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { AttributeTypeEnum } from '../../shared/enums/attribute-type.enum';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
 
 export class AttributeValue {
   @prop()
   id: string;
 
-  @prop()
-  label: string;
+  @prop({ _id: false })
+  label: MultilingualText;
 
   @prop({ default: false })
   isDefault: boolean;
@@ -22,17 +23,14 @@ export class Attribute {
   set id(id: string) { this._id = id; }
   get id(): string { return this._id; }
 
-  @prop()
-  label: string; // UI name
+  @prop({ _id: false })
+  label: MultilingualText;
 
   @arrayProp({ items: AttributeValue, default: [], _id: false })
   values: AttributeValue[];
 
   @prop({ enum: AttributeTypeEnum })
   type: AttributeTypeEnum;
-
-  @prop()
-  groupName: string;
 
   @prop({ default: true })
   isVisibleInProduct: boolean;

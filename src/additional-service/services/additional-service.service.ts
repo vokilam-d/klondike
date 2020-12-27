@@ -152,30 +152,11 @@ export class AdditionalServiceService {
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
     const additionalServices = await this.additionalServiceModel.find().exec();
+    const dtos = additionalServices.map(service => plainToClass(AdminAdditionalServiceDto, service, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(AdditionalService.collectionName);
     await this.searchService.ensureCollection(AdditionalService.collectionName, new ElasticAdditionalService());
-
-    for (const batch of getBatches(additionalServices, 20)) {
-      await Promise.all(batch.map(additionalService => this.addSearchData(additionalService)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(AdditionalService.collectionName, dtos);
+    this.logger.log('Reindexed');
   }
 }
