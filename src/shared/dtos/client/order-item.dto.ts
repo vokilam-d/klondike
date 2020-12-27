@@ -30,7 +30,8 @@ export class ClientOrderItemDto extends BaseOrderItemDto {
       sku: orderItem.sku,
       slug: orderItem.slug,
       variantId: orderItem.variantId,
-      vendorCode: orderItem.vendorCode
+      vendorCode: orderItem.vendorCode,
+      crossSellProducts: orderItem.crossSellProducts
     };
   }
 }
