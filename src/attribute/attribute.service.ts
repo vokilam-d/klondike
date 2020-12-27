@@ -177,31 +177,12 @@ export class AttributeService implements OnApplicationBootstrap {
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
     const attributes = await this.attributeModel.find().exec();
+    const dtos = attributes.map(attribute => plainToClass(AdminAttributeDto, attribute, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(Attribute.collectionName);
     await this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttributeModel());
-
-    for (const batch of getBatches(attributes, 20)) {
-      await Promise.all(batch.map(attribute => this.addSearchData(attribute)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(Attribute.collectionName, dtos);
+    this.logger.log(`Reindexed`);
   }
 
   private async searchByFilters(spf: AdminSPFDto) {

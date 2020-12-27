@@ -95,11 +95,17 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   };
   paymentMethodId = elasticTextType;
   paymentType = elasticTextType;
-  shippingMethodName = elasticTextType;
+  shippingMethodName = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('text')
+  };
   shouldSaveAddress = elasticTextType;
   state = elasticTextType;
   status = elasticTextType;
-  statusDescription = elasticTextType;
+  statusDescription = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('text')
+  };
   source = elasticTextType;
   prices = {
     type: 'nested',

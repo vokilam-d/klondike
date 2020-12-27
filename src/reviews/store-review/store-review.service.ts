@@ -1,4 +1,4 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { StoreReview } from './models/store-review.model';
@@ -17,6 +17,7 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
 
   get collectionName(): string { return StoreReview.collectionName; }
   protected ElasticReview = ElasticStoreReviewModel;
+  protected logger = new Logger(StoreReviewService.name);
 
   constructor(@InjectModel(StoreReview.name) protected readonly reviewModel: ReturnModelType<typeof StoreReview>,
               protected readonly counterService: CounterService,

@@ -9,7 +9,10 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   isEnabled = elasticBooleanType;
   mediaUrl = elasticTextType;
   mediaHoverUrl = elasticTextType;
-  mediaAltText = elasticTextType;
+  mediaAltText = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('text')
+  };
   name = {
     type: 'nested',
     properties: new ElasticMultilingualText('autocomplete')

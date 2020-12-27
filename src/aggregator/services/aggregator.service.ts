@@ -188,31 +188,12 @@ export class AggregatorService {
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
     const aggregators = await this.aggregatorModel.find().exec();
+    const dtos = aggregators.map(aggregator => plainToClass(AdminAggregatorDto, aggregator, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(Aggregator.collectionName);
     await this.searchService.ensureCollection(Aggregator.collectionName, new ElasticAggregator());
-
-    for (const batch of getBatches(aggregators, 20)) {
-      await Promise.all(batch.map(aggregator => this.addSearchData(aggregator)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(Aggregator.collectionName, dtos);
+    this.logger.log(`Reindexed`);
   }
 
   private async searchByFilters(spf: AdminSPFDto) {

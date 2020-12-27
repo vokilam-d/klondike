@@ -640,30 +640,13 @@ export class OrderService implements OnApplicationBootstrap {
   private async reindexAllSearchData() {
     this.logger.log(`Start reindex all search data`);
     const orders = await this.orderModel.find().sort({ _id: -1 }).exec();
+    const dtos = orders.map(order => plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true }));
+
     await this.searchService.deleteCollection(Order.collectionName);
     await this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
+    await this.searchService.addDocuments(Order.collectionName, dtos);
 
-    for (const ordersBatch of getBatches(orders, 20)) {
-      await Promise.all(ordersBatch.map(order => this.addSearchData(order)));
-      this.logger.log(`Reindexed ids: ${ordersBatch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    this.logger.log(`Reindexed`);
   }
 
   async updateShipmentStatus(orderId: number): Promise<Order> {

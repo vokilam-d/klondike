@@ -1042,7 +1042,7 @@ export class ProductService implements OnApplicationBootstrap {
         variantGroups,
         mediaUrl: selectedVariant.mediaUrl,
         mediaHoverUrl: selectedVariant.mediaHoverUrl,
-        mediaAltText: selectedVariant.mediaAltText,
+        mediaAltText: selectedVariant.mediaAltText[lang],
         allReviewsCount: product.allReviewsCount,
         textReviewsCount: product.textReviewsCount,
         reviewsAvgRating: product.reviewsAvgRating
@@ -1168,8 +1168,7 @@ export class ProductService implements OnApplicationBootstrap {
     spf.limit = 10000;
     const products: ProductWithQty[] = await this.getProductsWithQtyByIds(productIds, spf);
     const listItems = this.transformToAdminListDto(products);
-
-    return this.reindexSearchData(listItems);
+    return this.searchService.addDocuments(Product.collectionName, listItems);
   }
 
   private async reindexAllSearchData() { // this is called by cron from another method
@@ -1183,34 +1182,9 @@ export class ProductService implements OnApplicationBootstrap {
 
     await this.searchService.deleteCollection(Product.collectionName);
     await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
-
-    await this.reindexSearchData(listItems);
+    await this.searchService.addDocuments(Product.collectionName, listItems);
 
     this.logger.log(`Finished reindex`);
-  }
-
-  private async reindexSearchData(listItems: AdminProductListItemDto[]) {
-
-    for (const batch of getBatches(listItems, 20)) {
-      await Promise.all(batch.map(listItem => this.searchService.addDocument(Product.collectionName, listItem.id, listItem)));
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
   }
 
   private async setProductPrices(product: DocumentType<Product>): Promise<DocumentType<Product>> {

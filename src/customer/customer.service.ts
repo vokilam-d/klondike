@@ -471,32 +471,12 @@ export class CustomerService implements OnApplicationBootstrap {
 
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
-    const customers = await this.customerModel.find().exec();
+    const customers = await this.customerModel.find().sort({ _id: -1 }).exec();
+    const dtos = customers.map(customer => plainToClass(AdminCustomerDto, customer, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(Customer.collectionName);
     await this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
-
-    for (const batch of getBatches(customers, 20)) {
-      await Promise.all(batch.map(customer => this.addSearchData(customer)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-    this.logger.log(`Finished reindex.`);
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(Customer.collectionName, dtos);
+    this.logger.log(`Reindexed`);
   }
 }

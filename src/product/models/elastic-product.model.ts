@@ -1,8 +1,9 @@
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
-import { elasticAutocompleteTextType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
+import { elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
 import { ElasticProductVariant } from './elastic-product-variant.model';
 import { ElasticProductSelectedAttributeModel } from './elastic-product-selected-attribute.model';
 import { ElasticProductCategory } from './elastic-product-category.model';
+import { ElasticMultilingualText } from '../../shared/models/elastic-multilingual-text.model';
 
 export class ElasticProduct implements Record<keyof AdminProductListItemDto, any> {
   id = elasticIntegerType;
@@ -16,7 +17,10 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
     properties: new ElasticProductSelectedAttributeModel()
   };
   mediaUrl = elasticTextType;
-  name = elasticAutocompleteTextType;
+  name = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('autocomplete')
+  };
   prices = elasticTextType;
   quantitiesInStock = elasticTextType;
   sellableQuantities = elasticTextType;

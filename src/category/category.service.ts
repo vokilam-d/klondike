@@ -458,31 +458,12 @@ export class CategoryService implements OnApplicationBootstrap {
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
     const categorys = await this.categoryModel.find().exec();
+    const dtos = categorys.map(category => plainToClass(AdminCategoryDto, category, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(Category.collectionName);
     await this.searchService.ensureCollection(Category.collectionName, new ElasticCategory());
-
-    for (const batch of getBatches(categorys, 20)) {
-      await Promise.all(batch.map(category => this.addSearchData(category)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(Category.collectionName, dtos);
+    this.logger.log(`Reindexed`);
   }
 
   private async searchByFilters(spf: AdminSPFDto, filters?: IFilter[], sorting?: ISorting) {

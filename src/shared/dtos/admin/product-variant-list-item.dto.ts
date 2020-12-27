@@ -8,7 +8,7 @@ export class AdminProductVariantListItemDto implements Pick<AdminProductVariantD
   isEnabled: boolean;
   mediaUrl: string;
   mediaHoverUrl: string;
-  mediaAltText: string;
+  mediaAltText: MultilingualTextDto;
   attributes: AdminProductSelectedAttributeDto[];
   name: MultilingualTextDto;
   slug: string;
