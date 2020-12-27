@@ -944,6 +944,7 @@ export class ProductService implements OnApplicationBootstrap {
         reviewsAvgRating: product.reviewsAvgRating,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
+        currency: product.variants[0].currency,
         salesCount,
         variants
       };
