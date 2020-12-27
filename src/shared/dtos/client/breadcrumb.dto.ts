@@ -12,7 +12,7 @@ export class ClientBreadcrumbDto extends BaseBreadcrumbDto {
       id: breadcrumb.id,
       isEnabled: false,
       name: breadcrumb.name[lang],
-      slug: breadcrumb.slug[lang]
+      slug: breadcrumb.slug
     };
   }
 }

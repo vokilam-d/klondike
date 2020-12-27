@@ -41,7 +41,8 @@ export class TasksService implements OnApplicationBootstrap {
     const taskModels = await this.taskModel.find().exec();
     for (const taskModel of taskModels) {
       if (new Date() > taskModel.time) {
-        this.logger.error(`Could not setup saved task ${taskModel.name}: time is expired`);
+        this.logger.error(`Could not setup saved task ${taskModel.name}: time is expired. Removing from DB...`);
+        await taskModel.remove();
         continue;
       }
       await this.startJob(taskModel.name, taskModel.time, taskModel.type, taskModel.arguments);
