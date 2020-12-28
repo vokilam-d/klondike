@@ -1043,7 +1043,7 @@ export class ProductService implements OnApplicationBootstrap {
         variantGroups,
         mediaUrl: selectedVariant.mediaUrl,
         mediaHoverUrl: selectedVariant.mediaHoverUrl,
-        mediaAltText: selectedVariant.mediaAltText[lang],
+        mediaAltText: selectedVariant.mediaAltText?.[lang],
         allReviewsCount: product.allReviewsCount,
         textReviewsCount: product.textReviewsCount,
         reviewsAvgRating: product.reviewsAvgRating
