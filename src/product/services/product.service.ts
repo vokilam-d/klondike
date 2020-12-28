@@ -61,6 +61,8 @@ import { ClientMetaTagsDto } from '../../shared/dtos/client/meta-tags.dto';
 import { AdminCategoryTreeItemDto } from '../../shared/dtos/admin/category-tree-item.dto';
 import { Language } from '../../shared/enums/language.enum';
 import { ClientBreadcrumbDto } from '../../shared/dtos/client/breadcrumb.dto';
+import { googleTranslate } from '../../shared/helpers/translate/google-translate';
+import { FileLogger } from '../../logger/file-logger.service';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -92,7 +94,7 @@ export class ProductService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     this.handleCurrencyUpdates();
     this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
-    // this.reindexAllSearchData();
+    this.reindexAllSearchData();
   }
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
@@ -1673,5 +1675,56 @@ export class ProductService implements OnApplicationBootstrap {
       this.logger.error(`Could not update views count:`);
       this.logger.error(e);
     }
+  }
+
+  private async googleTranslate() {
+    // this.logger.log('start fetch');
+    // const products = await this.productModel.find().exec();
+    // this.logger.log('end fetch');
+    // const sLogs = [];
+    // const fLogs = [];
+    // for (const product of products) {
+    //   const name = product.name.ru;
+    //   const description = product.variants[0].fullDescription.ru;
+    //   const mTitle = product.variants[0].metaTags.title.ru;
+    //   const mDescription = product.variants[0].metaTags.description.ru;
+    //   const gTitle = product.variants[0].googleAdsProductTitle.ru;
+    //   try {
+    //     let [translatedName, translatedDesc, transMTitle, transMDescription, transGTitle] = await googleTranslate([name, description, mTitle, mDescription, gTitle]);
+    //     translatedName = translatedName.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     translatedDesc = translatedDesc.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     transMTitle = transMTitle.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     transMDescription = transMDescription.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     if (transGTitle) {
+    //       transGTitle = transGTitle.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     }
+    //
+    //     product.name.uk = translatedName;
+    //     product.variants[0].name.uk = translatedName;
+    //     product.variants[0].fullDescription.uk = translatedDesc;
+    //     product.variants[0].metaTags.title.uk = transMTitle;
+    //     product.variants[0].metaTags.description.uk = transMDescription;
+    //     if (transGTitle) {
+    //       product.variants[0].googleAdsProductTitle.uk = transGTitle;
+    //     }
+    //
+    //     for (const media of product.variants[0].medias) {
+    //       media.altText.uk = translatedName;
+    //     }
+    //
+    //     await product.save();
+    //     console.log(product.id);
+    //     sLogs.push(product.id);
+    //   } catch (e) {
+    //     console.log(e);
+    //     console.error('error '+ product.id);
+    //     fLogs.push(product.id);
+    //   }
+    // }
+    //
+    // this.logger.log('success');
+    // this.logger.log(sLogs);
+    // this.logger.log('error');
+    // this.logger.log(fLogs);
   }
 }
