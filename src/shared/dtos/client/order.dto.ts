@@ -10,6 +10,7 @@ import { Language } from '../../enums/language.enum';
 import { AdminOrderDto } from '../admin/order.dto';
 import { AdminOrderItemDto } from '../admin/order-item.dto';
 import { OrderItem } from '../../../order/models/order-item.model';
+import { PaymentTypeEnum } from '../../enums/payment-type.enum';
 
 export class ClientAddOrderDto implements
   Pick<Order, 'paymentMethodId' | 'isCallbackNeeded' | 'clientNote'>,
@@ -87,7 +88,7 @@ export class ClientOrderDto extends ClientAddOrderDto implements
       email: order.customerEmail,
       id: order.idForCustomer,
       isCallbackNeeded: order.isCallbackNeeded,
-      isOnlinePayment: false,
+      isOnlinePayment: order.paymentType === PaymentTypeEnum.ONLINE_PAYMENT,
       items: orderItems.map(item => ClientOrderItemDto.transformToDto(item, lang)),
       paymentMethodId: order.paymentMethodId,
       paymentMethodName: order.paymentMethodClientName[lang],

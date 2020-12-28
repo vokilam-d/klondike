@@ -37,8 +37,7 @@ export class ClientOrderController {
   ): Promise<ResponseDto<ClientOrderDto>> {
     const customer = await this.authService.getCustomerFromReq(req);
     const order = await this.orderService.createOrderClient(addOrderDto, lang, customer);
-    const orderDto = plainToClass(ClientOrderDto, order, { excludeExtraneousValues: true });
-    orderDto.isOnlinePayment = order.paymentType === PaymentTypeEnum.ONLINE_PAYMENT;
+    const orderDto = ClientOrderDto.transformToDto(order, lang);
 
     return {
       data: orderDto
