@@ -16,7 +16,7 @@ export class AdminAnnouncementController {
 
   @Get()
   async getAnnouncement(): Promise<ResponseDto<AdminAnnouncementDto>> {
-    const announcement = this.announcementService.getAnnouncement();
+    const announcement = await this.announcementService.getAnnouncement();
 
     return {
       data: plainToClass(AdminAnnouncementDto, announcement, { excludeExtraneousValues: true })
