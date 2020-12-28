@@ -18,7 +18,7 @@ export class AutocompleteService {
 
     const spf = new AdminSPFDto();
     spf.limit = 3;
-    const categories = await this.categoryService.searchEnabledByName(spf, query);
+    const categories = await this.categoryService.searchEnabledByName(spf, query, lang);
     const products = await this.productService.getClientProductListAutocomplete(query, lang);
 
     for (const category of categories) {

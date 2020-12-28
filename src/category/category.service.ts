@@ -283,13 +283,13 @@ export class CategoryService implements OnApplicationBootstrap {
     }
   }
 
-  async searchEnabledByName(spf: AdminSPFDto, name: string): Promise<AdminCategoryDto[]> {
+  async searchEnabledByName(spf: AdminSPFDto, name: string, lang: Language): Promise<AdminCategoryDto[]> {
     const nameProp: keyof AdminCategoryDto = 'name';
     const isEnabledProp: keyof AdminCategoryDto = 'isEnabled';
     const sortProp: keyof AdminCategoryDto = 'reversedSortOrder';
 
     const filters: IFilter[] = [
-      { fieldName: nameProp, values: [name] },
+      { fieldName: `${nameProp}.${lang}`, values: [name] },
       { fieldName: isEnabledProp, values: [true] }
     ];
     const sorting: ISorting = { [sortProp]: 'asc' };

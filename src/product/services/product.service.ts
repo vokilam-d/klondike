@@ -137,7 +137,7 @@ export class ProductService implements OnApplicationBootstrap {
     const spf = new ClientProductSPFDto();
     spf.limit = 5;
 
-    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { query });
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, lang, { query });
     const attributes = await this.attributeService.getAllAttributes();
     const clientListItems = await this.transformToClientListDto(adminListItems, attributes, lang);
 
@@ -151,7 +151,7 @@ export class ProductService implements OnApplicationBootstrap {
     const createdAtProp: keyof Product = 'createdAt';
     spf.sort = `-${createdAtProp}`;
 
-    const [ adminListItems ] = await this.findEnabledProductListItems(spf);
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, lang);
     const attributes = await this.attributeService.getAllAttributes();
     const clientListItems = await this.transformToClientListDto(adminListItems, attributes, lang);
 
@@ -163,7 +163,7 @@ export class ProductService implements OnApplicationBootstrap {
   async getClientProductListWithFilters(spf: ClientProductSPFDto, lang: Language): Promise<ClientProductListResponseDto> {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
-    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { categoryId: spf.categoryId, query: spf.q, limit: 10000 });
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, lang, { categoryId: spf.categoryId, query: spf.q, limit: 10000 });
     const attributes = await this.attributeService.getAllAttributes();
     const spfFilters = spf
       .getNormalizedFilters()
@@ -804,6 +804,7 @@ export class ProductService implements OnApplicationBootstrap {
 
   private async findEnabledProductListItems(
     spf: ClientProductSPFDto,
+    lang: Language,
     { categoryId, query, limit }: { categoryId?: string, query?: string, limit?: number } = { }
   ) {
 
@@ -821,7 +822,7 @@ export class ProductService implements OnApplicationBootstrap {
       const skuProp: keyof AdminProductVariantListItemDto = 'sku';
       const vendorCodeProp: keyof AdminProductVariantListItemDto = 'vendorCode';
 
-      const namePropPath = `${variantsProp}.${nameProp}`;
+      const namePropPath = `${variantsProp}.${nameProp}.${lang}`;
       const skuPropPath = `${variantsProp}.${skuProp}`;
       const vendorCodePath = `${variantsProp}.${vendorCodeProp}`;
 
