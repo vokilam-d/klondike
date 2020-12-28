@@ -17,8 +17,7 @@ export class AdminAddOrUpdateProductDto implements PickedProduct, VariantsProp {
   isEnabled: boolean;
 
   @Expose()
-  @IsString()
-  @TrimString()
+  @Type(() => MultilingualTextDto)
   name: MultilingualTextDto;
 
   @Expose()

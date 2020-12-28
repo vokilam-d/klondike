@@ -15,14 +15,10 @@ export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, 
   isEnabled: boolean;
 
   @Expose()
-  @IsString()
-  @TrimString()
   @Type(() => MultilingualTextDto)
   name: MultilingualTextDto;
 
   @Expose()
-  @IsString()
-  @TrimString()
   @Type(() => MultilingualTextDto)
   description: MultilingualTextDto;
 

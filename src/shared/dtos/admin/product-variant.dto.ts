@@ -125,9 +125,7 @@ export class AdminAddOrUpdateProductVariantDto implements PickedVariant, Variant
   isIncludedInShoppingFeed: boolean;
 
   @Expose()
-  @IsOptional()
-  @IsString()
-  @TrimString()
+  @Type(() => MultilingualTextDto)
   googleAdsProductTitle: MultilingualTextDto;
 
   @Expose()
