@@ -137,6 +137,7 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Orde
   paymentMethodAdminName: MultilingualTextDto;
 
   @Expose()
+  @Type(() => MultilingualTextDto)
   shippingMethodName: MultilingualTextDto;
 
   @Expose()
