@@ -5,5 +5,5 @@ import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 export class AdminOrderPricesDto extends BaseOrderPricesDto {
   @Expose()
   @Type(() => MultilingualTextDto)
-  discountLabel: any;
+  discountLabel: MultilingualTextDto;
 }

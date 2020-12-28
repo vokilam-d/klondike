@@ -9,7 +9,7 @@ export class ClientOrderPricesDto extends BaseOrderPricesDto {
 
   static transformToDto(orderPrices: OrderPrices, lang: Language): ClientOrderPricesDto {
     return {
-      discountLabel: orderPrices[lang],
+      discountLabel: orderPrices.discountLabel[lang],
       discountPercent: orderPrices.discountPercent,
       discountValue: orderPrices.discountValue,
       itemsCost: orderPrices.itemsCost,
