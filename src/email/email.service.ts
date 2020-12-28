@@ -10,6 +10,7 @@ import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { AdminStoreReviewDto } from '../shared/dtos/admin/store-review.dto';
 import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-order.function';
 import { Language } from '../shared/enums/language.enum';
+import { clientDefaultLanguage } from '../shared/constants';
 
 enum EEmailType {
   EmailConfirmation = 'email-confirmation',
@@ -187,11 +188,11 @@ export class EmailService {
       address: order.shipment.recipient.address,
       addressBuildingNumber: order.shipment.recipient.buildingNumber,
       addressFlatNumber: order.shipment.recipient.flat,
-      shipping: order.shippingMethodName,
+      shipping: order.shippingMethodName[clientDefaultLanguage],
       shippingTip: isFreeShippingForOrder(order) ? 'бесплатная доставка' : 'оплачивается получателем',
-      payment: order.paymentMethodClientName,
+      payment: order.paymentMethodClientName[clientDefaultLanguage],
       products: order.items.map(item => ({
-        name: item.name,
+        name: item.name[clientDefaultLanguage],
         sku: item.sku,
         qty: item.qty,
         price: item.price,
@@ -199,10 +200,10 @@ export class EmailService {
         cost: item.cost,
         imageUrl: item.imageUrl,
         slug: item.slug,
-        additionalServices: item.additionalServices.map(service => `${service.name} (+${service.price}грн)`)
+        additionalServices: item.additionalServices.map(service => `${service.name[clientDefaultLanguage]} (+${service.price}грн)`)
       })),
       totalProductsCost: order.prices.itemsCost,
-      discountLabel: order.prices.discountLabel,
+      discountLabel: order.prices.discountLabel[clientDefaultLanguage],
       discountPercent: order.prices.discountPercent,
       discountValue: order.prices.discountValue,
       clientNote: order.clientNote,
