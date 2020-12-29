@@ -15,5 +15,5 @@ export class OnlinePaymentDetailsDto {
   clientLastName: string;
   clientEmail: string;
   clientPhone: string;
-  language: 'RU' | 'UA';
+  language: string;
 }

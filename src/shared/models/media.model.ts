@@ -1,6 +1,6 @@
 import { prop } from '@typegoose/typegoose';
-import { Exclude } from 'class-transformer';
 import { MediaVariantEnum } from '../enums/media-variant.enum';
+import { MultilingualText } from './multilingual-text.model';
 
 type VariantsUrls = {
   [k in MediaVariantEnum]: string;
@@ -16,7 +16,7 @@ export class Media {
   };
 
   @prop()
-  altText: string = '';
+  altText: MultilingualText = new MultilingualText();
 
   @prop({ default: false })
   isHidden: boolean = false;

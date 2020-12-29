@@ -36,6 +36,8 @@ import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ClientOrderDto } from '../../shared/dtos/client/order.dto';
 import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
 import { ConfirmEmailDto } from '../../shared/dtos/client/confirm-email.dto';
+import { ClientLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -48,9 +50,9 @@ export class ClientCustomerController {
   }
 
   @Get()
-  async getInfo(@Req() req): Promise<ResponseDto<ClientCustomerDto | null>> {
+  async getInfo(@Req() req, @ClientLang() lang: Language): Promise<ResponseDto<ClientCustomerDto | null>> {
     const customer: Customer = await this.authService.getCustomerFromReq(req);
-    const dto = customer ? plainToClass(ClientCustomerDto, customer, { excludeExtraneousValues: true }) : null;
+    const dto = customer ? ClientCustomerDto.transformToDto(customer, lang) : null;
 
     return {
       data: dto
@@ -69,17 +71,20 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Get('details')
-  async getAccount(@Req() req): Promise<ResponseDto<ClientCustomerDto>> {
+  async getAccount(@Req() req, @ClientLang() lang: Language): Promise<ResponseDto<ClientCustomerDto>> {
     const customer: DocumentType<Customer> = req.user;
 
     return {
-      data: plainToClass(ClientCustomerDto, customer, { excludeExtraneousValues: true })
+      data: ClientCustomerDto.transformToDto(customer, lang)
     };
   }
 
   @UseGuards(CustomerJwtGuard)
   @Get('order')
-  async getOrders(@Req() req): Promise<ResponseDto<ClientOrderDto[]>> {
+  async getOrders(
+    @Req() req,
+    @ClientLang() lang: Language
+  ): Promise<ResponseDto<ClientOrderDto[]>> {
     const customer: DocumentType<Customer> = req.user;
 
     const orderFilterDto = new OrderFilterDto();
@@ -88,7 +93,7 @@ export class ClientCustomerController {
     const { data: orders } = await this.orderService.getOrdersList(orderFilterDto);
 
     return {
-      data: plainToClass(ClientOrderDto, orders, { excludeExtraneousValues: true })
+      data: orders.map(order => ClientOrderDto.transformToDto(order, lang))
     };
   }
 
@@ -97,10 +102,15 @@ export class ClientCustomerController {
    */
   @UseGuards(CustomerJwtGuard)
   @Post('password')
-  async updatePassword(@Req() req, @Body() dto: ClientUpdatePasswordDto, @Res() res: FastifyReply<ServerResponse>) {
+  async updatePassword(
+    @Req() req,
+    @Body() dto: ClientUpdatePasswordDto,
+    @Res() res: FastifyReply<ServerResponse>,
+    @ClientLang() lang: Language
+  ) {
     const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.checkAndUpdatePassword(customer, dto);
-    const customerDto = plainToClass(ClientCustomerDto, updated, { excludeExtraneousValues: true });
+    const customerDto = ClientCustomerDto.transformToDto(updated, lang);
 
     return this.authService.loginCustomerByDto(customerDto, res);
   }
@@ -109,9 +119,13 @@ export class ClientCustomerController {
    * @returns ResponseDto<ClientCustomerDto>
    */
   @Post('register')
-  async register(@Body() registerDto: ClientRegisterDto, @Res() res: FastifyReply<ServerResponse>) {
+  async register(
+    @Body() registerDto: ClientRegisterDto,
+    @Res() res: FastifyReply<ServerResponse>,
+    @ClientLang() lang: Language
+  ) {
     const customer = await this.customerService.clientRegisterCustomer(registerDto);
-    const customerDto = plainToClass(ClientCustomerDto, customer, { excludeExtraneousValues: true });
+    const customerDto = ClientCustomerDto.transformToDto(customer, lang);
 
     return this.authService.loginCustomerByDto(customerDto, res);
   }
@@ -121,10 +135,15 @@ export class ClientCustomerController {
    */
   @UseGuards(CustomerLocalGuard)
   @Post('login')
-  async login(@Body() loginDto: LoginDto, @Req() req, @Res() res: FastifyReply<ServerResponse>) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Req() req,
+    @Res() res: FastifyReply<ServerResponse>,
+    @ClientLang() lang: Language
+  ) {
     const customer: DocumentType<Customer> = req.user;
     this.customerService.updateLastLoggedIn(customer.id);
-    const customerDto = plainToClass(ClientCustomerDto, customer, { excludeExtraneousValues: true });
+    const customerDto = ClientCustomerDto.transformToDto(customer, lang);
 
     return this.authService.loginCustomerByDto(customerDto, res);
   }
@@ -167,34 +186,50 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Post('address')
-  async addShippingAddress(@Req() req, @Body() addressDto: ShipmentAddressDto): Promise<ResponseDto<ClientCustomerDto>> {
+  async addShippingAddress(
+    @Req() req,
+    @Body() addressDto: ShipmentAddressDto,
+    @ClientLang() lang: Language
+  ): Promise<ResponseDto<ClientCustomerDto>> {
+
     const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.addShippingAddress(customer, addressDto);
 
     return {
-      data: plainToClass(ClientCustomerDto, updated, { excludeExtraneousValues: true })
+      data: ClientCustomerDto.transformToDto(updated, lang)
     };
   }
 
   @UseGuards(CustomerJwtGuard)
   @Put('address/:id')
-  async editShippingAddress(@Req() req, @Param('id') addressId: string, @Body() addressDto: ShipmentAddressDto): Promise<ResponseDto<ClientCustomerDto>> {
+  async editShippingAddress(
+    @Req() req,
+    @Param('id') addressId: string,
+    @Body() addressDto: ShipmentAddressDto,
+    @ClientLang() lang: Language
+  ): Promise<ResponseDto<ClientCustomerDto>> {
+
     const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.editShippingAddress(customer, addressId, addressDto);
 
     return {
-      data: plainToClass(ClientCustomerDto, updated, { excludeExtraneousValues: true })
+      data: ClientCustomerDto.transformToDto(updated, lang)
     };
   }
 
   @UseGuards(CustomerJwtGuard)
   @Patch()
-  async updateCustomer(@Req() req, @Body() dto: ClientUpdateCustomerDto): Promise<ResponseDto<ClientCustomerDto>> {
+  async updateCustomer(
+    @Req() req,
+    @Body() dto: ClientUpdateCustomerDto,
+    @ClientLang() lang: Language
+  ): Promise<ResponseDto<ClientCustomerDto>> {
+
     const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.updateCustomerByClientDto(customer, dto);
 
     return {
-      data: plainToClass(ClientCustomerDto, updated, { excludeExtraneousValues: true })
+      data: ClientCustomerDto.transformToDto(updated, lang)
     }
   }
 }

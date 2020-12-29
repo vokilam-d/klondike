@@ -6,6 +6,8 @@ import { ModuleRef } from '@nestjs/core';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { StoreReviewService } from '../reviews/store-review/store-review.service';
+import { AdminLang } from '../shared/decorators/lang.decorator';
+import { Language } from '../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @Controller('admin/email-test')
@@ -19,7 +21,11 @@ export class AdminEmailController {
   }
 
   @Post('order-confirmation/:orderId')
-  async sendTestOrderConfirmEmail(@Param('orderId') orderId: number, @Body() body: any) {
+  async sendTestOrderConfirmEmail(
+    @Param('orderId') orderId: number,
+    @Body() body: any,
+    @AdminLang() lang: Language
+  ) {
     if (!body.email) {
       throw new BadRequestException(__('No "email" in payload', 'ru'));
     }
@@ -28,20 +34,24 @@ export class AdminEmailController {
     const order = await orderService.getOrderById(parseInt(orderId as any));
     order.customerEmail = body.email;
 
-    return this.emailService.sendOrderConfirmationEmail(order, false);
+    return this.emailService.sendOrderConfirmationEmail(order, lang, false);
   }
 
   @Post('leave-review/:orderId')
-  async sendTestLeaveReviewEmail(@Param('orderId') orderId: number, @Body() body: any) {
+  async sendTestLeaveReviewEmail(
+    @Param('orderId') orderId: number,
+    @Body() body: any,
+    @AdminLang() lang: Language
+  ) {
     if (!body.email) {
-      throw new BadRequestException(__('No "email" in payload', 'ru'));
+      throw new BadRequestException(__('No "email" in payload', lang));
     }
 
     const orderService = this.moduleRef.get(OrderService, { strict: false });
     const order = await orderService.getOrderById(parseInt(orderId as any));
     order.customerEmail = body.email;
 
-    return this.emailService.sendLeaveReviewEmail(order);
+    return this.emailService.sendLeaveReviewEmail(order, lang);
   }
 
   @Post('email-confirmation')

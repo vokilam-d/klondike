@@ -23,17 +23,15 @@ import { SearchService } from '../../shared/services/search/search.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { ProductWithQty } from '../models/product-with-qty.model';
-import { AdminProductVariantListItem } from '../../shared/dtos/admin/product-variant-list-item.dto';
+import { AdminProductVariantListItemDto } from '../../shared/dtos/admin/product-variant-list-item.dto';
 import { DEFAULT_CURRENCY } from '../../shared/enums/currency.enum';
 import { ElasticProduct } from '../models/elastic-product.model';
-import { CategoryTreeItem } from '../../shared/dtos/shared-dtos/category.dto';
 import { IFilter, SortingPaginatingFilterDto } from '../../shared/dtos/shared-dtos/spf.dto';
 import { ClientProductListItemDto, ClientProductVariantDto, ClientProductVariantGroupDto } from '../../shared/dtos/client/product-list-item.dto';
 import { AttributeService } from '../../attribute/attribute.service';
 import { ClientProductCategoryDto, ClientProductCharacteristic, ClientProductDto } from '../../shared/dtos/client/product.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
-import { MetaTagsDto } from '../../shared/dtos/shared-dtos/meta-tags.dto';
 import { ClientProductSPFDto } from '../../shared/dtos/client/product-spf.dto';
 import { areArraysEqual } from '../../shared/helpers/are-arrays-equal.function';
 import { CurrencyService } from '../../currency/currency.service';
@@ -58,6 +56,13 @@ import { createClientProductId } from '../../shared/helpers/client-product-id';
 import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
 import { Category } from '../../category/models/category.model';
 import { sortByLabel } from '../../shared/helpers/sort-by-label.function';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { ClientMetaTagsDto } from '../../shared/dtos/client/meta-tags.dto';
+import { AdminCategoryTreeItemDto } from '../../shared/dtos/admin/category-tree-item.dto';
+import { Language } from '../../shared/enums/language.enum';
+import { ClientBreadcrumbDto } from '../../shared/dtos/client/breadcrumb.dto';
+import { googleTranslate } from '../../shared/helpers/translate/google-translate';
+import { FileLogger } from '../../logger/file-logger.service';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -89,7 +94,7 @@ export class ProductService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     this.handleCurrencyUpdates();
     this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
-    // this.reindexAllSearchData();
+    this.reindexAllSearchData();
   }
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
@@ -111,7 +116,7 @@ export class ProductService implements OnApplicationBootstrap {
     };
   }
 
-  async getClientProductList(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
+  async getClientProductList(spf: ClientProductSPFDto, lang: Language): Promise<ClientProductListResponseDto> {
     const isEnabledProp: keyof AdminProductListItemDto = 'isEnabled';
 
     spf[isEnabledProp] = true;
@@ -120,7 +125,7 @@ export class ProductService implements OnApplicationBootstrap {
     const adminDtos = searchResponse[0];
     const itemsTotal = searchResponse[1];
     const attributes = await this.attributeService.getAllAttributes();
-    const clientDtos = await this.transformToClientListDto(adminDtos, attributes);
+    const clientDtos = await this.transformToClientListDto(adminDtos, attributes, lang);
 
     return {
       data: clientDtos,
@@ -130,37 +135,37 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async getClientProductListAutocomplete(query: string): Promise<ClientProductListItemDto[]> {
+  async getClientProductListAutocomplete(query: string, lang: Language): Promise<ClientProductListItemDto[]> {
     const spf = new ClientProductSPFDto();
     spf.limit = 5;
 
-    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { query });
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, lang, { query });
     const attributes = await this.attributeService.getAllAttributes();
-    const clientListItems = await this.transformToClientListDto(adminListItems, attributes);
+    const clientListItems = await this.transformToClientListDto(adminListItems, attributes, lang);
 
     return clientListItems;
   }
 
-  async getClientProductListLastAdded(): Promise<ClientProductListResponseDto> {
+  async getClientProductListLastAdded(lang: Language): Promise<ClientProductListResponseDto> {
     const spf = new ClientProductSPFDto();
     spf.limit = 11;
 
     const createdAtProp: keyof Product = 'createdAt';
     spf.sort = `-${createdAtProp}`;
 
-    const [ adminListItems ] = await this.findEnabledProductListItems(spf);
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, lang);
     const attributes = await this.attributeService.getAllAttributes();
-    const clientListItems = await this.transformToClientListDto(adminListItems, attributes);
+    const clientListItems = await this.transformToClientListDto(adminListItems, attributes, lang);
 
     return {
       data: clientListItems
     };
   }
 
-  async getClientProductListWithFilters(spf: ClientProductSPFDto): Promise<ClientProductListResponseDto> {
+  async getClientProductListWithFilters(spf: ClientProductSPFDto, lang: Language): Promise<ClientProductListResponseDto> {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
-    const [ adminListItems ] = await this.findEnabledProductListItems(spf, { categoryId: spf.categoryId, query: spf.q, limit: 10000 });
+    const [ adminListItems ] = await this.findEnabledProductListItems(spf, lang, { categoryId: spf.categoryId, query: spf.q, limit: 10000 });
     const attributes = await this.attributeService.getAllAttributes();
     const spfFilters = spf
       .getNormalizedFilters()
@@ -203,7 +208,7 @@ export class ProductService implements OnApplicationBootstrap {
     let filteredAdminListItems: AdminProductListItemDto[] = [];
 
     for (const adminListItem of adminListItems) {
-      const filteredVariants: AdminProductVariantListItem[] = [];
+      const filteredVariants: AdminProductVariantListItemDto[] = [];
       let isProductAttributesSetInProductCount = false;
 
       for (const variant of adminListItem.variants) {
@@ -265,9 +270,9 @@ export class ProductService implements OnApplicationBootstrap {
     if (spfFilters.length || filterMinPrice >= 0) { itemsFiltered = filteredAdminListItems.length; }
 
     filteredAdminListItems = filteredAdminListItems.slice(spf.skip, spf.skip + spf.limit);
-    const clientListItems = await this.transformToClientListDto(filteredAdminListItems, attributes);
+    const clientListItems = await this.transformToClientListDto(filteredAdminListItems, attributes, lang);
 
-    let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, spfFilters);
+    let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, spfFilters, lang);
     if (itemsTotal > 0) {
       filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
     }
@@ -424,7 +429,7 @@ console.log(found)
     return found;
   }
 
-  async getEnabledClientProductDtoBySlug(slug: string): Promise<ClientProductDto> {
+  async getEnabledClientProductDtoBySlug(slug: string, lang: Language): Promise<ClientProductDto> {
     const variantsProp = getPropertyOf<Product>('variants');
     const slugProp = getPropertyOf<ProductVariant>('slug');
     const skuProp = getPropertyOf<Inventory>('sku');
@@ -448,10 +453,10 @@ console.log(found)
       .exec();
 
     if (!found || !(found as ProductWithQty).isEnabled) {
-      throw new NotFoundException(__('Product with slug "$1" not found', 'ru', slug));
+      throw new NotFoundException(__('Product with slug "$1" not found', lang, slug));
     }
 
-    return this.transformToClientProductDto(found, slug);
+    return this.transformToClientProductDto(found, slug, lang);
   }
 
   async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
@@ -716,7 +721,7 @@ console.log(found)
       .exec();
   }
 
-  async updateProductCategory(categoryId: number, categoryName: string, categorySlug: string, categoryIsEnabled: boolean, session: ClientSession): Promise<any> {
+  async updateProductCategory(categoryId: number, categoryName: MultilingualText, categorySlug: string, categoryIsEnabled: boolean, session: ClientSession): Promise<any> {
     const categoriesProp: keyof Product = 'categories';
     const categoryIdProp: keyof ProductCategory = 'id';
     const categoryNameProp: keyof ProductCategory = 'name';
@@ -752,7 +757,7 @@ console.log(found)
   private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto, categoryTreeItems?): Promise<any> {
     const breadcrumbsVariants: Breadcrumb[][] = [];
 
-    const populate = (treeItems: CategoryTreeItem[], breadcrumbs: Breadcrumb[] = []) => {
+    const populate = (treeItems: AdminCategoryTreeItemDto[], breadcrumbs: Breadcrumb[] = []) => {
 
       for (const treeItem of treeItems) {
         const newBreadcrumbs: Breadcrumb[] = JSON.parse(JSON.stringify(breadcrumbs));
@@ -818,6 +823,7 @@ console.log(found)
 
   private async findEnabledProductListItems(
     spf: ClientProductSPFDto,
+    lang: Language,
     { categoryId, query, limit }: { categoryId?: string, query?: string, limit?: number } = { }
   ) {
 
@@ -831,11 +837,11 @@ console.log(found)
     }
     if (query) {
       const variantsProp: keyof AdminProductListItemDto = 'variants';
-      const nameProp: keyof AdminProductVariantListItem = 'name';
-      const skuProp: keyof AdminProductVariantListItem = 'sku';
-      const vendorCodeProp: keyof AdminProductVariantListItem = 'vendorCode';
+      const nameProp: keyof AdminProductVariantListItemDto = 'name';
+      const skuProp: keyof AdminProductVariantListItemDto = 'sku';
+      const vendorCodeProp: keyof AdminProductVariantListItemDto = 'vendorCode';
 
-      const namePropPath = `${variantsProp}.${nameProp}`;
+      const namePropPath = `${variantsProp}.${nameProp}.${lang}`;
       const skuPropPath = `${variantsProp}.${skuProp}`;
       const vendorCodePath = `${variantsProp}.${vendorCodeProp}`;
 
@@ -891,7 +897,7 @@ console.log(found)
       const prices: string[] = [];
       const quantitiesInStock: number[] = [];
       const sellableQuantities: number[] = [];
-      const variants: AdminProductVariantListItem[] = [];
+      const variants: AdminProductVariantListItemDto[] = [];
       let salesCount: number = 0;
       let productMediaUrl: string = null;
 
@@ -958,6 +964,7 @@ console.log(found)
         reviewsAvgRating: product.reviewsAvgRating,
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
+        currency: product.variants[0].currency,
         salesCount,
         variants
       };
@@ -966,7 +973,8 @@ console.log(found)
 
   private async transformToClientListDto(
     adminListItemDtos: AdminProductListItemDto[],
-    attributes: Attribute[]
+    attributes: Attribute[],
+    lang: Language
   ): Promise<ClientProductListItemDto[]> {
 
     return adminListItemDtos.map(product => {
@@ -990,7 +998,7 @@ console.log(found)
           if (!attrValue) { continue; }
 
           const itemVariant: ClientProductVariantDto = {
-            label: attrValue.label,
+            label: attrValue.label[lang],
             isSelected: true,
             slug: selectedVariant.slug,
             isInStock: selectedVariant.sellableQty > 0,
@@ -1000,7 +1008,7 @@ console.log(found)
           variantGroups.push({
             attribute: attribute,
             attributeValueId: attrValue.id,
-            label: attribute.label,
+            label: attribute.label[lang],
             hasColor: attribute.hasColor,
             variants: [ itemVariant ],
             selectedVariantLabel: itemVariant.label
@@ -1027,7 +1035,7 @@ console.log(found)
             const selectedAttribute = productVariant.attributes.find(attr => attr.attributeId === variantGroups[i].attribute.id);
             const attributeValue = variantGroups[i].attribute.values.find(value => selectedAttribute.valueIds.includes(value.id));
             variantGroups[i].variants.push({
-              label: attributeValue.label,
+              label: attributeValue.label[lang],
               color: attributeValue.color,
               isSelected: false,
               slug: productVariant.slug,
@@ -1048,14 +1056,14 @@ console.log(found)
         variantId: selectedVariant.id,
         sku: selectedVariant.sku,
         isInStock: selectedVariant.sellableQty > 0,
-        name: selectedVariant.name,
+        name: selectedVariant.name[lang],
         price: selectedVariant.priceInDefaultCurrency,
         oldPrice: selectedVariant.oldPriceInDefaultCurrency,
         slug: selectedVariant.slug,
         variantGroups,
         mediaUrl: selectedVariant.mediaUrl,
         mediaHoverUrl: selectedVariant.mediaHoverUrl,
-        mediaAltText: selectedVariant.mediaAltText,
+        mediaAltText: selectedVariant.mediaAltText?.[lang],
         allReviewsCount: product.allReviewsCount,
         textReviewsCount: product.textReviewsCount,
         reviewsAvgRating: product.reviewsAvgRating
@@ -1063,15 +1071,13 @@ console.log(found)
     });
   }
 
-  async transformToClientProductDto(productWithQty: ProductWithQty, slug: string): Promise<ClientProductDto> {
+  async transformToClientProductDto(productWithQty: ProductWithQty, slug: string, lang: Language): Promise<ClientProductDto> {
     const selectedVariantIdx = productWithQty.variants.findIndex(v => v.slug === slug);
     const selectedVariant = productWithQty.variants[selectedVariantIdx];
 
-    const categories: ClientProductCategoryDto[] = plainToClass(
-      ClientProductCategoryDto,
-      productWithQty.categories.filter(category => category.isEnabled),
-      { excludeExtraneousValues: true }
-    );
+    const categories: ClientProductCategoryDto[] = productWithQty.categories
+      .filter(category => category.isEnabled)
+      .map(category => ClientProductCategoryDto.transformToDto(category, lang));
 
     const attributeModels = await this.attributeService.getAllAttributes();
 
@@ -1083,8 +1089,8 @@ console.log(found)
       const foundAttrValues = foundAttr.values.filter(v => attribute.valueIds.includes(v.id));
       if (!foundAttrValues.length) { continue; }
 
-      const value = foundAttrValues.map(value => value.label).join(', ');
-      characteristics.push({ label: foundAttr.label, code: foundAttr._id, value });
+      const value = foundAttrValues.map(value => value.label[lang]).join(', ');
+      characteristics.push({ label: foundAttr.label[lang], code: foundAttr._id, value });
     }
 
     let variantGroups: ClientProductVariantGroupDto[] = [];
@@ -1097,7 +1103,7 @@ console.log(found)
         if (!attrValue) { continue; }
 
         const itemVariant: ClientProductVariantDto = {
-          label: attrValue.label,
+          label: attrValue.label[lang],
           color: attrValue.color,
           isSelected: true,
           slug: selectedVariant.slug,
@@ -1107,13 +1113,13 @@ console.log(found)
         variantGroups.push({
           attribute: attribute,
           attributeValueId: attrValue.id,
-          label: attribute.label,
+          label: attribute.label[lang],
           hasColor: attribute.hasColor,
           variants: [ itemVariant ],
           selectedVariantLabel: itemVariant.label
         });
 
-        characteristics.push({ label: attribute.label, code: attribute.id, value: attrValue.label });
+        characteristics.push({ label: attribute.label[lang], code: attribute.id, value: attrValue.label[lang] });
       }
 
       for (let i = 0; i < variantGroups.length; i++) {
@@ -1131,7 +1137,7 @@ console.log(found)
           const selectedAttribute = productVariant.attributes.find(attr => attr.attributeId === variantGroups[i].attribute.id);
           const attributeValue = variantGroups[i].attribute.values.find(value => selectedAttribute.valueIds.includes(value.id));
           variantGroups[i].variants.push({
-            label: attributeValue.label,
+            label: attributeValue.label[lang],
             color: attributeValue.color,
             isSelected: false,
             slug: productVariant.slug,
@@ -1153,12 +1159,12 @@ console.log(found)
       categories,
       variantGroups,
       characteristics,
-      breadcrumbs: productWithQty.breadcrumbs,
-      fullDescription: selectedVariant.fullDescription,
-      shortDescription: selectedVariant.shortDescription,
-      medias: plainToClass(ClientMediaDto, selectedVariant.medias, { excludeExtraneousValues: true }),
-      metaTags: plainToClass(MetaTagsDto, selectedVariant.metaTags, { excludeExtraneousValues: true }),
-      name: selectedVariant.name,
+      breadcrumbs: productWithQty.breadcrumbs.map(breadcrumb => ClientBreadcrumbDto.transformTodo(breadcrumb, lang)),
+      fullDescription: selectedVariant.fullDescription[lang],
+      shortDescription: selectedVariant.shortDescription[lang],
+      medias: ClientMediaDto.transformToDtosArray(selectedVariant.medias, lang),
+      metaTags: ClientMetaTagsDto.transformToDto(selectedVariant.metaTags, lang),
+      name: selectedVariant.name[lang],
       slug: selectedVariant.slug,
       sku: selectedVariant.sku,
       vendorCode: selectedVariant.vendorCode,
@@ -1181,8 +1187,7 @@ console.log(found)
     spf.limit = 10000;
     const products: ProductWithQty[] = await this.getProductsWithQtyByIds(productIds, spf);
     const listItems = this.transformToAdminListDto(products);
-
-    return this.reindexSearchData(listItems);
+    return this.searchService.addDocuments(Product.collectionName, listItems);
   }
 
   private async reindexAllSearchData() { // this is called by cron from another method
@@ -1190,39 +1195,15 @@ console.log(found)
 
     const spf = new AdminSPFDto();
     spf.limit = 10000;
+    spf.sort = '-_id';
     const products: ProductWithQty[] = await this.getProductsWithQty(spf);
     const listItems = this.transformToAdminListDto(products);
 
     await this.searchService.deleteCollection(Product.collectionName);
     await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
-
-    await this.reindexSearchData(listItems);
+    await this.searchService.addDocuments(Product.collectionName, listItems);
 
     this.logger.log(`Finished reindex`);
-  }
-
-  private async reindexSearchData(listItems: AdminProductListItemDto[]) {
-
-    for (const batch of getBatches(listItems, 20)) {
-      await Promise.all(batch.map(listItem => this.searchService.addDocument(Product.collectionName, listItem.id, listItem)));
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
   }
 
   private async setProductPrices(product: DocumentType<Product>): Promise<DocumentType<Product>> {
@@ -1395,7 +1376,7 @@ console.log(found)
     }
   }
 
-  async fixProductSortOrder(reorderDto: ProductReorderDto) {
+  async lockProductSortOrder(reorderDto: ProductReorderDto) {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
@@ -1448,7 +1429,7 @@ console.log(found)
     }
   }
 
-  async unFixProductSortOrder(unfixDto: UnfixProductOrderDto) {
+  async unlockProductSortOrder(unfixDto: UnfixProductOrderDto) {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
@@ -1573,7 +1554,8 @@ console.log(found)
     attributeProductCountMap: AttributeProductCountMap,
     attributes: Attribute[],
     totalFound: number,
-    spfFilters: IFilter[]
+    spfFilters: IFilter[],
+    lang: Language
   ): ClientFilterDto[] {
 
     const clientFilters: ClientFilterDto[] = [];
@@ -1602,7 +1584,7 @@ console.log(found)
 
         values.push({
           id: attributeValue.id,
-          label: attributeValue.label,
+          label: attributeValue.label[lang],
           isDisabled: productsCount === 0,
           productsCount,
           isSelected
@@ -1615,7 +1597,7 @@ console.log(found)
 
       clientFilters.push({
         id: attribute.id,
-        label: attribute.label,
+        label: attribute.label[lang],
         isDisabled: valuesProductsCount === 0,
         type: 'checkbox',
         values
@@ -1710,5 +1692,56 @@ console.log(found)
       this.logger.error(`Could not update views count:`);
       this.logger.error(e);
     }
+  }
+
+  private async googleTranslate() {
+    // this.logger.log('start fetch');
+    // const products = await this.productModel.find().exec();
+    // this.logger.log('end fetch');
+    // const sLogs = [];
+    // const fLogs = [];
+    // for (const product of products) {
+    //   const name = product.name.ru;
+    //   const description = product.variants[0].fullDescription.ru;
+    //   const mTitle = product.variants[0].metaTags.title.ru;
+    //   const mDescription = product.variants[0].metaTags.description.ru;
+    //   const gTitle = product.variants[0].googleAdsProductTitle.ru;
+    //   try {
+    //     let [translatedName, translatedDesc, transMTitle, transMDescription, transGTitle] = await googleTranslate([name, description, mTitle, mDescription, gTitle]);
+    //     translatedName = translatedName.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     translatedDesc = translatedDesc.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     transMTitle = transMTitle.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     transMDescription = transMDescription.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     if (transGTitle) {
+    //       transGTitle = transGTitle.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+    //     }
+    //
+    //     product.name.uk = translatedName;
+    //     product.variants[0].name.uk = translatedName;
+    //     product.variants[0].fullDescription.uk = translatedDesc;
+    //     product.variants[0].metaTags.title.uk = transMTitle;
+    //     product.variants[0].metaTags.description.uk = transMDescription;
+    //     if (transGTitle) {
+    //       product.variants[0].googleAdsProductTitle.uk = transGTitle;
+    //     }
+    //
+    //     for (const media of product.variants[0].medias) {
+    //       media.altText.uk = translatedName;
+    //     }
+    //
+    //     await product.save();
+    //     console.log(product.id);
+    //     sLogs.push(product.id);
+    //   } catch (e) {
+    //     console.log(e);
+    //     console.error('error '+ product.id);
+    //     fLogs.push(product.id);
+    //   }
+    // }
+    //
+    // this.logger.log('success');
+    // this.logger.log(sLogs);
+    // this.logger.log('error');
+    // this.logger.log(fLogs);
   }
 }

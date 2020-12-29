@@ -1,4 +1,5 @@
 import { prop } from '@typegoose/typegoose';
+import { MultilingualText } from './multilingual-text.model';
 
 export class OrderPrices {
   @prop()
@@ -7,8 +8,8 @@ export class OrderPrices {
   @prop()
   discountPercent: number;
 
-  @prop()
-  discountLabel: string;
+  @prop({ _id: false })
+  discountLabel: MultilingualText;
 
   @prop()
   discountValue: number;

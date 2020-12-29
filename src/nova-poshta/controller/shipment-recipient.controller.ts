@@ -1,17 +1,6 @@
-import {
-  ClassSerializerInterceptor,
-  Controller,
-  Get,
-  Post,
-  Query,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
-import { SettlementService } from '../settlement.service';
+import { ClassSerializerInterceptor, Controller, Get, Query, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { ClientSPFDto } from '../../shared/dtos/client/spf.dto';
-import { ShipmentSenderService } from '../shipment-sender.service';
 import { NovaPoshtaService } from '../nova-poshta.service';
 
 @UsePipes(new ValidationPipe({ transform: true }))

@@ -1,4 +1,4 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { StoreReview } from './models/store-review.model';
@@ -10,12 +10,14 @@ import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticStoreReviewModel } from './models/elastic-store-review.model';
 import { plainToClass } from 'class-transformer';
 import { EmailService } from '../../email/email.service';
+import { ClientAddStoreReviewDto } from '../../shared/dtos/client/add-store-review.dto';
 
 @Injectable()
 export class StoreReviewService extends BaseReviewService<StoreReview, AdminStoreReviewDto> implements OnApplicationBootstrap {
 
   get collectionName(): string { return StoreReview.collectionName; }
   protected ElasticReview = ElasticStoreReviewModel;
+  protected logger = new Logger(StoreReviewService.name);
 
   constructor(@InjectModel(StoreReview.name) protected readonly reviewModel: ReturnModelType<typeof StoreReview>,
               protected readonly counterService: CounterService,
@@ -25,8 +27,8 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
     super();
   }
 
-  async createReview(reviewDto: AdminStoreReviewDto): Promise<AdminStoreReviewDto> {
-    const review = await super.createReview(reviewDto);
+  async createReview(reviewDto: AdminStoreReviewDto | ClientAddStoreReviewDto): Promise<AdminStoreReviewDto> {
+    const review = await super.createReview((reviewDto as AdminStoreReviewDto));
     this.emailService.sendNewStoreReviewEmail(review).then();
     return review;
   }

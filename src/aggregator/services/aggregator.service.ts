@@ -18,6 +18,7 @@ import { IFilter } from '../../shared/dtos/shared-dtos/spf.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { ClientAggregatedProductDto } from '../../shared/dtos/client/aggregated-product.dto';
 import { CounterService } from '../../shared/services/counter/counter.service';
+import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()
 export class AggregatorService {
@@ -130,7 +131,7 @@ export class AggregatorService {
     return this.aggregatorModel.estimatedDocumentCount().exec();
   }
 
-  async getClientAggregators(productId: number): Promise<ClientAggregatedProductsTableDto[]> {
+  async getClientAggregators(productId: number, lang: Language): Promise<ClientAggregatedProductsTableDto[]> {
     const aggregators = await this.aggregatorModel.find({ productIds: productId }).exec();
     const productIds = aggregators.flatMap(aggregator => aggregator.productIds);
 
@@ -154,13 +155,14 @@ export class AggregatorService {
         for (const variant of product.variants) {
           aggregatedProducts.push({
             ...variant,
+            name: variant.name[lang],
             price: variant.priceInDefaultCurrency
           });
         }
       }
 
       tables.push({
-        name: aggregator.clientName,
+        name: aggregator.clientName[lang],
         products: aggregatedProducts
       });
     }
@@ -186,31 +188,12 @@ export class AggregatorService {
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
     const aggregators = await this.aggregatorModel.find().exec();
+    const dtos = aggregators.map(aggregator => plainToClass(AdminAggregatorDto, aggregator, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(Aggregator.collectionName);
     await this.searchService.ensureCollection(Aggregator.collectionName, new ElasticAggregator());
-
-    for (const batch of getBatches(aggregators, 20)) {
-      await Promise.all(batch.map(aggregator => this.addSearchData(aggregator)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(Aggregator.collectionName, dtos);
+    this.logger.log(`Reindexed`);
   }
 
   private async searchByFilters(spf: AdminSPFDto) {

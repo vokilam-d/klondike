@@ -8,6 +8,7 @@ import { Order } from '../order/models/order.model';
 import { EmailService } from '../email/email.service';
 import { TaskTypeEnum } from '../shared/enums/task-type.enum';
 import { isProdPrimaryInstance } from '../shared/helpers/is-prod-primary-instance.function';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class TasksService implements OnApplicationBootstrap {
@@ -28,19 +29,20 @@ export class TasksService implements OnApplicationBootstrap {
     }
   }
 
-  async sendLeaveReviewEmail(order: Order) {
+  async sendLeaveReviewEmail(order: Order, lang: Language) {
     const name = `${TaskTypeEnum.SendEmail}-${order._id}-${Date.now()}`;
     const time = new Date();
     time.setDate(time.getDate() + this.delaysInDays[TaskTypeEnum.SendEmail]);
 
-    await this.addTask(name, time, TaskTypeEnum.SendEmail, [order]);
+    await this.addTask(name, time, TaskTypeEnum.SendEmail, [order, lang]);
   }
 
   private async setupSavedTasks() {
     const taskModels = await this.taskModel.find().exec();
     for (const taskModel of taskModels) {
       if (new Date() > taskModel.time) {
-        this.logger.error(`Could not setup saved task ${taskModel.name}: time is expired`);
+        this.logger.error(`Could not setup saved task ${taskModel.name}: time is expired. Removing from DB...`);
+        await taskModel.remove();
         continue;
       }
       await this.startJob(taskModel.name, taskModel.time, taskModel.type, taskModel.arguments);
@@ -73,7 +75,7 @@ export class TasksService implements OnApplicationBootstrap {
   private buildJob(taskType: TaskTypeEnum, args: any[]): () => any {
     switch (taskType) {
       case TaskTypeEnum.SendEmail:
-        return () => this.emailService.sendLeaveReviewEmail(args[0]);
+        return () => this.emailService.sendLeaveReviewEmail(args[0], args[1]);
     }
   }
 }

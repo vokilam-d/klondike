@@ -4,7 +4,7 @@ import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 
 @Controller('feed')
-export class FeedController { // todo rename to AdminFeedController
+export class FeedController {
 
   constructor(private readonly googleShoppingFeedService: GoogleShoppingFeedService) {
   }

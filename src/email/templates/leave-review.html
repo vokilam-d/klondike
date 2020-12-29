@@ -292,11 +292,7 @@
                                                                 style="padding:0;Margin:0;font-size:0px;"><a
                                                                     target="_blank"
                                                                     href="https://klondike.com.ua"
-                                                                    style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:14px;text-decoration:none;color:#3E77AA;"><img
-                                                                    src="https://pics.esputnik.com/repository/home/58540/common/images/1581845406880.png"
-                                                                    alt
-                                                                    style="display:inline-block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;vertical-align:sub"
-                                                                    height="23"><span style="color:#242424;font-size:15px"> — товары для творчества!</span></a></td>
+                                                                    style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:14px;text-decoration:none;color:#313131;"><span style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:25px;color:#313131;">Klondike </span><span style="display:inline-block;height:28px;vertical-align:middle;font-size:15px;line-height:15px;margin-top: 3px;"> — товары для творчества!</span></a></td>
                                                         </tr>
                                                     </table>
                                                 </td>
@@ -315,19 +311,10 @@
                                                            style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
                                                         <tr style="border-collapse:collapse;">
                                                             <td align="left"
-                                                                style="padding:0;Margin:0;padding-top:10px;padding-bottom:0px;">
-                                                                <div><h2
-                                                                        style="Margin:0;line-height:29px;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:15px!important;text-align:left;font-style:normal;font-weight:normal;color:#242424;text-align: center;font-size: 18px !important;">
-                                                                    <strong>{{ firstName }},</strong>
-                                                                </h2></div>
-                                                            </td>
-                                                        </tr>
-                                                        <tr style="border-collapse:collapse;">
-                                                            <td align="left"
                                                                 style="padding:0;Margin:0;padding-top:5px;"><span
                                                                     style="font-size:15px;">
-                                                                Пожалуйста, поделитесь своим мнением о купленных Вами товарах.<br>
-                                                                Этим Вы поможете определиться другим покупателям, а нам - стать лучше.
+                                                                {{ firstName }}, пожалуйста, поделитесь своим мнением о купленных Вами товарах.<br>
+                                                                Этим Вы поможете сделать правильный выбор другим покупателям, а нам - стать лучше.
 
                                                             </span>
                                                             </td>
@@ -339,21 +326,18 @@
                                     </td>
                                 </tr>
 
-
-
-
                                 {{#each productRows}}
                                 <tr style="border-collapse:collapse">
                                     <td align="left" style="padding:0;Margin:0;padding-top:20px;padding-left:10px;padding-right:10px">
                                         <table cellpadding="0" cellspacing="0"
-                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;width:580px">
+                                               style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;margin:0 auto;table-layout:fixed;">
                                             <tr style="border-collapse:collapse">
 
 
                                                 {{#each this}}
-                                                <td style="padding:0;Margin:0" valign="top">
+                                                <td style="padding:0;Margin:0;width:193px;height:233px" valign="top">
                                                     <table align="left" cellpadding="0" cellspacing="0" class="es-left"
-                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left">
+                                                           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;float:left;height:233px">
                                                         <tr style="border-collapse:collapse">
                                                             <td align="center" class="es-m-p0r" style="padding:0;Margin:0;width:180px">
                                                                 <table cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"
@@ -374,13 +358,13 @@
                                                                        width="100%">
                                                                     <tr style="border-collapse:collapse">
                                                                         <td align="left" style="padding:0;Margin:0;padding-top:10px"><p
-                                                                                style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:17px;color:#313131;">
+                                                                                style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:1.2300em;color:#313131;">
 
                                                                             <a target="_blank"
                                                                                href="https://klondike.com.ua/{{ this.slug }}#reviews"
-                                                                               style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:14px !important;text-decoration:none;color:#3E77AA !important;">
+                                                                               style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:14px !important;text-decoration:none;color:#3E77AA !important;height: 68px !important;overflow: hidden !important;text-overflow: ellipsis !important;display:block !important;">
                                                                             <span
-                                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:17px;color:#313131;height: 67px !important;overflow: hidden !important;text-overflow: ellipsis !important;display:block !important;color:#3E77AA !important;">
+                                                                                    style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;height: 68px !important;overflow: hidden !important;text-overflow: ellipsis !important;display:block !important;color:#3E77AA !important;">
 
                                                                                     {{ this.name }}
 
@@ -401,7 +385,7 @@
                                                                         <td align="center" style="padding:0;Margin:0;padding-top:10px"><span
                                                                                 class="es-button-border"
                                                                                 style="border-style:solid;border-color:#3285B9;background:#F8CA68;border-width:0px;display:inline-block;border-radius:5px;width:auto"><a
-                                                                                href="https://klondike.com.ua/{{ this.slug }}#reviews" style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:16px;color:#313131;border-style:solid;border-color:#F8CA68;border-width:10px 20px;display:inline-block;background:#F8CA68;border-radius:5px;font-weight:normal;font-style:normal;line-height:19px;width:auto;text-align:center;line-height: 1;white-space: nowrap;"
+                                                                                href="https://klondike.com.ua/{{ this.slug }}#reviews" style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:16px;color:#313131;border-style:solid;border-color:#F8CA68;border-width:10px 30px;display:inline-block;background:#F8CA68;border-radius:5px;font-weight:normal;font-style:normal;line-height:19px;width:auto;text-align:center;line-height: 1;white-space: nowrap;"
                                                                                 target="_blank">Оставить отзыв</a></span>
                                                                         </td>
                                                                     </tr>
@@ -420,9 +404,9 @@
                                 </tr>
                                 {{/each}}
 
-
+                                <tr style="border-collapse:collapse; height:20px"></tr>
                                 <tr style="border-collapse:collapse;">
-                                    <td style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;background-color:transparent;"
+                                    <td style="padding:0;Margin:0;padding-top:10px;padding-left:20px;padding-right:20px;background-color:#fff1e1;"
                                         bgcolor="transparent" align="left">
                                         <table width="100%" cellspacing="0" cellpadding="0"
                                                style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
@@ -433,7 +417,7 @@
                                                         <tr style="border-collapse:collapse;">
                                                             <td align="left"
                                                                 style="padding:0;Margin:0;padding-top:5px;"><span
-                                                                    style="font-size:15px;">Или Вы можете оставить отзыв о магазине "Клондайк" (например, оценить скорость отправки посылки, консультацию, упаковку посылки). Мы очень благодарны за обратную связь, каждый отзыв вдохновляет нас!</span>
+                                                                    style="font-size:15px;">Также Вы можете оставить отзыв о магазине "Клондайк" (например, оценить скорость отправки посылки, консультацию, упаковку посылки). Мы очень благодарны за обратную связь, каждый отзыв вдохновляет нас!</span>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -442,9 +426,9 @@
                                         </table>
                                     </td>
                                 </tr>
-                                <tr style="border-collapse:collapse;">
-                                    <td style="padding:0;Margin:0;padding-top:20px;padding-left:0px;padding-right:0px;background-color:transparent;"
-                                        bgcolor="transparent" align="left">
+                                <tr style="border-collapse:collapse;background-color:#fff1e1">
+                                    <td style="padding:0;Margin:0;padding-top:20px;padding-left:0px;padding-right:0px;"
+                                        align="left">
                                         <form action="https://klondike.com.ua/api/v1/store-reviews/from-email" method="get" target="_blank" accept-charset="UTF-8">
                                             <input type="hidden" name="name" value="{{ firstName }} {{ lastName }}">
                                             <input type="hidden" name="customerId" value="{{ customerId }}">
@@ -495,7 +479,7 @@
                                                                         </tr>
                                                                     </table>
                                                                 </td>
-                                                                <td class="es-hidden" width="20" style="padding:0;Margin:0;"></td>
+                                                                <td class="es-hidden" width="10" style="padding:0;Margin:0;"></td>
                                                             </tr>
                                                         </table>
                                                         <!--[if mso]></td>
@@ -516,7 +500,7 @@
                                                                         </tr>
                                                                     </table>
                                                                 </td>
-                                                                <td class="es-hidden" width="20" style="padding:0;Margin:0;"></td>
+                                                                <td class="es-hidden" width="10" style="padding:0;Margin:0;"></td>
                                                             </tr>
                                                         </table>
                                                         <!--[if mso]></td>
@@ -537,7 +521,7 @@
                                                                         </tr>
                                                                     </table>
                                                                 </td>
-                                                                <td class="es-hidden" width="20" style="padding:0;Margin:0;"></td>
+                                                                <td class="es-hidden" width="10" style="padding:0;Margin:0;"></td>
                                                             </tr>
                                                         </table>
                                                         <!--[if mso]>
@@ -562,7 +546,7 @@
                                                             </tr>
                                                         </table>
                                                         <!--[if mso]></td>
-                                                    <td width="20"></td>
+                                                    <td width="10"></td>
                                                     <td width="96" valign="top"><![endif]-->
                                                         <table cellpadding="0" cellspacing="0" class="es-left" align="left"
                                                                style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;">
@@ -636,9 +620,9 @@
                                                                         <tr style="border-collapse:collapse;">
                                                                             <td align="center" style="padding:10px;Margin:0;"><span
                                                                                     class="es-button-border"
-                                                                                    style="border-style:solid;border-color:#F8CA68;background:#F8CA68;border-width:0px 0px 0px 0px;display:inline-block;border-radius:8px;width:auto;">
+                                                                                    style="border-style:solid;border-color:#F8CA68;background:#F8CA68;border-width:0px 0px 0px 0px;display:inline-block;border-radius:8px;width:310px;height:43px;">
                                                                 <input class="es-button" target="_blank"
-                                                                       style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:18px;color:#313131;border-style:solid;border-color:#F8CA68;border-width:12px 30px 11px;display:inline-block;background-color:transparent;background-image:none;border-radius:8px;font-weight:normal;font-style:normal;appearance: none;-webkit-appearance:none;line-height:18px;width:auto;text-align:center;white-space: nowrap;" type="submit" value="Отправить отзыв
+                                                                       style="mso-style-priority:100 !important;text-decoration:none;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:18px;color:inherit;display:inline-block;background-color:transparent;background-image:none;font-weight:normal;font-style:normal;appearance: none;-webkit-appearance:none;line-height:18px;width:100%;height:100%;vertical-align:middle;text-align:center;white-space:nowrap;border:none;border-radius:8px;" type="submit" value="Отправить отзыв
  о магазине" />
                                                             </span>
                                                                             </td>

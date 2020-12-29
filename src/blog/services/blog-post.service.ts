@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AdminBlogPostCreateOrUpdateDto, AdminBlogPostDto } from '../../shared/dtos/admin/blog-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { BlogPost } from '../models/blog-post.model';
@@ -200,32 +200,13 @@ export class BlogPostService {
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
-    const blogPosts = await this.blogPostModel.find().exec();
+    const blogPosts = await this.blogPostModel.find().sort({ _id: -1 }).exec();
+    const dtos = blogPosts.map(blogPost => plainToClass(AdminBlogPostDto, blogPost, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(BlogPost.collectionName);
     await this.searchService.ensureCollection(BlogPost.collectionName, new ElasticBlogPost());
-
-    for (const batch of getBatches(blogPosts, 20)) {
-      await Promise.all(batch.map(blogPost => this.addSearchData(blogPost)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(BlogPost.collectionName, dtos);
+    this.logger.log(`Reindexed`);
   }
 
   private async searchByFilters(spf: AdminSPFDto) {

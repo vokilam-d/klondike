@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable
 import { ProductService } from '../product/services/product.service';
 import { CustomerService } from '../customer/customer.service';
 import { OrderItem } from './models/order-item.model';
-import { __ } from '../shared/helpers/translate/translate.function';
+import { __, getTranslations } from '../shared/helpers/translate/translate.function';
 import { LinkedProduct } from '../product/models/linked-product.model';
 import { ClientProductListItemDto } from '../shared/dtos/client/product-list-item.dto';
 import { ClientProductSPFDto } from '../shared/dtos/client/product-spf.dto';
@@ -12,6 +12,10 @@ import { ProductVariantWithQty, ProductWithQty } from '../product/models/product
 import { OrderPrices } from '../shared/models/order-prices.model';
 import { EProductsSort } from '../shared/enums/product-sort.enum';
 import { AdditionalServiceService } from '../additional-service/services/additional-service.service';
+import { ClientOrderItemDto } from '../shared/dtos/client/order-item.dto';
+import { MultilingualText } from '../shared/models/multilingual-text.model';
+import { CreateOrderItemDto } from '../shared/dtos/shared-dtos/create-order-item.dto';
+import { Language } from '../shared/enums/language.enum';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [
   { totalCostBreakpoint: 500, discountPercent: 5 },
@@ -26,7 +30,13 @@ export class OrderItemService {
     private readonly additionalServiceService: AdditionalServiceService
   ) { }
 
-  async createOrderItem(sku: string, qty: number, additionalServiceIds: number[], withCrossSell: boolean, product?: ProductWithQty, variant?: ProductVariantWithQty): Promise<OrderItem> {
+  async createOrderItem(
+    { sku, qty, additionalServiceIds, omitReserved }: CreateOrderItemDto,
+    lang: Language,
+    withCrossSell: boolean,
+    product?: ProductWithQty,
+    variant?: ProductVariantWithQty
+  ): Promise<OrderItem> {
 
     if (!product) {
       product = await this.productService.getProductWithQtyBySku(sku);
@@ -34,7 +44,7 @@ export class OrderItemService {
       if (!product || !variant) { throw new BadRequestException(__('Product with sku "$1" not found', 'ru', sku)); }
     }
 
-    this.assertIsInStock(qty, variant);
+    this.assertIsInStock(qty, variant, omitReserved);
 
     let orderItem = new OrderItem();
     orderItem.name = variant.name;
@@ -71,20 +81,22 @@ export class OrderItemService {
     }
 
     if (withCrossSell) {
-      orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts);
+      orderItem.crossSellProducts = await this.getCrossSellProducts(variant.crossSellProducts, lang);
     }
 
     return orderItem;
   }
 
-  assertIsInStock(qty: number, variant: ProductVariantWithQty): void {
-    const qtyAvailable = variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0);
+  assertIsInStock(qty: number, variant: ProductVariantWithQty, omitReserved: boolean): void {
+    const reservedAmount = variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0);
+    const qtyAvailable = omitReserved ? variant.qtyInStock : variant.qtyInStock - reservedAmount;
+
     if (qty > qtyAvailable) {
       throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, qtyAvailable));
     }
   }
 
-  async calcOrderPrices(orderItems: OrderItem[], customer: Customer): Promise<OrderPrices> {
+  async calcOrderPrices(orderItems: (OrderItem | ClientOrderItemDto)[], customer: Customer): Promise<OrderPrices> {
     const products = await this.productService.getProductsWithQtyBySkus(orderItems.map(item => item.sku));
     let itemsCost: number = 0;
     let itemsCostForDiscountPercentCalculation: number = 0;
@@ -112,13 +124,13 @@ export class OrderItemService {
     const [totalCostDiscountPercent, totalCostBreakpoint] = OrderItemService.getDiscountPercent(itemsCostForDiscountPercentCalculation);
 
     let discountPercent: number = 0;
-    let discountLabel: string = '';
+    let discountLabel: MultilingualText;
     if (totalCostDiscountPercent > customerDiscountPercent) {
       discountPercent = totalCostDiscountPercent;
-      discountLabel = __('Order amount over $1 uah', 'ru', totalCostBreakpoint);
+      discountLabel = getTranslations('Order amount over $1 uah', totalCostBreakpoint);
     } else if (customerDiscountPercent >= totalCostDiscountPercent) {
       discountPercent = customerDiscountPercent;
-      discountLabel = __('Cumulative discount', 'ru');
+      discountLabel = getTranslations('Cumulative discount');
     }
 
     const discountValue = Math.round(itemsCostApplicableForDiscount * discountPercent / 100);
@@ -133,7 +145,7 @@ export class OrderItemService {
     };
   }
 
-  private async getCrossSellProducts(crossSellProducts: LinkedProduct[]): Promise<ClientProductListItemDto[]> {
+  private async getCrossSellProducts(crossSellProducts: LinkedProduct[], lang: Language): Promise<ClientProductListItemDto[]> {
     if (!crossSellProducts.length) { return []; }
 
     const idsArr = crossSellProducts.map(p => p.productId);
@@ -142,7 +154,7 @@ export class OrderItemService {
     spf.limit = crossSellProducts.length;
     spf.id = idsArr.join(queryParamArrayDelimiter);
     spf.sort = EProductsSort.SalesCount;
-    let { data: products } = await this.productService.getClientProductList(spf);
+    let { data: products } = await this.productService.getClientProductList(spf, lang);
 
     return products.filter(product => product.isInStock);
   }

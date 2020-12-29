@@ -67,4 +67,8 @@ export class AdminBaseReviewDto {
   @IsString()
   @TrimString()
   managerComment?: string;
+
+  @Expose()
+  @IsOptional()
+  source?: 'manager' | 'website' | 'email';
 }

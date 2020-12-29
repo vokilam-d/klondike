@@ -1,0 +1,181 @@
+.page {
+    width: 794px;
+    height: 1122px;
+    color: #313131;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    line-height: 1;
+    box-sizing: border-box;
+}
+
+.header {
+    padding: 0 10px;
+}
+
+.header__invoice-info {
+    width: 100%;
+    padding: 0 10px;
+    border-bottom: 3px solid #313131;
+    font-family: 'open sans', 'helvetica neue', helvetica, arial, sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    color: #313131;
+}
+
+.header__logo {
+    padding: 0 10px;
+    font-size: 13px;
+}
+
+.invoice-details__bank-info {
+    width: 100%;
+}
+
+.invoice-details__supplier {
+    display: flex;
+    justify-content: space-between;
+}
+
+.invoice-details__customer {
+    display: flex;
+    margin: 10px 0;
+}
+
+.invoice-details__party {
+    min-width: 160px;
+    margin: 0;
+    text-decoration: underline;
+}
+
+.invoice-details__bank-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.invoice-details__bank-info p {
+    margin: 3px 0;
+}
+
+.invoice-details__bank-info .invoice-details__bank-info--name {
+    margin: 0;
+}
+
+.invoice-details__bank-info--name, .invoice-details__customer-name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.products {
+    margin: 12px 0 0;
+    width: 100%;
+    text-align: center;
+    border-spacing: 0;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 1px solid #808080;
+}
+
+.products th {
+    padding: 5px;
+    border: 1px solid #808080;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.products td {
+    padding: 3px;
+    font-size: 12px;
+}
+
+.products__product:nth-child(2n) {
+    background: #eee;
+}
+
+.products__number {
+    width: 30px;
+    text-align: center;
+    border: 1px solid #808080;
+}
+
+.products__name {
+    text-align: left;
+    border: 1px solid #808080;
+}
+
+.products__qty {
+    width: 80px;
+    border: 1px solid #808080;
+}
+
+.products__price {
+    width: 100px;
+    border: 1px solid #808080;
+}
+
+.products__old-price {
+    color:#808080;
+    text-decoration:line-through;
+}
+
+.products__cost {
+    width: 120px;
+    border: 1px solid #808080;
+}
+
+.products__sku {
+    font-size: 10px;
+}
+
+.summary {
+    margin: 15px 0 0;
+    text-align: right;
+}
+
+.summary__row {
+    margin: 10px 0 0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.summary__key {
+    font-weight: 700;
+}
+
+.summary__value {
+    width: 100px;
+}
+
+.summary__value--total {
+    font-weight: 700;
+}
+
+.detailed-summary {
+    display: flex;
+    flex-direction: column;
+}
+
+.detailed-summary--numbers {
+    margin: 0;
+    font-size: 13px;
+}
+
+.detailed-summary--words {
+    width: 100%;
+    padding-bottom: 5px;
+    font-size: 15px;
+    font-weight: bold;
+    border-bottom: 2px solid #313131;
+}
+
+.signature {
+    width: 400px;
+    margin-left: auto;
+    border-bottom: 2px solid #313131;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+
+

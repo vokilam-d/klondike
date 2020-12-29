@@ -19,11 +19,11 @@ import { CategoryService } from './category.service';
 import { AdminAddOrUpdateCategoryDto, AdminCategoryDto } from '../shared/dtos/admin/category.dto';
 import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
-import { CategoryTreeItem } from '../shared/dtos/shared-dtos/category.dto';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
+import { AdminCategoryTreeItemDto } from '../shared/dtos/admin/category-tree-item.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -43,10 +43,10 @@ export class AdminCategoryController {
   }
 
   @Get('tree')
-  async getCategoriesTree(@Query('noClones') noClones: string): Promise<ResponseDto<CategoryTreeItem[]>> {
+  async getCategoriesTree(@Query('noClones') noClones: string): Promise<ResponseDto<AdminCategoryTreeItemDto[]>> {
     const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, noClones: Boolean(noClones), adminTree: true });
     return {
-      data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
+      data: plainToClass(AdminCategoryTreeItemDto, tree, { excludeExtraneousValues: true })
     };
   }
 
@@ -74,11 +74,11 @@ export class AdminCategoryController {
   }
 
   @Post('action/reorder')
-  async reorderCategories(@Body() reorderDto: ReorderDto): Promise<ResponseDto<CategoryTreeItem[]>> {
+  async reorderCategories(@Body() reorderDto: ReorderDto): Promise<ResponseDto<AdminCategoryTreeItemDto[]>> {
     await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position);
     const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, adminTree: true });
     return {
-      data: plainToClass(CategoryTreeItem, tree, { excludeExtraneousValues: true })
+      data: plainToClass(AdminCategoryTreeItemDto, tree, { excludeExtraneousValues: true })
     };
   }
 

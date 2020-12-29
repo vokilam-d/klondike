@@ -1,21 +1,24 @@
 import { ArrayNotEmpty, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminAddOrUpdateProductVariantDto } from './product-variant.dto';
 import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
-import { BreadcrumbDto } from '../shared-dtos/breadcrumb.dto';
 import { AdminProductCategoryDto } from './product-category.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { AdminBreadcrumbDto } from './breadcrumb.dto';
+import { Product } from '../../../product/models/product.model';
+import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
-export class AdminAddOrUpdateProductDto {
+type PickedProduct = Pick<Product, 'isEnabled' | 'name' | 'categories' | 'breadcrumbs' | 'attributes' | 'createdAt' | 'updatedAt' | 'additionalServiceIds'>;
+type VariantsProp = Record<keyof Pick<Product, 'variants'>, AdminAddOrUpdateProductVariantDto[]>;
+export class AdminAddOrUpdateProductDto implements PickedProduct, VariantsProp {
   @Expose()
   @IsBoolean()
   isEnabled: boolean;
 
   @Expose()
-  @IsString()
-  @TrimString()
-  name: string;
+  @Type(() => MultilingualTextDto)
+  name: MultilingualTextDto;
 
   @Expose()
   @ValidateNested({ each: true })
@@ -24,8 +27,8 @@ export class AdminAddOrUpdateProductDto {
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => BreadcrumbDto)
-  breadcrumbs: BreadcrumbDto[];
+  @Type(() => AdminBreadcrumbDto)
+  breadcrumbs: AdminBreadcrumbDto[];
 
   @Expose()
   @ValidateNested({ each: true })
@@ -41,11 +44,11 @@ export class AdminAddOrUpdateProductDto {
 
   @Expose()
   @IsOptional()
-  createdAt: any;
+  createdAt: Date;
 
   @Expose()
   @IsOptional()
-  updatedAt: any;
+  updatedAt: Date;
 
   @Expose()
   @IsNumber(undefined, { each: true })
@@ -53,10 +56,7 @@ export class AdminAddOrUpdateProductDto {
   additionalServiceIds: number[];
 }
 
-export class AdminProductDto extends AdminAddOrUpdateProductDto {
-  @Exclude()
-  _id: number;
-
+export class AdminProductDto extends AdminAddOrUpdateProductDto implements Pick<Product, 'id' | 'reviewsAvgRating'>{
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id: number;

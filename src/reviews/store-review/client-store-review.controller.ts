@@ -1,17 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  Redirect,
-  Req,
-  Request,
-  Response,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Redirect, Req, Request, Response, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StoreReviewService } from './store-review.service';
 import { IpAddress } from '../../shared/decorators/ip-address.decorator';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
@@ -21,10 +8,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
-import {
-  ClientAddStoreReviewDto,
-  ClientAddStoreReviewFromEmailDto
-} from '../../shared/dtos/client/add-store-review.dto';
+import { ClientAddStoreReviewDto, ClientAddStoreReviewFromEmailDto } from '../../shared/dtos/client/add-store-review.dto';
 import { ClientStoreReviewDto } from '../../shared/dtos/client/store-review.dto';
 import { ClientId } from '../../shared/decorators/client-id.decorator';
 import { ClientStoreReviewsSPFDto } from '../../shared/dtos/client/store-reviews-spf.dto';
@@ -78,7 +62,7 @@ export class ClientStoreReviewController {
   @Get('from-email')
   @Redirect('/')
   async createReviewFromEmail(@Query() storeReviewDto: ClientAddStoreReviewFromEmailDto) {
-    await this.storeReviewService.createReview(storeReviewDto);
+    await this.storeReviewService.createReview({ ...storeReviewDto, source: 'email' });
 
     return {
       url: `/otzyvy?review-from-email=true`
@@ -94,13 +78,14 @@ export class ClientStoreReviewController {
   }
 
   @Post()
-  async createStoreReview(@Req() req,
-                          @Body() storeReviewDto: ClientAddStoreReviewDto
+  async createStoreReview(
+    @Req() req,
+    @Body() storeReviewDto: ClientAddStoreReviewDto
   ): Promise<ResponseDto<ClientStoreReviewDto>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
-    const review = await this.storeReviewService.createReview({ ...storeReviewDto, customerId });
+    const review = await this.storeReviewService.createReview({ ...storeReviewDto, customerId, source: 'website' });
 
     return {
       data: plainToClass(ClientStoreReviewDto, review, { excludeExtraneousValues: true })

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { BaseReviewService } from '../base-review/base-review.service';
@@ -29,6 +29,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
 
   get collectionName(): string { return ProductReview.collectionName; }
   protected ElasticReview = ElasticProductReviewModel;
+  protected logger = new Logger(ProductReviewService.name);
 
   constructor(
     @InjectModel(ProductReview.name) protected readonly reviewModel: ReturnModelType<typeof ProductReview>,
@@ -58,7 +59,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   }
 
   async createReview(reviewDto: AdminProductReviewDto | ClientAddProductReviewDto): Promise<AdminProductReviewDto> {
-    const review = await super.createReview(reviewDto, (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session));
+    const review = await super.createReview((reviewDto as AdminProductReviewDto), (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session));
     this.emailService.sendNewProductReviewEmail(review).then();
     return review;
   }

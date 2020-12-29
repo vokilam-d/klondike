@@ -15,6 +15,8 @@ import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticBlogCategory } from '../models/elastic-blog-category.model';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
+import { ClientBlogCategoryListItemDto } from '../../shared/dtos/client/blog-category-list-item.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()
 export class BlogCategoryService {
@@ -133,18 +135,15 @@ export class BlogCategoryService {
     return category.toJSON();
   }
 
-  async populateCategoriesWithPostsCount(categories: BlogCategory[]): Promise<BlogCategory[] & { postsCount:number }[]> {
-    const result = [];
-
+  async transformToClientListDto(categories: BlogCategory[], lang: Language): Promise<ClientBlogCategoryListItemDto[]> {
+    const dtos: ClientBlogCategoryListItemDto[] = [];
     for (const category of categories) {
       const postsCount = await this.blogPostService.countPosts({ categoryId: category.id });
-      result.push({
-        ...category,
-        postsCount
-      });
+      const dto = ClientBlogCategoryListItemDto.transformToDto(category, lang, postsCount);
+      dtos.push(dto);
     }
 
-    return result;
+    return dtos;
   }
 
   private async addSearchData(blogCategory: BlogCategory) {
@@ -165,31 +164,12 @@ export class BlogCategoryService {
   private async reindexAllSearchData() {
     this.logger.log('Start reindex all search data');
     const blogCategorys = await this.blogCategoryModel.find().exec();
+    const dtos = blogCategorys.map(blogCategory => plainToClass(AdminBlogCategoryDto, blogCategory, { excludeExtraneousValues: true }));
 
     await this.searchService.deleteCollection(BlogCategory.collectionName);
     await this.searchService.ensureCollection(BlogCategory.collectionName, new ElasticBlogCategory());
-
-    for (const batch of getBatches(blogCategorys, 20)) {
-      await Promise.all(batch.map(blogCategory => this.addSearchData(blogCategory)));
-      this.logger.log(`Reindexed ids: ${batch.map(i => i.id).join()}`);
-    }
-
-    function getBatches<T = any>(arr: T[], size: number = 2): T[][] {
-      const result = [];
-      for (let i = 0; i < arr.length; i++) {
-        if (i % size !== 0) {
-          continue;
-        }
-
-        const resultItem = [];
-        for (let k = 0; (resultItem.length < size && arr[i + k]); k++) {
-          resultItem.push(arr[i + k]);
-        }
-        result.push(resultItem);
-      }
-
-      return result;
-    }
+    await this.searchService.addDocuments(BlogCategory.collectionName, dtos);
+    this.logger.log('Reindexed');
   }
 
   private async searchByFilters(spf: AdminSPFDto) {

@@ -1,18 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  Request,
-  Response,
-  UseGuards,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, Response, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AdminStoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { StoreReviewService } from './store-review.service';
@@ -52,6 +38,7 @@ export class AdminStoreReviewController {
 
   @Post()
   async createStoreReview(@Body() storeReviewDto: AdminStoreReviewDto): Promise<ResponseDto<AdminStoreReviewDto>> {
+    storeReviewDto.source = 'manager';
     const review = await this.storeReviewService.createReview(storeReviewDto);
     return {
       data: plainToClass(AdminStoreReviewDto, review, { excludeExtraneousValues: true })
