@@ -333,6 +333,13 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
+  async getBreadcrumpsByProductId (id: any) {
+    const product = await this.productModel.findById(id).exec();
+    let breadcrumps;
+    await this.populateProductCategoriesAndBreadcrumbs(product).then(e => breadcrumps = e).catch();
+    return breadcrumps;
+  }
+
   async getProductWithQtyById(id: number, session?: ClientSession): Promise<ProductWithQty> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
@@ -359,7 +366,7 @@ export class ProductService implements OnApplicationBootstrap {
     if (!found) {
       throw new NotFoundException(__('Product with id "$1" not found', 'ru', id));
     }
-
+console.log(found)
     return found;
   }
 
@@ -742,7 +749,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto, categoryTreeItems?): Promise<void> {
+  private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto, categoryTreeItems?): Promise<any> {
     const breadcrumbsVariants: Breadcrumb[][] = [];
 
     const populate = (treeItems: CategoryTreeItem[], breadcrumbs: Breadcrumb[] = []) => {
@@ -775,9 +782,19 @@ export class ProductService implements OnApplicationBootstrap {
       categoryTreeItems = await this.categoryService.getCategoriesTree({ onlyEnabled: true });
     }
     populate(categoryTreeItems);
+    let sortedBreadcrumbs = breadcrumbsVariants.sort((a, b) => b.length - a.length).filter(item => item.length>0)
+    for (let i=1;i<sortedBreadcrumbs.length;i++) {
+      for (let j=2;j<sortedBreadcrumbs.length;j++) {
+        if (sortedBreadcrumbs[i].length === sortedBreadcrumbs[j].length) {
+          if (sortedBreadcrumbs[i][0].id === sortedBreadcrumbs[j][0].id) {
+            sortedBreadcrumbs.splice(i,1)
+          } 
+        }
+      }
+    }
 
-    breadcrumbsVariants.sort((a, b) => b.length - a.length);
-    product.breadcrumbs = breadcrumbsVariants[0] || [];
+    product.breadcrumbs = sortedBreadcrumbs[0] || [];
+    return sortedBreadcrumbs;
   }
 
   private async addSearchData(productWithQty: ProductWithQty) {
