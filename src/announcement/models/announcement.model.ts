@@ -6,6 +6,9 @@ export class Announcement {
   isEnabled: boolean;
 
   @prop()
+  isFixed: boolean;
+
+  @prop()
   announcement: string;
 
   static collectionName: string = 'announcement';
