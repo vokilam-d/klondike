@@ -94,7 +94,7 @@ export class ProductService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     this.handleCurrencyUpdates();
     this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
-    this.reindexAllSearchData();
+    // this.reindexAllSearchData();
   }
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
