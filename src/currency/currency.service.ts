@@ -23,9 +23,10 @@ export class CurrencyService {
   private exchangeRateUrl = 'https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5';
   echangeRatesUpdated$: Subject<Currency[]> = new Subject();
 
-  constructor(@InjectModel(Currency.name) private readonly currencyModel: ReturnModelType<typeof Currency>,
-              private readonly http: HttpService) {
-  }
+  constructor(
+    @InjectModel(Currency.name) private readonly currencyModel: ReturnModelType<typeof Currency>,
+    private readonly http: HttpService
+  ) { }
 
   async getAllCurrencies(): Promise<Currency[]> {
     const currencies = await this.currencyModel.find().exec();
