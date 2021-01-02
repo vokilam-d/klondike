@@ -274,7 +274,6 @@ export class GoogleShoppingFeedService {
   private async getAllReviews(): Promise<AdminProductReviewDto[]> {
     const countReviews = await this.reviewService.countReviews();
     const spf = new AdminSPFDto();
-
     spf.limit = countReviews + 100;
 
     const responseDto = await this.reviewService.findReviewsByFilters(spf);
