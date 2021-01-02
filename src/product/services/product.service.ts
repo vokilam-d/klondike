@@ -759,6 +759,7 @@ export class ProductService implements OnApplicationBootstrap {
         if (foundIdx !== -1) {
           product.categories[foundIdx].name = treeItem.name;
           product.categories[foundIdx].slug = treeItem.slug;
+          product.categories[foundIdx].isEnabled = treeItem.isEnabled;
 
           newBreadcrumbs.push({ // todo remove this after converting breadcrumbs to ids only
             id: treeItem.id,
