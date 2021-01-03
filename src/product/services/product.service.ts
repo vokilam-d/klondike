@@ -577,6 +577,7 @@ export class ProductService implements OnApplicationBootstrap {
       }
 
       await this.setProductPrices(found);
+      found.updatedAt = new Date();
       await found.save({ session });
       const productWithQty = this.transformToProductWithQty(found.toJSON(), inventories);
       await this.updateSearchData(productWithQty);
