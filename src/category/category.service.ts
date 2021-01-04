@@ -56,7 +56,16 @@ export class CategoryService implements OnApplicationBootstrap {
   }
 
   async getAllCategories(): Promise<Category[]> {
-    return this.cachedCategories;
+    if (this.cachedCategories.length) {
+      return this.cachedCategories;
+    }
+
+    let categories = await this.categoryModel.find().exec();
+    categories = categories
+      .sort((a, b) => a.reversedSortOrder - b.reversedSortOrder)
+      .map(category => category.toJSON());
+
+    return categories;
   }
 
   async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean } = { }): Promise<AdminCategoryTreeItemDto[]> {
