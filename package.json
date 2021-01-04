@@ -8,7 +8,7 @@
     "build": "rimraf dist && mkdir dist && npm run copy:assets && nest build --watch --webpack",
     "start": "node dist/main",
     "start:dev:debug": "node --inspect -r ts-node/register -r tsconfig-paths/register src/main.ts",
-    "build:prod": "nest build",
+    "build:prod": "rimraf dist && nest build",
     "start:prod": "node dist/src/main.js",
     "copy:assets": "cp -r src/email/templates dist/"
   },
