@@ -16,6 +16,7 @@ export class ClientCategoryController {
   @Get('tree')
   async getCategoriesTree(@ClientLang() lang: Language): Promise<ResponseDto<ClientCategoryTreeItemDto[]>> {
     const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: true });
+
     return {
       data: tree.map(treeItem => ClientCategoryTreeItemDto.transformToDto(treeItem, lang))
     };
