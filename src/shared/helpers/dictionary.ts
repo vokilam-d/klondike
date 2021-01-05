@@ -1,14 +1,22 @@
-export class Dictionary<K extends { [key: string]: any }, V> {
+type K = {
+  [key: string]: any;
+};
+
+/**
+ * Simple dictionary implementations
+ * keys to this map can be only 1-level or 2-level nested objects
+ */
+export class Dictionary<V> {
   private map: Map<string, V> = new Map();
 
   set(key: K, value: V): this {
-    const transformedKey = this.stringifyKey(key);
+    const transformedKey = Dictionary.stringifyKey(key);
     this.map.set(transformedKey, value);
     return this;
   }
 
   get(key: K): V | undefined {
-    const transformedKey = this.stringifyKey(key);
+    const transformedKey = Dictionary.stringifyKey(key);
     return this.map.get(transformedKey);
   }
 
@@ -17,16 +25,23 @@ export class Dictionary<K extends { [key: string]: any }, V> {
   }
 
   delete(key: K): boolean {
-    const transformedKey = this.stringifyKey(key);
+    const transformedKey = Dictionary.stringifyKey(key);
     return this.map.delete(transformedKey);
   }
 
   has(key: K): boolean {
-    const transformedKey = this.stringifyKey(key);
+    const transformedKey = Dictionary.stringifyKey(key);
     return this.map.has(transformedKey);
   }
 
-  private stringifyKey(key: K): string {
-    return JSON.stringify(key, Object.keys(key).sort());
+  private static stringifyKey(keyObj: K): string {
+    const resultObj = {};
+    const sortedKeys = Object.keys(keyObj).sort();
+    for (const sortedKey of sortedKeys) {
+      const value = keyObj[sortedKey];
+      resultObj[sortedKey] = JSON.stringify(value);
+    }
+
+    return JSON.stringify(resultObj);
   }
 }

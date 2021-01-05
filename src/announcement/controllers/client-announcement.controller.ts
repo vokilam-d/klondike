@@ -13,7 +13,7 @@ export class ClientAnnouncementController {
 
   @Get()
   async getAnnouncement(): Promise<ResponseDto<ClientAnnouncementDto>> {
-    const announcement = await this.announcementService.getAnnouncement();
+    const announcement = await this.announcementService.getCachedAnnouncement();
     return {
       data: announcement.isEnabled ? plainToClass(ClientAnnouncementDto, announcement, { excludeExtraneousValues: true }) : null
     }

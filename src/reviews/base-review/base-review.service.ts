@@ -15,6 +15,7 @@ import { __ } from '../../shared/helpers/translate/translate.function';
 import { ClientSPFDto } from '../../shared/dtos/client/spf.dto';
 import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instance-cron.decorator';
 import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-expression-early-morning.function';
+import { EventsService } from '../../shared/services/events/events.service';
 
 type IReviewCallback<T = any> = (review: T, session: ClientSession) => Promise<any>;
 
@@ -32,10 +33,14 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   protected abstract counterService: CounterService;
   protected abstract searchService: SearchService;
   protected abstract logger: Logger;
+  protected abstract eventsService: EventsService;
+  protected cachedEnabledReviewsCount: number = null;
 
+  private readonly reviewUpdatedEventKey: string = 'review-updated';
 
   onApplicationBootstrap(): any {
     this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());
+    this.handleCache();
   }
 
   async findReviewsByFilters(spf: AdminSPFDto | ClientSPFDto): Promise<ResponseDto<U[]>> {
@@ -52,13 +57,6 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       itemsFiltered,
       pagesTotal
     };
-  }
-
-  async findAllReviews(onlyEnabled: boolean, ipAddress?: string, userId?: string, customerId?: number): Promise<U[]> {
-    const isEnabledProp: keyof T = 'isEnabled';
-    const reviews = await this.reviewModel.find({ [isEnabledProp]: true } as any).sort('-_id').exec();
-
-    return reviews.map(review => this.transformReviewToDto(review, ipAddress, userId, customerId));
   }
 
   async findReview(reviewId: string, ipAddress?: string, userId?: string, customerId?: number): Promise<U> {
@@ -88,6 +86,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
 
       this.addSearchData(review);
       await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
+      this.onReviewUpdate();
 
       return this.transformReviewToDto(review);
     } catch (ex) {
@@ -135,6 +134,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       this.updateSearchData(review);
       await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
       await this.mediaService.deleteSavedMedias(mediasToDelete, this.collectionName);
+      this.onReviewUpdate();
 
       return this.transformReviewToDto(review);
     } catch (ex) {
@@ -158,6 +158,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
 
       await this.mediaService.deleteSavedMedias(deleted.medias, this.collectionName);
       this.deleteSearchData(deleted);
+      this.onReviewUpdate();
 
       return this.transformReviewToDto(deleted);
     } catch (ex) {
@@ -192,6 +193,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
 
     await foundReview.save();
     this.updateSearchData(foundReview);
+    this.onReviewUpdate();
   }
 
   async removeVote(reviewId: number, ipAddress: string, userId: string, customerId: number) {
@@ -210,6 +212,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
 
     await foundReview.save();
     this.updateSearchData(foundReview);
+    this.onReviewUpdate();
   }
 
   abstract transformReviewToDto(review: DocumentType<T>, ipAddress?: string, userId?: string, customerId?: number): U;
@@ -219,6 +222,10 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   }
 
   async countEnabledReviews(): Promise<number> {
+    if (this.cachedEnabledReviewsCount) {
+      return this.cachedEnabledReviewsCount;
+    }
+
     return this.reviewModel.countDocuments({ isEnabled: true } as any).exec();
   }
 
@@ -268,5 +275,26 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     await this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());
     await this.searchService.addDocuments(this.collectionName, dtos);
     this.logger.log(`Reindexed`);
+  }
+
+  private handleCache() {
+    this.updateCache();
+
+    this.eventsService.on(this.reviewUpdatedEventKey, () => {
+      this.updateCache();
+    })
+  }
+
+  private onReviewUpdate() {
+    this.eventsService.emit(this.reviewUpdatedEventKey, {});
+  }
+
+  protected async updateCache() {
+    try {
+      this.cachedEnabledReviewsCount = await this.reviewModel.countDocuments({ isEnabled: true } as any).exec();
+    } catch (e) {
+      this.logger.error(`Could not update cached count:`);
+      this.logger.error(e);
+    }
   }
 }

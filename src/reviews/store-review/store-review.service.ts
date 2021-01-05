@@ -11,19 +11,24 @@ import { ElasticStoreReviewModel } from './models/elastic-store-review.model';
 import { plainToClass } from 'class-transformer';
 import { EmailService } from '../../email/email.service';
 import { ClientAddStoreReviewDto } from '../../shared/dtos/client/add-store-review.dto';
+import { EventsService } from '../../shared/services/events/events.service';
 
 @Injectable()
 export class StoreReviewService extends BaseReviewService<StoreReview, AdminStoreReviewDto> implements OnApplicationBootstrap {
 
-  get collectionName(): string { return StoreReview.collectionName; }
+  protected get collectionName(): string { return StoreReview.collectionName; }
   protected ElasticReview = ElasticStoreReviewModel;
   protected logger = new Logger(StoreReviewService.name);
+  private cachedAvgRating: number = null;
 
-  constructor(@InjectModel(StoreReview.name) protected readonly reviewModel: ReturnModelType<typeof StoreReview>,
-              protected readonly counterService: CounterService,
-              protected readonly searchService: SearchService,
-              protected readonly emailService: EmailService,
-              protected readonly mediaService: MediaService) {
+  constructor(
+    @InjectModel(StoreReview.name) protected readonly reviewModel: ReturnModelType<typeof StoreReview>,
+    protected readonly counterService: CounterService,
+    protected readonly searchService: SearchService,
+    protected readonly emailService: EmailService,
+    protected readonly mediaService: MediaService,
+    protected readonly eventsService: EventsService
+  ) {
     super();
   }
 
@@ -34,6 +39,10 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
   }
 
   async countAverageRating(): Promise<number> {
+    if (this.cachedAvgRating) {
+      return this.cachedAvgRating;
+    }
+
     const ratingProp: keyof StoreReview = 'rating';
     const ratingAggregation: { rating: number }[] = await this.reviewModel.aggregate([{
       $group: {
@@ -42,7 +51,9 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
       }
     }]);
 
-    return Math.round(ratingAggregation[0].rating * 10) / 10;
+    const avgRating = Math.round(ratingAggregation[0].rating * 10) / 10;
+    this.cachedAvgRating = avgRating;
+    return avgRating;
   }
 
   transformReviewToDto(review: DocumentType<StoreReview>, ipAddress?: string, userId?: string, customerId?: number): AdminStoreReviewDto {
@@ -55,5 +66,10 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
     };
 
     return plainToClass(AdminStoreReviewDto, transformed, { excludeExtraneousValues: true });
+  }
+
+  protected async updateCache() {
+    super.updateCache();
+    this.countAverageRating();
   }
 }

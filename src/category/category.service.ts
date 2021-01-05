@@ -39,7 +39,9 @@ export class CategoryService implements OnApplicationBootstrap {
   private logger = new Logger(CategoryService.name);
   private categoriesUpdatedEventName: string = 'categories-updated';
   private cachedCategories: Category[] = [];
-  private cachedTreesMap: Dictionary<any, AdminCategoryTreeItemDto[]> = new Dictionary();
+  private cachedClientCategory: Dictionary<ClientCategoryDto> = new Dictionary();
+  private cachedTreesMap: Dictionary<AdminCategoryTreeItemDto[]> = new Dictionary();
+  private cachedLinkedCategories: Dictionary<ClientLinkedCategoryDto[]> = new Dictionary();
 
   constructor(
     @InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
@@ -125,7 +127,13 @@ export class CategoryService implements OnApplicationBootstrap {
   }
 
   async getClientCategoryBySlug(slug: string, lang: Language): Promise<ClientCategoryDto> {
-    const found = this.getCachedEnabledCategoryBySlug(slug);
+    const cacheKey = { slug, lang };
+    const cache = this.cachedClientCategory.get(cacheKey);
+    if (cache) {
+      return cache;
+    }
+
+    const found = await this.categoryModel.findOne({ slug, isEnabled: true }).exec();
     if (!found) {
       throw new NotFoundException(__('Category with slug "$1" not found', 'ru', slug));
     }
@@ -147,11 +155,19 @@ export class CategoryService implements OnApplicationBootstrap {
       }
     }
 
-    return ClientCategoryDto.transformToDto(found, lang, siblingCategories, childCategories);
+    const dto = ClientCategoryDto.transformToDto(found, lang, siblingCategories, childCategories);
+    this.cachedClientCategory.set(cacheKey, dto);
+    return dto;
   }
 
   async getClientSiblingCategories(categoryId: number, lang: Language): Promise<ClientLinkedCategoryDto[]> {
-    const found = this.getCachedCategoryById(categoryId);
+    const cacheKey = { categoryId, lang };
+    const cache = this.cachedLinkedCategories.get(cacheKey);
+    if (cache) {
+      return cache;
+    }
+
+    const found = await this.categoryModel.findById(categoryId).exec();
 
     const linkedCategories: ClientLinkedCategoryDto[] = [];
     const allCategories = await this.getAllCategories();
@@ -170,15 +186,8 @@ export class CategoryService implements OnApplicationBootstrap {
       });
     }
 
+    this.cachedLinkedCategories.set(cacheKey, linkedCategories);
     return linkedCategories;
-  }
-
-  private getCachedCategoryById(id: number): Category {
-    return this.cachedCategories.find(category => category.id === id);
-  }
-
-  private getCachedEnabledCategoryBySlug(slug: string): Category {
-    return this.cachedCategories.find(category => category.slug === slug && category.isEnabled === true);
   }
 
   async createCategory(categoryDto: AdminAddOrUpdateCategoryDto): Promise<Category> {
@@ -533,6 +542,7 @@ export class CategoryService implements OnApplicationBootstrap {
   @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
   private async updateCachedCategories() {
     this.cachedTreesMap.clear();
+    this.cachedLinkedCategories.clear();
 
     try {
       let categories = await this.categoryModel.find().exec();

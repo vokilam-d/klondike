@@ -42,7 +42,6 @@ export class AdminAggregatorController {
     };
   }
 
-
   @Post()
   async createAggregator(@Body() aggregatorDto: AdminAggregatorDto): Promise<ResponseDto<AdminAggregatorDto>> {
     const created = await this.aggregatorService.createAggregator(aggregatorDto);
