@@ -15,6 +15,8 @@ import { AuthService } from '../../auth/services/auth.service';
 import { ClientId } from '../../shared/decorators/client-id.decorator';
 import { ClientLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('product-reviews')
@@ -77,7 +79,17 @@ export class ClientProductReviewController {
       const authService = this.moduleRef.get(AuthService, { strict: false });
       productReviewDto.customerId = await authService.getCustomerIdFromReq(req);
     }
-    const review = await this.productReviewService.createReview(productReviewDto);
+
+    const multilangMedias = productReviewDto.medias.map(media => {
+      const multilang = new MultilingualText();
+      multilang[lang] = media.altText;
+      return {
+        ...media,
+        altText: multilang
+      };
+    });
+
+    const review = await this.productReviewService.createReview({ ...productReviewDto, medias: multilangMedias as AdminMediaDto[] });
 
     return {
       data: ClientProductReviewDto.transformToDto(review, lang)

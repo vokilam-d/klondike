@@ -14,6 +14,8 @@ import { ClientId } from '../../shared/decorators/client-id.decorator';
 import { ClientStoreReviewsSPFDto } from '../../shared/dtos/client/store-reviews-spf.dto';
 import { ClientLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('store-reviews')
@@ -83,7 +85,21 @@ export class ClientStoreReviewController {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
-    const review = await this.storeReviewService.createReview({ ...storeReviewDto, customerId, source: 'website' });
+
+    const multilangMedias = storeReviewDto.medias.map(media => {
+      const multilang = new MultilingualText();
+      multilang[lang] = media.altText;
+      return {
+        ...media,
+        altText: multilang
+      };
+    });
+    const review = await this.storeReviewService.createReview({
+      ...storeReviewDto,
+      medias: multilangMedias as AdminMediaDto[],
+      customerId,
+      source: 'website'
+    });
 
     return {
       data: ClientStoreReviewDto.transformToDto(review, lang)
