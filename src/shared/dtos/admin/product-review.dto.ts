@@ -1,7 +1,8 @@
 import { Expose, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { AdminBaseReviewDto } from './base-review.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { AdminMediaDto } from './media.dto';
 
 export class AdminProductReviewCommentDto {
   @Expose()
@@ -59,4 +60,10 @@ export class AdminProductReviewDto extends AdminBaseReviewDto {
   @ValidateNested({ each: true })
   @Type(() => AdminProductReviewCommentDto)
   comments?: AdminProductReviewCommentDto[];
+
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AdminMediaDto)
+  medias: AdminMediaDto[];
 }

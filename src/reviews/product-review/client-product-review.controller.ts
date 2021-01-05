@@ -13,20 +13,25 @@ import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-
 import { ModuleRef } from '@nestjs/core';
 import { AuthService } from '../../auth/services/auth.service';
 import { ClientId } from '../../shared/decorators/client-id.decorator';
+import { ClientLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('product-reviews')
 export class ClientProductReviewController {
 
-  constructor(private readonly productReviewService: ProductReviewService,
-              private moduleRef: ModuleRef) {
-  }
+  constructor(
+    private readonly productReviewService: ProductReviewService,
+    private readonly moduleRef: ModuleRef
+  ) { }
 
   @Get()
-  async findProductReviews(@Query() query: ClientProductReviewFilterDto,
-                           @Req() req,
-                           @IpAddress() ipAddress: string | null,
-                           @ClientId() clientId: string
+  async findProductReviews(
+    @Query() query: ClientProductReviewFilterDto,
+    @Req() req,
+    @IpAddress() ipAddress: string | null,
+    @ClientId() clientId: string,
+    @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientProductReviewDto[]>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
@@ -35,7 +40,7 @@ export class ClientProductReviewController {
     const adminDto = await this.productReviewService.findReviewsByProductId(query.productId, true, ipAddress, clientId, customerId);
 
     return {
-      data: plainToClass(ClientProductReviewDto, adminDto, { excludeExtraneousValues: true })
+      data: adminDto.map(dto => ClientProductReviewDto.transformToDto(dto, lang))
     }
   }
 
@@ -50,16 +55,22 @@ export class ClientProductReviewController {
   }
 
   @Post('media')
-  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
+  async uploadMedia(
+    @Request() request: FastifyRequest,
+    @Response() reply: FastifyReply<ServerResponse>,
+    @ClientLang() lang: Language
+  ) {
     const media = await this.productReviewService.uploadMedia(request);
-    const mediaDto = plainToClass(ClientMediaDto, media, { excludeExtraneousValues: true });
+    const mediaDto = ClientMediaDto.transformToDto(media, lang);
 
     reply.status(201).send(mediaDto);
   }
 
   @Post()
-  async createProductReview(@Req() req,
-                            @Body() productReviewDto: ClientAddProductReviewDto
+  async createProductReview(
+    @Req() req,
+    @Body() productReviewDto: ClientAddProductReviewDto,
+    @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientProductReviewDto>> {
 
     if (!productReviewDto.customerId) {
@@ -69,15 +80,17 @@ export class ClientProductReviewController {
     const review = await this.productReviewService.createReview(productReviewDto);
 
     return {
-      data: plainToClass(ClientProductReviewDto, review, { excludeExtraneousValues: true })
+      data: ClientProductReviewDto.transformToDto(review, lang)
     }
   }
 
   @Post(':id/comment')
-  async addComment(@Param('id') reviewId: string,
-                   @Req() req,
-                   @Body() commentDto: ClientAddProductReviewCommentDto,
-                   @ClientId() clientId: string
+  async addComment(
+    @Param('id') reviewId: string,
+    @Req() req,
+    @Body() commentDto: ClientAddProductReviewCommentDto,
+    @ClientId() clientId: string,
+    @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientProductReviewDto>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
@@ -87,7 +100,7 @@ export class ClientProductReviewController {
     const adminDto = this.productReviewService.transformReviewToDto(review, undefined, clientId, customerId, true);
 
     return {
-      data: plainToClass(ClientProductReviewDto, adminDto, { excludeExtraneousValues: true })
+      data: ClientProductReviewDto.transformToDto(adminDto, lang)
     }
   }
 

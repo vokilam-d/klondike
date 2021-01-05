@@ -12,32 +12,25 @@ import { ClientAddStoreReviewDto, ClientAddStoreReviewFromEmailDto } from '../..
 import { ClientStoreReviewDto } from '../../shared/dtos/client/store-review.dto';
 import { ClientId } from '../../shared/decorators/client-id.decorator';
 import { ClientStoreReviewsSPFDto } from '../../shared/dtos/client/store-reviews-spf.dto';
+import { ClientLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('store-reviews')
 export class ClientStoreReviewController {
 
-  constructor(private readonly storeReviewService: StoreReviewService,
-              private moduleRef: ModuleRef) {
-  }
+  constructor(
+    private readonly storeReviewService: StoreReviewService,
+    private moduleRef: ModuleRef
+  ) { }
 
   @Get()
-  async getAllReviews(@Query() spf: ClientStoreReviewsSPFDto): Promise<ResponseDto<ClientStoreReviewDto[]>> {
+  async getAllReviews(@Query() spf: ClientStoreReviewsSPFDto, @ClientLang() lang: Language): Promise<ResponseDto<ClientStoreReviewDto[]>> {
     const responseDto = await this.storeReviewService.findReviewsByFilters(spf);
 
     return {
       ...responseDto,
-      data: plainToClass(ClientStoreReviewDto, responseDto.data, { excludeExtraneousValues: true })
-    }
-  }
-
-  @Get('temp')
-  async getReviews(@Query() spf: ClientStoreReviewsSPFDto): Promise<ResponseDto<ClientStoreReviewDto[]>> {
-    const responseDto = await this.storeReviewService.findReviewsByFilters(spf);
-
-    return {
-      ...responseDto,
-      data: plainToClass(ClientStoreReviewDto, responseDto.data, { excludeExtraneousValues: true })
+      data: responseDto.data.map(dto => ClientStoreReviewDto.transformToDto(dto, lang))
     }
   }
 
@@ -70,9 +63,13 @@ export class ClientStoreReviewController {
   }
 
   @Post('media')
-  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
+  async uploadMedia(
+    @Request() request: FastifyRequest,
+    @Response() reply: FastifyReply<ServerResponse>,
+    @ClientLang() lang: Language
+  ) {
     const media = await this.storeReviewService.uploadMedia(request);
-    const mediaDto = plainToClass(ClientMediaDto, media, { excludeExtraneousValues: true });
+    const mediaDto = ClientMediaDto.transformToDto(media, lang);
 
     reply.status(201).send(mediaDto);
   }
@@ -80,7 +77,8 @@ export class ClientStoreReviewController {
   @Post()
   async createStoreReview(
     @Req() req,
-    @Body() storeReviewDto: ClientAddStoreReviewDto
+    @Body() storeReviewDto: ClientAddStoreReviewDto,
+    @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientStoreReviewDto>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
@@ -88,7 +86,7 @@ export class ClientStoreReviewController {
     const review = await this.storeReviewService.createReview({ ...storeReviewDto, customerId, source: 'website' });
 
     return {
-      data: plainToClass(ClientStoreReviewDto, review, { excludeExtraneousValues: true })
+      data: ClientStoreReviewDto.transformToDto(review, lang)
     }
   }
 
