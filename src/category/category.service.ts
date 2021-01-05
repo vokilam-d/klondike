@@ -31,6 +31,7 @@ import { MultilingualText } from '../shared/models/multilingual-text.model';
 import { areMultilingualTextsEqual } from '../shared/helpers/are-multilingual-texts-equal.function';
 import { CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../shared/services/events/events.service';
+import { Dictionary } from '../shared/helpers/dictionary';
 
 @Injectable()
 export class CategoryService implements OnApplicationBootstrap {
@@ -38,7 +39,7 @@ export class CategoryService implements OnApplicationBootstrap {
   private logger = new Logger(CategoryService.name);
   private categoriesUpdatedEventName: string = 'categories-updated';
   private cachedCategories: Category[] = [];
-  private cachedTreesMap: Map<string, AdminCategoryTreeItemDto[]> = new Map();
+  private cachedTreesMap: Dictionary<any, AdminCategoryTreeItemDto[]> = new Dictionary();
 
   constructor(
     @InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
@@ -69,8 +70,7 @@ export class CategoryService implements OnApplicationBootstrap {
   }
 
   async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean } = { }): Promise<AdminCategoryTreeItemDto[]> {
-    const cacheKey = JSON.stringify(options, Object.keys(options).sort());
-    const cachedTree = this.cachedTreesMap.get(cacheKey);
+    const cachedTree = this.cachedTreesMap.get(options);
     if (cachedTree) {
       return cachedTree;
     }
@@ -109,7 +109,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
     populateChildrenArray(treeItems);
 
-    this.cachedTreesMap.set(cacheKey, treeItems);
+    this.cachedTreesMap.set(options, treeItems);
     return treeItems;
   }
 
