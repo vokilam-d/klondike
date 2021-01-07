@@ -17,6 +17,7 @@ import { __ } from '../../shared/helpers/translate/translate.function';
 import { EmailService } from '../../email/email.service';
 import { ProductQuickReviewService } from './product-quick-review.service';
 import { ProductQuickReview } from './models/product-quick-review.model';
+import { EventsService } from '../../shared/services/events/events.service';
 
 interface RatingInfo {
   allReviewsCount: number;
@@ -38,7 +39,8 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     protected readonly searchService: SearchService,
     protected readonly counterService: CounterService,
     protected readonly emailService: EmailService,
-    protected readonly mediaService: MediaService
+    protected readonly mediaService: MediaService,
+    protected readonly eventsService: EventsService
   ) {
     super();
   }

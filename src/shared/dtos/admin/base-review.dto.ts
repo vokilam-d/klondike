@@ -1,9 +1,8 @@
 import { Expose, Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
-import { AdminMediaDto } from './media.dto';
+import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { TrimString } from '../../decorators/trim-string.decorator';
 
-export class AdminBaseReviewDto {
+export abstract class AdminBaseReviewDto {
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id?: number;
@@ -52,11 +51,7 @@ export class AdminBaseReviewDto {
   @Min(0)
   sortOrder?: number;
 
-  @Expose()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AdminMediaDto)
-  medias: AdminMediaDto[];
+  abstract medias: any[];
 
   @Expose()
   @IsDate()

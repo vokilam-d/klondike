@@ -8,6 +8,10 @@ export class AdminAnnouncementDto {
   isEnabled: boolean;
 
   @Expose()
+  @IsBoolean()
+  isFixed: boolean;
+
+  @Expose()
   @IsString()
   announcement: string;
 }

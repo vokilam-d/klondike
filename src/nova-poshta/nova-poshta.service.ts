@@ -11,6 +11,7 @@ import { ShipmentPaymentMethodEnum } from '../shared/enums/shipment-payment-meth
 import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
 import { ShipmentSender } from './models/shipment-sender.model';
 import { ShipmentSenderService } from './shipment-sender.service';
+import { ShipmentPayerEnum } from '../shared/enums/shipment-payer.enum';
 
 @Injectable()
 export class NovaPoshtaService {
@@ -146,7 +147,7 @@ export class NovaPoshtaService {
     if (orderPaymentMethod === PaymentTypeEnum.CASH_ON_DELIVERY) {
       const redelivery = shipment.backwardMoneyDelivery ? shipment.backwardMoneyDelivery : shipment.cost;
       saveInternetDocumentRequestBody.methodProperties.BackwardDeliveryData = [{
-        PayerType: shipment.payerType,
+        PayerType: ShipmentPayerEnum.RECIPIENT, // Cash on delivery is always paid by recipient
         CargoType: 'Money',
         RedeliveryString: redelivery
       }];

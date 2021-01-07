@@ -10,6 +10,7 @@ import { ProductWithQty } from '../product/models/product-with-qty.model';
 import { AttributeService } from '../attribute/attribute.service';
 import { ProductSelectedAttribute } from '../product/models/product-selected-attribute.model';
 import { clientDefaultLanguage, priceThresholdForFreeShipping } from '../shared/constants';
+import { MultilingualText } from '../shared/models/multilingual-text.model';
 
 type cdata = { $: string };
 
@@ -107,7 +108,7 @@ export class GoogleShoppingFeedService {
       product.variants.forEach(variant => {
         if (!variant.isEnabled || !variant.isIncludedInShoppingFeed) { return; }
 
-        const description = variant.fullDescription || variant.shortDescription || '';
+        const description = variant.fullDescription || variant.shortDescription || new MultilingualText();
 
         let imageLink: string;
         let additionalImageLinks: string[] = [];
@@ -280,6 +281,6 @@ export class GoogleShoppingFeedService {
   }
 
   private buildProductType(breadcrumbs: Breadcrumb[]): string {
-    return breadcrumbs.map(breadcrumb => breadcrumb.name).join(' > ');
+    return breadcrumbs.map(breadcrumb => breadcrumb.name[clientDefaultLanguage]).join(' > ');
   }
 }

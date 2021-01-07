@@ -61,8 +61,8 @@ import { ClientMetaTagsDto } from '../../shared/dtos/client/meta-tags.dto';
 import { AdminCategoryTreeItemDto } from '../../shared/dtos/admin/category-tree-item.dto';
 import { Language } from '../../shared/enums/language.enum';
 import { ClientBreadcrumbDto } from '../../shared/dtos/client/breadcrumb.dto';
-import { googleTranslate } from '../../shared/helpers/translate/google-translate';
-import { FileLogger } from '../../logger/file-logger.service';
+import { Dictionary } from '../../shared/helpers/dictionary';
+import { EventsService } from '../../shared/services/events/events.service';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -77,6 +77,9 @@ export class ProductService implements OnApplicationBootstrap {
   private logger = new Logger(ProductService.name);
   private cachedProductCount: number;
   private filtersThresholdPercent = 25;
+  private clientProductListCache: Dictionary<ClientProductListResponseDto> = new Dictionary();
+  private cachedClientProduct: Dictionary<ClientProductDto> = new Dictionary();
+  private productUpdatedEventName: string = 'product-updated';
 
   constructor(
     @InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
@@ -88,13 +91,15 @@ export class ProductService implements OnApplicationBootstrap {
     private readonly currencyService: CurrencyService,
     private readonly attributeService: AttributeService,
     private readonly searchService: SearchService,
-    private readonly pageRegistryService: PageRegistryService
+    private readonly pageRegistryService: PageRegistryService,
+    private readonly eventsService: EventsService
   ) { }
 
   async onApplicationBootstrap() {
-    this.handleCurrencyUpdates();
     this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
-    this.reindexAllSearchData();
+    this.handleCurrencyUpdates();
+    this.handleProductCache();
+    // this.reindexAllSearchData();
   }
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
@@ -163,12 +168,26 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async getClientProductListWithFilters(spf: ClientProductSPFDto, lang: Language): Promise<ClientProductListResponseDto> {
+    const spfFilters = spf.getNormalizedFilters();
+    const cacheKey = {
+      spfFilters,
+      categoryId: spf.categoryId,
+      query: spf.q,
+      limit: spf.limit,
+      sort: spf.getSortAsObj(),
+      sortFilter: spf.sortFilter,
+      lang
+    };
+    const cache = this.clientProductListCache.get(cacheKey);
+    if (cache) {
+      return cache;
+    }
+
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
     const [ adminListItems ] = await this.findEnabledProductListItems(spf, lang, { categoryId: spf.categoryId, query: spf.q, limit: 10000 });
     const attributes = await this.attributeService.getAllAttributes();
-    const spfFilters = spf
-      .getNormalizedFilters()
+    const filteredSpfFilters = spfFilters
       .filter(spfFilter => !!attributes.find(attribute => attribute.id === spfFilter.fieldName)); // leave only valid attributes
 
     const allSelectedAttributesProductCountMap: AttributeProductCountMap = { };
@@ -218,7 +237,7 @@ export class ProductService implements OnApplicationBootstrap {
 
         for (const attribute of selectedAttributes) {
           addPossibleAttribute(attribute);
-          const foundSpfFilter = spfFilters.find(spfFilter => spfFilter.fieldName === attribute.attributeId);
+          const foundSpfFilter = filteredSpfFilters.find(spfFilter => spfFilter.fieldName === attribute.attributeId);
           if (!foundSpfFilter) { continue; }
 
           spfFiltersMatches += 1;
@@ -238,7 +257,7 @@ export class ProductService implements OnApplicationBootstrap {
           }
         }
 
-        if (spfFiltersMatches === spfFilters.length && isPassedByPrice) {
+        if (spfFiltersMatches === filteredSpfFilters.length && isPassedByPrice) {
           if (unmatchedSelectedAttributes.length === 0) {
             incProductCount(variant.attributes);
             filteredVariants.push(variant);
@@ -267,17 +286,17 @@ export class ProductService implements OnApplicationBootstrap {
 
     const itemsTotal = adminListItems.length;
     let itemsFiltered: number;
-    if (spfFilters.length || filterMinPrice >= 0) { itemsFiltered = filteredAdminListItems.length; }
+    if (filteredSpfFilters.length || filterMinPrice >= 0) { itemsFiltered = filteredAdminListItems.length; }
 
     filteredAdminListItems = filteredAdminListItems.slice(spf.skip, spf.skip + spf.limit);
     const clientListItems = await this.transformToClientListDto(filteredAdminListItems, attributes, lang);
 
-    let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, spfFilters, lang);
+    let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, filteredSpfFilters, lang);
     if (itemsTotal > 0) {
       filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
     }
 
-    return {
+    const responseDto: ClientProductListResponseDto = {
       data: clientListItems,
       page: spf.page,
       pagesTotal: Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit),
@@ -285,6 +304,9 @@ export class ProductService implements OnApplicationBootstrap {
       itemsFiltered,
       filters
     };
+    this.clientProductListCache.set(cacheKey, responseDto);
+
+    return responseDto;
   }
 
   async getProductsWithQty(sortingPaginating: AdminSPFDto = new AdminSPFDto()): Promise<ProductWithQty[]> {
@@ -430,6 +452,12 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async getEnabledClientProductDtoBySlug(slug: string, lang: Language): Promise<ClientProductDto> {
+    const cacheKey = { slug, lang };
+    const cache = this.cachedClientProduct.get(cacheKey);
+    if (cache) {
+      return cache;
+    }
+
     const variantsProp = getPropertyOf<Product>('variants');
     const slugProp = getPropertyOf<ProductVariant>('slug');
     const skuProp = getPropertyOf<Inventory>('sku');
@@ -456,7 +484,10 @@ export class ProductService implements OnApplicationBootstrap {
       throw new NotFoundException(__('Product with slug "$1" not found', lang, slug));
     }
 
-    return this.transformToClientProductDto(found, slug, lang);
+    const dto = await this.transformToClientProductDto(found, slug, lang);
+    this.cachedClientProduct.set(cacheKey, dto);
+
+    return dto;
   }
 
   async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
@@ -498,7 +529,7 @@ export class ProductService implements OnApplicationBootstrap {
       await this.addSearchData(productWithQty);
       await session.commitTransaction();
 
-      this.updateCachedProductCount();
+      this.onProductUpdate();
       await this.mediaService.deleteTmpMedias(tmpMediasToDelete, Product.collectionName);
 
       return productWithQty;
@@ -574,7 +605,7 @@ export class ProductService implements OnApplicationBootstrap {
         inventories.push(inventory.toJSON());
       }
 
-      if (!this.areProductCategoriesEqual(found.categories, productDto.categories)) {
+      if (!ProductService.areProductCategoriesEqual(found.categories, productDto.categories)) {
         await this.populateProductCategoriesAndBreadcrumbs(productDto);
       }
 
@@ -584,6 +615,7 @@ export class ProductService implements OnApplicationBootstrap {
       }
 
       await this.setProductPrices(found);
+      found.updatedAt = new Date();
       await found.save({ session });
       const productWithQty = this.transformToProductWithQty(found.toJSON(), inventories);
       await this.updateSearchData(productWithQty);
@@ -591,6 +623,7 @@ export class ProductService implements OnApplicationBootstrap {
 
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
       await this.mediaService.deleteTmpMedias(tmpMediasToDelete, Product.collectionName);
+      this.onProductUpdate();
 
       return productWithQty;
 
@@ -623,7 +656,7 @@ export class ProductService implements OnApplicationBootstrap {
       await this.deleteSearchData(deleted.id);
       await session.commitTransaction();
 
-      this.updateCachedProductCount();
+      this.onProductUpdate();
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
 
       return deleted;
@@ -667,13 +700,6 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
-  updateCachedProductCount() {
-    this.productModel.estimatedDocumentCount().exec()
-      .then(count => this.cachedProductCount = count)
-      .catch(_ => { });
-  }
-
   async updateReviewRating(productId: number, session: ClientSession): Promise<any> {
     const product = await this.productModel.findById(productId).exec();
     if (!product) {
@@ -687,6 +713,7 @@ export class ProductService implements OnApplicationBootstrap {
 
     await product.save({ session });
     await this.updateSearchDataById(productId, session);
+    this.onProductUpdate();
   }
 
   async incrementSalesCount(productId: number, variantId: string, count: number, session: ClientSession): Promise<any> {
@@ -712,13 +739,15 @@ export class ProductService implements OnApplicationBootstrap {
     const categoryIdProp: keyof ProductCategory = 'id';
     const breadcrumbsProp: keyof Product = 'breadcrumbs';
 
-    return this.productModel
+    await this.productModel
       .updateMany(
         { [`${categoriesProp}.${categoryIdProp}`]: categoryId },
         { $pull: { [categoriesProp]: categoryToRemove, [breadcrumbsProp]: breadcrumbToRemove } }
       )
       .session(session)
       .exec();
+
+    this.onProductUpdate();
   }
 
   async updateProductCategory(categoryId: number, categoryName: MultilingualText, categorySlug: string, categoryIsEnabled: boolean, session: ClientSession): Promise<any> {
@@ -745,13 +774,15 @@ export class ProductService implements OnApplicationBootstrap {
     const idProp = getPropertyOf<Breadcrumb>('id');
     const breadcrumb: Breadcrumb = { id: categoryId, name: categoryName, slug: categorySlug, isEnabled: categoryIsEnabled };
 
-    return this.productModel
+    await this.productModel
       .updateMany(
         { [`${breadcrumbsProp}.${idProp}`]: breadcrumb.id },
         { [`${breadcrumbsProp}.$`]: breadcrumb }
       )
       .session(session)
       .exec();
+
+    this.onProductUpdate();
   }
 
   private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto, categoryTreeItems?): Promise<any> {
@@ -766,6 +797,7 @@ export class ProductService implements OnApplicationBootstrap {
         if (foundIdx !== -1) {
           product.categories[foundIdx].name = treeItem.name;
           product.categories[foundIdx].slug = treeItem.slug;
+          product.categories[foundIdx].isEnabled = treeItem.isEnabled;
 
           newBreadcrumbs.push({ // todo remove this after converting breadcrumbs to ids only
             id: treeItem.id,
@@ -1200,30 +1232,6 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  private async reindexSearchDataByIds(productIds?: number[]) {
-    const spf = new AdminSPFDto();
-    spf.limit = 10000;
-    const products: ProductWithQty[] = await this.getProductsWithQtyByIds(productIds, spf);
-    const listItems = this.transformToAdminListDto(products);
-    return this.searchService.addDocuments(Product.collectionName, listItems);
-  }
-
-  private async reindexAllSearchData() { // this is called by cron from another method
-    this.logger.log('Start reindex all search data');
-
-    const spf = new AdminSPFDto();
-    spf.limit = 10000;
-    spf.sort = '-_id';
-    const products: ProductWithQty[] = await this.getProductsWithQty(spf);
-    const listItems = this.transformToAdminListDto(products);
-
-    await this.searchService.deleteCollection(Product.collectionName);
-    await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
-    await this.searchService.addDocuments(Product.collectionName, listItems);
-
-    this.logger.log(`Finished reindex`);
-  }
-
   private async setProductPrices(product: DocumentType<Product>): Promise<DocumentType<Product>> {
     const exchangeRate = await this.currencyService.getExchangeRate(product.variants[0].currency);
 
@@ -1301,10 +1309,6 @@ export class ProductService implements OnApplicationBootstrap {
         }
       }
     });
-  }
-
-  private areProductCategoriesEqual(categories1: ProductCategory[], categories2: AdminProductCategoryDto[]): boolean {
-    return areArraysEqual(categories1.map(c => c.id), categories2.map(c => c.id));
   }
 
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
@@ -1392,6 +1396,30 @@ export class ProductService implements OnApplicationBootstrap {
     } else {
       await this.reindexAllSearchData();
     }
+  }
+
+  private async reindexSearchDataByIds(productIds?: number[]) {
+    const spf = new AdminSPFDto();
+    spf.limit = 10000;
+    const products: ProductWithQty[] = await this.getProductsWithQtyByIds(productIds, spf);
+    const listItems = this.transformToAdminListDto(products);
+    return this.searchService.addDocuments(Product.collectionName, listItems);
+  }
+
+  private async reindexAllSearchData() { // this is called by cron from another method
+    this.logger.log('Start reindex all search data');
+
+    const spf = new AdminSPFDto();
+    spf.limit = 10000;
+    spf.sort = '-_id';
+    const products: ProductWithQty[] = await this.getProductsWithQty(spf);
+    const listItems = this.transformToAdminListDto(products);
+
+    await this.searchService.deleteCollection(Product.collectionName);
+    await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
+    await this.searchService.addDocuments(Product.collectionName, listItems);
+
+    this.logger.log(`Finished reindex`);
   }
 
   async lockProductSortOrder(reorderDto: ProductReorderDto) {
@@ -1712,54 +1740,27 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  private async googleTranslate() {
-    // this.logger.log('start fetch');
-    // const products = await this.productModel.find().exec();
-    // this.logger.log('end fetch');
-    // const sLogs = [];
-    // const fLogs = [];
-    // for (const product of products) {
-    //   const name = product.name.ru;
-    //   const description = product.variants[0].fullDescription.ru;
-    //   const mTitle = product.variants[0].metaTags.title.ru;
-    //   const mDescription = product.variants[0].metaTags.description.ru;
-    //   const gTitle = product.variants[0].googleAdsProductTitle.ru;
-    //   try {
-    //     let [translatedName, translatedDesc, transMTitle, transMDescription, transGTitle] = await googleTranslate([name, description, mTitle, mDescription, gTitle]);
-    //     translatedName = translatedName.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
-    //     translatedDesc = translatedDesc.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
-    //     transMTitle = transMTitle.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
-    //     transMDescription = transMDescription.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
-    //     if (transGTitle) {
-    //       transGTitle = transGTitle.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
-    //     }
-    //
-    //     product.name.uk = translatedName;
-    //     product.variants[0].name.uk = translatedName;
-    //     product.variants[0].fullDescription.uk = translatedDesc;
-    //     product.variants[0].metaTags.title.uk = transMTitle;
-    //     product.variants[0].metaTags.description.uk = transMDescription;
-    //     if (transGTitle) {
-    //       product.variants[0].googleAdsProductTitle.uk = transGTitle;
-    //     }
-    //
-    //     for (const media of product.variants[0].medias) {
-    //       media.altText.uk = translatedName;
-    //     }
-    //
-    //     await product.save();
-    //     console.log(product.id);
-    //     sLogs.push(product.id);
-    //   } catch (e) {
-    //     console.log(e);
-    //     console.error('error '+ product.id);
-    //     fLogs.push(product.id);
-    //   }
-    // }
-    //
-    // this.logger.log('success');
-    // this.logger.log(sLogs);
-    // this.logger.log('error');
-    // this.logger.log(fLogs);
+  private handleProductCache() {
+    this.updateCachedProductCount();
+
+    this.eventsService.on(this.productUpdatedEventName, () => {
+      this.updateCachedProductCount();
+      this.clientProductListCache.clear();
+    });
+  }
+
+  private onProductUpdate() {
+    this.eventsService.emit(this.productUpdatedEventName, {});
+  }
+
+  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  private updateCachedProductCount() {
+    this.productModel.estimatedDocumentCount().exec()
+      .then(count => this.cachedProductCount = count)
+      .catch(_ => { });
+  }
+
+  private static areProductCategoriesEqual(categories1: ProductCategory[], categories2: AdminProductCategoryDto[]): boolean {
+    return areArraysEqual(categories1.map(c => c.id), categories2.map(c => c.id));
   }
 }

@@ -14,20 +14,24 @@ import { CronExpression } from '@nestjs/schedule';
 import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
 import { sortByMultilingualLabel } from '../shared/helpers/sort-by-label.function';
 import { Language } from '../shared/enums/language.enum';
+import { EventsService } from '../shared/services/events/events.service';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {
 
   private logger = new Logger(AttributeService.name);
+  private attrbiutesUpdatedEventName: string = 'attributes-updated';
   private cachedAttrbiutes: Attribute[] = [];
 
-  constructor(@InjectModel(Attribute.name) private readonly attributeModel: ReturnModelType<typeof Attribute>,
-              private readonly searchService: SearchService) {
-  }
+  constructor(
+    @InjectModel(Attribute.name) private readonly attributeModel: ReturnModelType<typeof Attribute>,
+    private readonly searchService: SearchService,
+    private readonly eventsService: EventsService
+  ) { }
 
   onApplicationBootstrap(): any {
     this.searchService.ensureCollection(Attribute.collectionName, new ElasticAttributeModel());
-    this.updateCachedAttributes();
+    this.handleCachedAttributes();
     // this.reindexAllSearchData();
   }
 
@@ -61,9 +65,9 @@ export class AttributeService implements OnApplicationBootstrap {
   }
 
   async getAllAttributes(): Promise<Attribute[]> {
-    // if (this.cachedAttrbiutes.length) {
-    //   return this.cachedAttrbiutes;
-    // }
+    if (this.cachedAttrbiutes.length) {
+      return this.cachedAttrbiutes;
+    }
 
     const attributes = await this.attributeModel.find().exec();
     return attributes.map(attr => attr.toJSON());
@@ -90,7 +94,7 @@ export class AttributeService implements OnApplicationBootstrap {
     attribute.values = sortByMultilingualLabel(attribute.values, lang);
     await attribute.save();
     this.addSearchData(attribute);
-    this.updateCachedAttributes();
+    this.onAttributesUpdate();
 
     return attribute;
   }
@@ -105,7 +109,7 @@ export class AttributeService implements OnApplicationBootstrap {
 
     await attribute.save();
     this.updateSearchData(attribute);
-    this.updateCachedAttributes();
+    this.onAttributesUpdate();
 
     return attribute;
   }
@@ -116,7 +120,7 @@ export class AttributeService implements OnApplicationBootstrap {
       throw new NotFoundException(__('Attribute with id "$1" not found', 'ru', attributeId));
     }
     this.deleteSearchData(deleted);
-    this.updateCachedAttributes();
+    this.onAttributesUpdate();
 
     return deleted;
   }
@@ -125,8 +129,20 @@ export class AttributeService implements OnApplicationBootstrap {
     return this.attributeModel.estimatedDocumentCount().exec();
   }
 
+  private handleCachedAttributes() {
+    this.updateCachedAttributes();
+
+    this.eventsService.on(this.attrbiutesUpdatedEventName, () => {
+      this.updateCachedAttributes();
+    });
+  }
+
+  private onAttributesUpdate() {
+    this.eventsService.emit(this.attrbiutesUpdatedEventName, {});
+  }
+
   @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
-  updateCachedAttributes() {
+  private updateCachedAttributes() {
     this.attributeModel.find()
       .exec()
       .then(attributes => this.cachedAttrbiutes = attributes.map(a => a.toJSON()))

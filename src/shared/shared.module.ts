@@ -5,6 +5,7 @@ import { Counter, CounterModel } from './services/counter/counter.model';
 import { MediaService } from './services/media/media.service';
 import { SearchService } from './services/search/search.service';
 import { EncryptorService } from './services/encryptor/encryptor.service';
+import { EventsService } from './services/events/events.service';
 
 const counterModel = {
   name: CounterModel.modelName,
@@ -15,7 +16,7 @@ const counterModel = {
 @Global()
 @Module({
   imports: [MongooseModule.forFeature([counterModel])],
-  providers: [CounterService, MediaService, SearchService, EncryptorService],
-  exports: [CounterService, MediaService, SearchService, EncryptorService]
+  providers: [CounterService, MediaService, SearchService, EncryptorService, EventsService],
+  exports: [CounterService, MediaService, SearchService, EncryptorService, EventsService]
 })
 export class SharedModule {}

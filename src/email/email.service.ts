@@ -84,7 +84,7 @@ export class EmailService {
     const emailType = EEmailType.LeaveReview;
     const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
 
-    const subject = `${order.customerFirstName}, поделитесь мнением о покупке, пожалуйста`;
+    const subject = `${order.customerFirstName}, поделитесь мнением о покупке`;
 
     const context = this.getLeaveReviewTemplateContext(order, lang);
     const html = this.getEmailHtml(emailType, context);
@@ -146,27 +146,28 @@ export class EmailService {
     const attachments = [];
     if (attachment) { attachments.push(attachment); }
 
-    const send = async (tryCount: number = 0) => {
-      const delayTime = tryCount * 3.5 * 1000;
+    const send = async (resolve, reject, tryCount: number = 0) => {
+      try {
+        await transport.sendMail({ from: this.senderName, to, subject, html, attachments });
+        this.logger.log(`Sent "${emailType}" email to "${to}"`);
 
-      setTimeout(async () => {
-        try {
-          await transport.sendMail({ from: this.senderName, to, subject, html, attachments });
+        resolve();
+      } catch (e) {
+        this.logger.error(`Could not send "${emailType}" email to "${to}": ${e}`);
+        this.logger.error(e);
 
-          this.logger.log(`Sent "${emailType}" email to "${to}"`);
-        } catch (e) {
-          this.logger.error(`Could not send "${emailType}" email to "${to}": ${e}`);
-          this.logger.error(e);
-
-          if (tryCount <= 4) {
-            this.logger.warn(`Retrying in ${tryCount + 1}...`);
-            await send(tryCount + 1);
-          }
+        if (tryCount > 4) {
+          reject(e);
+          return;
         }
-      }, delayTime);
+
+        const delayTime = tryCount * 3.5 * 1000;
+        this.logger.warn(`Retrying in ${delayTime}s...`);
+        setTimeout(() => send(resolve, reject, tryCount + 1), delayTime);
+      }
     };
 
-    await send();
+    return new Promise(send);
   }
 
   private getEmailHtml(emailType: EEmailType, templateContext: any = {}): string {

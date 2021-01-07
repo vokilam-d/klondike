@@ -29,25 +29,40 @@ import { Language } from '../shared/enums/language.enum';
 import { ClientMediaDto } from '../shared/dtos/client/media.dto';
 import { MultilingualText } from '../shared/models/multilingual-text.model';
 import { areMultilingualTextsEqual } from '../shared/helpers/are-multilingual-texts-equal.function';
+import { CronExpression } from '@nestjs/schedule';
+import { EventsService } from '../shared/services/events/events.service';
+import { Dictionary } from '../shared/helpers/dictionary';
 
 @Injectable()
 export class CategoryService implements OnApplicationBootstrap {
 
   private logger = new Logger(CategoryService.name);
+  private categoriesUpdatedEventName: string = 'categories-updated';
+  private cachedCategories: Category[] = [];
+  private cachedClientCategory: Dictionary<ClientCategoryDto> = new Dictionary();
+  private cachedTreesMap: Dictionary<AdminCategoryTreeItemDto[]> = new Dictionary();
+  private cachedLinkedCategories: Dictionary<ClientLinkedCategoryDto[]> = new Dictionary();
 
-  constructor(@InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
-              @Inject(forwardRef(() => ProductService)) private productService: ProductService,
-              private readonly pageRegistryService: PageRegistryService,
-              private readonly counterService: CounterService,
-              private readonly mediaService: MediaService,
-              private readonly searchService: SearchService
+  constructor(
+    @InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
+    @Inject(forwardRef(() => ProductService)) private productService: ProductService,
+    private readonly pageRegistryService: PageRegistryService,
+    private readonly counterService: CounterService,
+    private readonly mediaService: MediaService,
+    private readonly searchService: SearchService,
+    private readonly eventsService: EventsService
   ) { }
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Category.collectionName, new ElasticCategory());
+    this.handleCachedCategories();
   }
 
-  async getAllCategories(): Promise<Category[]> { // todo cache
+  async getAllCategories(): Promise<Category[]> {
+    if (this.cachedCategories.length) {
+      return this.cachedCategories;
+    }
+
     let categories = await this.categoryModel.find().exec();
     categories = categories
       .sort((a, b) => a.reversedSortOrder - b.reversedSortOrder)
@@ -57,6 +72,11 @@ export class CategoryService implements OnApplicationBootstrap {
   }
 
   async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean } = { }): Promise<AdminCategoryTreeItemDto[]> {
+    const cachedTree = this.cachedTreesMap.get(options);
+    if (cachedTree) {
+      return cachedTree;
+    }
+
     const treeItems: AdminCategoryTreeItemDto[] = [];
     const childrenMap: { [parentId: number]: AdminCategoryTreeItemDto[] } = {};
 
@@ -91,6 +111,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
     populateChildrenArray(treeItems);
 
+    this.cachedTreesMap.set(options, treeItems);
     return treeItems;
   }
 
@@ -106,6 +127,12 @@ export class CategoryService implements OnApplicationBootstrap {
   }
 
   async getClientCategoryBySlug(slug: string, lang: Language): Promise<ClientCategoryDto> {
+    const cacheKey = { slug, lang };
+    const cache = this.cachedClientCategory.get(cacheKey);
+    if (cache) {
+      return cache;
+    }
+
     const found = await this.categoryModel.findOne({ slug, isEnabled: true }).exec();
     if (!found) {
       throw new NotFoundException(__('Category with slug "$1" not found', 'ru', slug));
@@ -128,10 +155,18 @@ export class CategoryService implements OnApplicationBootstrap {
       }
     }
 
-    return ClientCategoryDto.transformToDto(found.toJSON(), lang, siblingCategories, childCategories);
+    const dto = ClientCategoryDto.transformToDto(found, lang, siblingCategories, childCategories);
+    this.cachedClientCategory.set(cacheKey, dto);
+    return dto;
   }
 
   async getClientSiblingCategories(categoryId: number, lang: Language): Promise<ClientLinkedCategoryDto[]> {
+    const cacheKey = { categoryId, lang };
+    const cache = this.cachedLinkedCategories.get(cacheKey);
+    if (cache) {
+      return cache;
+    }
+
     const found = await this.categoryModel.findById(categoryId).exec();
 
     const linkedCategories: ClientLinkedCategoryDto[] = [];
@@ -146,11 +181,12 @@ export class CategoryService implements OnApplicationBootstrap {
         ...category,
         name: category.name[lang],
         id: category.id,
-        medias: category.medias.filter(media => !media.isHidden).map(media => ClientMediaDto.transformToDto(media, lang)),
+        medias: ClientMediaDto.transformToDtosArray(category.medias, lang),
         isSelected: found.id === category.id
       });
     }
 
+    this.cachedLinkedCategories.set(cacheKey, linkedCategories);
     return linkedCategories;
   }
 
@@ -187,6 +223,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
       this.addSearchData(newCategoryModel).then();
       this.mediaService.deleteTmpMedias(tmpMedias, Category.collectionName).then();
+      this.onCategoriesUpdate();
 
       return plainToClass(Category, newCategoryModel.toJSON());
     } catch (ex) {
@@ -241,6 +278,7 @@ export class CategoryService implements OnApplicationBootstrap {
       this.updateSearchData(saved).then();
       this.mediaService.deleteTmpMedias(tmpMedias, Category.collectionName).then();
       this.mediaService.deleteSavedMedias(mediasToDelete, Category.collectionName).then();
+      this.onCategoriesUpdate();
 
       return saved.toJSON();
 
@@ -273,6 +311,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
       this.deleteSearchData(deleted).then();
       this.mediaService.deleteSavedMedias(deleted.medias, Category.collectionName).then();
+      this.onCategoriesUpdate();
 
       return deleted.toJSON();
     } catch (ex) {
@@ -498,6 +537,36 @@ export class CategoryService implements OnApplicationBootstrap {
     }
 
     return source;
+  }
+
+  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  private async updateCachedCategories() {
+    this.cachedTreesMap.clear();
+    this.cachedLinkedCategories.clear();
+
+    try {
+      let categories = await this.categoryModel.find().exec();
+      categories = categories
+        .sort((a, b) => a.reversedSortOrder - b.reversedSortOrder)
+        .map(category => category.toJSON());
+
+      this.cachedCategories = categories;
+    } catch (e) {
+      this.logger.error(`Could not update cached categories:`);
+      this.logger.error(e);
+    }
+  }
+
+  private handleCachedCategories() {
+    this.updateCachedCategories().then();
+
+    this.eventsService.on(this.categoriesUpdatedEventName, () => {
+      this.updateCachedCategories().then();
+    });
+  }
+
+  private onCategoriesUpdate() {
+    this.eventsService.emit(this.categoriesUpdatedEventName, {});
   }
 
   private static isClone(category: Category): boolean {

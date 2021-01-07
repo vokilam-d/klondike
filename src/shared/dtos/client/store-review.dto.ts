@@ -1,7 +1,17 @@
-import { AdminStoreReviewDto } from '../admin/store-review.dto';
-import { Exclude } from 'class-transformer';
+import { Expose, plainToClass, Type } from 'class-transformer';
+import { ClientMediaDto } from './media.dto';
+import { AdminBaseReviewDto } from '../admin/base-review.dto';
+import { Language } from '../../enums/language.enum';
 
-export class ClientStoreReviewDto extends AdminStoreReviewDto {
-  @Exclude()
-  isEnabled: boolean;
+export class ClientStoreReviewDto extends AdminBaseReviewDto {
+  @Expose()
+  @Type(() => ClientMediaDto)
+  medias: ClientMediaDto[];
+
+  static transformToDto(reviewDto: AdminBaseReviewDto, lang: Language): ClientStoreReviewDto {
+    return {
+      ...plainToClass(ClientStoreReviewDto, reviewDto, { excludeExtraneousValues: true }),
+      medias: ClientMediaDto.transformToDtosArray(reviewDto.medias, lang)
+    }
+  }
 }
