@@ -360,11 +360,11 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  async getBreadcrumpsByProductId (id: any) {
+  async getBreadcrumbsByProductId (id: any) {
     const product = await this.productModel.findById(id).exec();
-    let breadcrumps;
-    await this.populateProductCategoriesAndBreadcrumbs(product).then(e => breadcrumps = e).catch();
-    return breadcrumps;
+    let breadcrumbs;
+    await this.populateProductCategoriesAndBreadcrumbs(product).then(e => breadcrumbs = e).catch();
+    return breadcrumbs;
   }
 
   async getProductWithQtyById(id: number, session?: ClientSession): Promise<ProductWithQty> {

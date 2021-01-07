@@ -60,9 +60,9 @@ export class AdminProductController {
     };
   }
 
-  @Get(':id/breadcrumpsVariants')
-  async getBreadcrumpsVariants(@Param('id') id: string): Promise<ResponseDto<AdminProductDto>> {
-    return await this.productsService.getBreadcrumpsByProductId(parseInt(id));
+  @Get(':id/breadcrumbsVariants')
+  async getBreadcrumbsVariants(@Param('id') id: string): Promise<ResponseDto<AdminProductDto>> {
+    return await this.productsService.getBreadcrumbsByProductId(parseInt(id));
   }
 
   @Get(':id/variants/:variantId/reserved')
