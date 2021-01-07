@@ -371,7 +371,7 @@ export class ProductService implements OnApplicationBootstrap {
     if (!found) {
       throw new NotFoundException(__('Product with id "$1" not found', 'ru', id));
     }
-console.log(found)
+
     return found;
   }
 
@@ -787,17 +787,35 @@ console.log(found)
       categoryTreeItems = await this.categoryService.getCategoriesTree({ onlyEnabled: true });
     }
     populate(categoryTreeItems);
-    let sortedBreadcrumbs = breadcrumbsVariants.sort((a, b) => b.length - a.length).filter(item => item.length>0)
-    for (let i=1;i<sortedBreadcrumbs.length;i++) {
-      for (let j=2;j<sortedBreadcrumbs.length;j++) {
-        if (sortedBreadcrumbs[i].length === sortedBreadcrumbs[j].length) {
-          if (sortedBreadcrumbs[i][0].id === sortedBreadcrumbs[j][0].id) {
-            sortedBreadcrumbs.splice(i,1)
-          } 
+    let sortedBreadcrumbs = breadcrumbsVariants.sort((a, b) => b.length - a.length).filter(item => item.length>0);
+      for (let i = 0; i < sortedBreadcrumbs.length; i++) {
+        for (let j = 1; j < sortedBreadcrumbs.length; j++) {
+          if (sortedBreadcrumbs[i] && sortedBreadcrumbs[j]) {
+            if (sortedBreadcrumbs[i].length === sortedBreadcrumbs[j].length) {
+              if (sortedBreadcrumbs[i].length > 1) {
+                if (sortedBreadcrumbs[i][0].id === sortedBreadcrumbs[j][0].id && sortedBreadcrumbs[i][1].id === sortedBreadcrumbs[j][1].id) {
+                  sortedBreadcrumbs.splice(i, 1)
+                }
+              } else {
+                if (sortedBreadcrumbs[i][0].id === sortedBreadcrumbs[j][0].id) {
+                  sortedBreadcrumbs.splice(i, 1)
+                }
+              }
+            } 
+          }
         }
       }
-    }
-
+      for (let i = 1; i < sortedBreadcrumbs.length; i++) {
+        for (let j = 2; j < sortedBreadcrumbs.length; j++) {
+          if (sortedBreadcrumbs[i] && sortedBreadcrumbs[j]) {
+            if (sortedBreadcrumbs[i].length === sortedBreadcrumbs[j].length) {
+              if (sortedBreadcrumbs[i][0].id === sortedBreadcrumbs[j][0].id) {
+                sortedBreadcrumbs.splice(i, 1)
+              }
+            } 
+          }
+        }
+      }
     product.breadcrumbs = sortedBreadcrumbs[0] || [];
     return sortedBreadcrumbs;
   }
