@@ -35,7 +35,7 @@ export class ClientBlogPostListItemDto implements
 
   static transformToDto(blogPost: BlogPost, lang: Language): ClientBlogPostListItemDto {
     return {
-      category: ClientLinkedBlogCategoryDto.transformToDto(blogPost, lang),
+      category: ClientLinkedBlogCategoryDto.transformToDto(blogPost.category, lang),
       name: blogPost.name[lang],
       publishedAt: blogPost.publishedAt,
       updatedAt: blogPost.updatedAt,
