@@ -1,19 +1,34 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { PageRegistry } from './models/page-registry.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { ClientSession, UpdateQuery } from 'mongoose';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
+import { CronExpression } from '@nestjs/schedule';
+import { EventsService } from '../shared/services/events/events.service';
 
 @Injectable()
-export class PageRegistryService {
+export class PageRegistryService implements OnApplicationBootstrap {
 
   private logger = new Logger(PageRegistryService.name);
+  private cachedPages: PageRegistry[] = [];
+  private pagesUpdatedEventName: string = 'pages-updated';
 
-  constructor(@InjectModel(PageRegistry.name) private readonly registryModel: ReturnModelType<typeof PageRegistry>) {
+  constructor(
+    @InjectModel(PageRegistry.name) private readonly registryModel: ReturnModelType<typeof PageRegistry>,
+    private readonly eventsService: EventsService
+  ) { }
+
+  onApplicationBootstrap(): any {
+    this.handleCachedPages();
   }
 
-  getAllPages() {
+  async getAllPages(): Promise<PageRegistry[]> {
+    if (this.cachedPages.length) {
+      return this.cachedPages;
+    }
+
     return this.registryModel.find();
   }
 
@@ -32,6 +47,7 @@ export class PageRegistryService {
     await newPage.save({ session });
 
     this.logger.log(`Created '${newPage.slug}' page-registry.`);
+    this.onPagesUpdate();
     return newPage;
   }
 
@@ -57,6 +73,7 @@ export class PageRegistryService {
 
     if (result) {
       this.logger.log(logMessage);
+      this.onPagesUpdate();
     } else {
       this.logger.error(`Could not update '${oldSlug}' in page-registry.`);
     }
@@ -68,10 +85,36 @@ export class PageRegistryService {
 
     if (deleted) {
       this.logger.log(`Deleted '${deleted.slug}' from page-registry.`);
+      this.onPagesUpdate();
     } else {
       this.logger.error(`Could not delete '${slug}' from page-registry.`);
     }
 
     return deleted;
+  }
+
+  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  private async updateCachedPages() {
+    try {
+      let pages = await this.registryModel.find().exec();
+      pages = pages.map(page => page.toJSON());
+
+      this.cachedPages = pages;
+    } catch (e) {
+      this.logger.error(`Could not update cached pages:`);
+      this.logger.error(e);
+    }
+  }
+
+  private handleCachedPages() {
+    this.updateCachedPages().then();
+
+    this.eventsService.on(this.pagesUpdatedEventName, () => {
+      this.updateCachedPages().then();
+    });
+  }
+
+  private onPagesUpdate() {
+    this.eventsService.emit(this.pagesUpdatedEventName, {});
   }
 }
