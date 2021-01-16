@@ -56,6 +56,7 @@ import { Language } from '../shared/enums/language.enum';
 import { AdminOrderItemDto } from '../shared/dtos/admin/order-item.dto';
 import { ClientOrderItemDto } from '../shared/dtos/client/order-item.dto';
 import { adminDefaultLanguage, clientDefaultLanguage } from '../shared/constants';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -74,6 +75,7 @@ export class OrderService implements OnApplicationBootstrap {
     private readonly inventoryService: InventoryService,
     private readonly orderItemService: OrderItemService,
     private readonly productService: ProductService,
+    private readonly userService: UserService,
     private readonly searchService: SearchService,
     private readonly novaPoshtaService: NovaPoshtaService,
     private readonly shipmentSenderService: ShipmentSenderService
@@ -186,8 +188,7 @@ export class OrderService implements OnApplicationBootstrap {
         orderDto.customerId = customer.id;
       }
 
-      const newOrder = await this.createOrder(orderDto, lang, customer, session);
-      newOrder.source = 'manager';
+      const newOrder = await this.createOrder(orderDto, lang, customer, session, 'manager', user);
       newOrder.logs.push({ time: new Date(), text: `Created order by manager, userLogin=${user?.login}` });
       newOrder.status = OrderStatusEnum.PROCESSING;
       await this.fetchShipmentStatus(newOrder);
@@ -200,6 +201,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       this.addSearchData(newOrder).then();
       this.updateCachedOrderCount();
+      this.emailService.sendOrderConfirmationEmail(newOrder, lang, isProdEnv(), false).then();
 
       return newOrder;
 
@@ -244,12 +246,11 @@ export class OrderService implements OnApplicationBootstrap {
 
       const prices = await this.orderItemService.calcOrderPrices(orderDto.items, customer);
 
-      const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, lang, customer, session);
+      const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, lang, customer, session, 'client');
 
       OrderService.checkForCheckoutRules(newOrder);
 
       newOrder.status = OrderStatusEnum.NEW;
-      newOrder.source = 'client';
       newOrder.logs.push({ time: new Date(), text: `Created order` });
 
       await newOrder.save({ session });
@@ -278,7 +279,9 @@ export class OrderService implements OnApplicationBootstrap {
     orderDto: AdminAddOrUpdateOrderDto | ClientAddOrderDto,
     lang: Language,
     customer: Customer,
-    session: ClientSession
+    session: ClientSession,
+    source: 'client' | 'manager',
+    user?: User
   ): Promise<DocumentType<Order>> {
 
     const newOrder = new this.orderModel(orderDto);
@@ -316,6 +319,8 @@ export class OrderService implements OnApplicationBootstrap {
     newOrder.shippingMethodName = getTranslations(newOrder.shipment.recipient.addressType);
 
     await this.setPaymentInfoByMethodId(newOrder, orderDto.paymentMethodId);
+    newOrder.source = source;
+    await this.assignOrderManager(newOrder, orderDto['manager']?.userId, user);
 
     return newOrder;
   }
@@ -340,6 +345,7 @@ export class OrderService implements OnApplicationBootstrap {
       const oldPaymentMethodId = order.paymentMethodId;
       const newPaymentMethodId = orderDto.paymentMethodId;
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
+      await this.assignOrderManager(order, orderDto.manager?.userId);
       if (oldTrackingNumber !== newTrackingNumber) {
         await this.fetchShipmentStatus(order);
       }
@@ -351,6 +357,35 @@ export class OrderService implements OnApplicationBootstrap {
 
       return order;
     });
+  }
+
+  private async assignOrderManager(order: Order, userId: string, user?: User) {
+    let assignedManagerUser: User;
+    if (userId) {
+      assignedManagerUser = await this.userService.getUserById(userId);
+    } else if (user && user?._id && user?.name) {
+      assignedManagerUser = user;
+    } else if (this.shouldAssignToKristina(order)) {
+      assignedManagerUser = await this.userService.getUserById('5fff628d7db0790020149858'); // Кристина
+    } else {
+      assignedManagerUser = await this.userService.getUserById('5ef9c63aae2fd882393081c3'); // default Елена
+    }
+    const newOrderManagerUserId = assignedManagerUser._id.toString();
+    const oldOrderManagerUserId = order.manager?.userId;
+    const newOrderManagerName = assignedManagerUser.name;
+    order.manager = { name: newOrderManagerName, userId: newOrderManagerUserId };
+    if (newOrderManagerUserId !== oldOrderManagerUserId
+      || user?._id?.toString() !== newOrderManagerUserId) {
+      const assignedManagerMessage = `Order assigned to manager ${newOrderManagerName}`
+        + `, orderId=${order.id}, userLogin=${user?.login}`;
+      order.logs.push({ time: new Date(), text: assignedManagerMessage });
+      this.logger.log(assignedManagerMessage);
+      this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
+    }
+  }
+
+  private shouldAssignToKristina(order: Order): boolean {
+    return order.items.some(item => item.name[clientDefaultLanguage].toLowerCase().includes('картина'));
   }
 
   async deleteOrder(orderId: number): Promise<Order> {
@@ -793,6 +828,13 @@ export class OrderService implements OnApplicationBootstrap {
   async updateOrderAdminNote(id: number, adminNote: string): Promise<Order> {
     return await this.updateOrderById(id, async order => {
       order.adminNote = adminNote;
+      return order;
+    });
+  }
+
+  async updateOrderManager(id: number, userId: string): Promise<Order> {
+    return await this.updateOrderById(id, async order => {
+      await this.assignOrderManager(order, userId);
       return order;
     });
   }

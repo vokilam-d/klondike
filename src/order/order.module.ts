@@ -17,6 +17,7 @@ import { TasksModule } from '../tasks/tasks.module';
 import { NovaPoshtaModule } from '../nova-poshta/nova-poshta.module';
 import { EmailModule } from '../email/email.module';
 import { AdditionalServiceModule } from '../additional-service/additional-service.module';
+import { UserModule } from '../user/user.module';
 
 const orderModel = {
   name: OrderModel.modelName,
@@ -33,6 +34,7 @@ const orderModel = {
     EmailModule,
     TasksModule,
     ShippingMethodModule,
+    UserModule,
     PaymentMethodModule,
     PdfGeneratorModule,
     InventoryModule,

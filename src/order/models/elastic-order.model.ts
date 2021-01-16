@@ -7,6 +7,7 @@ import { OrderItemAdditionalService } from './order-item-additional-service.mode
 import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
 import { AdminOrderPricesDto } from '../../shared/dtos/admin/order-prices.dto';
 import { ElasticMultilingualText } from '../../shared/models/elastic-multilingual-text.model';
+import { ManagerDto } from '../../shared/dtos/admin/manager.dto';
 
 class ElasticOrderItemAdditionalService implements Record<keyof OrderItemAdditionalService, any> {
   id = elasticIntegerType;
@@ -60,6 +61,11 @@ class ElasticOrderPrices implements Record<keyof Pick<AdminOrderPricesDto, 'tota
   totalCost = elasticIntegerType;
 }
 
+class ElasticOrderManager implements Record<keyof Pick<ManagerDto, 'userId' | 'name'>, any> {
+  userId = elasticTextType;
+  name = elasticTextType;
+}
+
 export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   adminNote = elasticTextType;
   clientNote = elasticTextType;
@@ -110,6 +116,10 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   prices = {
     type: 'nested',
     properties: new ElasticOrderPrices()
-  }
+  };
+  manager = {
+    type: 'nested',
+    properties: new ElasticOrderManager()
+  };
   isOrderPaid = elasticBooleanType;
 }

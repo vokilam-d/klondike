@@ -11,6 +11,8 @@ import { AdminStoreReviewDto } from '../shared/dtos/admin/store-review.dto';
 import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-order.function';
 import { Language } from '../shared/enums/language.enum';
 import { clientDefaultLanguage } from '../shared/constants';
+import { User } from '../user/models/user.model';
+import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 
 enum EEmailType {
   EmailConfirmation = 'email-confirmation',
@@ -19,7 +21,8 @@ enum EEmailType {
   NewStoreReview = 'new-store-review',
   ResetPassword = 'password-reset',
   LeaveReview = 'leave-review',
-  OrderConfirmation = 'order-confirmation'
+  OrderConfirmation = 'order-confirmation',
+  NewManagerAssignedToOrder = 'new-manager-assigned-to-order'
 }
 
 interface SendEmailOptions {
@@ -53,31 +56,54 @@ export class EmailService {
     }
   };
   private senderName = 'Клондайк <info@klondike.com.ua>';
-  private managerEmails: string = ['denis@klondike.com.ua', 'yurii@klondike.com.ua', 'elena@klondike.com.ua', 'masloirina15@gmail.com', 'irina@klondike.com.ua'].join(',');
+  private newReviewListenerEmails: string = ['denis@klondike.com.ua', 'yurii@klondike.com.ua', 'elena@klondike.com.ua', 'masloirina15@gmail.com', 'irina@klondike.com.ua', 'elena.sergeevna@klondike.com.ua'].join(',');
+  private newOrderListenerEmails: string = ['denis@klondike.com.ua', 'masloirina15@gmail.com', 'irina@klondike.com.ua'].join(',');
+  private newOrderManagerAssignedListenerEmails: string = ['yurii@klondike.com.ua', 'elena@klondike.com.ua', 'kristina@klondike.com.ua'].join(',');
 
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
 
-  async sendOrderConfirmationEmail(order: Order, lang: Language, notifyManager: boolean) {
+  async sendOrderConfirmationEmail(order: Order, lang: Language, notifyManagers: boolean, notifyClient : boolean = true) {
     const emailType = EEmailType.OrderConfirmation;
     const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
-
     const subject = `Ваш заказ №${order.idForCustomer} получен`;
+    const html = this.generateEmailHtml(order, emailType);
+    const attachment = await this.generateAttachment(order, lang);
 
-    const context = this.getOrderConfirmationTemplateContext(order);
-    const html = this.getEmailHtml(emailType, context);
+    if (notifyManagers) {
+      const managerSubject = `Новый заказ №${order.idForCustomer} (${order.customerLastName}).`
+        + ` Менеджер ${order.manager?.name}. Оформил ${order.source}`;
+      this.sendEmail({ to: this.newOrderListenerEmails, subject: managerSubject, html, attachment, emailType }).then();
+    }
 
-    const attachment = {
+    if (notifyClient) {
+      return this.sendEmail({ to, subject, html, attachment, emailType });
+    }
+  }
+
+  private async generateAttachment(order: Order, lang: Language) {
+    return {
       filename: `Заказ №${order.idForCustomer}.pdf`,
       content: await this.pdfGeneratorService.generateOrderPdf(order, lang)
     };
+  }
 
-    if (notifyManager) {
-      const managerSubject = `Новый заказ №${order.idForCustomer}`;
-      this.sendEmail({ to: this.managerEmails, subject: managerSubject, html, attachment, emailType }).then();
+  private generateEmailHtml(order: Order, emailType: EEmailType) {
+    const context = this.getOrderConfirmationTemplateContext(order);
+    return this.getEmailHtml(emailType, context);
+  }
+
+  async sendAssignedOrderManagerEmail(order: Order, assignedManagerUser: User) {
+    if (isProdEnv()) {
+      this.sendEmail({
+        to: this.newOrderManagerAssignedListenerEmails,
+        subject: `Заказ №${order.idForCustomer} (${order.customerLastName}) `
+          + `назначен менеджеру ${assignedManagerUser.name}. Оформил ${order.source}`,
+        html: await this.generateEmailHtml(order, EEmailType.OrderConfirmation),
+        attachment: await this.generateAttachment(order, Language.RU),
+        emailType: EEmailType.NewManagerAssignedToOrder
+      }).then();
     }
-
-    return this.sendEmail({ to, subject, html, attachment, emailType });
   }
 
   async sendLeaveReviewEmail(order: Order, lang: Language) {
@@ -125,7 +151,7 @@ export class EmailService {
     return this.sendEmail({ to, subject, html, emailType });
   }
 
-  sendNewProductReviewEmail(productReview: AdminProductReviewDto, to: string = this.managerEmails) {
+  sendNewProductReviewEmail(productReview: AdminProductReviewDto, to: string = this.newReviewListenerEmails) {
     const emailType = EEmailType.NewProductReview;
     const subject = 'Новый отзыв о товаре';
     const html = this.getEmailHtml(emailType, this.getNewProductReviewTemplateContext(productReview));
@@ -133,7 +159,7 @@ export class EmailService {
     return this.sendEmail({ to, subject, html, emailType });
   }
 
-  sendNewStoreReviewEmail(storeReview: AdminStoreReviewDto, to: string = this.managerEmails) {
+  sendNewStoreReviewEmail(storeReview: AdminStoreReviewDto, to: string = this.newReviewListenerEmails) {
     const emailType = EEmailType.NewStoreReview;
     const subject = 'Новый отзыв о магазине';
     const html = this.getEmailHtml(emailType, this.getNewStoreReviewTemplateContext(storeReview));
@@ -141,7 +167,7 @@ export class EmailService {
     return this.sendEmail({ to, subject, html, emailType });
   }
 
-  private async sendEmail({ to, subject, html, attachment, emailType }: SendEmailOptions) {
+  public async sendEmail({ to, subject, html, attachment, emailType }: SendEmailOptions) {
     const transport = await nodemailer.createTransport(this.transportOptions);
     const attachments = [];
     if (attachment) { attachments.push(attachment); }
