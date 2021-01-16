@@ -92,6 +92,12 @@ export class AttributeService implements OnApplicationBootstrap {
 
     const attribute = new this.attributeModel(attributeDto);
     attribute.values = sortByMultilingualLabel(attribute.values, lang);
+
+    attribute.id = attribute.id.toLowerCase();
+    for (const value of attribute.values) {
+      value.id = value.id.toLowerCase();
+    }
+
     await attribute.save();
     this.addSearchData(attribute);
     this.onAttributesUpdate();
