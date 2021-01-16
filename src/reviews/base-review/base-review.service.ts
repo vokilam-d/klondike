@@ -254,14 +254,22 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   }
 
   private async searchByFilters(spf: AdminSPFDto | ClientSPFDto) {
+    const reviewModel = new this.ElasticReview();
+    const reviewModelKeys = Object.keys(reviewModel);
+
+    const filters = spf.getNormalizedFilters().filter(filter => {
+      const [fieldName] = filter.fieldName.split('.');
+      return reviewModelKeys.includes(fieldName);
+    });
+
     return this.searchService.searchByFilters<U>(
       this.collectionName,
-      spf.getNormalizedFilters(),
+      filters,
       spf.skip,
       spf.limit,
       spf.getSortAsObj(),
       undefined,
-      new this.ElasticReview()
+      reviewModel
     );
   }
 
