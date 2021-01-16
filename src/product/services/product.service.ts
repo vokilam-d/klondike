@@ -126,9 +126,9 @@ export class ProductService implements OnApplicationBootstrap {
 
     spf[isEnabledProp] = true;
 
-    const searchResponse = await this.findByFilters(spf, spf.getNormalizedFilters());
-    const adminDtos = searchResponse[0];
-    const itemsTotal = searchResponse[1];
+    const filters: IFilter[] = await this.getValidAttributeFilters(spf.getNormalizedFilters());
+
+    const [adminDtos, itemsTotal] = await this.findByFilters(spf, filters);
     const attributes = await this.attributeService.getAllAttributes();
     const clientDtos = await this.transformToClientListDto(adminDtos, attributes, lang);
 
@@ -168,7 +168,9 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   async getClientProductListWithFilters(spf: ClientProductSPFDto, lang: Language): Promise<ClientProductListResponseDto> {
-    const spfFilters = spf.getNormalizedFilters();
+    const attributes = await this.attributeService.getAllAttributes();
+    const spfFilters = await this.getValidAttributeFilters(spf.getNormalizedFilters(), attributes);
+
     const cacheKey = {
       spfFilters,
       categoryId: spf.categoryId,
@@ -186,9 +188,6 @@ export class ProductService implements OnApplicationBootstrap {
     // todo move logic to elastic
     // https://project-a.github.io/on-site-search-design-patterns-for-e-commerce/
     const [ adminListItems ] = await this.findEnabledProductListItems(spf, lang, { categoryId: spf.categoryId, query: spf.q, limit: 10000 });
-    const attributes = await this.attributeService.getAllAttributes();
-    const filteredSpfFilters = spfFilters
-      .filter(spfFilter => !!attributes.find(attribute => attribute.id === spfFilter.fieldName)); // leave only valid attributes
 
     const allSelectedAttributesProductCountMap: AttributeProductCountMap = { };
 
@@ -237,7 +236,7 @@ export class ProductService implements OnApplicationBootstrap {
 
         for (const attribute of selectedAttributes) {
           addPossibleAttribute(attribute);
-          const foundSpfFilter = filteredSpfFilters.find(spfFilter => spfFilter.fieldName === attribute.attributeId);
+          const foundSpfFilter = spfFilters.find(spfFilter => spfFilter.fieldName === attribute.attributeId);
           if (!foundSpfFilter) { continue; }
 
           spfFiltersMatches += 1;
@@ -257,7 +256,7 @@ export class ProductService implements OnApplicationBootstrap {
           }
         }
 
-        if (spfFiltersMatches === filteredSpfFilters.length && isPassedByPrice) {
+        if (spfFiltersMatches === spfFilters.length && isPassedByPrice) {
           if (unmatchedSelectedAttributes.length === 0) {
             incProductCount(variant.attributes);
             filteredVariants.push(variant);
@@ -286,12 +285,12 @@ export class ProductService implements OnApplicationBootstrap {
 
     const itemsTotal = adminListItems.length;
     let itemsFiltered: number;
-    if (filteredSpfFilters.length || filterMinPrice >= 0) { itemsFiltered = filteredAdminListItems.length; }
+    if (spfFilters.length || filterMinPrice >= 0) { itemsFiltered = filteredAdminListItems.length; }
 
     filteredAdminListItems = filteredAdminListItems.slice(spf.skip, spf.skip + spf.limit);
     const clientListItems = await this.transformToClientListDto(filteredAdminListItems, attributes, lang);
 
-    let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, filteredSpfFilters, lang);
+    let filters = this.buildClientFilters(allSelectedAttributesProductCountMap, attributes, adminListItems.length, spfFilters, lang);
     if (itemsTotal > 0) {
       filters = this.addPriceFilter(filters, { possibleMinPrice, possibleMaxPrice, filterMinPrice, filterMaxPrice });
     }
@@ -1723,6 +1722,14 @@ export class ProductService implements OnApplicationBootstrap {
     this.productModel.estimatedDocumentCount().exec()
       .then(count => this.cachedProductCount = count)
       .catch(_ => { });
+  }
+
+  private async getValidAttributeFilters(filters: IFilter[], attributes?: Attribute[]): Promise<IFilter[]> {
+    if (!attributes) {
+      attributes = await this.attributeService.getAllAttributes();
+    }
+
+    return filters.filter(spfFilter => !!attributes.find(attribute => attribute.id === spfFilter.fieldName));
   }
 
   private static areProductCategoriesEqual(categories1: ProductCategory[], categories2: AdminProductCategoryDto[]): boolean {
