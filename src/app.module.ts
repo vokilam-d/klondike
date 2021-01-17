@@ -15,7 +15,7 @@ import { StoreReviewModule } from './reviews/store-review/store-review.module';
 import { ProductReviewModule } from './reviews/product-review/product-review.module';
 import { WysiwygModule } from './wysiwyg/wysiwyg.module';
 import { EmailModule } from './email/email.module';
-import { GoogleModule } from './google/google.module';
+import { FeedModule } from './feed/feed.module';
 import { CurrencyModule } from './currency/currency.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
@@ -61,7 +61,7 @@ import { AnnouncementModule } from './announcement/announcement.module';
     ProductReviewModule,
     WysiwygModule,
     EmailModule,
-    GoogleModule,
+    FeedModule,
     CurrencyModule,
     AuthModule,
     UserModule,

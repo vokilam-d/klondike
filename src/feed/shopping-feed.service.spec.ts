@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GoogleShoppingFeedService } from './google-shopping-feed.service';
+import { ShoppingFeedService } from './shopping-feed.service';
 
 describe('GoogleService', () => {
-  let service: GoogleShoppingFeedService;
+  let service: ShoppingFeedService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [GoogleShoppingFeedService],
+      providers: [ShoppingFeedService],
     }).compile();
 
-    service = module.get<GoogleShoppingFeedService>(GoogleShoppingFeedService);
+    service = module.get<ShoppingFeedService>(ShoppingFeedService);
   });
 
   it('should be defined', () => {
