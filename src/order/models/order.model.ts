@@ -64,10 +64,10 @@ export class Order {
   @prop()
   isCallbackNeeded: boolean;
 
-  @prop({ default: new Shipment() })
+  @prop({ default: new Shipment(), _id: false })
   shipment: Shipment;
 
-  @prop({ default: new Manager() })
+  @prop({ default: new Manager(), _id: false })
   manager: Manager;
 
   @arrayProp({ items: OrderItem })
