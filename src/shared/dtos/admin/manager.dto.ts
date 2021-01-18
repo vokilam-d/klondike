@@ -1,11 +1,12 @@
 import { Expose } from 'class-transformer';
+import { Manager } from '../../../order/models/manager.model';
 
-export class ManagerDto {
-
-  @Expose()
-  userId?: string;
+export class ManagerDto implements Manager {
 
   @Expose()
-  name?: string;
+  userId: string;
+
+  @Expose()
+  name: string;
 
 }

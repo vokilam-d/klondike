@@ -3,9 +3,9 @@ import { prop } from '@typegoose/typegoose';
 export class Manager {
 
   @prop()
-  userId?: string;
+  userId: string;
 
   @prop()
-  name?: string;
+  name: string;
 
 }

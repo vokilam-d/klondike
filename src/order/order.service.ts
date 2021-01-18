@@ -320,7 +320,7 @@ export class OrderService implements OnApplicationBootstrap {
 
     await this.setPaymentInfoByMethodId(newOrder, orderDto.paymentMethodId);
     newOrder.source = source;
-    await this.assignOrderManager(newOrder, orderDto['manager']?.userId, user);
+    await this.assignOrderManager(newOrder, (orderDto as AdminAddOrUpdateOrderDto).manager?.userId, user);
 
     return newOrder;
   }
@@ -363,29 +363,26 @@ export class OrderService implements OnApplicationBootstrap {
     let assignedManagerUser: User;
     if (userId) {
       assignedManagerUser = await this.userService.getUserById(userId);
-    } else if (user && user?._id && user?.name) {
+    } else if (user) {
       assignedManagerUser = user;
-    } else if (this.shouldAssignToKristina(order)) {
+    } else if (OrderService.shouldAssignToKristina(order)) {
       assignedManagerUser = await this.userService.getUserById('5fff628d7db0790020149858'); // Кристина
     } else {
       assignedManagerUser = await this.userService.getUserById('5ef9c63aae2fd882393081c3'); // default Елена
     }
-    const newOrderManagerUserId = assignedManagerUser._id.toString();
+
+    const newOrderManagerUserId = assignedManagerUser.id.toString();
     const oldOrderManagerUserId = order.manager?.userId;
-    const newOrderManagerName = assignedManagerUser.name;
-    order.manager = { name: newOrderManagerName, userId: newOrderManagerUserId };
-    if (newOrderManagerUserId !== oldOrderManagerUserId
-      || user?._id?.toString() !== newOrderManagerUserId) {
-      const assignedManagerMessage = `Order assigned to manager ${newOrderManagerName}`
-        + `, orderId=${order.id}, userLogin=${user?.login}`;
+
+    order.manager = { name: assignedManagerUser.name, userId: newOrderManagerUserId };
+
+    if (newOrderManagerUserId !== oldOrderManagerUserId || user?.id.toString() !== newOrderManagerUserId) {
+      const assignedManagerMessage = `Assigned to manager ${assignedManagerUser.name}, orderId=${order.id}, userLogin=${user?.login}`;
       order.logs.push({ time: new Date(), text: assignedManagerMessage });
       this.logger.log(assignedManagerMessage);
+
       this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
     }
-  }
-
-  private shouldAssignToKristina(order: Order): boolean {
-    return order.items.some(item => item.name[clientDefaultLanguage].toLowerCase().includes('картина'));
   }
 
   async deleteOrder(orderId: number): Promise<Order> {
@@ -904,5 +901,9 @@ export class OrderService implements OnApplicationBootstrap {
     if (errors.length) {
       throw new BadRequestException(errors);
     }
+  }
+
+  private static shouldAssignToKristina(order: Order): boolean {
+    return order.items.some(item => item.name[clientDefaultLanguage].toLowerCase().includes('картина'));
   }
 }

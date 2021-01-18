@@ -63,53 +63,55 @@ export class EmailService {
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
 
-  async sendOrderConfirmationEmail(order: Order, lang: Language, notifyManagers: boolean, notifyClient : boolean = true) {
+  async sendOrderConfirmationEmail(order: Order, lang: Language, notifyManagers: boolean, notifyClient: boolean = true) {
     const emailType = EEmailType.OrderConfirmation;
-    const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
-    const subject = `Ваш заказ №${order.idForCustomer} получен`;
-    const html = this.generateEmailHtml(order, emailType);
-    const attachment = await this.generateAttachment(order, lang);
+    const html = this.generateOrderEmailHtml(order, emailType);
+    const attachment = await this.generateOrderAttachment(order, lang);
 
     if (notifyManagers) {
-      const managerSubject = `Новый заказ №${order.idForCustomer} (${order.customerLastName}).`
+      const to = this.newOrderListenerEmails;
+      const subject = `Новый заказ №${order.idForCustomer} (${order.customerLastName}).`
         + ` Менеджер ${order.manager?.name}. Оформил ${order.source}`;
-      this.sendEmail({ to: this.newOrderListenerEmails, subject: managerSubject, html, attachment, emailType }).then();
+      this.sendEmail({ to, subject, html, attachment, emailType }).then();
     }
 
     if (notifyClient) {
+      const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
+      const subject = `Ваш заказ №${order.idForCustomer} получен`;
       return this.sendEmail({ to, subject, html, attachment, emailType });
     }
   }
 
-  private async generateAttachment(order: Order, lang: Language) {
+  private async generateOrderAttachment(order: Order, lang: Language) {
     return {
       filename: `Заказ №${order.idForCustomer}.pdf`,
       content: await this.pdfGeneratorService.generateOrderPdf(order, lang)
     };
   }
 
-  private generateEmailHtml(order: Order, emailType: EEmailType) {
+  private generateOrderEmailHtml(order: Order, emailType: EEmailType) {
     const context = this.getOrderConfirmationTemplateContext(order);
     return this.getEmailHtml(emailType, context);
   }
 
   async sendAssignedOrderManagerEmail(order: Order, assignedManagerUser: User) {
-    if (isProdEnv()) {
-      this.sendEmail({
-        to: this.newOrderManagerAssignedListenerEmails,
-        subject: `Заказ №${order.idForCustomer} (${order.customerLastName}) `
-          + `назначен менеджеру ${assignedManagerUser.name}. Оформил ${order.source}`,
-        html: await this.generateEmailHtml(order, EEmailType.OrderConfirmation),
-        attachment: await this.generateAttachment(order, Language.RU),
-        emailType: EEmailType.NewManagerAssignedToOrder
-      }).then();
-    }
+    if (!isProdEnv()) { return; }
+
+    const subject = `Заказ №${order.idForCustomer} (${order.customerLastName}) `
+      + `назначен менеджеру ${assignedManagerUser.name}. Оформил ${order.source}`;
+
+    return this.sendEmail({
+      to: this.newOrderManagerAssignedListenerEmails,
+      subject,
+      html: await this.generateOrderEmailHtml(order, EEmailType.OrderConfirmation),
+      attachment: await this.generateOrderAttachment(order, Language.RU),
+      emailType: EEmailType.NewManagerAssignedToOrder
+    });
   }
 
   async sendLeaveReviewEmail(order: Order, lang: Language) {
     const emailType = EEmailType.LeaveReview;
     const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
-
     const subject = `${order.customerFirstName}, поделитесь мнением о покупке`;
 
     const context = this.getLeaveReviewTemplateContext(order, lang);
