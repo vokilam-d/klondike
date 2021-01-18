@@ -6,7 +6,7 @@ import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
-import { ProductWithQty } from '../product/models/product-with-qty.model';
+import { ProductVariantWithQty, ProductWithQty } from '../product/models/product-with-qty.model';
 import { AttributeService } from '../attribute/attribute.service';
 import { ProductSelectedAttribute } from '../product/models/product-selected-attribute.model';
 import { clientDefaultLanguage, priceThresholdForFreeShipping } from '../shared/constants';
@@ -25,7 +25,8 @@ interface IShoppingFeedItem {
   'g:image_link'?: cdata;
   'g:additional_image_link'?: cdata;
   'g:condition': string;
-  'g:availability': string;
+  'g:identifier_exists': string;
+  'g:availability'?: string;
   'g:brand': cdata;
   'g:mpn': cdata;
   'g:gtin': cdata;
@@ -70,9 +71,10 @@ interface IShoppingReview {
 }
 
 @Injectable()
-export class GoogleShoppingFeedService {
+export class ShoppingFeedService {
 
-  shoppingFeedFileName = 'google_shopping_feed.xml';
+  googleShoppingFeedFileName = 'google_shopping_feed.xml';
+  facebookShoppingFeedFileName = 'facebook_shopping_feed.xml';
   reviewsFeedFileName = 'google_shopping_review.xml';
 
   constructor(private readonly productService: ProductService,
@@ -80,13 +82,15 @@ export class GoogleShoppingFeedService {
               private readonly reviewService: ProductReviewService) {
   }
 
-  async generateShoppingAdsFeed(): Promise<string> {
+  async generateShoppingAdsFeed(customizeFeedItemFunction?: (item: IShoppingFeedItem,
+    variant: ProductVariantWithQty) => IShoppingFeedItem): Promise<string> {
+
+    const items: IShoppingFeedItem[] = [];
+
     const manufacturerAttrId = 'manufacturer';
     const attributes = await this.attributeService.getAllAttributes();
     const manufacturerAttr = attributes.find(attr => attr.id === manufacturerAttrId);
-
     const products = await this.getAllProducts();
-    const items: IShoppingFeedItem[] = [];
 
     const getBrand = (attributes: ProductSelectedAttribute[]): string => {
       const selectedBrandAttr = attributes.find(attr => attr.attributeId === manufacturerAttrId);
@@ -110,18 +114,6 @@ export class GoogleShoppingFeedService {
 
         const description = variant.fullDescription || variant.shortDescription || new MultilingualText();
 
-        let imageLink: string;
-        let additionalImageLinks: string[] = [];
-        variant.medias.forEach((media, idx) => {
-          const link = 'http://klondike.com.ua' + media.variantsUrls.original;
-
-          if (idx === 0) {
-            imageLink = link;
-          } else {
-            additionalImageLinks.push(link);
-          }
-        });
-
         if (!brand) {
           brand = getBrand(variant.attributes);
         }
@@ -142,24 +134,29 @@ export class GoogleShoppingFeedService {
             'g:price': '0.00 UAH'
           }
         };
+        const title = variant.googleAdsProductTitle[clientDefaultLanguage] || variant.name[clientDefaultLanguage];
 
-        const item: IShoppingFeedItem = {
+        let item: IShoppingFeedItem = {
           'g:id': { $: variant.sku },
-          'g:title': { $: variant.googleAdsProductTitle[clientDefaultLanguage] || variant.name[clientDefaultLanguage] },
+          'g:title': { $: title && title.length > 150 ? title.substring(0, 150) : title },
           'g:link': { $: `http://klondike.com.ua/${variant.slug}` },
           'g:price': { $: `${price} UAH` },
           ...(salePrice ? { 'g:sale_price': { $: `${salePrice} UAH` } } : {}),
           'g:description': { $: stripHtmlTags(description[clientDefaultLanguage]).replace(/\r?\n|\n/g, ' ') },
-          'g:product_type': { $: this.buildProductType(product.breadcrumbs) },
-          ...(imageLink ? {'g:image_link': { $: imageLink }} : {}),
-          ...(additionalImageLinks.length ? {'g:additional_image_link': { $: additionalImageLinks as any }}: {}),
           'g:condition': 'new',
-          'g:availability': variant.qtyInStock > variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0) ? 'in_stock' : 'out_of_stock',
           'g:brand': { $: brand },
           'g:mpn': { $: variant.vendorCode || '' },
           'g:gtin': { $: variant.gtin || '' },
+          'g:identifier_exists': brand || variant.vendorCode || variant.gtin ? 'true' : 'false',
+          'g:product_type': { $: this.buildProductType(product.breadcrumbs) },
+          'g:availability': variant.qtyInStock > variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)
+            ? 'in stock' : 'out of stock',
           ...(isFreeShippingAvailable ? freeShipping : {})
         };
+
+        if (customizeFeedItemFunction) {
+          item = customizeFeedItemFunction(item, variant);
+        }
 
         items.push(item);
       })
@@ -183,8 +180,51 @@ export class GoogleShoppingFeedService {
     const feed = doc.end({ prettyPrint: true, allowEmptyTags: true });
     return feed.toString();
   }
+  async generateGoogleShoppingAdsFeed(): Promise<string> {
+    return await this.generateShoppingAdsFeed((item, variant) => {
+      let imageLink: string = '';
+      let additionalImageLinks: string[] = [];
+      variant.medias.forEach((media, idx) => {
+        const link = 'http://klondike.com.ua' + media.variantsUrls.original;
 
-  async generateProductReviewsFeed(): Promise<string> {
+        if (idx === 0) {
+          imageLink = link;
+        } else {
+          additionalImageLinks.push(link);
+        }
+      });
+
+      return {
+        ...item,
+        'g:image_link': { $: imageLink },
+        ...(additionalImageLinks.length ? { 'g:additional_image_link': { $: additionalImageLinks as any } } : {}),
+      };
+    });
+  }
+
+  async generateFacebookShoppingAdsFeed(): Promise<string> {
+    return await this.generateShoppingAdsFeed((item, variant) => {
+      let imageLink: string = '';
+      let additionalImageLinks: string[] = [];
+      variant.medias.forEach((media, idx) => {
+        const link = 'http://klondike.com.ua' + media.variantsUrls.original;
+
+        if (idx === 0) {
+          imageLink = link;
+        } else if (idx === 1) { //TODO resolve support for multiple additionalImageLinks
+          additionalImageLinks.push(link);
+        }
+      });
+
+      return {
+        ...item,
+        'g:image_link': { $: imageLink },
+        ...(additionalImageLinks.length ? { 'g:additional_image_link': { $: additionalImageLinks as any } } : {}),
+      };
+    });
+  }
+
+  async generateGoogleProductReviewsFeed(): Promise<string> {
     const products = await this.getAllProducts();
     const reviewDtos = await this.getAllReviews();
 
