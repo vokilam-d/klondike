@@ -7,6 +7,7 @@ import { getTranslations } from '../../shared/helpers/translate/translate.functi
 import { Log } from '../../shared/models/log.model';
 import { OrderPrices } from '../../shared/models/order-prices.model';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { Manager } from './manager.model';
 
 export class Order {
   @prop()
@@ -63,8 +64,11 @@ export class Order {
   @prop()
   isCallbackNeeded: boolean;
 
-  @prop({ default: new Shipment() })
+  @prop({ default: new Shipment(), _id: false })
   shipment: Shipment;
+
+  @prop({ default: new Manager(), _id: false })
+  manager: Manager;
 
   @arrayProp({ items: OrderItem })
   items: OrderItem[];

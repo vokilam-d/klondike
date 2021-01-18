@@ -11,8 +11,9 @@ import { AdminOrderItemDto } from './order-item.dto';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { AdminOrderPricesDto } from './order-prices.dto';
 import { AdminLogDto } from './log.dto';
+import { ManagerDto } from './manager.dto';
 
-export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid'> {
+export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid' | 'manager'> {
   @Expose()
   @IsOptional()
   @IsNumber()
@@ -74,6 +75,12 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   @ValidateNested()
   @Type(() => ShipmentDto)
   shipment: ShipmentDto;
+
+  @Expose()
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ManagerDto)
+  manager: ManagerDto;
 
   @Expose()
   @IsArray()
@@ -148,7 +155,12 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Orde
   logs: AdminLogDto[];
 }
 
-export class UpdateOrderAdminNote implements Pick<Order, 'adminNote'>{
+export class UpdateOrderAdminNote implements Pick<Order, 'adminNote'> {
   @IsString()
   adminNote: string;
+}
+
+export class UpdateOrderManager implements Pick<ManagerDto, 'userId'> {
+  @IsString()
+  userId: string;
 }

@@ -10,6 +10,9 @@ export class UserDto {
 
   @Expose()
   login: string;
+
+  @Expose()
+  name: string;
 }
 
 export class AddOrUpdateUserDto extends UserDto {

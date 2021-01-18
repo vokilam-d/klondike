@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res
 import { OrderService } from '../order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import { AdminAddOrUpdateOrderDto, AdminOrderDto, UpdateOrderAdminNote } from '../../shared/dtos/admin/order.dto';
+import { AdminAddOrUpdateOrderDto, AdminOrderDto, UpdateOrderAdminNote, UpdateOrderManager } from '../../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../../shared/dtos/admin/order-action.dto';
 import { OrderActionEnum } from '../../shared/enums/order-action.enum';
 import { FastifyReply, FastifyRequest } from 'fastify';
@@ -134,6 +134,14 @@ export class AdminOrderController {
 
     const order = await this.orderService.updateOrderAdminNote(id, noteDto.adminNote);
 
+    return {
+      data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Put(':id/manager')
+  async changeAdminManager(@Param('id') id: number, @Body() managerDto: UpdateOrderManager): Promise<ResponseDto<AdminOrderDto>> {
+    const order = await this.orderService.updateOrderManager(id, managerDto.userId);
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
     };
