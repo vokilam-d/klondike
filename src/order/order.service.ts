@@ -392,10 +392,12 @@ export class OrderService implements OnApplicationBootstrap {
     session.startTransaction();
     try {
 
-      const order = await this.orderModel.findByIdAndDelete(orderId).exec();
+      const order = await this.orderModel.findByIdAndDelete(orderId).session(session).exec();
       if (!order) {
         throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
       }
+
+      await this.cancelOrderPreActions(order, session);
       await this.customerService.removeOrderFromCustomer(order.id, session);
 
       await session.commitTransaction();
@@ -428,6 +430,13 @@ export class OrderService implements OnApplicationBootstrap {
     this.orderModel.estimatedDocumentCount().exec()
       .then(count => this.cachedOrderCount = count)
       .catch(_ => {});
+  }
+
+  private async cancelOrderPreActions(order: Order, session: ClientSession): Promise<void> {
+    for (const item of order.items) {
+      await this.inventoryService.removeFromOrdered(item.sku, order.id, session);
+      await this.productService.updateSearchDataById(item.productId, session);
+    }
   }
 
   private async shippedOrderPostActions(order: Order, session?: ClientSession): Promise<Order> {
@@ -734,10 +743,7 @@ export class OrderService implements OnApplicationBootstrap {
           if (ShippedOrderStatuses.includes(status)) {
             throw new BadRequestException(__('Cannot cancel order with status "$1"', 'ru', status));
           }
-          for (const item of order.items) {
-            await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
-            await this.productService.updateSearchDataById(item.productId, session);
-          }
+          await this.cancelOrderPreActions(order, session);
           break;
 
         case OrderStatusEnum.FINISHED:
