@@ -189,7 +189,7 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const newOrder = await this.createOrder(orderDto, lang, customer, session, 'manager', user);
-      newOrder.logs.push({ time: new Date(), text: `Created order by manager, userLogin=${user?.login}` });
+      newOrder.logs.push({ time: new Date(), text: `Created order, source=${newOrder.source}, userLogin=${user.login}` });
       newOrder.status = OrderStatusEnum.PROCESSING;
       await this.fetchShipmentStatus(newOrder);
 
@@ -251,12 +251,12 @@ export class OrderService implements OnApplicationBootstrap {
       OrderService.checkForCheckoutRules(newOrder);
 
       newOrder.status = OrderStatusEnum.NEW;
-      newOrder.logs.push({ time: new Date(), text: `Created order` });
+      newOrder.logs.push({ time: new Date(), text: `Created order, source=${newOrder.source}` });
 
       await newOrder.save({ session });
       await session.commitTransaction();
 
-      this.logger.log(`Created order by client, orderId=${newOrder.id}, customerId=${customer.id}`);
+      this.logger.log(`Created order, source=${newOrder.source}, orderId=${newOrder.id}, customerId=${customer.id}`);
 
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
@@ -325,7 +325,7 @@ export class OrderService implements OnApplicationBootstrap {
     return newOrder;
   }
 
-  async editOrder(orderId: number, orderDto: AdminAddOrUpdateOrderDto): Promise<Order> {
+  async editOrder(orderId: number, orderDto: AdminAddOrUpdateOrderDto, user: DocumentType<User>): Promise<Order> {
     return await this.updateOrderById(orderId, async (order, session) => {
       if (ShippedOrderStatuses.includes(order.status)) {
         throw new ForbiddenException(__('Cannot edit order with status "$1"', 'ru', order.status));
@@ -353,7 +353,7 @@ export class OrderService implements OnApplicationBootstrap {
         await this.setPaymentInfoByMethodId(order, newPaymentMethodId);
       }
 
-      order.logs.push({ time: new Date(), text: `Edited order` });
+      order.logs.push({ time: new Date(), text: `Edited order, userLogin=${user.login}` });
 
       return order;
     });
@@ -377,7 +377,9 @@ export class OrderService implements OnApplicationBootstrap {
     order.manager = { name: assignedManagerUser.name, userId: newOrderManagerUserId };
 
     if (newOrderManagerUserId !== oldOrderManagerUserId || user?.id.toString() !== newOrderManagerUserId) {
-      const assignedManagerMessage = `Assigned to manager ${assignedManagerUser.name}, orderId=${order.id}, userLogin=${user?.login}`;
+      const userLogin = user ? user.login : `<client>`;
+      const assignedManagerMessage = `Assigned to manager ${assignedManagerUser.name}, orderId=${order.id}, userLogin=${userLogin}`;
+
       order.logs.push({ time: new Date(), text: assignedManagerMessage });
       this.logger.log(assignedManagerMessage);
 
@@ -385,7 +387,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async deleteOrder(orderId: number): Promise<Order> {
+  async deleteOrder(orderId: number, user: DocumentType<User>): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
@@ -398,7 +400,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       await session.commitTransaction();
 
-      this.logger.log(`Deleted order #${order.id}`);
+      this.logger.log(`Deleted order #${order.id}, userLogin=${user.login}`);
 
       await this.deleteSearchData(order.id);
       this.updateCachedOrderCount();
@@ -523,7 +525,7 @@ export class OrderService implements OnApplicationBootstrap {
         const newShipmentStatus = order.shipment.status;
 
         if (newShipmentStatus !== oldShipmentStatus) {
-          order.logs.push({ time: new Date(), text: `Updated shipment status to "${order.shipment.status}" - ${order.shipment.statusDescription}` });
+          order.logs.push({ time: new Date(), text: `Updated shipment status to "${order.shipment.status}" - ${order.shipment.statusDescription}, source=system` });
         }
 
         const oldOrderStatus = order.status;
@@ -539,7 +541,7 @@ export class OrderService implements OnApplicationBootstrap {
               break;
           }
 
-          order.logs.push({ time: new Date(), text: `Updated order status by shipment status to "${order.status}" - ${order.statusDescription[adminDefaultLanguage]}` });
+          order.logs.push({ time: new Date(), text: `Updated order status by shipment status to "${order.status}" - ${order.statusDescription[adminDefaultLanguage]}, source=system` });
         }
 
         await order.save({ session });
@@ -688,7 +690,7 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async changeStatus(orderId: number, status: OrderStatusEnum) {
+  async changeStatus(orderId: number, status: OrderStatusEnum, user: DocumentType<User>) {
     return await this.updateOrderById(orderId, async (order, session) => {
 
       const assertStatus = (statusToAssert: OrderStatusEnum) => {
@@ -757,7 +759,7 @@ export class OrderService implements OnApplicationBootstrap {
       const oldStatus = order.status;
       order.status = status;
 
-      order.logs.push({ time: new Date(), text: `Changed order status from "${oldStatus}" to "${order.status}"` });
+      order.logs.push({ time: new Date(), text: `Changed order status from "${oldStatus}" to "${order.status}", userLogin=${user.login}` });
 
       return order;
     });
@@ -795,7 +797,7 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async changeOrderPaymentStatus(id: number, isPaid: boolean): Promise<Order> {
+  async changeOrderPaymentStatus(id: number, isPaid: boolean, user: DocumentType<User>): Promise<Order> {
     return await this.updateOrderById(id, async order => {
       const oldIsPaid = order.isOrderPaid;
       const oldOrderStatus = order.status;
@@ -812,10 +814,10 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       if (oldIsPaid !== order.isOrderPaid) {
-        order.logs.push({ time: new Date(), text: `Changed "isOrderPaid" from "${oldIsPaid}" to "${order.isOrderPaid}"` });
+        order.logs.push({ time: new Date(), text: `Changed "isOrderPaid" from "${oldIsPaid}" to "${order.isOrderPaid}", userLogin=${user.login}` });
       }
       if (oldOrderStatus !== order.status) {
-        order.logs.push({ time: new Date(), text: `Changed order status from "${oldOrderStatus}" to "${order.status}"` });
+        order.logs.push({ time: new Date(), text: `Changed order status from "${oldOrderStatus}" to "${order.status}", userLogin=${user.login}` });
       }
 
       return order;

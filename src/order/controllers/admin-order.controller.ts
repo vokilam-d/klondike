@@ -101,8 +101,13 @@ export class AdminOrderController {
   }
 
   @Put(':id')
-  async editOrder(@Param('id') orderId: string, @Body() orderDto: AdminAddOrUpdateOrderDto): Promise<ResponseDto<AdminOrderDto>> {
-    const updated = await this.orderService.editOrder(parseInt(orderId), orderDto);
+  async editOrder(
+    @Param('id') orderId: string,
+    @Body() orderDto: AdminAddOrUpdateOrderDto,
+    @Req() req: FastifyRequest
+  ): Promise<ResponseDto<AdminOrderDto>> {
+    const user = await this.authService.getUserFromReq(req);
+    const updated = await this.orderService.editOrder(parseInt(orderId), orderDto, user);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
@@ -110,9 +115,10 @@ export class AdminOrderController {
   }
 
   @Put(':id/status/:status')
-  async changeStatus(@Param() params: ChangeOrderStatusDto): Promise<ResponseDto<AdminOrderDto>> {
+  async changeStatus(@Param() params: ChangeOrderStatusDto, @Req() req: FastifyRequest): Promise<ResponseDto<AdminOrderDto>> {
 
-    const order = await this.orderService.changeStatus(params.id, params.status);
+    const user = await this.authService.getUserFromReq(req);
+    const order = await this.orderService.changeStatus(params.id, params.status, user);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -120,9 +126,14 @@ export class AdminOrderController {
   }
 
   @Put(':id/is-paid/:isPaid')
-  async changePaymentStatus(@Param('id') id: number, @Param('isPaid') isPaid: boolean): Promise<ResponseDto<AdminOrderDto>> {
+  async changePaymentStatus(
+    @Param('id') id: number,
+    @Param('isPaid') isPaid: boolean,
+    @Req() req: FastifyRequest
+  ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const order = await this.orderService.changeOrderPaymentStatus(id, isPaid);
+    const user = await this.authService.getUserFromReq(req);
+    const order = await this.orderService.changeOrderPaymentStatus(id, isPaid, user);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -159,8 +170,9 @@ export class AdminOrderController {
   }
 
   @Delete(':id')
-  async deleteOrder(@Param('id') orderId: number) {
-    const deleted = await this.orderService.deleteOrder(orderId);
+  async deleteOrder(@Param('id') orderId: number, @Req() req: FastifyRequest) {
+    const user = await this.authService.getUserFromReq(req);
+    const deleted = await this.orderService.deleteOrder(orderId, user);
 
     return {
       data: plainToClass(AdminOrderDto, deleted, { excludeExtraneousValues: true })
