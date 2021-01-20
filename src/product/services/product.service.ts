@@ -1745,4 +1745,61 @@ export class ProductService implements OnApplicationBootstrap {
   private static areProductCategoriesEqual(categories1: ProductCategory[], categories2: AdminProductCategoryDto[]): boolean {
     return areArraysEqual(categories1.map(c => c.id), categories2.map(c => c.id));
   }
+
+  // private async googleTranslate() {
+  //   let len = 0;
+  //   this.logger.log('start fetch');
+  //   const products = await this.productModel.find().exec();
+  //   this.logger.log('end fetch');
+  //   const sLogs = [];
+  //   const fLogs = [];
+  //   for (const product of products) {
+  //     // const name = product.name.ru;
+  //     // const description = product.variants[0].fullDescription.ru;
+  //     const mTitle = product.variants[0].metaTags.title.ru;
+  //     const mDescription = product.variants[0].metaTags.description.ru;
+  //     // const gTitle = product.variants[0].googleAdsProductTitle.ru;
+  //     try {
+  //       // let [translatedName, translatedDesc, transMTitle, transMDescription, transGTitle] = await googleTranslate([name, description, mTitle, mDescription, gTitle]);
+  //       let [transMTitle, transMDescription] = await googleTranslate([mTitle, mDescription]);
+  //       // translatedName = translatedName.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+  //       // translatedDesc = translatedDesc.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+  //       transMTitle = transMTitle.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+  //       transMDescription = transMDescription.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+  //       len += transMTitle.length;
+  //       len += transMDescription.length;
+  //       // if (transGTitle) {
+  //       //   transGTitle = transGTitle.replace(/сусалам/g, 'сусаль').replace(/Сусалам/g, 'Сусаль');
+  //       // }
+  //
+  //       // product.name.uk = translatedName;
+  //       // product.variants[0].name.uk = translatedName;
+  //       // product.variants[0].fullDescription.uk = translatedDesc;
+  //       product.variants[0].metaTags.title.uk = transMTitle;
+  //       product.variants[0].metaTags.description.uk = transMDescription;
+  //       // if (transGTitle) {
+  //       //   product.variants[0].googleAdsProductTitle.uk = transGTitle;
+  //       // }
+  //
+  //       // for (const media of product.variants[0].medias) {
+  //       //   media.altText.uk = translatedName;
+  //       // }
+  //
+  //       await product.save();
+  //       console.log(product.id);
+  //       sLogs.push(product.id);
+  //     } catch (e) {
+  //       console.log(e);
+  //       console.error('error '+ product.id);
+  //       fLogs.push(product.id);
+  //     }
+  //   }
+  //
+  //   this.logger.log('success');
+  //   this.logger.log(sLogs);
+  //   this.logger.log('error');
+  //   this.logger.log(fLogs);
+  //   console.log('length');
+  //   console.log(len);
+  // }
 }
