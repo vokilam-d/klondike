@@ -100,6 +100,16 @@ export class ProductService implements OnApplicationBootstrap {
     this.handleCurrencyUpdates();
     this.handleProductCache();
     // this.reindexAllSearchData();
+
+    // const products = await this.productModel.find().exec();
+    // for (const product of products) {
+    //   for (const variant of product.variants) {
+    //     variant.name.uk = variant.name.uk.replace(/поталу/g, 'поталі').replace(/Поталу/g, 'Поталі');
+    //   }
+    //   await product.save();
+    //   console.log('saved product', product.id);
+    // }
+    // console.log('saved all');
   }
 
   async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
