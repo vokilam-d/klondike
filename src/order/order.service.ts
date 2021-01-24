@@ -901,7 +901,7 @@ export class OrderService implements OnApplicationBootstrap {
 
     const filterQuery: FilterQuery<Order> = {
       status: { $in: ShippedOrderStatuses },
-      createdAt: {
+      shippedAt: {
         ...(dateFrom ? { $gte: dateFrom  } : { }),
         ...(dateTo ? { $lte: dateTo } : { })
       }
