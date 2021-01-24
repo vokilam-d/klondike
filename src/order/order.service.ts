@@ -791,7 +791,7 @@ export class OrderService implements OnApplicationBootstrap {
       const oldStatus = order.status;
       order.status = status;
 
-      order.logs.push({ time: new Date(), text: `Changed order status from "${oldStatus}" to "${order.status}", userLogin=${user.login}` });
+      order.logs.push({ time: new Date(), text: `Changed order status from "${oldStatus}" to "${order.status}", userLogin=${user?.login}` });
 
       return order;
     });
