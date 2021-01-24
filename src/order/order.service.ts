@@ -96,7 +96,7 @@ export class OrderService implements OnApplicationBootstrap {
       itemsFiltered = searchResponse[1];
 
     } else {
-      let conditions: FilterQuery<Order> = { };
+      const conditions: FilterQuery<Order> = { };
       if (spf.customerId) {
         conditions.customerId = spf.customerId;
       }
@@ -119,6 +119,29 @@ export class OrderService implements OnApplicationBootstrap {
       itemsFiltered,
       pagesTotal
     };
+  }
+
+  async getOrdersForChart({ from, to }: { from?: Date, to?: Date } = {}): Promise<Order[]> {
+    if (!from) {
+      from = new Date();
+      from.setDate(from.getDate() - 100);
+      from.setHours(0, 0, 0);
+    }
+
+    const conditions: FilterQuery<Order> = { };
+    conditions.createdAt = {
+      $gte: from
+    };
+    if (to) {
+      conditions.createdAt.$lte = to;
+    }
+
+    const projection: Partial<Record<keyof Order, number>> = {
+      createdAt: 1,
+      source: 1
+    };
+
+    return await this.orderModel.find(conditions, projection).exec();
   }
 
   async getOrderById(orderId: number, session: ClientSession = null): Promise<DocumentType<Order>> {

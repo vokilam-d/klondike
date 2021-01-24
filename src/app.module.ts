@@ -29,6 +29,7 @@ import { AutocompleteModule } from './autocomplete/autocomplete.module';
 import { LoggerModule } from './logger/logger.module';
 import { AdditionalServiceModule } from './additional-service/additional-service.module';
 import { AnnouncementModule } from './announcement/announcement.module';
+import { ChartModule } from './chart/chart.module';
 
 @Module({
   imports: [
@@ -72,7 +73,8 @@ import { AnnouncementModule } from './announcement/announcement.module';
     AutocompleteModule,
     LoggerModule,
     AdditionalServiceModule,
-    AnnouncementModule
+    AnnouncementModule,
+    ChartModule
   ],
   providers: [
     GlobalExceptionFilter,
