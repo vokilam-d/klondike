@@ -22,9 +22,10 @@ export class NovaPoshtaService {
     ['Запорожье', 5], ['Львов', 6], ['Кривой Рог', 7], ['Николаев', 8], ['Мариуполь', 9]
   ]);
 
-  constructor(private readonly http: HttpService,
-              private readonly shipmentSenderService: ShipmentSenderService) {
-  }
+  constructor(
+    private readonly http: HttpService,
+    private readonly shipmentSenderService: ShipmentSenderService
+  ) { }
 
   public async shipmentRecipient(spf: ClientSPFDto): Promise<ShipmentAddressDto> {
 
@@ -231,6 +232,40 @@ export class NovaPoshtaService {
     }));
   }
 
+  public async fetchSettlementCatalogPage(settlementBulkNumber: number): Promise<SettlementDto[]> {
+    const { data: response } = await this.http.post(`${this.apiUrl}Address/searchSettlements/`,
+      {
+        modelName: 'AddressGeneral',
+        calledMethod: 'getSettlements',
+        methodProperties: {
+          Page: settlementBulkNumber,
+          Warehouse: '1'
+        },
+        apiKey: this.shipmentSenderService.defaultSender.apiKey
+      }).toPromise();
+
+    return response.data.map(settlement => NovaPoshtaService.toSettlementDto(settlement));
+  }
+
+  public async fetchWarehouseCatalogPage(warehouseBulkNumber: number): Promise<WarehouseDto[]> {
+    const { data: response } = await this.http.post(`${this.apiUrl}AddressGeneral/getWarehouses`,
+      {
+        modelName: 'AddressGeneral',
+        calledMethod: 'getWarehouses',
+        methodProperties: {
+          Page: warehouseBulkNumber,
+          Limit: 500
+        },
+        apiKey: this.shipmentSenderService.defaultSender.apiKey
+      }).toPromise();
+
+    if (response.success === false) {
+      throw new BadRequestException(response.errors.join(', '));
+    }
+
+    return response.data.map(warehouse => NovaPoshtaService.toWarehouseDto(warehouse));
+  }
+
   private static toShipmentStatus(status): ShipmentStatusEnum {
     switch (status) {
       case '1':
@@ -274,26 +309,12 @@ export class NovaPoshtaService {
     }
   }
 
-  public async fetchSettlementCatalogPage(settlementBulkNumber: number): Promise<SettlementDto[]> {
-    const { data: response } = await this.http.post(`${this.apiUrl}Address/searchSettlements/`,
-      {
-        modelName: 'AddressGeneral',
-        calledMethod: 'getSettlements',
-        methodProperties: {
-          Page: settlementBulkNumber,
-          Warehouse: '1'
-        },
-        apiKey: this.shipmentSenderService.defaultSender.apiKey
-      }).toPromise();
-
-    return response.data.map(settlement => NovaPoshtaService.toSettlementDto(settlement));
-  }
-
   private static toSettlementDto(settlement): SettlementDto {
     const shortSettlementType = this.shortenSettlementType(settlement.SettlementTypeDescription);
     const ruName = settlement.DescriptionRu;
-    const priority = NovaPoshtaService.settlementPriority.has(ruName) && shortSettlementType === 'м.' ?
-      NovaPoshtaService.settlementPriority.get(ruName) : 99;
+    const priority = NovaPoshtaService.settlementPriority.has(ruName) && shortSettlementType === 'м.'
+      ? NovaPoshtaService.settlementPriority.get(ruName)
+      : 99;
     let fullName = `${shortSettlementType} ${settlement.Description} (${settlement.AreaDescription}`;
     if (settlement.RegionsDescription) {
       fullName += ', ' + settlement.RegionsDescription
@@ -302,6 +323,7 @@ export class NovaPoshtaService {
     return {
       id: settlement.Ref,
       name: settlement.Description,
+      nameWithType: `${shortSettlementType} ${settlement.Description}`,
       ruName: ruName,
       fullName: fullName,
       priority: priority
@@ -319,29 +341,10 @@ export class NovaPoshtaService {
     return '';
   }
 
-  public async fetchWarehouseCatalogPage(warehouseBulkNumber: number): Promise<WarehouseDto[]> {
-    const { data: response } = await this.http.post(`${this.apiUrl}AddressGeneral/getWarehouses`,
-      {
-        modelName: 'AddressGeneral',
-        calledMethod: 'getWarehouses',
-        methodProperties: {
-          Page: warehouseBulkNumber,
-          Limit: 500
-        },
-        apiKey: this.shipmentSenderService.defaultSender.apiKey
-      }).toPromise();
-
-    if (response.success === false) {
-      throw new BadRequestException(response.errors.join(', '));
-    }
-
-    return response.data.map(warehouse => NovaPoshtaService.toWarehouseDto(warehouse));
-  }
-
   private static toWarehouseDto(warehouse): WarehouseDto {
-
     return {
       id: warehouse.Ref,
+      name: `№${warehouse.Number}`,
       description: `№${warehouse.Number} (${this.getStreetWithHouse(warehouse)})`.replace(/\"/g, ''),
       settlementId: warehouse.SettlementRef,
       postOfficeNumber: warehouse.Number,
@@ -353,7 +356,6 @@ export class NovaPoshtaService {
   private static getStreetWithHouse(warehouse) {
     return warehouse.Description.substring(warehouse.Description.indexOf(':') + 1).trim();
   }
-
 
   private static getStreet(shortAddress): string {
     if (!shortAddress) {

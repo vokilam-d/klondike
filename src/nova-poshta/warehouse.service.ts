@@ -13,8 +13,10 @@ export class WarehouseService implements OnApplicationBootstrap {
 
   private logger = new Logger(WarehouseService.name);
 
-  constructor(private readonly novaPoshtaService: NovaPoshtaService, private readonly searchService: SearchService) {
-  }
+  constructor(
+    private readonly novaPoshtaService: NovaPoshtaService,
+    private readonly searchService: SearchService
+  ) { }
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(ElasticWarehouse.collectionName, new ElasticWarehouse());
@@ -67,5 +69,4 @@ export class WarehouseService implements OnApplicationBootstrap {
 
     this.logger.log(`Sent ${warehouseCount} warehouses to index`);
   }
-
 }

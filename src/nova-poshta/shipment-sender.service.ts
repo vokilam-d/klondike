@@ -13,8 +13,8 @@ export class ShipmentSenderService implements OnApplicationBootstrap {
   constructor(@InjectModel(ShipmentSender.name) private readonly shipmentSenderModel: ReturnModelType<typeof ShipmentSender>) {
   }
 
-  onApplicationBootstrap(): any {
-    this.updateDefaultSender();
+  async onApplicationBootstrap(): Promise<any> {
+    await this.updateDefaultSender();
   }
 
   public async getAll(): Promise<ShipmentSender[]> {

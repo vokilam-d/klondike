@@ -6,6 +6,9 @@ export class WarehouseDto {
   id: string;
 
   @Expose()
+  name: string;
+
+  @Expose()
   description: string;
 
   settlementId: string;

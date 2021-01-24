@@ -13,6 +13,7 @@ export class ElasticSettlement implements Record<keyof SettlementDto, any> {
   fullName = elasticKeywordType;
   priority = elasticIntegerType;
   name = elasticAutocompleteTextType;
+  nameWithType = elasticAutocompleteTextType;
   ruName = elasticAutocompleteTextType;
 
 }

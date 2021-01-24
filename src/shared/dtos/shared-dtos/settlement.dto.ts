@@ -11,6 +11,9 @@ export class SettlementDto {
   @Expose()
   name: string;
 
+  @Expose()
+  nameWithType: string;
+
   ruName: string;
 
   priority?: number;

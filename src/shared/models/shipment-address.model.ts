@@ -16,10 +16,16 @@ export class ShipmentAddress {
   settlement?: string;
 
   @prop()
+  settlementFull?: string;
+
+  @prop()
   addressId?: string;
 
   @prop()
   address?: string;
+
+  @prop()
+  addressFull?: string;
 
   @prop()
   phone?: string;

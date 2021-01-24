@@ -34,6 +34,12 @@ export class ShipmentAddressDto {
   @IsString()
   @TrimString()
   @IsOptional()
+  settlementFull?: string;
+
+  @Expose()
+  @IsString()
+  @TrimString()
+  @IsOptional()
   addressId?: string;
 
   @Expose()
@@ -41,6 +47,12 @@ export class ShipmentAddressDto {
   @TrimString()
   @IsOptional()
   address?: string;
+
+  @Expose()
+  @IsString()
+  @TrimString()
+  @IsOptional()
+  addressFull?: string;
 
   @Expose()
   @IsString()

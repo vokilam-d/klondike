@@ -6,6 +6,7 @@ export class ElasticWarehouse implements Record<keyof WarehouseDto, any> {
   static collectionName: string = 'warehouse';
 
   id = elasticKeywordType;
+  name = elasticKeywordType;
   description = elasticKeywordType;
   settlementId = elasticKeywordType;
   postOfficeNumber = elasticAutocompleteTextType;
