@@ -70,6 +70,7 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
   adminNote = elasticTextType;
   clientNote = elasticTextType;
   createdAt = elasticDateType;
+  shippedAt = elasticDateType;
   customerEmail = elasticTextType;
   customerFirstName = elasticTextType;
   customerId = elasticIntegerType;

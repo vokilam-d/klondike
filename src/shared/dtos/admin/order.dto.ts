@@ -118,7 +118,7 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   isOrderPaid: boolean;
 }
 
-export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Order, 'id' | 'idForCustomer' | 'paymentMethodClientName' | 'paymentMethodAdminName' | 'shippingMethodName' | 'source' | 'logs'> {
+export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Order, 'id' | 'idForCustomer' | 'paymentMethodClientName' | 'paymentMethodAdminName' | 'shippingMethodName' | 'source' | 'logs' | 'shippedAt'> {
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id: number;
@@ -153,6 +153,10 @@ export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Orde
   @Expose()
   @Type(() => AdminLogDto)
   logs: AdminLogDto[];
+
+  @Expose()
+  @Type(() => Date)
+  shippedAt: Date;
 }
 
 export class UpdateOrderAdminNote implements Pick<Order, 'adminNote'> {

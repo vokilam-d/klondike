@@ -121,7 +121,7 @@ export class OrderService implements OnApplicationBootstrap {
     };
   }
 
-  async getOrdersForChart({ from, to }: { from?: Date, to?: Date } = {}): Promise<Order[]> {
+  async getOrdersForChart({ from, to }: { from?: Date, to?: Date } = {}): Promise<Partial<Order>[]> {
     if (!from) {
       from = new Date();
       from.setDate(from.getDate() - 100);
@@ -468,6 +468,9 @@ export class OrderService implements OnApplicationBootstrap {
       await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
       await this.productService.updateSearchDataById(item.productId, session);
     }
+
+    order.shippedAt = new Date();
+    order.logs.push({ time: order.shippedAt, text: `Order has been shipped` });
 
     return order;
   }

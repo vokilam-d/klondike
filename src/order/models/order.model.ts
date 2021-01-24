@@ -46,6 +46,9 @@ export class Order {
   @prop({ default: new Date() })
   updatedAt: Date;
 
+  @prop({ default: null })
+  shippedAt: Date;
+
   @prop()
   paymentMethodId: string;
 
