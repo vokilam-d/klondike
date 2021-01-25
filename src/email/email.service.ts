@@ -58,7 +58,7 @@ export class EmailService {
   private senderName = 'Клондайк <info@klondike.com.ua>';
   private newReviewListenerEmails: string = ['denis@klondike.com.ua', 'yurii@klondike.com.ua', 'elena@klondike.com.ua', 'masloirina15@gmail.com', 'irina@klondike.com.ua', 'elena.sergeevna@klondike.com.ua'].join(',');
   private newOrderListenerEmails: string = ['denis@klondike.com.ua', 'masloirina15@gmail.com', 'irina@klondike.com.ua'].join(',');
-  private newOrderManagerAssignedListenerEmails: string = ['yurii@klondike.com.ua', 'elena@klondike.com.ua', 'kristina@klondike.com.ua'].join(',');
+  private newOrderManagerAssignedListenerEmails: string = ['yurii@klondike.com.ua', 'elena@klondike.com.ua', 'kristina@klondike.com.ua', 'kmaslo41@gmail.com'].join(',');
 
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
