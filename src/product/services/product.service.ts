@@ -136,7 +136,9 @@ export class ProductService implements OnApplicationBootstrap {
 
     spf[isEnabledProp] = true;
 
-    const filters: IFilter[] = await this.getValidAttributeFilters(spf.getNormalizedFilters());
+    const normalizedFilters = spf.getNormalizedFilters();
+    const filters: IFilter[] = await this.getValidAttributeFilters(normalizedFilters);
+    filters.push(...this.getValidNonAttributeFilters(normalizedFilters));
 
     const [adminDtos, itemsTotal] = await this.findByFilters(spf, filters);
     const attributes = await this.attributeService.getAllAttributes();
@@ -1740,6 +1742,10 @@ export class ProductService implements OnApplicationBootstrap {
     }
 
     return filters.filter(spfFilter => !!attributes.find(attribute => attribute.id === spfFilter.fieldName));
+  }
+
+  private getValidNonAttributeFilters(filters: IFilter[]): IFilter[] {
+    return filters.filter(spfFilter => spfFilter.fieldName === 'id');
   }
 
   private static areProductCategoriesEqual(categories1: ProductCategory[], categories2: AdminProductCategoryDto[]): boolean {
