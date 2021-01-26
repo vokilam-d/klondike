@@ -98,9 +98,21 @@ export class OrderItemService {
 
   async calcOrderPrices(orderItems: (OrderItem | ClientOrderItemDto)[], customer: Customer): Promise<OrderPrices> {
     const products = await this.productService.getProductsWithQtyBySkus(orderItems.map(item => item.sku));
-    let itemsCost: number = 0;
-    let itemsCostForDiscountPercentCalculation: number = 0;
+
+    // Sum of real cost of each item (based on its actual price) = (price * quantity)
+    let itemsRealCost: number = 0;
+
+    // Sum of old costs of each item (based on its old price) = (oldPrice * quantity)
+    let itemsOldCost: number = 0;
+
+    // Sum of real costs of each item, that IS applicable for discounts (isDiscountApplicable === true && oldPrice === null)
     let itemsCostApplicableForDiscount: number = 0;
+
+    // Sum of real costs of each item, that CAN be applicable for discounts (isDiscountApplicable === true)
+    // Based on this value is calculated discount percent, that later applies to __itemsCostApplicableForDiscount__ value
+    let itemsCostForDiscountPercentCalculation: number = 0;
+
+    // Sum of "discounts" of items, that have old price = (oldPrice - price)
     let oldPriceDiscounts: number = 0;
 
     for (const orderItem of orderItems) {
@@ -110,15 +122,21 @@ export class OrderItemService {
         throw new BadRequestException(__('Product with sku "$1" not found', 'ru', orderItem.sku));
       }
 
-      itemsCost += orderItem.cost;
+      const itemCost = orderItem.qty * variant.priceInDefaultCurrency;
+      itemsRealCost += itemCost;
+      if (variant.oldPriceInDefaultCurrency) {
+        itemsOldCost += orderItem.qty * variant.oldPriceInDefaultCurrency;
+      } else {
+        itemsOldCost += itemCost;
+      }
 
       if (variant.isDiscountApplicable) {
-        itemsCostForDiscountPercentCalculation += orderItem.cost;
+        itemsCostForDiscountPercentCalculation += itemCost;
 
-        if (!variant.oldPriceInDefaultCurrency) {
-          itemsCostApplicableForDiscount += orderItem.cost;
-
+        if (variant.oldPriceInDefaultCurrency) {
           oldPriceDiscounts += (variant.oldPriceInDefaultCurrency - variant.priceInDefaultCurrency);
+        } else {
+          itemsCostApplicableForDiscount += itemCost;
         }
       }
     }
@@ -134,12 +152,12 @@ export class OrderItemService {
     }
 
     const applicableDiscountValue = Math.round(itemsCostApplicableForDiscount * resultDiscountPercent / 100);
-    const totalCost = itemsCost - applicableDiscountValue;
+    const totalCost = itemsRealCost - applicableDiscountValue;
     const discountValueIncludingOldPrice = applicableDiscountValue + oldPriceDiscounts;
 
     return {
       discountValue: discountValueIncludingOldPrice,
-      itemsCost,
+      itemsCost: itemsOldCost,
       totalCost
     };
   }
