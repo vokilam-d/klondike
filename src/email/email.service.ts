@@ -232,8 +232,6 @@ export class EmailService {
         additionalServices: item.additionalServices.map(service => `${service.name[clientDefaultLanguage]} (+${service.price}грн)`)
       })),
       totalProductsCost: order.prices.itemsCost,
-      discountLabel: order.prices.discountLabel[clientDefaultLanguage],
-      discountPercent: order.prices.discountPercent,
       discountValue: order.prices.discountValue,
       clientNote: order.clientNote,
       isCallbackNeeded: order.isCallbackNeeded

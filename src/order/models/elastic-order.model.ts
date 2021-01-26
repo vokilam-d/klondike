@@ -50,12 +50,7 @@ class ElasticShipmentModel implements Record<keyof Pick<ShipmentDto, 'trackingNu
   };
 }
 
-class ElasticOrderPrices implements Record<keyof Pick<AdminOrderPricesDto, 'totalCost' | 'discountLabel' | 'discountPercent' | 'discountValue' | 'itemsCost'>, any> {
-  discountLabel = {
-    type: 'nested',
-    properties: new ElasticMultilingualText('text')
-  };
-  discountPercent = elasticIntegerType;
+class ElasticOrderPrices implements Record<keyof Pick<AdminOrderPricesDto, 'totalCost' | 'discountValue' | 'itemsCost'>, any> {
   discountValue = elasticIntegerType;
   itemsCost = elasticIntegerType;
   totalCost = elasticIntegerType;

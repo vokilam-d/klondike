@@ -317,16 +317,6 @@ export const TRANSLATIONS = {
     ru: 'Отменён',
     uk: 'Скасовано'
   },
-  'Cumulative discount': {
-    en: 'Cumulative discount',
-    ru: 'Накопительная скидка',
-    uk: 'Накопичувальна знижка'
-  },
-  'Order amount over $1 uah': {
-    en: 'Order amount over $1 uah',
-    ru: 'Сумма заказа более $1 грн',
-    uk: 'Сума замовлення більше $1 грн'
-  },
   'Cash on delivery is not available with address delivery': {
     en: 'Cash on delivery is not available with address delivery',
     ru: 'Наложенный платёж недоступен при адресной доставке',

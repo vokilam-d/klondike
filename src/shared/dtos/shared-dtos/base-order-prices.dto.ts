@@ -5,13 +5,7 @@ import { IsNumber } from 'class-validator';
 export abstract class BaseOrderPricesDto implements OrderPrices {
   @Expose()
   @IsNumber()
-  discountPercent: number;
-
-  @Expose()
-  @IsNumber()
   discountValue: number;
-
-  abstract discountLabel: any;
 
   @Expose()
   @IsNumber()

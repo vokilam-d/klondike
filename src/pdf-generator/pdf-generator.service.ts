@@ -93,8 +93,6 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
         additionalServices: item.additionalServices.map(service => `${service.name[lang]} (+${service.price}грн)`)
       })),
       totalProductsCost: order.prices.itemsCost,
-      discountLabel: order.prices.discountLabel[lang],
-      discountPercent: order.prices.discountPercent,
       discountValue: order.prices.discountValue
     };
   }
@@ -120,8 +118,6 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       })),
       productsAmount: order.items.length,
       totalProductsCost: order.prices.itemsCost,
-      discountLabel: order.prices.discountLabel[lang],
-      discountPercent: order.prices.discountPercent,
       discountValue: order.prices.discountValue,
       manager: process.env.BANK_DETAILS_NAME,
       bankAccount: process.env.BANK_DETAILS_ACCOUNT,

@@ -101,6 +101,7 @@ export class OrderItemService {
     let itemsCost: number = 0;
     let itemsCostForDiscountPercentCalculation: number = 0;
     let itemsCostApplicableForDiscount: number = 0;
+    let oldPriceDiscounts: number = 0;
 
     for (const orderItem of orderItems) {
       const product = products.find(product => product._id === orderItem.productId);
@@ -116,30 +117,28 @@ export class OrderItemService {
 
         if (!variant.oldPriceInDefaultCurrency) {
           itemsCostApplicableForDiscount += orderItem.cost;
+
+          oldPriceDiscounts += (variant.oldPriceInDefaultCurrency - variant.priceInDefaultCurrency);
         }
       }
     }
 
     const customerDiscountPercent: number = customer?.discountPercent ?? 0;
-    const [totalCostDiscountPercent, totalCostBreakpoint] = OrderItemService.getDiscountPercent(itemsCostForDiscountPercentCalculation);
+    const totalCostDiscountPercent = OrderItemService.getDiscountPercent(itemsCostForDiscountPercentCalculation);
 
-    let discountPercent: number = 0;
-    let discountLabel: MultilingualText;
+    let resultDiscountPercent: number = 0;
     if (totalCostDiscountPercent > customerDiscountPercent) {
-      discountPercent = totalCostDiscountPercent;
-      discountLabel = getTranslations('Order amount over $1 uah', totalCostBreakpoint);
+      resultDiscountPercent = totalCostDiscountPercent;
     } else if (customerDiscountPercent >= totalCostDiscountPercent) {
-      discountPercent = customerDiscountPercent;
-      discountLabel = getTranslations('Cumulative discount');
+      resultDiscountPercent = customerDiscountPercent;
     }
 
-    const discountValue = Math.round(itemsCostApplicableForDiscount * discountPercent / 100);
-    const totalCost = itemsCost - discountValue;
+    const applicableDiscountValue = Math.round(itemsCostApplicableForDiscount * resultDiscountPercent / 100);
+    const totalCost = itemsCost - applicableDiscountValue;
+    const discountValueIncludingOldPrice = applicableDiscountValue + oldPriceDiscounts;
 
     return {
-      discountPercent,
-      discountValue,
-      discountLabel,
+      discountValue: discountValueIncludingOldPrice,
       itemsCost,
       totalCost
     };
@@ -159,17 +158,15 @@ export class OrderItemService {
     return products.filter(product => product.isInStock);
   }
 
-  private static getDiscountPercent(totalCost: number): [number, number] {
+  private static getDiscountPercent(totalCost: number): number {
     let discountPercent: number = 0;
-    let breakpoint: number = 0;
 
     for (const DISCOUNT_BREAKPOINT of TOTAL_COST_DISCOUNT_BREAKPOINTS) {
       if (totalCost >= DISCOUNT_BREAKPOINT.totalCostBreakpoint) {
-        breakpoint = DISCOUNT_BREAKPOINT.totalCostBreakpoint;
         discountPercent = DISCOUNT_BREAKPOINT.discountPercent;
       }
     }
 
-    return [discountPercent, breakpoint];
+    return discountPercent;
   }
 }
