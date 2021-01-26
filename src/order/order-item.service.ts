@@ -112,7 +112,7 @@ export class OrderItemService {
     // Based on this value is calculated discount percent, that later applies to __itemsCostApplicableForDiscount__ value
     let itemsCostForDiscountPercentCalculation: number = 0;
 
-    // Sum of "discounts" of items, that have old price = (oldPrice - price)
+    // Sum of "discounts" of items, that have old price, i.e diff between old price and real price = (oldPrice - price)
     let oldPriceDiscounts: number = 0;
 
     for (const orderItem of orderItems) {
