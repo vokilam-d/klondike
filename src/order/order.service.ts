@@ -498,8 +498,8 @@ export class OrderService implements OnApplicationBootstrap {
     };
   }
 
-  async printDeliveryNote(orderId: number) {
-    const order = await this.getOrderById(orderId);
+  async printDeliveryNote(orderId: number, lang: Language) {
+    const order = await this.getOrderById(orderId, lang);
     return {
       fileName: `Видаткова накладна №${order.id}.pdf`,
       pdf: await this.pdfGeneratorService.generateDeliveryNotePdf(order.toJSON())

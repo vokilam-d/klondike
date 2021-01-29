@@ -67,8 +67,12 @@ export class AdminOrderController {
   }
 
   @Get(':id/delivery-note-pdf')
-  async printDeliveryNote(@Param('id') id: string, @Res() reply: FastifyReply<ServerResponse>) {
-    const { fileName, pdf } = await this.orderService.printDeliveryNote(parseInt(id));
+  async printDeliveryNote(
+    @Param('id') id: string,
+    @Res() reply: FastifyReply<ServerResponse>,
+    @AdminLang() lang: Language
+  ) {
+    const { fileName, pdf } = await this.orderService.printDeliveryNote(parseInt(id), lang);
 
     reply
       .type('application/pdf')
