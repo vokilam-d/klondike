@@ -51,7 +51,7 @@ export class ClientCustomerController {
 
   @Get()
   async getInfo(@Req() req, @ClientLang() lang: Language): Promise<ResponseDto<ClientCustomerDto | null>> {
-    const customer: Customer = await this.authService.getCustomerFromReq(req);
+    const customer: Customer = await this.authService.getCustomerFromReq(req, lang);
     const dto = customer ? ClientCustomerDto.transformToDto(customer, lang) : null;
 
     return {
@@ -60,13 +60,21 @@ export class ClientCustomerController {
   }
 
   @Get('google/callback')
-  googleLoginCallback(@Req() req, @Res() res: FastifyReply<ServerResponse>) {
-    return this.authService.callbackOAuthGoogle(req, res);
+  googleLoginCallback(
+    @Req() req,
+    @Res() res: FastifyReply<ServerResponse>,
+    @ClientLang() lang: Language
+  ) {
+    return this.authService.callbackOAuthGoogle(req, res, lang);
   }
 
   @Get('facebook/callback')
-  facebookLoginCallback(@Req() req, @Res() res: FastifyReply<ServerResponse>) {
-    return this.authService.callbackOAuthFacebook(req, res);
+  facebookLoginCallback(
+    @Req() req,
+    @Res() res: FastifyReply<ServerResponse>,
+    @ClientLang() lang: Language
+  ) {
+    return this.authService.callbackOAuthFacebook(req, res, lang);
   }
 
   @UseGuards(CustomerJwtGuard)
@@ -109,7 +117,7 @@ export class ClientCustomerController {
     @ClientLang() lang: Language
   ) {
     const customer: DocumentType<Customer> = req.user;
-    const updated = await this.customerService.checkAndUpdatePassword(customer, dto);
+    const updated = await this.customerService.checkAndUpdatePassword(customer, dto, lang);
     const customerDto = ClientCustomerDto.transformToDto(updated, lang);
 
     return this.authService.loginCustomerByDto(customerDto, res);
@@ -124,7 +132,7 @@ export class ClientCustomerController {
     @Res() res: FastifyReply<ServerResponse>,
     @ClientLang() lang: Language
   ) {
-    const customer = await this.customerService.clientRegisterCustomer(registerDto);
+    const customer = await this.customerService.clientRegisterCustomer(registerDto, lang);
     const customerDto = ClientCustomerDto.transformToDto(customer, lang);
 
     return this.authService.loginCustomerByDto(customerDto, res);
@@ -149,16 +157,16 @@ export class ClientCustomerController {
   }
 
   @Post('init-reset-password')
-  async initResetPassword(@Body() resetDto: InitResetPasswordDto) {
-    const result = await this.customerService.initResetPassword(resetDto);
+  async initResetPassword(@Body() resetDto: InitResetPasswordDto, @ClientLang() lang: Language) {
+    const result = await this.customerService.initResetPassword(resetDto, lang);
     return {
       data: result
     }
   }
 
   @Post('reset-password')
-  async resetPassword(@Body() resetDto: ResetPasswordDto) {
-    const result = await this.customerService.resetPassword(resetDto);
+  async resetPassword(@Body() resetDto: ResetPasswordDto, @ClientLang() lang: Language) {
+    const result = await this.customerService.resetPassword(resetDto, lang);
     return {
       data: result
     }
@@ -171,16 +179,16 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Post('send-confirm-email')
-  async sendEmailConfirmationEmail(@Req() req): Promise<ResponseDto<boolean>> {
+  async sendEmailConfirmationEmail(@Req() req: any, @ClientLang() lang: Language): Promise<ResponseDto<boolean>> {
     const customer: DocumentType<Customer> = req.user;
-    await this.customerService.sendEmailConfirmationEmail(customer);
+    await this.customerService.sendEmailConfirmationEmail(customer, lang);
 
     return { data: true };
   }
 
   @Post('confirm-email')
-  async confirmEmail(@Body() confirmEmailDto: ConfirmEmailDto): Promise<ResponseDto<boolean>> {
-    await this.customerService.initEmailConfirmation(confirmEmailDto.token);
+  async confirmEmail(@Body() confirmEmailDto: ConfirmEmailDto, @ClientLang() lang: Language): Promise<ResponseDto<boolean>> {
+    await this.customerService.initEmailConfirmation(confirmEmailDto.token, lang);
     return { data: true };
   }
 
@@ -210,7 +218,7 @@ export class ClientCustomerController {
   ): Promise<ResponseDto<ClientCustomerDto>> {
 
     const customer: DocumentType<Customer> = req.user;
-    const updated = await this.customerService.editShippingAddress(customer, addressId, addressDto);
+    const updated = await this.customerService.editShippingAddress(customer, addressId, addressDto, lang);
 
     return {
       data: ClientCustomerDto.transformToDto(updated, lang)

@@ -80,8 +80,8 @@ export class ClientProductController {
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
 
-    await this.quickReviewService.createQuickReview(productId, quickReviewDto, ipAddress, clientId, customerId);
-    const productWithQty = await this.productService.getProductWithQtyById(productId);
+    await this.quickReviewService.createQuickReview(productId, quickReviewDto, ipAddress, clientId, customerId, lang);
+    const productWithQty = await this.productService.getProductWithQtyById(productId, lang);
     const slug = productWithQty.variants.find(v => v._id.equals(variantId)).slug;
     const dto = await this.productService.transformToClientProductDto(productWithQty, slug, lang);
 

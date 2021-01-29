@@ -12,6 +12,7 @@ import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
 import { AdminOrderPricesDto } from '../../shared/dtos/admin/order-prices.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -33,13 +34,17 @@ export class AdminOrderItemController {
   }
 
   @Post('prices')
-  async calcOrderPrices(@Req() req: FastifyRequest, @Body() body: AdminCalculatePricesDto): Promise<ResponseDto<AdminOrderPricesDto>> {
+  async calcOrderPrices(
+    @Req() req: FastifyRequest,
+    @Body() body: AdminCalculatePricesDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderPricesDto>> {
     let customer: Customer;
     if (body.customerId) {
-      customer = await this.customerService.getCustomerById(body.customerId);
+      customer = await this.customerService.getCustomerById(body.customerId, lang);
     }
 
-    const prices = await this.orderItemService.calcOrderPrices(body.items, customer);
+    const prices = await this.orderItemService.calcOrderPrices(body.items, customer, lang);
 
     return {
       data: plainToClass(AdminOrderPricesDto, prices, { excludeExtraneousValues: true })

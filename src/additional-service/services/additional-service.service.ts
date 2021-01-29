@@ -14,6 +14,8 @@ import { AdminAdditionalServiceDto } from '../../shared/dtos/admin/additional-se
 import { CounterService } from '../../shared/services/counter/counter.service';
 import { GetClientAdditionalServicesQueryDto } from '../../shared/dtos/client/get-client-additional-services-query.dto';
 import { IFilter } from '../../shared/dtos/shared-dtos/spf.dto';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()
 export class AdditionalServiceService {
@@ -61,19 +63,19 @@ export class AdditionalServiceService {
     return additionalServices;
   }
 
-  async getAdditionalServiceById(id: number): Promise<DocumentType<AdditionalService>> {
+  async getAdditionalServiceById(id: number, lang: Language): Promise<DocumentType<AdditionalService>> {
     const found = await this.additionalServiceModel.findById(id).exec();
     if (!found) {
-      throw new NotFoundException(__('Additional service with id "$1" not found', 'ru', id));
+      throw new NotFoundException(__('Additional service with id "$1" not found', lang, id));
     }
 
     return found;
   }
 
-  async createAdditionalService(additionalServiceDto: AdminAdditionalServiceDto): Promise<DocumentType<AdditionalService>> {
+  async createAdditionalService(additionalServiceDto: AdminAdditionalServiceDto, lang: Language): Promise<DocumentType<AdditionalService>> {
     const found = await this.additionalServiceModel.findById(additionalServiceDto.id).exec();
     if (found) {
-      throw new BadRequestException(__('Additional service with id "$1" already exists', 'ru', additionalServiceDto.id));
+      throw new BadRequestException(__('Additional service with id "$1" already exists', lang, additionalServiceDto.id));
     }
 
     const session = await this.additionalServiceModel.db.startSession();
@@ -97,8 +99,12 @@ export class AdditionalServiceService {
     }
   }
 
-  async updateAdditionalService(additionalServiceId: string, additionalServiceDto: AdminAdditionalServiceDto): Promise<DocumentType<AdditionalService>> {
-    const additionalService = await this.getAdditionalServiceById(parseInt(additionalServiceId));
+  async updateAdditionalService(
+    additionalServiceId: string,
+    additionalServiceDto: AdminAdditionalServiceDto,
+    lang: Language
+  ): Promise<DocumentType<AdditionalService>> {
+    const additionalService = await this.getAdditionalServiceById(parseInt(additionalServiceId), lang);
 
     Object.keys(additionalServiceDto).forEach(key => additionalService[key] = additionalServiceDto[key]);
 
@@ -108,10 +114,10 @@ export class AdditionalServiceService {
     return additionalService;
   }
 
-  async deleteAdditionalService(additionalServiceId: string): Promise<DocumentType<AdditionalService>> {
+  async deleteAdditionalService(additionalServiceId: string, lang): Promise<DocumentType<AdditionalService>> {
     const deleted = await this.additionalServiceModel.findByIdAndDelete(additionalServiceId).exec();
     if (!deleted) {
-      throw new NotFoundException(__('Additional service with id "$1" not found', 'ru', additionalServiceId));
+      throw new NotFoundException(__('Additional service with id "$1" not found', lang, additionalServiceId));
     }
     this.deleteSearchData(deleted).then();
 

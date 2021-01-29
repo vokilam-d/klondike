@@ -7,6 +7,9 @@ import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dt
 import { ProductReviewService } from './product-review.service';
 import { AdminProductReviewFilterDto } from '../../shared/dtos/admin/product-review-filter.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -30,8 +33,8 @@ export class AdminProductReviewController {
   }
 
   @Get(':id')
-  async findReview(@Param('id') reviewId: string): Promise<ResponseDto<AdminProductReviewDto>> {
-    const review = await this.productReviewService.findReview(reviewId);
+  async findReview(@Param('id') reviewId: string, @AdminLang() lang: Language): Promise<ResponseDto<AdminProductReviewDto>> {
+    const review = await this.productReviewService.findReview(reviewId, lang);
     return {
       data: plainToClass(AdminProductReviewDto, review, { excludeExtraneousValues: true })
     };
@@ -45,24 +48,34 @@ export class AdminProductReviewController {
   }
 
   @Post()
-  async createProductReview(@Body() productReviewDto: AdminProductReviewDto): Promise<ResponseDto<AdminProductReviewDto>> {
-    const review = await this.productReviewService.createReview(productReviewDto);
+  async createProductReview(
+    @Body() productReviewDto: AdminProductReviewDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminProductReviewDto>> {
+    const review = await this.productReviewService.createReview(productReviewDto, lang);
     return {
       data: plainToClass(AdminProductReviewDto, review, { excludeExtraneousValues: true })
     }
   }
 
   @Put(':id')
-  async updateProductReview(@Param('id') reviewId: string, @Body() productReviewDto: AdminProductReviewDto): Promise<ResponseDto<AdminProductReviewDto>> {
-    const review = await this.productReviewService.updateReview(reviewId, productReviewDto);
+  async updateProductReview(
+    @Param('id') reviewId: string,
+    @Body() productReviewDto: AdminProductReviewDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminProductReviewDto>> {
+    const review = await this.productReviewService.updateReview(reviewId, productReviewDto, lang);
     return {
       data: plainToClass(AdminProductReviewDto, review, { excludeExtraneousValues: true })
     }
   }
 
   @Delete(':id')
-  async deleteProductReview(@Param('id') reviewId: string): Promise<ResponseDto<AdminProductReviewDto>> {
-    const review = await this.productReviewService.deleteReview(reviewId);
+  async deleteProductReview(
+    @Param('id') reviewId: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminProductReviewDto>> {
+    const review = await this.productReviewService.deleteReview(reviewId, lang);
 
     return {
       data: plainToClass(AdminProductReviewDto, review, { excludeExtraneousValues: true })

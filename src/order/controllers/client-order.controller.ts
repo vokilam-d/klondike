@@ -35,7 +35,7 @@ export class ClientOrderController {
     @Body() addOrderDto: ClientAddOrderDto,
     @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientOrderDto>> {
-    const customer = await this.authService.getCustomerFromReq(req);
+    const customer = await this.authService.getCustomerFromReq(req, lang);
     const order = await this.orderService.createOrderClient(addOrderDto, lang, customer);
     const orderDto = ClientOrderDto.transformToDto(order, lang);
 

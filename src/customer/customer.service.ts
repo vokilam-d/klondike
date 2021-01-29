@@ -35,6 +35,8 @@ import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-c
 import { CronExpression } from '@nestjs/schedule';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
 import { OrderService } from '../order/order.service';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -86,10 +88,10 @@ export class CustomerService implements OnApplicationBootstrap {
     };
   }
 
-  async getCustomerById(customerId: number, serialized: boolean = true): Promise<Customer | DocumentType<Customer>> {
+  async getCustomerById(customerId: number, lang: Language, serialized: boolean = true): Promise<Customer | DocumentType<Customer>> {
     const found = await this.customerModel.findById(customerId).exec();
     if (!found) {
-      throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
+      throw new NotFoundException(__('Customer with id "$1" not found', lang, customerId));
     }
 
     return serialized ? found.toJSON() : found;
@@ -124,19 +126,19 @@ export class CustomerService implements OnApplicationBootstrap {
     return newCustomer.toJSON();
   }
 
-  async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
+  async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, lang: Language, session?: ClientSession): Promise<Customer> {
     const foundByEmail = await this.customerModel.findOne({ email: customerDto.email }).exec();
     if (customerDto.email && foundByEmail) {
-      throw new ConflictException(__('Customer with email "$1" already exists', 'ru', customerDto.email));
+      throw new ConflictException(__('Customer with email "$1" already exists', lang, customerDto.email));
     }
 
     return this.createCustomer(customerDto, session);
   }
 
-  async clientRegisterCustomer(registerDto: ClientRegisterDto): Promise<Customer> {
+  async clientRegisterCustomer(registerDto: ClientRegisterDto, lang: Language): Promise<Customer> {
     const foundByEmail = await this.customerModel.findOne({ email: registerDto.email }).exec();
     if (foundByEmail) {
-      throw new ConflictException(__('Customer with email "$1" already exists', 'ru', registerDto.email));
+      throw new ConflictException(__('Customer with email "$1" already exists', lang, registerDto.email));
     }
 
     const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
@@ -171,14 +173,14 @@ export class CustomerService implements OnApplicationBootstrap {
     return this.createCustomer(adminCustomerDto);
   }
 
-  async updateCustomerById(customerId: number, customerDto: AdminAddOrUpdateCustomerDto): Promise<Customer> {
+  async updateCustomerById(customerId: number, customerDto: AdminAddOrUpdateCustomerDto, lang: Language): Promise<Customer> {
     const session = await this.customerModel.db.startSession();
     session.startTransaction();
 
     try {
       const found = await this.customerModel.findById(customerId).session(session).exec();
       if (!found) {
-        throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
+        throw new NotFoundException(__('Customer with id "$1" not found', lang, customerId));
       }
 
       await this.processEmailChange(found.email, customerDto.email, session);
@@ -221,10 +223,10 @@ export class CustomerService implements OnApplicationBootstrap {
     }
   }
 
-  async checkAndUpdatePassword(customer: DocumentType<Customer>, passwordDto: ClientUpdatePasswordDto): Promise<Customer> {
+  async checkAndUpdatePassword(customer: DocumentType<Customer>, passwordDto: ClientUpdatePasswordDto, lang: Language): Promise<Customer> {
     const isValidOldPassword = await this.encryptor.validate(passwordDto.currentPassword, customer.password);
     if (!isValidOldPassword) {
-      throw new BadRequestException(__('Current password is not valid', 'ru'));
+      throw new BadRequestException(__('Current password is not valid', lang));
     }
 
     return this.updatePassword(customer, passwordDto.newPassword);
@@ -237,10 +239,10 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async addAddressByCustomerId(customerId: number, address: ShipmentAddressDto, session: ClientSession): Promise<Customer> {
+  async addAddressByCustomerId(customerId: number, address: ShipmentAddressDto, lang: Language, session: ClientSession): Promise<Customer> {
     const found = await this.customerModel.findById(customerId).session(session).exec();
     if (!found) {
-      throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
+      throw new NotFoundException(__('Customer with id "$1" not found', lang, customerId));
     }
 
     return this.addCustomerAddress(found, address, session);
@@ -257,10 +259,10 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async deleteCustomer(customerId: number): Promise<Customer> {
+  async deleteCustomer(customerId: number, lang: Language): Promise<Customer> {
     const deleted = await this.customerModel.findByIdAndDelete(customerId).exec();
     if (!deleted) {
-      throw new NotFoundException(__('Customer with id "$1" not found', 'ru', customerId));
+      throw new NotFoundException(__('Customer with id "$1" not found', lang, customerId));
     }
 
     this.deleteSearchData(deleted);
@@ -352,39 +354,39 @@ export class CustomerService implements OnApplicationBootstrap {
       .catch(ex => this.logger.error(`Could not update last logged in date:`, ex));
   }
 
-  async initResetPassword(resetDto: InitResetPasswordDto) {
+  async initResetPassword(resetDto: InitResetPasswordDto, lang: Language) {
     const customer = await this.getCustomerByEmailOrPhoneNumber(resetDto.login);
     if (!customer) {
-      throw new NotFoundException(__('Customer with login "$1" not found', 'ru', resetDto.login));
+      throw new NotFoundException(__('Customer with login "$1" not found', lang, resetDto.login));
     }
 
     return this.authService.initResetCustomerPassword(customer);
   }
 
-  async initEmailConfirmation(token: string) {
+  async initEmailConfirmation(token: string, lang: Language) {
     const customerId = await this.authService.getCustomerIdByConfirmEmailToken(token);
     if (!customerId) {
-      throw new BadRequestException(__('Confirm email link is invalid or expired', 'ru'));
+      throw new BadRequestException(__('Confirm email link is invalid or expired', lang));
     }
 
     const customer = await this.customerModel.findById(customerId).exec();
     if (!customer) {
-      throw new BadRequestException(__('Confirm email link is invalid or expired', 'ru'));
+      throw new BadRequestException(__('Confirm email link is invalid or expired', lang));
     }
 
     await this.confirmCustomerEmail(customer);
     await this.authService.deleteConfirmEmailToken(token);
   }
 
-  async resetPassword(resetDto: ResetPasswordDto) {
+  async resetPassword(resetDto: ResetPasswordDto, lang: Language) {
     const customerId: number = await this.authService.getCustomerIdByResetPasswordToken(resetDto.token);
     if (!customerId) {
-      throw new BadRequestException(__('Reset password link is invalid or expired', 'ru'));
+      throw new BadRequestException(__('Reset password link is invalid or expired', lang));
     }
 
     const found = await this.customerModel.findById(customerId).exec();
     if (!found) {
-      throw new BadRequestException(__('Customer not found', 'ru'));
+      throw new BadRequestException(__('Customer not found', lang));
     }
 
     found.password = await this.encryptor.hash(resetDto.password);
@@ -394,9 +396,9 @@ export class CustomerService implements OnApplicationBootstrap {
     return true;
   }
 
-  async sendEmailConfirmationEmail(customer: Customer) {
+  async sendEmailConfirmationEmail(customer: Customer, lang: Language) {
     if (customer.isEmailConfirmed) {
-      throw new BadRequestException(__('Your email has been already confirmed', 'ru'));
+      throw new BadRequestException(__('Your email has been already confirmed', lang));
     }
 
     const token = await this.authService.createCustomerEmailConfirmToken(customer);
@@ -412,10 +414,10 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer.toJSON();
   }
 
-  async editShippingAddress(customer: DocumentType<Customer>, addressId: string, addressDto: ShipmentAddressDto): Promise<Customer> {
+  async editShippingAddress(customer: DocumentType<Customer>, addressId: string, addressDto: ShipmentAddressDto, lang: Language): Promise<Customer> {
     const foundAddressIdx = customer.addresses.findIndex(address => address._id.equals(addressId));
     if (foundAddressIdx === -1) {
-      throw new BadRequestException(__('No address with id "$1"', 'ru', addressId));
+      throw new BadRequestException(__('No address with id "$1"', lang, addressId));
     }
 
     if (addressDto.isDefault) {

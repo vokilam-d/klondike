@@ -2,8 +2,7 @@ import { TRANSLATIONS } from './translations';
 import { Language } from '../../enums/language.enum';
 import { MultilingualText } from '../../models/multilingual-text.model';
 
-// todo remove "'ru'" as union type of "lang" param, leave only "Language"
-function translate(str: keyof typeof TRANSLATIONS | string, lang: 'ru' | Language, ...args: any): string {
+function translate(str: keyof typeof TRANSLATIONS | string, lang: Language, ...args: any): string {
 
   let translation: string = TRANSLATIONS[str]?.[lang] || str;
 

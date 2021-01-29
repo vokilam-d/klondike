@@ -17,6 +17,7 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { ClientBlogCategoryListItemDto } from '../../shared/dtos/client/blog-category-list-item.dto';
 import { Language } from '../../shared/enums/language.enum';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 
 @Injectable()
 export class BlogCategoryService {
@@ -64,10 +65,10 @@ export class BlogCategoryService {
     };
   }
 
-  async getBlogCategory(id: string): Promise<DocumentType<BlogCategory>> {
+  async getBlogCategory(id: string, lang: Language): Promise<DocumentType<BlogCategory>> {
     const found = await this.blogCategoryModel.findById(id).exec();
     if (!found) {
-      throw new NotFoundException(__('Blog сategory with id "$1" not found', 'ru', id));
+      throw new NotFoundException(__('Blog сategory with id "$1" not found', lang, id));
     }
 
     return found;
@@ -93,8 +94,12 @@ export class BlogCategoryService {
     }
   }
 
-  async updateBlogCategory(blogCategoryId: string, blogCategoryDto: AdminBlogCategoryCreateOrUpdateDto): Promise<DocumentType<BlogCategory>> {
-    const blogCategory = await this.getBlogCategory(blogCategoryId);
+  async updateBlogCategory(
+    blogCategoryId: string,
+    blogCategoryDto: AdminBlogCategoryCreateOrUpdateDto,
+    lang: Language
+  ): Promise<DocumentType<BlogCategory>> {
+    const blogCategory = await this.getBlogCategory(blogCategoryId, lang);
 
     Object.keys(blogCategoryDto).forEach(key => blogCategory[key] = blogCategoryDto[key]);
 
@@ -104,10 +109,10 @@ export class BlogCategoryService {
     return blogCategory;
   }
 
-  async deleteBlogCategory(blogCategoryId: string): Promise<DocumentType<BlogCategory>> {
+  async deleteBlogCategory(blogCategoryId: string, lang: Language): Promise<DocumentType<BlogCategory>> {
     const deleted = await this.blogCategoryModel.findByIdAndDelete(blogCategoryId).exec();
     if (!deleted) {
-      throw new NotFoundException(__('Blog сategory with id "$1" not found', 'ru', blogCategoryId));
+      throw new NotFoundException(__('Blog сategory with id "$1" not found', lang, blogCategoryId));
     }
     this.deleteSearchData(deleted);
 

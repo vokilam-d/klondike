@@ -19,6 +19,7 @@ import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-it
 import { ClientAggregatedProductDto } from '../../shared/dtos/client/aggregated-product.dto';
 import { CounterService } from '../../shared/services/counter/counter.service';
 import { Language } from '../../shared/enums/language.enum';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 
 @Injectable()
 export class AggregatorService {
@@ -70,19 +71,19 @@ export class AggregatorService {
     return aggregators.map(aggregator => aggregator.toJSON());
   }
 
-  async getAggregator(id: string): Promise<DocumentType<Aggregator>> {
+  async getAggregator(id: string, lang: Language): Promise<DocumentType<Aggregator>> {
     const found = await this.aggregatorModel.findById(id).exec();
     if (!found) {
-      throw new NotFoundException(__('Aggregator with id "$1" not found', 'ru', id));
+      throw new NotFoundException(__('Aggregator with id "$1" not found', lang, id));
     }
 
     return found;
   }
 
-  async createAggregator(aggregatorDto: AdminAggregatorDto): Promise<DocumentType<Aggregator>> {
+  async createAggregator(aggregatorDto: AdminAggregatorDto, lang: Language): Promise<DocumentType<Aggregator>> {
     const found = await this.aggregatorModel.findById(aggregatorDto.id).exec();
     if (found) {
-      throw new BadRequestException(__('Aggregator with id "$1" already exists', 'ru', aggregatorDto.id));
+      throw new BadRequestException(__('Aggregator with id "$1" already exists', lang, aggregatorDto.id));
     }
 
     const session = await this.aggregatorModel.db.startSession();
@@ -106,8 +107,8 @@ export class AggregatorService {
     }
   }
 
-  async updateAggregator(aggregatorId: string, aggregatorDto: AdminAggregatorDto): Promise<DocumentType<Aggregator>> {
-    const aggregator = await this.getAggregator(aggregatorId);
+  async updateAggregator(aggregatorId: string, aggregatorDto: AdminAggregatorDto, lang: Language): Promise<DocumentType<Aggregator>> {
+    const aggregator = await this.getAggregator(aggregatorId, lang);
 
     Object.keys(aggregatorDto).forEach(key => aggregator[key] = aggregatorDto[key]);
 
@@ -117,10 +118,10 @@ export class AggregatorService {
     return aggregator;
   }
 
-  async deleteAggregator(aggregatorId: string): Promise<DocumentType<Aggregator>> {
+  async deleteAggregator(aggregatorId: string, lang: Language): Promise<DocumentType<Aggregator>> {
     const deleted = await this.aggregatorModel.findByIdAndDelete(aggregatorId).exec();
     if (!deleted) {
-      throw new NotFoundException(__('Aggregator with id "$1" not found', 'ru', aggregatorId));
+      throw new NotFoundException(__('Aggregator with id "$1" not found', lang, aggregatorId));
     }
     this.deleteSearchData(deleted);
 

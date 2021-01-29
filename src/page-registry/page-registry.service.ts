@@ -7,6 +7,8 @@ import { __ } from '../shared/helpers/translate/translate.function';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../shared/services/events/events.service';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class PageRegistryService implements OnApplicationBootstrap {
@@ -32,11 +34,11 @@ export class PageRegistryService implements OnApplicationBootstrap {
     return this.registryModel.find();
   }
 
-  async getPageType(slug: string): Promise<string> {
+  async getPageType(slug: string, lang: Language): Promise<string> {
     const found = await this.registryModel.findOne({ slug });
 
     if (!found) {
-      throw new NotFoundException(__('Page with url "$1" not found', 'ru', slug));
+      throw new NotFoundException(__('Page with url "$1" not found', lang, slug));
     }
 
     return found.type;

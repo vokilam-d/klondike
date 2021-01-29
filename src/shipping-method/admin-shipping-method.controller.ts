@@ -4,6 +4,9 @@ import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
 import { plainToClass } from 'class-transformer';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../shared/decorators/lang.decorator';
+import { Language } from '../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -30,8 +33,12 @@ export class AdminShippingMethodController {
   }
 
   @Put(':id')
-  async updateShippingMethod(@Param('id') id: string, @Body() methodDto: AdminShippingMethodDto): Promise<ResponseDto<AdminShippingMethodDto>> {
-    const updated = await this.shippingMethodService.updateShippingMethod(id, methodDto);
+  async updateShippingMethod(
+    @Param('id') id: string,
+    @Body() methodDto: AdminShippingMethodDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminShippingMethodDto>> {
+    const updated = await this.shippingMethodService.updateShippingMethod(id, methodDto, lang);
 
     return {
       data: plainToClass(AdminShippingMethodDto, updated, { excludeExtraneousValues: true })
@@ -39,8 +46,11 @@ export class AdminShippingMethodController {
   }
 
   @Delete(':id')
-  async deleteShippingMethod(@Param('id') id: string): Promise<ResponseDto<AdminShippingMethodDto>> {
-    const deleted = await this.shippingMethodService.deleteShippingMethod(id);
+  async deleteShippingMethod(
+    @Param('id') id: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminShippingMethodDto>> {
+    const deleted = await this.shippingMethodService.deleteShippingMethod(id, lang);
 
     return {
       data: plainToClass(AdminShippingMethodDto, deleted, { excludeExtraneousValues: true })

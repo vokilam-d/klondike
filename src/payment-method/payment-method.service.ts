@@ -4,6 +4,8 @@ import { ReturnModelType } from '@typegoose/typegoose';
 import { AdminPaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { PaymentMethod } from './models/payment-method.model';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class PaymentMethodService {
@@ -34,10 +36,10 @@ export class PaymentMethodService {
     return method;
   }
 
-  async updatePaymentMethod(methodId: string, methodDto: AdminPaymentMethodDto): Promise<PaymentMethod> {
+  async updatePaymentMethod(methodId: string, methodDto: AdminPaymentMethodDto, lang: Language): Promise<PaymentMethod> {
     const found = await this.paymentMethodModel.findById(methodId);
     if (!found) {
-      throw new NotFoundException(__('Payment method with id "$1" not found', 'ru', methodId));
+      throw new NotFoundException(__('Payment method with id "$1" not found', lang, methodId));
     }
 
     Object.keys(methodDto).forEach(key => found[key] = methodDto[key]);
@@ -45,10 +47,10 @@ export class PaymentMethodService {
     return found;
   }
 
-  async deletePaymentMethod(methodId: string): Promise<PaymentMethod> {
+  async deletePaymentMethod(methodId: string, lang: Language): Promise<PaymentMethod> {
     const deleted = await this.paymentMethodModel.findByIdAndDelete(methodId);
     if (!deleted) {
-      throw new NotFoundException(__('Payment method with id "$1" not found', 'ru', methodId));
+      throw new NotFoundException(__('Payment method with id "$1" not found', lang, methodId));
     }
 
     return deleted;

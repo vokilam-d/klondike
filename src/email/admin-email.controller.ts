@@ -8,6 +8,7 @@ import { ProductReviewService } from '../reviews/product-review/product-review.s
 import { StoreReviewService } from '../reviews/store-review/store-review.service';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 
 @UseGuards(UserJwtGuard)
 @Controller('admin/email-test')
@@ -27,11 +28,11 @@ export class AdminEmailController {
     @AdminLang() lang: Language
   ) {
     if (!body.email) {
-      throw new BadRequestException(__('No "email" in payload', 'ru'));
+      throw new BadRequestException(__('No "email" in payload', lang));
     }
 
     const orderService = this.moduleRef.get(OrderService, { strict: false });
-    const order = await orderService.getOrderById(parseInt(orderId as any));
+    const order = await orderService.getOrderById(parseInt(orderId as any), lang);
     order.customerEmail = body.email;
 
     return this.emailService.sendOrderConfirmationEmail(order, lang, false);
@@ -48,16 +49,16 @@ export class AdminEmailController {
     }
 
     const orderService = this.moduleRef.get(OrderService, { strict: false });
-    const order = await orderService.getOrderById(parseInt(orderId as any));
+    const order = await orderService.getOrderById(parseInt(orderId as any), lang);
     order.customerEmail = body.email;
 
     return this.emailService.sendLeaveReviewEmail(order, lang);
   }
 
   @Post('email-confirmation')
-  async sendEmailConfirmationEmail(@Body() body: any) {
+  async sendEmailConfirmationEmail(@Body() body: any, @AdminLang() lang: Language) {
     if (!body.email) {
-      throw new BadRequestException(__('No "email" in payload', 'ru'));
+      throw new BadRequestException(__('No "email" in payload', lang));
     }
 
     const customer: any = {
@@ -70,9 +71,9 @@ export class AdminEmailController {
   }
 
   @Post('registration-success')
-  async sendRegisterSuccessEmail(@Body() body: any) {
+  async sendRegisterSuccessEmail(@Body() body: any, @AdminLang() lang: Language) {
     if (!body.email) {
-      throw new BadRequestException(__('No "email" in payload', 'ru'));
+      throw new BadRequestException(__('No "email" in payload', lang));
     }
 
     const customer: any = {
@@ -85,9 +86,9 @@ export class AdminEmailController {
   }
 
   @Post('reset-password')
-  async sendResetPasswordEmail(@Body() body: any) {
+  async sendResetPasswordEmail(@Body() body: any, @AdminLang() lang: Language) {
     if (!body.email) {
-      throw new BadRequestException(__('No "email" in payload', 'ru'));
+      throw new BadRequestException(__('No "email" in payload', lang));
     }
 
     const customer: any = {
@@ -100,25 +101,33 @@ export class AdminEmailController {
   }
 
   @Post('new-product-review/:reviewId')
-  async sendTestNewProductReviewEmail(@Param('reviewId') reviewId: string, @Body() body: any) {
+  async sendTestNewProductReviewEmail(
+    @Param('reviewId') reviewId: string,
+    @Body() body: any,
+    @AdminLang() lang: Language
+  ) {
     if (!body.email) {
-      throw new BadRequestException(__('No "email" in payload', 'ru'));
+      throw new BadRequestException(__('No "email" in payload', lang));
     }
 
     const productReviewService = this.moduleRef.get(ProductReviewService, { strict: false });
-    const review = await productReviewService.findReview(reviewId);
+    const review = await productReviewService.findReview(reviewId, lang);
 
     return this.emailService.sendNewProductReviewEmail(review, body.email);
   }
 
   @Post('new-store-review/:reviewId')
-  async sendTestNewStoreReviewEmail(@Param('reviewId') reviewId: string, @Body() body: any) {
+  async sendTestNewStoreReviewEmail(
+    @Param('reviewId') reviewId: string,
+    @Body() body: any,
+    @AdminLang() lang: Language
+  ) {
     if (!body.email) {
-      throw new BadRequestException(__('No "email" in payload', 'ru'));
+      throw new BadRequestException(__('No "email" in payload', lang));
     }
 
     const storeReviewService = this.moduleRef.get(StoreReviewService, { strict: false });
-    const review = await storeReviewService.findReview(reviewId);
+    const review = await storeReviewService.findReview(reviewId, lang);
 
     return this.emailService.sendNewStoreReviewEmail(review, body.email);
   }

@@ -24,6 +24,9 @@ import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { AdminCategoryTreeItemDto } from '../shared/dtos/admin/category-tree-item.dto';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../shared/decorators/lang.decorator';
+import { Language } from '../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -51,8 +54,11 @@ export class AdminCategoryController {
   }
 
   @Get(':id')
-  async getCategory(@Param('id') id: string): Promise<ResponseDto<AdminCategoryDto>> {
-    const category = await this.categoryService.getCategoryById(id);
+  async getCategory(
+    @Param('id') id: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminCategoryDto>> {
+    const category = await this.categoryService.getCategoryById(id, lang);
     return {
       data: plainToClass(AdminCategoryDto, category.toJSON(), { excludeExtraneousValues: true })
     };
@@ -74,8 +80,11 @@ export class AdminCategoryController {
   }
 
   @Post('action/reorder')
-  async reorderCategories(@Body() reorderDto: ReorderDto): Promise<ResponseDto<AdminCategoryTreeItemDto[]>> {
-    await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position);
+  async reorderCategories(
+    @Body() reorderDto: ReorderDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminCategoryTreeItemDto[]>> {
+    await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position, lang);
     const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, adminTree: true });
     return {
       data: plainToClass(AdminCategoryTreeItemDto, tree, { excludeExtraneousValues: true })
@@ -83,16 +92,23 @@ export class AdminCategoryController {
   }
 
   @Put(':id')
-  async updateCategory(@Param('id') id: string, @Body() category: AdminAddOrUpdateCategoryDto): Promise<ResponseDto<AdminCategoryDto>> {
-    const updated = await this.categoryService.updateCategory(parseInt(id), category);
+  async updateCategory(
+    @Param('id') id: string,
+    @Body() category: AdminAddOrUpdateCategoryDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminCategoryDto>> {
+    const updated = await this.categoryService.updateCategory(parseInt(id), category, lang);
     return {
       data: plainToClass(AdminCategoryDto, updated, { excludeExtraneousValues: true })
     };
   }
 
   @Delete(':id')
-  async deleteCategory(@Param('id') id: number): Promise<ResponseDto<AdminCategoryDto>> {
-    const deleted = await this.categoryService.deleteCategory(id);
+  async deleteCategory(
+    @Param('id') id: number,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminCategoryDto>> {
+    const deleted = await this.categoryService.deleteCategory(id, lang);
     return {
       data: plainToClass(AdminCategoryDto, deleted, { excludeExtraneousValues: true })
     };

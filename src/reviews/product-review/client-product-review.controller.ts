@@ -48,8 +48,11 @@ export class ClientProductReviewController {
 
   @Get('from-email')
   @Redirect('/')
-  async createReviewFromEmail(@Query() productReviewDto: ClientAddProductReviewDto) {
-    const productSlug = await this.productReviewService.createReviewFromEmail(productReviewDto);
+  async createReviewFromEmail(
+    @Query() productReviewDto: ClientAddProductReviewDto,
+    @ClientLang() lang: Language
+  ) {
+    const productSlug = await this.productReviewService.createReviewFromEmail(productReviewDto, lang);
 
     return {
       url: `/${productSlug}?review-from-email=true`
@@ -89,7 +92,7 @@ export class ClientProductReviewController {
       };
     });
 
-    const review = await this.productReviewService.createReview({ ...productReviewDto, medias: multilangMedias as AdminMediaDto[] });
+    const review = await this.productReviewService.createReview({ ...productReviewDto, medias: multilangMedias as AdminMediaDto[] }, lang);
 
     return {
       data: ClientProductReviewDto.transformToDto(review, lang)
@@ -108,7 +111,7 @@ export class ClientProductReviewController {
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
 
-    const review = await this.productReviewService.addComment(parseInt(reviewId), commentDto, customerId);
+    const review = await this.productReviewService.addComment(parseInt(reviewId), commentDto, customerId, lang);
     const adminDto = this.productReviewService.transformReviewToDto(review, undefined, clientId, customerId, true);
 
     return {
@@ -117,16 +120,18 @@ export class ClientProductReviewController {
   }
 
   @Post(':id/vote')
-  async createVote(@Req() req,
-                   @Param('id') reviewId: string,
-                   @IpAddress() ipAddress: string | null,
-                   @ClientId() clientId: string
+  async createVote(
+    @Req() req,
+    @Param('id') reviewId: string,
+    @IpAddress() ipAddress: string | null,
+    @ClientId() clientId: string,
+    @ClientLang() lang: Language
   ): Promise<ResponseDto<boolean>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
 
-    await this.productReviewService.createVote(parseInt(reviewId), ipAddress, clientId, customerId);
+    await this.productReviewService.createVote(parseInt(reviewId), ipAddress, clientId, customerId, lang);
 
     return {
       data: true
@@ -134,16 +139,18 @@ export class ClientProductReviewController {
   }
 
   @Post(':id/downvote')
-  async removeVote(@Req() req,
-                   @Param('id') reviewId: string,
-                   @IpAddress() ipAddress: string | null,
-                   @ClientId() clientId: string
+  async removeVote(
+    @Req() req,
+    @Param('id') reviewId: string,
+    @IpAddress() ipAddress: string | null,
+    @ClientId() clientId: string,
+    @ClientLang() lang: Language
   ): Promise<ResponseDto<boolean>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
 
-    await this.productReviewService.removeVote(parseInt(reviewId), ipAddress, clientId, customerId);
+    await this.productReviewService.removeVote(parseInt(reviewId), ipAddress, clientId, customerId, lang);
     return {
       data: true
     }

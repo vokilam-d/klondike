@@ -12,6 +12,8 @@ import { plainToClass } from 'class-transformer';
 import { EmailService } from '../../email/email.service';
 import { ClientAddStoreReviewDto } from '../../shared/dtos/client/add-store-review.dto';
 import { EventsService } from '../../shared/services/events/events.service';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()
 export class StoreReviewService extends BaseReviewService<StoreReview, AdminStoreReviewDto> implements OnApplicationBootstrap {
@@ -32,8 +34,8 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
     super();
   }
 
-  async createReview(reviewDto: AdminStoreReviewDto | ClientAddStoreReviewDto): Promise<AdminStoreReviewDto> {
-    const review = await super.createReview((reviewDto as AdminStoreReviewDto));
+  async createReview(reviewDto: AdminStoreReviewDto | ClientAddStoreReviewDto, lang: Language): Promise<AdminStoreReviewDto> {
+    const review = await super.createReview((reviewDto as AdminStoreReviewDto), lang);
     this.emailService.sendNewStoreReviewEmail(review).then();
     return review;
   }

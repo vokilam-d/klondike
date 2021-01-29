@@ -30,8 +30,8 @@ export class AdminOrderController {
   }
 
   @Get(':id')
-  async getOrder(@Param('id') id: string): Promise<ResponseDto<AdminOrderDto>> {
-    const order = await this.orderService.getOrderById(parseInt(id));
+  async getOrder(@Param('id') id: string, @AdminLang() lang: Language): Promise<ResponseDto<AdminOrderDto>> {
+    const order = await this.orderService.getOrderById(parseInt(id), lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -53,8 +53,12 @@ export class AdminOrderController {
   }
 
   @Get(':id/invoice-pdf')
-  async printInvoice(@Param('id') id: string, @Res() reply: FastifyReply<ServerResponse>) {
-    const { fileName, pdf } = await this.orderService.printInvoice(parseInt(id));
+  async printInvoice(
+    @Param('id') id: string,
+    @Res() reply: FastifyReply<ServerResponse>,
+    @AdminLang() lang: Language
+  ) {
+    const { fileName, pdf } = await this.orderService.printInvoice(parseInt(id), lang);
 
     reply
       .type('application/pdf')
@@ -87,12 +91,15 @@ export class AdminOrderController {
   }
 
   @Post(':id/actions/:actionName')
-  async performAction(@Param() params: OrderActionDto): Promise<ResponseDto<AdminOrderDto>> {
+  async performAction(
+    @Param() params: OrderActionDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
     let order: AdminOrderDto;
 
     switch (params.actionName) {
       case OrderActionEnum.UPDATE_SHIPMENT_STATUS:
-        order = await this.orderService.updateShipmentStatus(params.id);
+        order = await this.orderService.updateShipmentStatus(params.id, lang);
         break;
     }
 
@@ -102,8 +109,12 @@ export class AdminOrderController {
   }
 
   @Post(':id/internet-document')
-  async createInternetDocument(@Param('id') orderId: string, @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
-    const order = await this.orderService.createInternetDocument(parseInt(orderId), shipmentDto);
+  async createInternetDocument(
+    @Param('id') orderId: string,
+    @Body() shipmentDto: ShipmentDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
+    const order = await this.orderService.createInternetDocument(parseInt(orderId), shipmentDto, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -114,10 +125,11 @@ export class AdminOrderController {
   async editOrder(
     @Param('id') orderId: string,
     @Body() orderDto: AdminAddOrUpdateOrderDto,
-    @Req() req: FastifyRequest
+    @Req() req: FastifyRequest,
+    @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
     const user = await this.authService.getUserFromReq(req);
-    const updated = await this.orderService.editOrder(parseInt(orderId), orderDto, user);
+    const updated = await this.orderService.editOrder(parseInt(orderId), orderDto, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
@@ -125,10 +137,14 @@ export class AdminOrderController {
   }
 
   @Put(':id/status/:status')
-  async changeStatus(@Param() params: ChangeOrderStatusDto, @Req() req: FastifyRequest): Promise<ResponseDto<AdminOrderDto>> {
+  async changeStatus(
+    @Param() params: ChangeOrderStatusDto,
+    @Req() req: FastifyRequest,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
 
     const user = await this.authService.getUserFromReq(req);
-    const order = await this.orderService.changeStatus(params.id, params.status, user);
+    const order = await this.orderService.changeStatus(params.id, params.status, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -139,11 +155,12 @@ export class AdminOrderController {
   async changePaymentStatus(
     @Param('id') id: number,
     @Param('isPaid') isPaid: boolean,
-    @Req() req: FastifyRequest
+    @Req() req: FastifyRequest,
+    @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
     const user = await this.authService.getUserFromReq(req);
-    const order = await this.orderService.changeOrderPaymentStatus(id, isPaid, user);
+    const order = await this.orderService.changeOrderPaymentStatus(id, isPaid, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -151,9 +168,13 @@ export class AdminOrderController {
   }
 
   @Put(':id/note')
-  async changeAdminNote(@Param('id') id: number, @Body() noteDto: UpdateOrderAdminNote): Promise<ResponseDto<AdminOrderDto>> {
+  async changeAdminNote(
+    @Param('id') id: number,
+    @Body() noteDto: UpdateOrderAdminNote,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const order = await this.orderService.updateOrderAdminNote(id, noteDto.adminNote);
+    const order = await this.orderService.updateOrderAdminNote(id, noteDto.adminNote, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -161,18 +182,25 @@ export class AdminOrderController {
   }
 
   @Put(':id/manager')
-  async changeAdminManager(@Param('id') id: number, @Body() managerDto: UpdateOrderManager): Promise<ResponseDto<AdminOrderDto>> {
-    const order = await this.orderService.updateOrderManager(id, managerDto.userId);
+  async changeAdminManager(
+    @Param('id') id: number,
+    @Body() managerDto: UpdateOrderManager,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
+    const order = await this.orderService.updateOrderManager(id, managerDto.userId, lang);
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
     };
   }
 
   @Patch(':id/shipment')
-  async editOrderShipment(@Param('id') orderId: number,
-                          @Body() shipmentDto: ShipmentDto): Promise<ResponseDto<AdminOrderDto>> {
+  async editOrderShipment(
+    @Param('id') orderId: number,
+    @Body() shipmentDto: ShipmentDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto);
+    const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto, lang);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
@@ -180,9 +208,13 @@ export class AdminOrderController {
   }
 
   @Delete(':id')
-  async deleteOrder(@Param('id') orderId: number, @Req() req: FastifyRequest) {
+  async deleteOrder(
+    @Param('id') orderId: number,
+    @Req() req: FastifyRequest,
+    @AdminLang() lang: Language
+  ) {
     const user = await this.authService.getUserFromReq(req);
-    const deleted = await this.orderService.deleteOrder(orderId, user);
+    const deleted = await this.orderService.deleteOrder(orderId, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, deleted, { excludeExtraneousValues: true })

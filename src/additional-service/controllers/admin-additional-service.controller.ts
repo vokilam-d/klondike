@@ -19,6 +19,9 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminAdditionalServiceDto } from '../../shared/dtos/admin/additional-service.dto';
 import { plainToClass } from 'class-transformer';
 import { AdditionalServiceService } from '../services/additional-service.service';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -34,8 +37,11 @@ export class AdminAdditionalServiceController {
   }
 
   @Get(':id')
-  async getAdditionalService(@Param('id') additionalServiceId: string): Promise<ResponseDto<AdminAdditionalServiceDto>> {
-    const additionalService = await this.additionalServiceService.getAdditionalServiceById(parseInt(additionalServiceId));
+  async getAdditionalService(
+    @Param('id') additionalServiceId: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAdditionalServiceDto>> {
+    const additionalService = await this.additionalServiceService.getAdditionalServiceById(parseInt(additionalServiceId), lang);
 
     return {
       data: plainToClass(AdminAdditionalServiceDto, additionalService, { excludeExtraneousValues: true })
@@ -44,8 +50,11 @@ export class AdminAdditionalServiceController {
 
 
   @Post()
-  async createAdditionalService(@Body() additionalServiceDto: AdminAdditionalServiceDto): Promise<ResponseDto<AdminAdditionalServiceDto>> {
-    const created = await this.additionalServiceService.createAdditionalService(additionalServiceDto);
+  async createAdditionalService(
+    @Body() additionalServiceDto: AdminAdditionalServiceDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAdditionalServiceDto>> {
+    const created = await this.additionalServiceService.createAdditionalService(additionalServiceDto, lang);
 
     return {
       data: plainToClass(AdminAdditionalServiceDto, created, { excludeExtraneousValues: true })
@@ -55,10 +64,11 @@ export class AdminAdditionalServiceController {
   @Put(':id')
   async updateAdditionalService(
     @Param('id') additionalServiceId: string,
-    @Body() additionalServiceDto: AdminAdditionalServiceDto
+    @Body() additionalServiceDto: AdminAdditionalServiceDto,
+    @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminAdditionalServiceDto>> {
 
-    const updated = await this.additionalServiceService.updateAdditionalService(additionalServiceId, additionalServiceDto);
+    const updated = await this.additionalServiceService.updateAdditionalService(additionalServiceId, additionalServiceDto, lang);
 
     return {
       data: plainToClass(AdminAdditionalServiceDto, updated, { excludeExtraneousValues: true })
@@ -66,8 +76,11 @@ export class AdminAdditionalServiceController {
   }
 
   @Delete(':id')
-  async deleteAdditionalService(@Param('id') additionalServiceId: string): Promise<ResponseDto<AdminAdditionalServiceDto>> {
-    const deleted = await this.additionalServiceService.deleteAdditionalService(additionalServiceId);
+  async deleteAdditionalService(
+    @Param('id') additionalServiceId: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAdditionalServiceDto>> {
+    const deleted = await this.additionalServiceService.deleteAdditionalService(additionalServiceId, lang);
 
     return {
       data: plainToClass(AdminAdditionalServiceDto, deleted, { excludeExtraneousValues: true })

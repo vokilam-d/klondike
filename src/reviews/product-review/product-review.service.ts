@@ -18,6 +18,8 @@ import { EmailService } from '../../email/email.service';
 import { ProductQuickReviewService } from './product-quick-review.service';
 import { ProductQuickReview } from './models/product-quick-review.model';
 import { EventsService } from '../../shared/services/events/events.service';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 interface RatingInfo {
   allReviewsCount: number;
@@ -60,29 +62,30 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     return found.map(review => this.transformReviewToDto(review, ipAddress, userId, customerId, onlyEnabled));
   }
 
-  async createReview(reviewDto: AdminProductReviewDto | ClientAddProductReviewDto): Promise<AdminProductReviewDto> {
-    const review = await super.createReview((reviewDto as AdminProductReviewDto), (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session));
+  async createReview(reviewDto: AdminProductReviewDto | ClientAddProductReviewDto, lang: Language): Promise<AdminProductReviewDto> {
+    const review = await super.createReview((reviewDto as AdminProductReviewDto), lang, (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, lang, session));
     this.emailService.sendNewProductReviewEmail(review).then();
     return review;
   }
 
-  async createReviewFromEmail(reviewDto: ClientAddProductReviewDto): Promise<string> {
-    await this.createReview(reviewDto);
-    const product = await this.productService.getProductWithQtyById(reviewDto.productId);
+  async createReviewFromEmail(reviewDto: ClientAddProductReviewDto, lang: Language): Promise<string> {
+    await this.createReview(reviewDto, lang);
+    const product = await this.productService.getProductWithQtyById(reviewDto.productId, lang);
     return product.variants.find(v => v._id.equals(reviewDto.productVariantId)).slug;
   }
 
-  async updateReview(reviewId: string, reviewDto: AdminProductReviewDto): Promise<AdminProductReviewDto> {
-    const onEnable = (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session);
-    const onDisable = (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session);
+  async updateReview(reviewId: string, reviewDto: AdminProductReviewDto, lang: Language): Promise<AdminProductReviewDto> {
+    const onEnable = (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, lang, session);
+    const onDisable = (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, lang, session);
 
-    return super.updateReview(reviewId, reviewDto, { onEnable, onDisable });
+    return super.updateReview(reviewId, reviewDto, lang, { onEnable, onDisable });
   }
 
-  async deleteReview(reviewId: string): Promise<AdminProductReviewDto> {
+  async deleteReview(reviewId: string, lang: Language): Promise<AdminProductReviewDto> {
     return super.deleteReview(
       reviewId,
-      (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, session)
+      lang,
+      (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, lang, session)
     );
   }
 
@@ -110,10 +113,15 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     return plainToClass(AdminProductReviewDto, transformed, { excludeExtraneousValues: true });
   }
 
-  async addComment(reviewId: number, commentDto: ClientAddProductReviewCommentDto, customerId: any): Promise<DocumentType<ProductReview>> {
+  async addComment(
+    reviewId: number,
+    commentDto: ClientAddProductReviewCommentDto,
+    customerId: any,
+    lang: Language
+  ): Promise<DocumentType<ProductReview>> {
     const review = await this.reviewModel.findById(reviewId).exec();
     if (!review) {
-      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
+      throw new NotFoundException(__('Review with id "$1" not found', lang, reviewId));
     }
 
     const comment = new ProductReviewComment();

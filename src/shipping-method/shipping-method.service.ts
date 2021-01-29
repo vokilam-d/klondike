@@ -4,6 +4,8 @@ import { ReturnModelType } from '@typegoose/typegoose';
 import { ShippingMethod } from './models/shipping-method.model';
 import { AdminShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class ShippingMethodService {
@@ -34,11 +36,11 @@ export class ShippingMethodService {
     return method;
   }
 
-  async updateShippingMethod(methodId: string, methodDto: AdminShippingMethodDto): Promise<ShippingMethod> {
+  async updateShippingMethod(methodId: string, methodDto: AdminShippingMethodDto, lang: Language): Promise<ShippingMethod> {
 
     const found = await this.shippingMethodModel.findById(methodId).exec();
     if (!found) {
-      throw new NotFoundException(__('Shipping method with id "$1" not found', 'ru', methodId));
+      throw new NotFoundException(__('Shipping method with id "$1" not found', lang, methodId));
     }
 
     Object.keys(methodDto).forEach(key => found[key] = methodDto[key]);
@@ -46,10 +48,10 @@ export class ShippingMethodService {
     return found;
   }
 
-  async deleteShippingMethod(methodId: string): Promise<ShippingMethod> {
+  async deleteShippingMethod(methodId: string, lang: Language): Promise<ShippingMethod> {
     const deleted = await this.shippingMethodModel.findByIdAndDelete(methodId).exec();
     if (!deleted) {
-      throw new NotFoundException(__('Shipping method with id "$1" not found', 'ru', methodId));
+      throw new NotFoundException(__('Shipping method with id "$1" not found', lang, methodId));
     }
 
     return deleted;

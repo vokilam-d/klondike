@@ -4,6 +4,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { authConstants } from '../auth-constants';
 import { __ } from '../../shared/helpers/translate/translate.function';
+import { clientDefaultLanguage } from '../../shared/constants';
 
 @Injectable()
 export class CustomerLocalStrategy extends PassportStrategy(Strategy, authConstants.CUSTOMER_LOCAL_STRATEGY_NAME) {
@@ -15,7 +16,7 @@ export class CustomerLocalStrategy extends PassportStrategy(Strategy, authConsta
   async validate(login: string, password: string) {
     const customer = await this.authService.validateCustomer(login, password);
     if (!customer) {
-      throw new NotFoundException(__(`User with such login and password is not registred`, 'ru'));
+      throw new NotFoundException(__(`User with such login and password is not registred`, clientDefaultLanguage));
     }
 
     return customer;

@@ -7,6 +7,8 @@ import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { ReservedInventory } from './models/reserved-inventory.model';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { FileLogger } from '../logger/file-logger.service';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class InventoryService {
@@ -25,22 +27,22 @@ export class InventoryService {
     return newInventory;
   }
 
-  async getInventory(sku: string, session?: ClientSession): Promise<DocumentType<Inventory>> {
+  async getInventory(sku: string, lang: Language, session?: ClientSession): Promise<DocumentType<Inventory>> {
     const found = await this.inventoryModel.findOne({ sku }).session(session).exec();
     if (!found) {
-      throw new NotFoundException(__('Cannot find inventory with sku "$1"', 'ru', sku));
+      throw new NotFoundException(__('Cannot find inventory with sku "$1"', lang, sku));
     }
 
     return found;
   }
 
-  async updateInventory(oldSku: string, newSku: string = oldSku, qty: number, session: ClientSession) {
+  async updateInventory(oldSku: string, newSku: string = oldSku, qty: number, lang: Language, session: ClientSession) {
 
-    const found = await this.getInventory(oldSku, session);
+    const found = await this.getInventory(oldSku, lang, session);
 
     const qtyInOrders = found.reserved.reduce((sum, ordered) => sum + ordered.qty, 0);
     if (qtyInOrders > qty) {
-      throw new ForbiddenException(__('Cannot set quantity: more than "$1" items are ordered', 'ru', qty));
+      throw new ForbiddenException(__('Cannot set quantity: more than "$1" items are ordered', lang, qty));
     }
 
     found.qtyInStock = qty;

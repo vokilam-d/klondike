@@ -6,6 +6,8 @@ import { ProductQuickReview } from './models/product-quick-review.model';
 import { AddProductQuickReviewDto } from '../../shared/dtos/client/add-product-quick-review.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { ClientSession } from 'mongoose';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()
 export class ProductQuickReviewService {
@@ -20,7 +22,8 @@ export class ProductQuickReviewService {
     quickReviewDto: AddProductQuickReviewDto,
     ip: string,
     userId: string,
-    customerId: number
+    customerId: number,
+    lang: Language
   ): Promise<ProductQuickReview> {
 
     const alreadyVoted = await this.quickReviewModel.findOne({
@@ -31,7 +34,7 @@ export class ProductQuickReviewService {
     }).exec();
 
     if (alreadyVoted) {
-      throw new ForbiddenException(__('You have already rated this product', 'ru'));
+      throw new ForbiddenException(__('You have already rated this product', lang));
     }
 
     const session = await this.quickReviewModel.db.startSession();
@@ -45,7 +48,7 @@ export class ProductQuickReviewService {
         userId
       }], { session });
 
-      await this.productService.updateReviewRating(productId, session);
+      await this.productService.updateReviewRating(productId, lang, session);
       await session.commitTransaction();
 
       return quickReview;

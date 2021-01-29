@@ -21,6 +21,7 @@ import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -38,8 +39,11 @@ export class AdminAttributeController {
   }
 
   @Get(':id')
-  async getAttribute(@Param('id') attributeId: string): Promise<ResponseDto<AdminAttributeDto>> {
-    const attribute = await this.attributeService.getAttribute(attributeId);
+  async getAttribute(
+    @Param('id') attributeId: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAttributeDto>> {
+    const attribute = await this.attributeService.getAttribute(attributeId, lang);
 
     return {
       data: plainToClass(AdminAttributeDto, attribute, { excludeExtraneousValues: true })
@@ -72,8 +76,11 @@ export class AdminAttributeController {
   }
 
   @Delete(':id')
-  async deleteAttribute(@Param('id') attributeId: string): Promise<ResponseDto<AdminAttributeDto>> {
-    const deleted = await this.attributeService.deleteAttribute(attributeId);
+  async deleteAttribute(
+    @Param('id') attributeId: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAttributeDto>> {
+    const deleted = await this.attributeService.deleteAttribute(attributeId, lang);
 
     return {
       data: plainToClass(AdminAttributeDto, deleted, { excludeExtraneousValues: true })

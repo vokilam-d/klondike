@@ -5,13 +5,16 @@ import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AddOrUpdateUserDto } from '../shared/dtos/admin/user.dto';
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { Language } from '../shared/enums/language.enum';
 
 @Injectable()
 export class UserService {
 
-  constructor(@InjectModel(User.name) private readonly userModel: ReturnModelType<typeof User>,
-              private readonly encryptor: EncryptorService) {
-  }
+  constructor(
+    @InjectModel(User.name) private readonly userModel: ReturnModelType<typeof User>,
+    private readonly encryptor: EncryptorService
+  ) { }
 
   async getUserById(id: string): Promise<DocumentType<User>> {
     return this.userModel.findById(id).exec();
@@ -34,10 +37,10 @@ export class UserService {
     return newUser.toJSON();
   }
 
-  async updateUser(userId: string, userDto: AddOrUpdateUserDto): Promise<User> {
+  async updateUser(userId: string, userDto: AddOrUpdateUserDto, lang: Language): Promise<User> {
     const user = await this.userModel.findById(userId).exec();
     if (!user) {
-      throw new NotFoundException(__('User with id "$1" not found', 'ru', userId));
+      throw new NotFoundException(__('User with id "$1" not found', lang, userId));
     }
 
     user.password = await this.encryptor.hash(userDto.password);
@@ -45,10 +48,10 @@ export class UserService {
     return user.toJSON();
   }
 
-  async deleteUser(userId: string): Promise<User> {
+  async deleteUser(userId: string, lang: Language): Promise<User> {
     const deleted = await this.userModel.findByIdAndDelete(userId).exec();
     if (!deleted) {
-      throw new NotFoundException(__('User with id "$1" not found', 'ru', userId));
+      throw new NotFoundException(__('User with id "$1" not found', lang, userId));
     }
     return deleted.toJSON();
   }

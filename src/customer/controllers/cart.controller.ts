@@ -28,7 +28,7 @@ export class CartController {
   ): Promise<ResponseDto<ClientOrderItemDto>> {
     const orderItem = await this.orderItemService.createOrderItem({ ...body, omitReserved: false }, lang, true);
 
-    const customer = await this.authService.getCustomerFromReq(req);
+    const customer = await this.authService.getCustomerFromReq(req, lang);
     if (customer) {
       this.customerService.upsertToCart(customer, orderItem).then();
     }
@@ -44,8 +44,8 @@ export class CartController {
     @Body() body: ClientCalculatePricesDto,
     @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientOrderPricesDto>> {
-    const customer = await this.authService.getCustomerFromReq(req);
-    const prices = await this.orderItemService.calcOrderPrices(body.items, customer);
+    const customer = await this.authService.getCustomerFromReq(req, lang);
+    const prices = await this.orderItemService.calcOrderPrices(body.items, customer, lang);
 
     return {
       data: ClientOrderPricesDto.transformToDto(prices, lang)
@@ -53,8 +53,12 @@ export class CartController {
   }
 
   @Delete(':sku')
-  async deleteOrderItem(@Req() req: FastifyRequest, @Param('sku') sku: string): Promise<ResponseDto<boolean>> {
-    const customer = await this.authService.getCustomerFromReq(req);
+  async deleteOrderItem(
+    @Req() req: FastifyRequest,
+    @Param('sku') sku: string,
+    @ClientLang() lang: Language
+  ): Promise<ResponseDto<boolean>> {
+    const customer = await this.authService.getCustomerFromReq(req, lang);
     if (customer) {
       await this.customerService.deleteFromCart(customer, sku);
     }

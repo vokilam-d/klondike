@@ -20,6 +20,8 @@ import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instanc
 import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-expression-early-morning.function';
 import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticBlogPost } from '../models/elastic-blog-post.model';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()
 export class BlogPostService {
@@ -61,8 +63,8 @@ export class BlogPostService {
     }
   }
 
-  async updateBlogPost(blogPostId: string, blogPostDto: AdminBlogPostCreateOrUpdateDto): Promise<DocumentType<BlogPost>> {
-    const blogPost = await this.getBlogPost(blogPostId);
+  async updateBlogPost(blogPostId: string, blogPostDto: AdminBlogPostCreateOrUpdateDto, lang: Language): Promise<DocumentType<BlogPost>> {
+    const blogPost = await this.getBlogPost(blogPostId, lang);
 
     Object.keys(blogPostDto).forEach(key => blogPost[key] = blogPostDto[key]);
 
@@ -72,10 +74,10 @@ export class BlogPostService {
     return blogPost;
   }
 
-  async deleteBlogPost(blogPostId: string): Promise<DocumentType<BlogPost>> {
+  async deleteBlogPost(blogPostId: string, lang: Language): Promise<DocumentType<BlogPost>> {
     const deleted = await this.blogPostModel.findByIdAndDelete(blogPostId).exec();
     if (!deleted) {
-      throw new NotFoundException(__('Blog post with id "$1" not found', 'ru', blogPostId));
+      throw new NotFoundException(__('Blog post with id "$1" not found', lang, blogPostId));
     }
     this.deleteSearchData(deleted);
 
@@ -125,10 +127,10 @@ export class BlogPostService {
       .sort(((a, b) => b.sortOrder - a.sortOrder));
   }
 
-  async getBlogPost(id: string): Promise<DocumentType<BlogPost>> {
+  async getBlogPost(id: string, lang: Language): Promise<DocumentType<BlogPost>> {
     const found = await this.blogPostModel.findById(id).exec();
     if (!found) {
-      throw new NotFoundException(__('Blog post with id "$1" not found', 'ru', id));
+      throw new NotFoundException(__('Blog post with id "$1" not found', lang, id));
     }
 
     return found;

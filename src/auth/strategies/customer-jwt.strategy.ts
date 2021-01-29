@@ -6,6 +6,7 @@ import { authConstants } from '../auth-constants';
 import { Customer } from '../../customer/models/customer.model';
 import { CustomerService } from '../../customer/customer.service';
 import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
+import { clientDefaultLanguage } from '../../shared/constants';
 
 @Injectable()
 export class CustomerJwtStrategy extends PassportStrategy(Strategy, authConstants.CUSTOMER_JWT_STRATEGY_NAME) {
@@ -27,8 +28,8 @@ export class CustomerJwtStrategy extends PassportStrategy(Strategy, authConstant
     });
   }
 
-  async validate(payload: any): Promise<Customer> {
-    const customer = await this.customerService.getCustomerById(payload.sub, false);
+  async validate(payload: any, lang = clientDefaultLanguage): Promise<Customer> {
+    const customer = await this.customerService.getCustomerById(payload.sub, lang, false);
     return customer;
   }
 }

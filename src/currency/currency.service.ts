@@ -8,6 +8,8 @@ import { CronExpression } from '@nestjs/schedule';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { Subject } from 'rxjs';
 import { __ } from '../shared/helpers/translate/translate.function';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { Language } from '../shared/enums/language.enum';
 
 interface ExchangeRate {
   ccy: 'EUR' | 'USD';
@@ -62,10 +64,10 @@ export class CurrencyService {
     return converted;
   }
 
-  async updateCurrency(currencyCode: CurrencyCodeEnum, currencyDto: AdminCurrencyDto): Promise<Currency> {
+  async updateCurrency(currencyCode: CurrencyCodeEnum, currencyDto: AdminCurrencyDto, lang: Language): Promise<Currency> {
     const found = await this.currencyModel.findById(currencyCode);
     if (!found) {
-      throw new NotFoundException(__('Currency "$1" not found', 'ru', currencyCode));
+      throw new NotFoundException(__('Currency "$1" not found', lang, currencyCode));
     }
 
     Object.keys(currencyDto).forEach(key => found[key] = currencyDto[key]);
@@ -77,14 +79,14 @@ export class CurrencyService {
     return foundJson;
   }
 
-  async getExchangeRate(currencyCode: CurrencyCodeEnum): Promise<number> {
+  async getExchangeRate(currencyCode: CurrencyCodeEnum, lang: Language): Promise<number> {
     if (currencyCode === DEFAULT_CURRENCY) {
       return 1;
     }
 
     const foundCurrency = await this.currencyModel.findById(currencyCode).exec();
     if (!foundCurrency) {
-      throw new NotFoundException(__('Currency "$1" not found', 'ru', currencyCode));
+      throw new NotFoundException(__('Currency "$1" not found', lang, currencyCode));
     }
 
     return foundCurrency.exchangeRate;

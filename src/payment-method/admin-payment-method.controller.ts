@@ -4,6 +4,9 @@ import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminPaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { plainToClass } from 'class-transformer';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../shared/decorators/lang.decorator';
+import { Language } from '../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -31,8 +34,12 @@ export class AdminPaymentMethodController {
   }
 
   @Put(':id')
-  async updatePaymentMethod(@Param('id') id: string, @Body() methodDto: AdminPaymentMethodDto): Promise<ResponseDto<AdminPaymentMethodDto>> {
-    const updated = await this.paymentMethodService.updatePaymentMethod(id, methodDto);
+  async updatePaymentMethod(
+    @Param('id') id: string,
+    @Body() methodDto: AdminPaymentMethodDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminPaymentMethodDto>> {
+    const updated = await this.paymentMethodService.updatePaymentMethod(id, methodDto, lang);
 
     return {
       data: plainToClass(AdminPaymentMethodDto, updated, { excludeExtraneousValues: true })
@@ -40,8 +47,8 @@ export class AdminPaymentMethodController {
   }
 
   @Delete(':id')
-  async deletePaymentMethod(@Param('id') id: string): Promise<ResponseDto<AdminPaymentMethodDto>> {
-    const deleted = await this.paymentMethodService.deletePaymentMethod(id);
+  async deletePaymentMethod(@Param('id') id: string, @AdminLang() lang: Language): Promise<ResponseDto<AdminPaymentMethodDto>> {
+    const deleted = await this.paymentMethodService.deletePaymentMethod(id, lang);
 
     return {
       data: plainToClass(AdminPaymentMethodDto, deleted, { excludeExtraneousValues: true })

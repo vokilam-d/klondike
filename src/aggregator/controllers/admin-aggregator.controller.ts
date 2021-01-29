@@ -19,6 +19,9 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminAggregatorDto } from '../../shared/dtos/admin/aggregator.dto';
 import { plainToClass } from 'class-transformer';
 import { AggregatorService } from '../services/aggregator.service';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -34,8 +37,11 @@ export class AdminAggregatorController {
   }
 
   @Get(':id')
-  async getAggregator(@Param('id') aggregatorId: string): Promise<ResponseDto<AdminAggregatorDto>> {
-    const aggregator = await this.aggregatorService.getAggregator(aggregatorId);
+  async getAggregator(
+    @Param('id') aggregatorId: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAggregatorDto>> {
+    const aggregator = await this.aggregatorService.getAggregator(aggregatorId, lang);
 
     return {
       data: plainToClass(AdminAggregatorDto, aggregator, { excludeExtraneousValues: true })
@@ -43,8 +49,11 @@ export class AdminAggregatorController {
   }
 
   @Post()
-  async createAggregator(@Body() aggregatorDto: AdminAggregatorDto): Promise<ResponseDto<AdminAggregatorDto>> {
-    const created = await this.aggregatorService.createAggregator(aggregatorDto);
+  async createAggregator(
+    @Body() aggregatorDto: AdminAggregatorDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAggregatorDto>> {
+    const created = await this.aggregatorService.createAggregator(aggregatorDto, lang);
 
     return {
       data: plainToClass(AdminAggregatorDto, created, { excludeExtraneousValues: true })
@@ -54,10 +63,11 @@ export class AdminAggregatorController {
   @Put(':id')
   async updateAggregator(
     @Param('id') aggregatorId: string,
-    @Body() aggregatorDto: AdminAggregatorDto
+    @Body() aggregatorDto: AdminAggregatorDto,
+    @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminAggregatorDto>> {
 
-    const updated = await this.aggregatorService.updateAggregator(aggregatorId, aggregatorDto);
+    const updated = await this.aggregatorService.updateAggregator(aggregatorId, aggregatorDto, lang);
 
     return {
       data: plainToClass(AdminAggregatorDto, updated, { excludeExtraneousValues: true })
@@ -65,8 +75,11 @@ export class AdminAggregatorController {
   }
 
   @Delete(':id')
-  async deleteAggregator(@Param('id') aggregatorId: string): Promise<ResponseDto<AdminAggregatorDto>> {
-    const deleted = await this.aggregatorService.deleteAggregator(aggregatorId);
+  async deleteAggregator(
+    @Param('id') aggregatorId: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAggregatorDto>> {
+    const deleted = await this.aggregatorService.deleteAggregator(aggregatorId, lang);
 
     return {
       data: plainToClass(AdminAggregatorDto, deleted, { excludeExtraneousValues: true })

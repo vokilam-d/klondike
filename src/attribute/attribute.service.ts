@@ -15,6 +15,7 @@ import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expres
 import { sortByMultilingualLabel } from '../shared/helpers/sort-by-label.function';
 import { Language } from '../shared/enums/language.enum';
 import { EventsService } from '../shared/services/events/events.service';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {
@@ -73,10 +74,10 @@ export class AttributeService implements OnApplicationBootstrap {
     return attributes.map(attr => attr.toJSON());
   }
 
-  async getAttribute(id: string): Promise<DocumentType<Attribute>> {
+  async getAttribute(id: string, lang: Language): Promise<DocumentType<Attribute>> {
     const found = await this.attributeModel.findById(id).exec();
     if (!found) {
-      throw new NotFoundException(__('Attribute with id "$1" not found', 'ru', id));
+      throw new NotFoundException(__('Attribute with id "$1" not found', lang, id));
     }
 
     return found;
@@ -85,7 +86,7 @@ export class AttributeService implements OnApplicationBootstrap {
   async createAttribute(attributeDto: AdminCreateAttributeDto, lang: Language): Promise<DocumentType<Attribute>> {
     const found = await this.attributeModel.findById(attributeDto.id).exec();
     if (found) {
-      throw new BadRequestException(__('Attribute with id "$1" already exists', 'ru', attributeDto.id));
+      throw new BadRequestException(__('Attribute with id "$1" already exists', lang, attributeDto.id));
     }
 
     this.checkDtoForErrors(attributeDto);
@@ -106,7 +107,7 @@ export class AttributeService implements OnApplicationBootstrap {
   }
 
   async updateAttribute(attributeId: string, attributeDto: AdminUpdateAttributeDto, lang: Language): Promise<DocumentType<Attribute>> {
-    const attribute = await this.getAttribute(attributeId);
+    const attribute = await this.getAttribute(attributeId, lang);
 
     this.checkDtoForErrors(attributeDto);
 
@@ -120,10 +121,10 @@ export class AttributeService implements OnApplicationBootstrap {
     return attribute;
   }
 
-  async deleteAttribute(attributeId: string): Promise<DocumentType<Attribute>> {
+  async deleteAttribute(attributeId: string, lang: Language): Promise<DocumentType<Attribute>> {
     const deleted = await this.attributeModel.findByIdAndDelete(attributeId).exec();
     if (!deleted) {
-      throw new NotFoundException(__('Attribute with id "$1" not found', 'ru', attributeId));
+      throw new NotFoundException(__('Attribute with id "$1" not found', lang, attributeId));
     }
     this.deleteSearchData(deleted);
     this.onAttributesUpdate();

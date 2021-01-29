@@ -32,6 +32,7 @@ import { areMultilingualTextsEqual } from '../shared/helpers/are-multilingual-te
 import { CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../shared/services/events/events.service';
 import { Dictionary } from '../shared/helpers/dictionary';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 
 @Injectable()
 export class CategoryService implements OnApplicationBootstrap {
@@ -115,12 +116,12 @@ export class CategoryService implements OnApplicationBootstrap {
     return treeItems;
   }
 
-  async getCategoryById(id: string | number, session?: ClientSession): Promise<DocumentType<Category>> {
+  async getCategoryById(id: string | number, lang: Language, session?: ClientSession): Promise<DocumentType<Category>> {
     id = parseInt(id as string);
 
     const found = await this.categoryModel.findById(id).session(session).exec();
     if (!found) {
-      throw new NotFoundException(__('Category with id "$1" not found', 'ru', id));
+      throw new NotFoundException(__('Category with id "$1" not found', lang, id));
     }
 
     return found;
@@ -135,7 +136,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
     const found = await this.categoryModel.findOne({ slug, isEnabled: true }).exec();
     if (!found) {
-      throw new NotFoundException(__('Category with slug "$1" not found', 'ru', slug));
+      throw new NotFoundException(__('Category with slug "$1" not found', lang, slug));
     }
 
     const siblingCategories: ClientLinkedCategoryDto[] = [];
@@ -234,12 +235,12 @@ export class CategoryService implements OnApplicationBootstrap {
     }
   }
 
-  async updateCategory(categoryId: number, categoryDto: AdminAddOrUpdateCategoryDto): Promise<Category> {
+  async updateCategory(categoryId: number, categoryDto: AdminAddOrUpdateCategoryDto, lang: Language): Promise<Category> {
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();
 
     try {
-      const category = await this.getCategoryById(categoryId, session);
+      const category = await this.getCategoryById(categoryId, lang, session);
       const oldSlug = category.slug;
       const oldName: MultilingualText = { ...category.name };
       const oldIsEnabled = category.isEnabled;
@@ -290,14 +291,14 @@ export class CategoryService implements OnApplicationBootstrap {
     }
   }
 
-  async deleteCategory(categoryId: number): Promise<DocumentType<Category>> {
+  async deleteCategory(categoryId: number, lang: Language): Promise<DocumentType<Category>> {
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();
 
     try {
       const deleted = await this.categoryModel.findByIdAndDelete(categoryId).session(session).exec();
       if (deleted === null) {
-        throw new NotFoundException(__('Category with id "$1" not found', 'ru', categoryId));
+        throw new NotFoundException(__('Category with id "$1" not found', lang, categoryId));
       }
 
       await this.categoryModel
@@ -384,12 +385,12 @@ export class CategoryService implements OnApplicationBootstrap {
     return breadcrumbs;
   }
 
-  async reoderCategory(categoryId: number, targetCategoryId: number, position: ReorderPositionEnum) {
+  async reoderCategory(categoryId: number, targetCategoryId: number, position: ReorderPositionEnum, lang: Language) {
     const category = await this.categoryModel.findById(categoryId).exec();
-    if (!category) { throw new BadRequestException(__('Category with id "$1" not found', 'ru', categoryId)); }
+    if (!category) { throw new BadRequestException(__('Category with id "$1" not found', lang, categoryId)); }
 
     const targetCategory = await this.categoryModel.findById(targetCategoryId).exec();
-    if (!targetCategory) { throw new BadRequestException(__('Category with id "$1" not found', 'ru', targetCategoryId)); }
+    if (!targetCategory) { throw new BadRequestException(__('Category with id "$1" not found', lang, targetCategoryId)); }
 
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();

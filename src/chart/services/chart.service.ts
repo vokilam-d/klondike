@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OrderService } from '../../order/order.service';
 import { OrderChartDataDto } from '../../shared/dtos/admin/order-chart-data.dto';
+import { adminDefaultLanguage } from '../../shared/constants';
 
 @Injectable()
 export class ChartService {
@@ -15,7 +16,7 @@ export class ChartService {
     const defaultData: { [date: string]: OrderChartDataDto } = {};
 
     const chartDataObj = orders.reduce((acc, order) => {
-      const date = order.createdAt.toLocaleDateString('ru', { timeZone: 'Europe/Kiev' });
+      const date = order.createdAt.toLocaleDateString(adminDefaultLanguage, { timeZone: 'Europe/Kiev' });
       if (!acc[date]) {
         const data = new OrderChartDataDto();
         data.date = date;

@@ -5,6 +5,9 @@ import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { plainToClass } from 'class-transformer';
 import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../shared/decorators/lang.decorator';
+import { Language } from '../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -35,10 +38,11 @@ export class AdminCurrencyController {
   @Put(':currencyCode')
   async updateCurrency(
     @Param('currencyCode') currencyCode: CurrencyCodeEnum,
-    @Body() currencyDto: AdminCurrencyDto
+    @Body() currencyDto: AdminCurrencyDto,
+    @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminCurrencyDto>> {
 
-    const currency = await this.currencyService.updateCurrency(currencyCode, currencyDto);
+    const currency = await this.currencyService.updateCurrency(currencyCode, currencyDto, lang);
 
     return {
       data: plainToClass(AdminCurrencyDto, currency, { excludeExtraneousValues: true })

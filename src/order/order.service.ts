@@ -144,23 +144,24 @@ export class OrderService implements OnApplicationBootstrap {
     return await this.orderModel.find(conditions, projection).exec();
   }
 
-  async getOrderById(orderId: number, session: ClientSession = null): Promise<DocumentType<Order>> {
+  async getOrderById(orderId: number, lang: Language, session: ClientSession = null): Promise<DocumentType<Order>> {
     const found = await this.orderModel.findById(orderId).session(session).exec();
     if (!found) {
-      throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
+      throw new NotFoundException(__('Order with id "$1" not found', lang, orderId));
     }
     return found;
   }
 
   async updateOrderById(
     orderId: number,
+    lang: Language,
     updateOrderFunction: (order: DocumentType<Order>, session?: ClientSession) => Promise<DocumentType<Order>>
   ): Promise<DocumentType<Order>> {
 
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
-      const order = await this.getOrderById(orderId, session);
+      const order = await this.getOrderById(orderId, lang, session);
       const updatedOrder = await updateOrderFunction(order, session);
 
       await updatedOrder.save({ session });
@@ -185,9 +186,9 @@ export class OrderService implements OnApplicationBootstrap {
       let address = orderDto.shipment.recipient;
       if (orderDto.customerId) {
         if (orderDto.shouldSaveAddress) {
-          customer = await this.customerService.addAddressByCustomerId(orderDto.customerId, address, session);
+          customer = await this.customerService.addAddressByCustomerId(orderDto.customerId, address, lang, session);
         } else {
-          customer = await this.customerService.getCustomerById(orderDto.customerId);
+          customer = await this.customerService.getCustomerById(orderDto.customerId, lang);
         }
 
       } else {
@@ -205,7 +206,7 @@ export class OrderService implements OnApplicationBootstrap {
           customerDto.phoneNumber = orderDto.customerPhoneNumber;
           customerDto.addresses = [{ ...address, isDefault: true }];
 
-          customer = await this.customerService.adminCreateCustomer(customerDto, session);
+          customer = await this.customerService.adminCreateCustomer(customerDto, lang, session);
         }
 
         orderDto.customerId = customer.id;
@@ -261,17 +262,17 @@ export class OrderService implements OnApplicationBootstrap {
         customerDto.phoneNumber = orderDto.address.phone;
         customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
 
-        customer = await this.customerService.adminCreateCustomer(customerDto, session) as any;
+        customer = await this.customerService.adminCreateCustomer(customerDto, lang, session) as any;
       }
 
       const shipment = new ShipmentDto();
       shipment.recipient = orderDto.address;
 
-      const prices = await this.orderItemService.calcOrderPrices(orderDto.items, customer);
+      const prices = await this.orderItemService.calcOrderPrices(orderDto.items, customer, lang);
 
       const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, lang, customer, session, 'client');
 
-      OrderService.checkForCheckoutRules(newOrder);
+      OrderService.checkForCheckoutRules(newOrder, lang);
 
       newOrder.status = OrderStatusEnum.NEW;
       newOrder.logs.push({ time: new Date(), text: `Created order, source=${newOrder.source}` });
@@ -334,7 +335,7 @@ export class OrderService implements OnApplicationBootstrap {
       newOrder.items[i] = await this.orderItemService.createOrderItem({ sku, qty, additionalServiceIds, omitReserved: false }, lang, false, product, variant);
 
       await this.inventoryService.addToOrdered(sku, qty, newOrder.id, session);
-      await this.productService.updateSearchDataById(productId, session);
+      await this.productService.updateSearchDataById(productId, lang, session);
     }
 
     await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
@@ -348,19 +349,19 @@ export class OrderService implements OnApplicationBootstrap {
     return newOrder;
   }
 
-  async editOrder(orderId: number, orderDto: AdminAddOrUpdateOrderDto, user: DocumentType<User>): Promise<Order> {
-    return await this.updateOrderById(orderId, async (order, session) => {
+  async editOrder(orderId: number, orderDto: AdminAddOrUpdateOrderDto, user: DocumentType<User>, lang: Language): Promise<Order> {
+    return await this.updateOrderById(orderId, lang, async (order, session) => {
       if (ShippedOrderStatuses.includes(order.status)) {
-        throw new ForbiddenException(__('Cannot edit order with status "$1"', 'ru', order.status));
+        throw new ForbiddenException(__('Cannot edit order with status "$1"', lang, order.status));
       }
 
       for (const item of order.items) {
         await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
-        await this.productService.updateSearchDataById(item.productId, session);
+        await this.productService.updateSearchDataById(item.productId, lang, session);
       }
       for (const item of orderDto.items) {
         await this.inventoryService.addToOrdered(item.sku, item.qty, orderId, session);
-        await this.productService.updateSearchDataById(item.productId, session);
+        await this.productService.updateSearchDataById(item.productId, lang, session);
       }
 
       const oldTrackingNumber = order.shipment.trackingNumber;
@@ -410,17 +411,17 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async deleteOrder(orderId: number, user: DocumentType<User>): Promise<Order> {
+  async deleteOrder(orderId: number, user: DocumentType<User>, lang: Language): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
 
       const order = await this.orderModel.findByIdAndDelete(orderId).session(session).exec();
       if (!order) {
-        throw new NotFoundException(__('Order with id "$1" not found', 'ru', orderId));
+        throw new NotFoundException(__('Order with id "$1" not found', lang, orderId));
       }
 
-      await this.cancelOrderPreActions(order, session);
+      await this.cancelOrderPreActions(order, lang, session);
       await this.customerService.removeOrderFromCustomer(order.id, session);
 
       await session.commitTransaction();
@@ -455,18 +456,18 @@ export class OrderService implements OnApplicationBootstrap {
       .catch(_ => {});
   }
 
-  private async cancelOrderPreActions(order: Order, session: ClientSession): Promise<void> {
+  private async cancelOrderPreActions(order: Order, lang: Language, session: ClientSession): Promise<void> {
     for (const item of order.items) {
       await this.inventoryService.removeFromOrdered(item.sku, order.id, session);
-      await this.productService.updateSearchDataById(item.productId, session);
+      await this.productService.updateSearchDataById(item.productId, lang, session);
     }
   }
 
-  private async shippedOrderPostActions(order: Order, session?: ClientSession): Promise<Order> {
+  private async shippedOrderPostActions(order: Order, lang: Language, session: ClientSession): Promise<Order> {
     for (const item of order.items) {
       await this.inventoryService.removeFromOrderedAndStock(item.sku, item.qty, order.id, session);
       await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
-      await this.productService.updateSearchDataById(item.productId, session);
+      await this.productService.updateSearchDataById(item.productId, lang, session);
     }
 
     order.shippedAt = new Date();
@@ -482,15 +483,15 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async printOrder(orderId: number, lang: Language) {
-    const order = await this.getOrderById(orderId);
+    const order = await this.getOrderById(orderId, lang);
     return {
       fileName: `Заказ №${order.idForCustomer}.pdf`,
       pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON(), lang)
     };
   }
 
-  async printInvoice(orderId: number) {
-    const order = await this.getOrderById(orderId);
+  async printInvoice(orderId: number, lang: Language) {
+    const order = await this.getOrderById(orderId, lang);
     return {
       fileName: `Рахунок-фактура №${order.id}.pdf`,
       pdf: await this.pdfGeneratorService.generateInvoicePdf(order.toJSON())
@@ -538,7 +539,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
-  public async findWithNotFinalStatusesAndUpdate(): Promise<Order[]> {
+  public async findWithNotFinalStatusesAndUpdate(lang: Language = adminDefaultLanguage): Promise<Order[]> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
@@ -577,7 +578,7 @@ export class OrderService implements OnApplicationBootstrap {
         if (newOrderStatus !== oldOrderStatus) {
           switch (newOrderStatus) {
             case OrderStatusEnum.SHIPPED:
-              await this.shippedOrderPostActions(order, session);
+              await this.shippedOrderPostActions(order, lang, session);
               break;
             case OrderStatusEnum.FINISHED:
               await this.finishedOrderPostActions(order, session);
@@ -602,8 +603,8 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
-    return await this.updateOrderById(orderId, async order => {
+  public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto, lang: Language): Promise<Order> {
+    return await this.updateOrderById(orderId, lang, async order => {
       const oldTrackingNumber = order.shipment.trackingNumber;
       const newTrackingNumber = shipmentDto.trackingNumber;
       OrderService.patchShipmentData(order.shipment, shipmentDto);
@@ -669,7 +670,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async getPaymentDetails(orderId: number, lang: Language): Promise<OnlinePaymentDetailsDto> {
-    const order = await this.getOrderById(orderId);
+    const order = await this.getOrderById(orderId, lang);
 
     const merchantAccount = process.env.MERCHANT_ACCOUNT;
     const merchantDomainName = process.env.MERCHANT_DOMAIN;
@@ -726,19 +727,19 @@ export class OrderService implements OnApplicationBootstrap {
     this.logger.log(`Reindexed`);
   }
 
-  async updateShipmentStatus(orderId: number): Promise<Order> {
-    return this.updateOrderById(orderId, async order => {
+  async updateShipmentStatus(orderId: number, lang: Language): Promise<Order> {
+    return this.updateOrderById(orderId, lang, async order => {
       await this.fetchShipmentStatus(order);
       return order;
     });
   }
 
-  async changeStatus(orderId: number, status: OrderStatusEnum, user: DocumentType<User>) {
-    return await this.updateOrderById(orderId, async (order, session) => {
+  async changeStatus(orderId: number, status: OrderStatusEnum, user: DocumentType<User>, lang: Language) {
+    return await this.updateOrderById(orderId, lang, async (order, session) => {
 
       const assertStatus = (statusToAssert: OrderStatusEnum) => {
         if (order.status !== statusToAssert) {
-          throw new BadRequestException(__('Cannot change status to "$1": order must be with status "$2"', 'ru', status, statusToAssert));
+          throw new BadRequestException(__('Cannot change status to "$1": order must be with status "$2"', lang, status, statusToAssert));
         }
       }
 
@@ -758,7 +759,7 @@ export class OrderService implements OnApplicationBootstrap {
         case OrderStatusEnum.READY_TO_SHIP:
           assertStatus(OrderStatusEnum.PACKED);
           if (order.paymentType !== PaymentTypeEnum.CASH_ON_DELIVERY && !order.isOrderPaid) {
-            throw new BadRequestException(__('Cannot change status to "$1": order is not paid', 'ru', status));
+            throw new BadRequestException(__('Cannot change status to "$1": order is not paid', lang, status));
           }
           break;
 
@@ -769,30 +770,30 @@ export class OrderService implements OnApplicationBootstrap {
         case OrderStatusEnum.RETURNED:
           for (const item of order.items) {
             await this.inventoryService.addToStock(item.sku, item.qty, session);
-            await this.productService.updateSearchDataById(item.productId, session);
+            await this.productService.updateSearchDataById(item.productId, lang, session);
           }
           break;
 
         case OrderStatusEnum.CANCELED:
           if (ShippedOrderStatuses.includes(status)) {
-            throw new BadRequestException(__('Cannot cancel order with status "$1"', 'ru', status));
+            throw new BadRequestException(__('Cannot cancel order with status "$1"', lang, status));
           }
-          await this.cancelOrderPreActions(order, session);
+          await this.cancelOrderPreActions(order, lang, session);
           break;
 
         case OrderStatusEnum.FINISHED:
           if (order.status === OrderStatusEnum.FINISHED) {
-            throw new BadRequestException(__('Cannot change status to "$1": order must not be with status "$2"', 'ru', status, OrderStatusEnum.FINISHED));
+            throw new BadRequestException(__('Cannot change status to "$1": order must not be with status "$2"', lang, status, OrderStatusEnum.FINISHED));
           }
 
           if (!ShippedOrderStatuses.includes(order.status)) {
-            await this.shippedOrderPostActions(order, session);
+            await this.shippedOrderPostActions(order, lang, session);
           }
           await this.finishedOrderPostActions(order, session);
           break;
 
         default:
-          throw new BadRequestException(__('Cannot change status to "$1": disallowed status', 'ru', status));
+          throw new BadRequestException(__('Cannot change status to "$1": disallowed status', lang, status));
           break;
       }
 
@@ -805,8 +806,8 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto): Promise<Order> {
-    return this.updateOrderById(orderId, async order => {
+  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, lang: Language): Promise<Order> {
+    return this.updateOrderById(orderId, lang, async order => {
       if (shipmentDto.trackingNumber) {
         order.shipment.trackingNumber = shipmentDto.trackingNumber;
         order.status = OrderStatusEnum.PACKED;
@@ -814,7 +815,7 @@ export class OrderService implements OnApplicationBootstrap {
       } else {
         OrderService.patchShipmentData(order.shipment, shipmentDto);
 
-        const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId);
+        const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId, lang);
         order.shipment.sender.firstName = shipmentSender.firstName;
         order.shipment.sender.lastName = shipmentSender.lastName;
         order.shipment.sender.phone = shipmentSender.phone;
@@ -837,8 +838,8 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async changeOrderPaymentStatus(id: number, isPaid: boolean, user: DocumentType<User>): Promise<Order> {
-    return await this.updateOrderById(id, async order => {
+  async changeOrderPaymentStatus(id: number, isPaid: boolean, user: DocumentType<User>, lang: Language): Promise<Order> {
+    return await this.updateOrderById(id, lang, async order => {
       const oldIsPaid = order.isOrderPaid;
       const oldOrderStatus = order.status;
       order.isOrderPaid = isPaid;
@@ -864,15 +865,15 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async updateOrderAdminNote(id: number, adminNote: string): Promise<Order> {
-    return await this.updateOrderById(id, async order => {
+  async updateOrderAdminNote(id: number, adminNote: string, lang: Language): Promise<Order> {
+    return await this.updateOrderById(id, lang, async order => {
       order.adminNote = adminNote;
       return order;
     });
   }
 
-  async updateOrderManager(id: number, userId: string): Promise<Order> {
-    return await this.updateOrderById(id, async order => {
+  async updateOrderManager(id: number, userId: string, lang: Language): Promise<Order> {
+    return await this.updateOrderById(id, lang, async order => {
       await this.assignOrderManager(order, userId);
       return order;
     });
@@ -926,18 +927,18 @@ export class OrderService implements OnApplicationBootstrap {
     return this.orderModel.find(filterQuery, projection).exec();
   }
 
-  private static checkForCheckoutRules(order: Order) {
+  private static checkForCheckoutRules(order: Order, lang: Language) {
     const errors: string[] = [];
     const isCashOnDeliveryMethod = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
     if (!isCashOnDeliveryMethod) { return; }
 
     if (order.shipment.recipient.addressType === AddressTypeEnum.DOORS) {
-      errors.push(__('Cash on delivery is not available with address delivery', 'ru'));
+      errors.push(__('Cash on delivery is not available with address delivery', lang));
     }
 
     const disallowedItem = order.items.find(item => item.name[clientDefaultLanguage].toLowerCase().match(/сусаль([ ,])/g));
     if (disallowedItem) {
-      errors.push(__('Cash on delivery is not available for gold leaf', 'ru'));
+      errors.push(__('Cash on delivery is not available for gold leaf', lang));
     }
 
     if (errors.length) {

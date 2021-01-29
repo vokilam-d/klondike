@@ -56,8 +56,11 @@ export class ClientStoreReviewController {
 
   @Get('from-email')
   @Redirect('/')
-  async createReviewFromEmail(@Query() storeReviewDto: ClientAddStoreReviewFromEmailDto) {
-    await this.storeReviewService.createReview({ ...storeReviewDto, source: 'email' });
+  async createReviewFromEmail(
+    @Query() storeReviewDto: ClientAddStoreReviewFromEmailDto,
+    @ClientLang() lang: Language
+  ) {
+    await this.storeReviewService.createReview({ ...storeReviewDto, source: 'email' }, lang);
 
     return {
       url: `/otzyvy?review-from-email=true`
@@ -99,7 +102,7 @@ export class ClientStoreReviewController {
       medias: multilangMedias as AdminMediaDto[],
       customerId,
       source: 'website'
-    });
+    }, lang);
 
     return {
       data: ClientStoreReviewDto.transformToDto(review, lang)
@@ -107,15 +110,17 @@ export class ClientStoreReviewController {
   }
 
   @Post(':id/vote')
-  async createVote(@Req() req,
-                   @Param('id') reviewId: string,
-                   @IpAddress() ipAddress: string | null,
-                   @ClientId() clientId: string
+  async createVote(
+    @Req() req,
+    @Param('id') reviewId: string,
+    @IpAddress() ipAddress: string | null,
+    @ClientId() clientId: string,
+    @ClientLang() lang: Language
   ): Promise<ResponseDto<boolean>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
-    await this.storeReviewService.createVote(parseInt(reviewId), ipAddress, clientId, customerId);
+    await this.storeReviewService.createVote(parseInt(reviewId), ipAddress, clientId, customerId, lang);
 
     return {
       data: true
@@ -123,16 +128,18 @@ export class ClientStoreReviewController {
   }
 
   @Post(':id/downvote')
-  async removeVote(@Req() req,
-                   @Param('id') reviewId: string,
-                   @IpAddress() ipAddress: string | null,
-                   @ClientId() clientId: string
+  async removeVote(
+    @Req() req,
+    @Param('id') reviewId: string,
+    @IpAddress() ipAddress: string | null,
+    @ClientId() clientId: string,
+    @ClientLang() lang: Language
   ): Promise<ResponseDto<boolean>> {
 
     const authService = this.moduleRef.get(AuthService, { strict: false });
     const customerId = await authService.getCustomerIdFromReq(req);
 
-    await this.storeReviewService.removeVote(parseInt(reviewId), ipAddress, clientId, customerId);
+    await this.storeReviewService.removeVote(parseInt(reviewId), ipAddress, clientId, customerId, lang);
     return {
       data: true
     }

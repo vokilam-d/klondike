@@ -30,6 +30,9 @@ import { ReservedInventory } from '../../inventory/models/reserved-inventory.mod
 import { OrderedProductService } from '../services/ordered-product.service';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
 import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -52,8 +55,11 @@ export class AdminProductController {
   }
 
   @Get(':id')
-  async getProduct(@Param('id') id: string): Promise<ResponseDto<AdminProductDto>> {
-    const product = await this.productsService.getProductWithQtyById(parseInt(id));
+  async getProduct(
+    @Param('id') id: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminProductDto>> {
+    const product = await this.productsService.getProductWithQtyById(parseInt(id), lang);
 
     return {
       data: plainToClass(AdminProductDto, product, { excludeExtraneousValues: true })
@@ -61,8 +67,12 @@ export class AdminProductController {
   }
 
   @Get(':id/variants/:variantId/reserved')
-  async getOrderIdsForReservedVariant(@Param('id') id: string, @Param('variantId') variantId: string): Promise<ResponseDto<number[]>> {
-    const reservedInventory: ReservedInventory[] = await this.productsService.getReservedInventory(id, variantId);
+  async getOrderIdsForReservedVariant(
+    @Param('id') id: string,
+    @Param('variantId') variantId: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<number[]>> {
+    const reservedInventory: ReservedInventory[] = await this.productsService.getReservedInventory(id, variantId, lang);
 
     return {
       data: reservedInventory.map(inventory => inventory.orderId)
@@ -70,8 +80,11 @@ export class AdminProductController {
   }
 
   @Post()
-  async addProduct(@Body() productDto: AdminAddOrUpdateProductDto): Promise<ResponseDto<AdminProductDto>> {
-    const created = await this.productsService.createProduct(productDto);
+  async addProduct(
+    @Body() productDto: AdminAddOrUpdateProductDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminProductDto>> {
+    const created = await this.productsService.createProduct(productDto, lang);
 
     return {
       data: plainToClass(AdminProductDto, created, { excludeExtraneousValues: true })
@@ -91,34 +104,40 @@ export class AdminProductController {
   @Post('action/fix-sort-order')
   async fixProductSortOrder(
     @Body() reorderDto: ProductReorderDto,
-    @Query() spf: AdminSPFDto
+    @Query() spf: AdminSPFDto,
+    @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    await this.productsService.lockProductSortOrder(reorderDto);
+    await this.productsService.lockProductSortOrder(reorderDto, lang);
     return this.productsService.getAdminProductsList(spf, false);
   }
 
   @Post('action/unfix-sort-order')
   async unFixProductSortOrder(
     @Body() unfixDto: UnfixProductOrderDto,
-    @Query() spf: AdminSPFDto
+    @Query() spf: AdminSPFDto,
+    @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    await this.productsService.unlockProductSortOrder(unfixDto);
+    await this.productsService.unlockProductSortOrder(unfixDto, lang);
     return this.productsService.getAdminProductsList(spf, false);
   }
 
   @Put(':id')
-  async updateProduct(@Param('id') productId: number, @Body() productDto: AdminAddOrUpdateProductDto): Promise<ResponseDto<AdminProductDto>> {
-    const updated = await this.productsService.updateProduct(productId, productDto);
+  async updateProduct(
+    @Param('id') productId: number,
+    @Body() productDto: AdminAddOrUpdateProductDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminProductDto>> {
+    const updated = await this.productsService.updateProduct(productId, productDto, lang);
     return {
       data: plainToClass(AdminProductDto, updated, { excludeExtraneousValues: true })
     };
   }
 
   @Delete(':id')
-  async deleteProduct(@Param('id') productId: number): Promise<ResponseDto<AdminProductDto>> {
-    const deleted = await this.productsService.deleteProduct(productId);
+  async deleteProduct(@Param('id') productId: number, @AdminLang() lang: Language): Promise<ResponseDto<AdminProductDto>> {
+    const deleted = await this.productsService.deleteProduct(productId, lang);
 
     return {
       data: plainToClass(AdminProductDto, deleted, { excludeExtraneousValues: true })

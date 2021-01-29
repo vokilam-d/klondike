@@ -19,6 +19,9 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../../shared/dtos/admin/customer.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -35,8 +38,8 @@ export class AdminCustomerController {
   }
 
   @Get(':id')
-  async getCustomer(@Param('id') id: string): Promise<ResponseDto<AdminCustomerDto>> {
-    const customer = await this.customerService.getCustomerById(parseInt(id));
+  async getCustomer(@Param('id') id: string, @AdminLang() lang: Language): Promise<ResponseDto<AdminCustomerDto>> {
+    const customer = await this.customerService.getCustomerById(parseInt(id), lang);
 
     return {
       data: plainToClass(AdminCustomerDto, customer, { excludeExtraneousValues: true })
@@ -44,8 +47,11 @@ export class AdminCustomerController {
   }
 
   @Post()
-  async addCustomer(@Body() customerDto: AdminAddOrUpdateCustomerDto): Promise<ResponseDto<AdminCustomerDto>> {
-    const created = await this.customerService.adminCreateCustomer(customerDto);
+  async addCustomer(
+    @Body() customerDto: AdminAddOrUpdateCustomerDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminCustomerDto>> {
+    const created = await this.customerService.adminCreateCustomer(customerDto, lang);
 
     return {
       data: plainToClass(AdminCustomerDto, created, { excludeExtraneousValues: true })
@@ -53,8 +59,12 @@ export class AdminCustomerController {
   }
 
   @Put(':id')
-  async updateCustomer(@Param('id') customerId: number, @Body() customerDto: AdminAddOrUpdateCustomerDto): Promise<ResponseDto<AdminCustomerDto>> {
-    const updated = await this.customerService.updateCustomerById(customerId, customerDto);
+  async updateCustomer(
+    @Param('id') customerId: number,
+    @Body() customerDto: AdminAddOrUpdateCustomerDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminCustomerDto>> {
+    const updated = await this.customerService.updateCustomerById(customerId, customerDto, lang);
 
     return {
       data: plainToClass(AdminCustomerDto, updated, { excludeExtraneousValues: true })
@@ -62,8 +72,11 @@ export class AdminCustomerController {
   }
 
   @Delete(':id')
-  async deleteCustomer(@Param('id') customerId: number): Promise<ResponseDto<AdminCustomerDto>> {
-    const deleted = await this.customerService.deleteCustomer(customerId);
+  async deleteCustomer(
+    @Param('id') customerId: number,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminCustomerDto>> {
+    const deleted = await this.customerService.deleteCustomer(customerId, lang);
 
     return {
       data: plainToClass(AdminCustomerDto, deleted, { excludeExtraneousValues: true })

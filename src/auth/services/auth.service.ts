@@ -19,6 +19,8 @@ import { __ } from '../../shared/helpers/translate/translate.function';
 import { HttpAdapterHost } from '@nestjs/core';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 interface IGoogleIDToken {
   sub: string;
@@ -62,11 +64,11 @@ export class AuthService {
     return parsed;
   }
 
-  async getCustomerFromReq(req: FastifyRequest): Promise<DocumentType<Customer> | undefined> {
+  async getCustomerFromReq(req: FastifyRequest, lang: Language): Promise<DocumentType<Customer> | undefined> {
     const id = await this.getCustomerIdFromReq(req);
     if (!id) { return; }
 
-    const customer = await this.customerService.getCustomerById(id, false);
+    const customer = await this.customerService.getCustomerById(id, lang, false);
     return customer as DocumentType<Customer>;
   }
 
@@ -96,12 +98,12 @@ export class AuthService {
     return this.login(customerDto, res, authConstants.JWT_COOKIE_NAME);
   }
 
-  async callbackOAuthGoogle(req: FastifyRequest, res: FastifyReply<ServerResponse>) {
+  async callbackOAuthGoogle(req: FastifyRequest, res: FastifyReply<ServerResponse>, lang: Language) {
     const instance = this.adapterHost.httpAdapter.getInstance<NestFastifyApplication>();
     const token = await instance[authConstants.GOOGLE_OAUTH_NAMESPACE].getAccessTokenFromAuthorizationCodeFlow(req);
 
     if (!token) {
-      throw new BadRequestException(__('Token in request not found', 'ru'));
+      throw new BadRequestException(__('Token in request not found', lang));
     }
 
     const { data: googleIDToken } = await this.http.get<IGoogleIDToken>(
@@ -112,12 +114,12 @@ export class AuthService {
     return this.callbackOAuth(googleIDToken.sub, googleIDToken.given_name, googleIDToken.family_name, googleIDToken.email, res);
   }
 
-  async callbackOAuthFacebook(req: FastifyRequest, res: FastifyReply<ServerResponse>) {
+  async callbackOAuthFacebook(req: FastifyRequest, res: FastifyReply<ServerResponse>, lang: Language) {
     const instance = this.adapterHost.httpAdapter.getInstance<NestFastifyApplication>();
     const token = await instance[authConstants.FACEBOOK_OAUTH_NAMESPACE].getAccessTokenFromAuthorizationCodeFlow(req);
 
     if (!token) {
-      throw new BadRequestException(__('Token in request not found', 'ru'));
+      throw new BadRequestException(__('Token in request not found', lang));
     }
 
     const { data: facebookIDToken } = await this.http.get<IFacebookIDToken>(

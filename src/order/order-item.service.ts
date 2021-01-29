@@ -16,6 +16,7 @@ import { ClientOrderItemDto } from '../shared/dtos/client/order-item.dto';
 import { MultilingualText } from '../shared/models/multilingual-text.model';
 import { CreateOrderItemDto } from '../shared/dtos/shared-dtos/create-order-item.dto';
 import { Language } from '../shared/enums/language.enum';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [
   { totalCostBreakpoint: 500, discountPercent: 5 },
@@ -39,12 +40,12 @@ export class OrderItemService {
   ): Promise<OrderItem> {
 
     if (!product) {
-      product = await this.productService.getProductWithQtyBySku(sku);
+      product = await this.productService.getProductWithQtyBySku(sku, lang);
       variant = product?.variants.find(v => v.sku === sku);
-      if (!product || !variant) { throw new BadRequestException(__('Product with sku "$1" not found', 'ru', sku)); }
+      if (!product || !variant) { throw new BadRequestException(__('Product with sku "$1" not found', lang, sku)); }
     }
 
-    this.assertIsInStock(qty, variant, omitReserved);
+    this.assertIsInStock(qty, variant, omitReserved, lang);
 
     let orderItem = new OrderItem();
     orderItem.name = variant.name;
@@ -60,7 +61,7 @@ export class OrderItemService {
     orderItem.additionalServices = [];
     let servicesCost: number = 0;
     for (const additionalServiceId of (additionalServiceIds || [])) {
-      const additionalService = await this.additionalServiceService.getAdditionalServiceById(additionalServiceId);
+      const additionalService = await this.additionalServiceService.getAdditionalServiceById(additionalServiceId, lang);
       if (!additionalService) { continue; }
 
       orderItem.additionalServices.push({
@@ -87,16 +88,16 @@ export class OrderItemService {
     return orderItem;
   }
 
-  assertIsInStock(qty: number, variant: ProductVariantWithQty, omitReserved: boolean): void {
+  assertIsInStock(qty: number, variant: ProductVariantWithQty, omitReserved: boolean, lang: Language): void {
     const reservedAmount = variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0);
     const qtyAvailable = omitReserved ? variant.qtyInStock : variant.qtyInStock - reservedAmount;
 
     if (qty > qtyAvailable) {
-      throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', 'ru', qty, qtyAvailable));
+      throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', lang, qty, qtyAvailable));
     }
   }
 
-  async calcOrderPrices(orderItems: (OrderItem | ClientOrderItemDto)[], customer: Customer): Promise<OrderPrices> {
+  async calcOrderPrices(orderItems: (OrderItem | ClientOrderItemDto)[], customer: Customer, lang: Language): Promise<OrderPrices> {
     const products = await this.productService.getProductsWithQtyBySkus(orderItems.map(item => item.sku));
 
     // Sum of real cost of each item (based on its actual price) = (price * quantity)
@@ -119,7 +120,7 @@ export class OrderItemService {
       const product = products.find(product => product._id === orderItem.productId);
       const variant = product?.variants.find(variant => variant._id.equals(orderItem.variantId));
       if (!product || !variant) {
-        throw new BadRequestException(__('Product with sku "$1" not found', 'ru', orderItem.sku));
+        throw new BadRequestException(__('Product with sku "$1" not found', lang, orderItem.sku));
       }
 
       const itemCost = orderItem.qty * variant.priceInDefaultCurrency;

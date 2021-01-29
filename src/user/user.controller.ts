@@ -11,6 +11,9 @@ import { LoginDto } from '../shared/dtos/shared-dtos/login.dto';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { UserLocalGuard } from '../auth/guards/user-local.guard';
+import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { AdminLang } from '../shared/decorators/lang.decorator';
+import { Language } from '../shared/enums/language.enum';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/user')
@@ -70,8 +73,12 @@ export class UserController {
 
   @UseGuards(UserJwtGuard)
   @Put(':id')
-  async updateUser(@Param('id') id: string, @Body() updateUserDto: AddOrUpdateUserDto): Promise<ResponseDto<UserDto>> {
-    const updated = await this.userService.updateUser(id, updateUserDto);
+  async updateUser(
+    @Param('id') id: string,
+    @Body() updateUserDto: AddOrUpdateUserDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<UserDto>> {
+    const updated = await this.userService.updateUser(id, updateUserDto, lang);
 
     return {
       data: plainToClass(UserDto, updated, { excludeExtraneousValues: true })
@@ -80,8 +87,8 @@ export class UserController {
 
   @UseGuards(UserJwtGuard)
   @Delete(':id')
-  async deleteUser(@Param('id') id: string): Promise<ResponseDto<UserDto>> {
-    const updated = await this.userService.deleteUser(id);
+  async deleteUser(@Param('id') id: string, @AdminLang() lang: Language): Promise<ResponseDto<UserDto>> {
+    const updated = await this.userService.deleteUser(id, lang);
 
     return {
       data: plainToClass(UserDto, updated, { excludeExtraneousValues: true })

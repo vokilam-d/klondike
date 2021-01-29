@@ -16,6 +16,8 @@ import { ClientSPFDto } from '../../shared/dtos/client/spf.dto';
 import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instance-cron.decorator';
 import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-expression-early-morning.function';
 import { EventsService } from '../../shared/services/events/events.service';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { Language } from '../../shared/enums/language.enum';
 
 type IReviewCallback<T = any> = (review: T, session: ClientSession) => Promise<any>;
 
@@ -59,16 +61,16 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     };
   }
 
-  async findReview(reviewId: string, ipAddress?: string, userId?: string, customerId?: number): Promise<U> {
+  async findReview(reviewId: string, lang: Language, ipAddress?: string, userId?: string, customerId?: number): Promise<U> {
     const review = await this.reviewModel.findById(reviewId).exec();
     if (!review) {
-      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
+      throw new NotFoundException(__('Review with id "$1" not found', lang, reviewId));
     }
 
     return this.transformReviewToDto(review, ipAddress, userId, customerId);
   }
 
-  async createReview(reviewDto: U, callback?: IReviewCallback<T>): Promise<U> {
+  async createReview(reviewDto: U, lang: Language, callback?: IReviewCallback<T>): Promise<U> {
     const session = await this.reviewModel.db.startSession();
     session.startTransaction();
 
@@ -97,10 +99,10 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     }
   }
 
-  async updateReview(reviewId: string, reviewDto: U, { onEnable, onDisable }: IUpdateReviewCallbacks = {}): Promise<U> {
+  async updateReview(reviewId: string, reviewDto: U, lang: Language, { onEnable, onDisable }: IUpdateReviewCallbacks = {}): Promise<U> {
     const review = await this.reviewModel.findById(reviewId).exec();
     if (!review) {
-      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
+      throw new NotFoundException(__('Review with id "$1" not found', lang, reviewId));
     }
 
     const session = await this.reviewModel.db.startSession();
@@ -145,13 +147,13 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     }
   }
 
-  async deleteReview(reviewId: string, callback?: IReviewCallback<T>): Promise<U> {
+  async deleteReview(reviewId: string, lang: Language, callback?: IReviewCallback<T>): Promise<U> {
     const session = await this.reviewModel.db.startSession();
     session.startTransaction();
 
     try {
       const deleted = await this.reviewModel.findByIdAndDelete(reviewId).session(session).exec();
-      if (!deleted) { throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId)); }
+      if (!deleted) { throw new NotFoundException(__('Review with id "$1" not found', lang, reviewId)); }
 
       if (deleted.isEnabled && callback) { await callback(deleted, session) };
       await session.commitTransaction();
@@ -173,16 +175,16 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     return this.mediaService.upload(request, this.collectionName);
   }
 
-  async createVote(reviewId: number, ipAddress: string, userId: string, customerId: number) {
+  async createVote(reviewId: number, ipAddress: string, userId: string, customerId: number, lang: Language) {
     const foundReview = await this.reviewModel.findById(reviewId).exec();
     if (!foundReview) {
-      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
+      throw new NotFoundException(__('Review with id "$1" not found', lang, reviewId));
     }
 
     const alreadyVoted = this.hasVoted(foundReview, ipAddress, userId, customerId);
 
     if (alreadyVoted) {
-      throw new ForbiddenException(__('You have already voted for this review', 'ru'));
+      throw new ForbiddenException(__('You have already voted for this review', lang));
     }
 
     const vote = new ReviewVote();
@@ -196,16 +198,16 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
     this.onReviewUpdate();
   }
 
-  async removeVote(reviewId: number, ipAddress: string, userId: string, customerId: number) {
+  async removeVote(reviewId: number, ipAddress: string, userId: string, customerId: number, lang: Language) {
     const foundReview = await this.reviewModel.findById(reviewId).exec();
     if (!foundReview) {
-      throw new NotFoundException(__('Review with id "$1" not found', 'ru', reviewId));
+      throw new NotFoundException(__('Review with id "$1" not found', lang, reviewId));
     }
 
     const alreadyVoted = this.hasVoted(foundReview, ipAddress, userId, customerId);
 
     if (alreadyVoted) {
-      throw new ForbiddenException(__('You have already voted for this review', 'ru'));
+      throw new ForbiddenException(__('You have already voted for this review', lang));
     }
 
     foundReview.votes.pop();

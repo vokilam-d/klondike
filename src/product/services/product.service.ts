@@ -63,6 +63,8 @@ import { Language } from '../../shared/enums/language.enum';
 import { ClientBreadcrumbDto } from '../../shared/dtos/client/breadcrumb.dto';
 import { Dictionary } from '../../shared/helpers/dictionary';
 import { EventsService } from '../../shared/services/events/events.service';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { adminDefaultLanguage } from '../../shared/constants';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -371,7 +373,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  async getProductWithQtyById(id: number, session?: ClientSession): Promise<ProductWithQty> {
+  async getProductWithQtyById(id: number, lang: Language, session?: ClientSession): Promise<ProductWithQty> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qtyInStock');
@@ -395,13 +397,13 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
 
     if (!found) {
-      throw new NotFoundException(__('Product with id "$1" not found', 'ru', id));
+      throw new NotFoundException(__('Product with id "$1" not found', lang, id));
     }
 
     return found;
   }
 
-  async getProductWithQtyBySku(sku: string): Promise<ProductWithQty> {
+  async getProductWithQtyBySku(sku: string, lang: Language): Promise<ProductWithQty> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
     const qtyProp = getPropertyOf<Inventory>('qtyInStock');
@@ -424,7 +426,7 @@ export class ProductService implements OnApplicationBootstrap {
       .exec();
 
     if (!found) {
-      throw new NotFoundException(__('Product with sku "$1" not found', 'ru', sku));
+      throw new NotFoundException(__('Product with sku "$1" not found', lang, sku));
     }
 
     return found;
@@ -494,7 +496,7 @@ export class ProductService implements OnApplicationBootstrap {
     return dto;
   }
 
-  async createProduct(productDto: AdminAddOrUpdateProductDto): Promise<Product> {
+  async createProduct(productDto: AdminAddOrUpdateProductDto, lang: Language): Promise<Product> {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
@@ -527,7 +529,7 @@ export class ProductService implements OnApplicationBootstrap {
         newProductModel.isEnabled = false;
       }
 
-      await this.setProductPrices(newProductModel);
+      await this.setProductPrices(newProductModel, lang);
       await newProductModel.save({ session });
       const productWithQty = this.transformToProductWithQty(newProductModel.toJSON(), inventories);
       await this.addSearchData(productWithQty);
@@ -546,10 +548,10 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto): Promise<Product> {
+  async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto, lang: Language): Promise<Product> {
     const found = await this.productModel.findById(productId).exec();
     if (!found) {
-      throw new NotFoundException(__('Product with id "$1" not found', 'ru', productId));
+      throw new NotFoundException(__('Product with id "$1" not found', lang, productId));
     }
 
     const session = await this.productModel.db.startSession();
@@ -605,7 +607,7 @@ export class ProductService implements OnApplicationBootstrap {
         if (variant.slug !== variantInDto.slug) {
           await this.updateProductPageRegistry(variant.slug, variantInDto.slug, variantInDto.createRedirect, session);
         }
-        const inventory = await this.inventoryService.updateInventory(variant.sku, variantInDto.sku, variantInDto.qtyInStock, session);
+        const inventory = await this.inventoryService.updateInventory(variant.sku, variantInDto.sku, variantInDto.qtyInStock, lang, session);
         inventories.push(inventory.toJSON());
       }
 
@@ -618,7 +620,7 @@ export class ProductService implements OnApplicationBootstrap {
         found.isEnabled = false;
       }
 
-      await this.setProductPrices(found);
+      await this.setProductPrices(found, lang);
       found.updatedAt = new Date();
       await found.save({ session });
       const productWithQty = this.transformToProductWithQty(found.toJSON(), inventories);
@@ -639,14 +641,14 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async deleteProduct(productId: number): Promise<Product> {
+  async deleteProduct(productId: number, lang: Language): Promise<Product> {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
     try {
       const deleted = await this.productModel.findByIdAndDelete(productId).exec();
       if (!deleted) {
-        throw new NotFoundException(__('Product with id "$1" not found', 'ru', productId));
+        throw new NotFoundException(__('Product with id "$1" not found', lang, productId));
       }
 
       const mediasToDelete: Media[] = [];
@@ -704,10 +706,10 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async updateReviewRating(productId: number, session: ClientSession): Promise<any> {
+  async updateReviewRating(productId: number, lang: Language, session: ClientSession): Promise<any> {
     const product = await this.productModel.findById(productId).exec();
     if (!product) {
-      throw new NotFoundException(__('Product with id "$1" not found', 'ru', productId));
+      throw new NotFoundException(__('Product with id "$1" not found', lang, productId));
     }
 
     const { reviewsAvgRating, textReviewsCount, allReviewsCount } = await this.productReviewService.getRatingInfo(productId, session);
@@ -716,7 +718,7 @@ export class ProductService implements OnApplicationBootstrap {
     product.allReviewsCount = allReviewsCount;
 
     await product.save({ session });
-    await this.updateSearchDataById(productId, session);
+    await this.updateSearchDataById(productId, lang, session);
     this.onProductUpdate();
   }
 
@@ -838,8 +840,8 @@ export class ProductService implements OnApplicationBootstrap {
     await this.searchService.updateDocument(Product.collectionName, adminListItem.id, adminListItem);
   }
 
-  async updateSearchDataById(productId: number, session: ClientSession): Promise<any> {
-    const product = await this.getProductWithQtyById(productId, session);
+  async updateSearchDataById(productId: number, lang: Language, session: ClientSession): Promise<any> {
+    const product = await this.getProductWithQtyById(productId, lang, session);
     return this.updateSearchData(product);
   }
 
@@ -1208,8 +1210,8 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  private async setProductPrices(product: DocumentType<Product>): Promise<DocumentType<Product>> {
-    const exchangeRate = await this.currencyService.getExchangeRate(product.variants[0].currency);
+  private async setProductPrices(product: DocumentType<Product>, lang: Language): Promise<DocumentType<Product>> {
+    const exchangeRate = await this.currencyService.getExchangeRate(product.variants[0].currency, lang);
 
     for (const variant of product.variants) {
       variant.priceInDefaultCurrency = Math.ceil(variant.price * exchangeRate);
@@ -1288,10 +1290,13 @@ export class ProductService implements OnApplicationBootstrap {
   }
 
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
-  async updateProductsOrder({ categoryId, fixedProductId }: { categoryId: number, fixedProductId: number } = { categoryId: null, fixedProductId: null }) {
+  async updateProductsOrder(
+    { categoryId, fixedProductId }: { categoryId: number, fixedProductId: number } = { categoryId: null, fixedProductId: null },
+    lang: Language = adminDefaultLanguage
+  ) {
     let categories: Category[];
     if (categoryId) {
-      categories = [await this.categoryService.getCategoryById(categoryId)];
+      categories = [await this.categoryService.getCategoryById(categoryId, lang)];
     } else {
       categories = await this.categoryService.getAllCategories();
     }
@@ -1398,29 +1403,29 @@ export class ProductService implements OnApplicationBootstrap {
     this.logger.log(`Finished reindex`);
   }
 
-  async lockProductSortOrder(reorderDto: ProductReorderDto) {
+  async lockProductSortOrder(reorderDto: ProductReorderDto, lang: Language) {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
     try {
       const product = await this.productModel.findById(reorderDto.id).session(session).exec();
       if (!product) {
-        throw new BadRequestException(__('Product with id "$1" not found', 'ru', reorderDto.id));
+        throw new BadRequestException(__('Product with id "$1" not found', lang, reorderDto.id));
       }
 
       const productCategoryIdx = product.categories.findIndex(c => c.id === reorderDto.categoryId);
       if (productCategoryIdx === -1) {
-        throw new BadRequestException(__('Product with id "$1" is not present in category with id "$2"', 'ru', reorderDto.id, reorderDto.categoryId));
+        throw new BadRequestException(__('Product with id "$1" is not present in category with id "$2"', lang, reorderDto.id, reorderDto.categoryId));
       }
 
       const targetProduct = await this.productModel.findById(reorderDto.targetId);
       if (!targetProduct) {
-        throw new BadRequestException(__('Product with id "$1" not found', 'ru', reorderDto.targetId));
+        throw new BadRequestException(__('Product with id "$1" not found', lang, reorderDto.targetId));
       }
 
       const targetProductCategory = targetProduct.categories.find(c => c.id === reorderDto.categoryId);
       if (!targetProductCategory) {
-        throw new BadRequestException(__('Product with id "$1" is not present in category with id "$2"', 'ru', reorderDto.targetId, reorderDto.categoryId));
+        throw new BadRequestException(__('Product with id "$1" is not present in category with id "$2"', lang, reorderDto.targetId, reorderDto.categoryId));
       }
 
       const targetProductOrder = targetProductCategory.reversedSortOrder || 0;
@@ -1436,10 +1441,10 @@ export class ProductService implements OnApplicationBootstrap {
       product.categories[productCategoryIdx].isSortOrderFixed = true;
 
       await product.save({ session });
-      await this.updateSearchDataById(reorderDto.id, session);
+      await this.updateSearchDataById(reorderDto.id, lang, session);
       await session.commitTransaction();
 
-      await this.updateProductsOrder({ categoryId: reorderDto.categoryId, fixedProductId: reorderDto.id });
+      await this.updateProductsOrder({ categoryId: reorderDto.categoryId, fixedProductId: reorderDto.id }, lang);
 
     } catch (ex) {
       if (session.inTransaction()) {
@@ -1451,116 +1456,33 @@ export class ProductService implements OnApplicationBootstrap {
     }
   }
 
-  async unlockProductSortOrder(unfixDto: UnfixProductOrderDto) {
+  async unlockProductSortOrder(unfixDto: UnfixProductOrderDto, lang: Language) {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
     try {
       const product = await this.productModel.findById(unfixDto.id).session(session).exec();
       if (!product) {
-        throw new BadRequestException(__('Product with id "$1" not found', 'ru', unfixDto.id));
+        throw new BadRequestException(__('Product with id "$1" not found', lang, unfixDto.id));
       }
 
       const productCategoryIdx = product.categories.findIndex(c => c.id === unfixDto.categoryId);
       if (productCategoryIdx === -1) {
-        throw new BadRequestException(__('Product with id "$1" is not present in category with id "$2"', 'ru', unfixDto.id, unfixDto.categoryId));
+        throw new BadRequestException(__('Product with id "$1" is not present in category with id "$2"', lang, unfixDto.id, unfixDto.categoryId));
       }
 
       if (!product.categories[productCategoryIdx].isSortOrderFixed) {
-        throw new BadRequestException(__('Product with id "$1" does not have fixed sort order in category with id "$2"', 'ru', unfixDto.id, unfixDto.categoryId));
+        throw new BadRequestException(__('Product with id "$1" does not have fixed sort order in category with id "$2"', lang, unfixDto.id, unfixDto.categoryId));
       }
 
       product.categories[productCategoryIdx].reversedSortOrder = product.categories[productCategoryIdx].reversedSortOrderBeforeFix;
       product.categories[productCategoryIdx].reversedSortOrderBeforeFix = 0;
       product.categories[productCategoryIdx].isSortOrderFixed = false;
       await product.save({ session });
-      await this.updateSearchDataById(unfixDto.id, session);
+      await this.updateSearchDataById(unfixDto.id, lang, session);
       await session.commitTransaction();
 
-      await this.updateProductsOrder({ categoryId: unfixDto.categoryId, fixedProductId: null });
-
-    } catch (ex) {
-      if (session.inTransaction()) {
-        await session.abortTransaction();
-      }
-      throw ex;
-    } finally {
-      await session.endSession();
-    }
-  }
-
-  async reorderProductDeprecated(reorderDto: ProductReorderDto) {
-    const product = await this.productModel.findById(reorderDto.id).exec();
-    if (!product) { throw new BadRequestException(__('Product with id "$1" not found', 'ru', reorderDto.id)); }
-
-    const targetProduct = await this.productModel.findById(reorderDto.targetId);
-    if (!targetProduct) { throw new BadRequestException(__('Product with id "$1" not found', 'ru', reorderDto.targetId)); }
-
-    const targetProductOrder = targetProduct.categories.find(c => c.id === reorderDto.categoryId)?.sortOrder || 0;
-
-    const session = await this.productModel.db.startSession();
-    session.startTransaction();
-
-    try {
-      let filterOperator;
-      let elasticComparisonOperator;
-      let newOrder;
-      if (reorderDto.position === ReorderPositionEnum.Start) {
-        filterOperator = '$gt';
-        elasticComparisonOperator = '>';
-        newOrder = targetProductOrder + 1;
-      } else {
-        filterOperator = '$gte';
-        elasticComparisonOperator = '>=';
-        newOrder = targetProductOrder;
-      }
-
-      const categoriesProp: keyof Product = 'categories';
-      const categoryIdProp: keyof ProductCategory = 'id';
-      const sortProp: keyof ProductCategory = 'sortOrder';
-      await this.productModel.updateMany(
-        {
-          '_id': { $ne: reorderDto.id },
-          categories: {
-            $elemMatch: {
-              [categoryIdProp]: reorderDto.categoryId,
-              [sortProp]: { [filterOperator]: targetProductOrder }
-            }
-          }
-        },
-        {
-          $inc: { [`${categoriesProp}.$.${sortProp}`]: 1 }
-        }
-      ).session(session).exec();
-
-      const productCategoryIdx = product.categories.findIndex(c => c.id === reorderDto.categoryId);
-      product.categories[productCategoryIdx].sortOrder = newOrder;
-      await product.save({ session });
-      await session.commitTransaction();
-
-      const elasticQuery = {
-        nested: {
-          path: categoriesProp,
-          query: {
-            term: { [`${categoriesProp}.${categoryIdProp}`]: reorderDto.categoryId }
-          }
-        }
-      };
-      const elasticUpdateScript = `
-        ctx._source.${categoriesProp}.forEach(category -> {
-          if (
-            ctx._source.id != ${product.id}
-            && category.${categoryIdProp} == ${reorderDto.categoryId}
-            && category.${sortProp} ${elasticComparisonOperator} ${targetProductOrder}
-          ) {
-            category.${sortProp} += 1;
-          } else if (ctx._source.id == ${product.id} && category.${categoryIdProp} == ${reorderDto.categoryId}) {
-            category.${sortProp} = ${newOrder}
-          }
-          return category;
-        })
-      `;
-      await this.searchService.updateByQuery(Product.collectionName, elasticQuery, elasticUpdateScript);
+      await this.updateProductsOrder({ categoryId: unfixDto.categoryId, fixedProductId: null }, lang);
 
     } catch (ex) {
       if (session.inTransaction()) {
@@ -1663,14 +1585,14 @@ export class ProductService implements OnApplicationBootstrap {
     return clientFilters;
   }
 
-  async getReservedInventory(productId: string, variantId: string): Promise<ReservedInventory[]> {
+  async getReservedInventory(productId: string, variantId: string, lang: Language): Promise<ReservedInventory[]> {
     const product = await this.productModel.findById(productId).exec();
-    if (!product) { throw new BadRequestException(__('Product with id "$1" not found', 'ru')); }
+    if (!product) { throw new BadRequestException(__('Product with id "$1" not found', lang)); }
 
     const variant = product.variants.find(variant => variant.id.equals(variantId));
     if (!variant) { throw new BadRequestException(`Variant with id "${variantId}" in product with id "${productId}" not found`); }
 
-    const inventory = await this.inventoryService.getInventory(variant.sku);
+    const inventory = await this.inventoryService.getInventory(variant.sku, lang);
 
     return inventory.reserved;
   }
