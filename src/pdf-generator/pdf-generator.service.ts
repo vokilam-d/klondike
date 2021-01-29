@@ -18,6 +18,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
   private orderHtmlPath = `${__dirname}/assets/pdf-order.html`;
   private invoiceCssPath = `${__dirname}/assets/css/pdf-invoice.css`;
   private invoiceHtmlPath = `${__dirname}/assets/pdf-invoice.html`;
+  private deliveryNotePath = `${__dirname}/assets/pdf-delivery-note.html`
 
   private browser: puppeteer.Browser;
 
@@ -37,6 +38,11 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
   async generateInvoicePdf(order: Order): Promise<Buffer> {
     const context = this.buildTemplateContextForInvoice(order);
     return this.generatePdf(this.invoiceHtmlPath, this.invoiceCssPath, context);
+  }
+
+  async generateDeliveryNotePdf(order: Order): Promise<Buffer> {
+    const context = this.buildTemplateContextForInvoice(order);
+    return this.generatePdf(this.deliveryNotePath, this.invoiceCssPath, context);
   }
 
   private async generatePdf(htmlPath, cssPath, context) {
@@ -120,6 +126,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       totalProductsCost: order.prices.itemsCost,
       discountValue: order.prices.discountValue,
       manager: process.env.BANK_DETAILS_NAME,
+      managerNameShort: process.env.BANK_DETAILS_NAME_SHORT,
       bankAccount: process.env.BANK_DETAILS_ACCOUNT,
       bankCard: process.env.BANK_DETAILS_CARD,
       idCode: process.env.BANK_DETAILS_ID

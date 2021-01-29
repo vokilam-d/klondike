@@ -169,7 +169,7 @@
     border-bottom: 2px solid #313131;
 }
 
-.signature {
+.signature__invoice {
     width: 400px;
     margin-left: auto;
     border-bottom: 2px solid #313131;
@@ -177,5 +177,30 @@
     font-weight: bold;
 }
 
+.signature__delivery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.signature__receiver, .signature__supplier {
+    width: 372px;
+    border-bottom: 2px solid #313131;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.signature__supplier {
+    margin: 0 50px 0 0;
+}
+
+.signature__name {
+    margin: 0 0 0 10px;
+}
+
+.stamp__delivery {
+    height: 150px;
+    margin: 5px 0 0 135px;
+}
 
 
