@@ -134,7 +134,7 @@ export class OrderItemService {
         itemsCostForDiscountPercentCalculation += itemCost;
 
         if (variant.oldPriceInDefaultCurrency) {
-          oldPriceDiscounts += (variant.oldPriceInDefaultCurrency - variant.priceInDefaultCurrency);
+          oldPriceDiscounts += orderItem.qty * (variant.oldPriceInDefaultCurrency - variant.priceInDefaultCurrency);
         } else {
           itemsCostApplicableForDiscount += itemCost;
         }
