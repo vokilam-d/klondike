@@ -62,6 +62,16 @@ export class AdminOrderController {
       .send(pdf);
   }
 
+  @Get(':id/delivery-note-pdf')
+  async printDeliveryNote(@Param('id') id: string, @Res() reply: FastifyReply<ServerResponse>) {
+    const { fileName, pdf } = await this.orderService.printDeliveryNote(parseInt(id));
+
+    reply
+      .type('application/pdf')
+      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(fileName)}`)
+      .send(pdf);
+  }
+
   @Post()
   async addOrder(
     @Body() orderDto: AdminAddOrUpdateOrderDto,
