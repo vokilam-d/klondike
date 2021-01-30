@@ -7,9 +7,9 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { ReviewSource } from '../../shared/enums/review-source.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -44,7 +44,7 @@ export class AdminStoreReviewController {
     @Body() storeReviewDto: AdminStoreReviewDto,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminStoreReviewDto>> {
-    storeReviewDto.source = 'manager';
+    storeReviewDto.source = ReviewSource.Manager;
     const review = await this.storeReviewService.createReview(storeReviewDto, lang);
     return {
       data: plainToClass(AdminStoreReviewDto, review, { excludeExtraneousValues: true })

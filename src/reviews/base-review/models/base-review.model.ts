@@ -53,5 +53,5 @@ export abstract class BaseReview {
   managerComment: string;
 
   @prop({ default: '' })
-  source: 'manager' | 'website' | 'email';
+  source: 'manager' | 'website' | 'email' | 'sms';
 }

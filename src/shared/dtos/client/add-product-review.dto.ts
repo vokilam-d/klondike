@@ -3,8 +3,10 @@ import { ClientMediaDto } from './media.dto';
 import { IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { ReviewSource } from '../../enums/review-source.enum';
+import { getValidReviewSource } from '../../helpers/get-valid-review-source.function';
 
-export class ClientAddProductReviewDto implements Pick<ClientProductReviewDto, 'productName' | 'productId' | 'productVariantId' | 'name' | 'text' | 'email' | 'rating'>{
+export class ClientAddProductReviewDto implements Pick<ClientProductReviewDto, 'productName' | 'productId' | 'productVariantId' | 'name' | 'text' | 'email' | 'rating' | 'source'>{
 
   @IsString()
   @TrimString()
@@ -41,4 +43,8 @@ export class ClientAddProductReviewDto implements Pick<ClientProductReviewDto, '
 
   @Transform(Number)
   customerId?: number;
+
+  @IsOptional()
+  @Transform(getValidReviewSource)
+  source: ReviewSource;
 }

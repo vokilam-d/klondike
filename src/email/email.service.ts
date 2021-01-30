@@ -266,7 +266,8 @@ export class EmailService {
       name: productReview.name,
       text: productReview.text,
       rating: productReview.rating,
-      product: productReview.productName
+      product: productReview.productName,
+      source: productReview.source,
     };
   }
 
@@ -275,7 +276,8 @@ export class EmailService {
       id: storeReview.id,
       name: storeReview.name,
       text: storeReview.text,
-      rating: storeReview.rating
+      rating: storeReview.rating,
+      source: storeReview.source
     };
   }
 }

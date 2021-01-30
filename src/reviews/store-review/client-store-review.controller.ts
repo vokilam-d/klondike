@@ -6,7 +6,6 @@ import { AuthService } from '../../auth/services/auth.service';
 import { ModuleRef } from '@nestjs/core';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
-import { plainToClass } from 'class-transformer';
 import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
 import { ClientAddStoreReviewDto, ClientAddStoreReviewFromEmailDto } from '../../shared/dtos/client/add-store-review.dto';
 import { ClientStoreReviewDto } from '../../shared/dtos/client/store-review.dto';
@@ -16,6 +15,8 @@ import { ClientLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
+import { ReviewSource } from '../../shared/enums/review-source.enum';
+import { getValidReviewSource } from '../../shared/helpers/get-valid-review-source.function';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('store-reviews')
@@ -60,7 +61,7 @@ export class ClientStoreReviewController {
     @Query() storeReviewDto: ClientAddStoreReviewFromEmailDto,
     @ClientLang() lang: Language
   ) {
-    await this.storeReviewService.createReview({ ...storeReviewDto, source: 'email' }, lang);
+    await this.storeReviewService.createReview({ ...storeReviewDto, source: ReviewSource.Email }, lang);
 
     return {
       url: `/otzyvy?review-from-email=true`
@@ -97,11 +98,11 @@ export class ClientStoreReviewController {
         altText: multilang
       };
     });
+
     const review = await this.storeReviewService.createReview({
       ...storeReviewDto,
       medias: multilangMedias as AdminMediaDto[],
-      customerId,
-      source: 'website'
+      customerId
     }, lang);
 
     return {
@@ -142,6 +143,6 @@ export class ClientStoreReviewController {
     await this.storeReviewService.removeVote(parseInt(reviewId), ipAddress, clientId, customerId, lang);
     return {
       data: true
-    }
+    };
   }
 }

@@ -1,6 +1,7 @@
 import { Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { ReviewSource } from '../../enums/review-source.enum';
 
 export abstract class AdminBaseReviewDto {
   @Expose()
@@ -65,5 +66,5 @@ export abstract class AdminBaseReviewDto {
 
   @Expose()
   @IsOptional()
-  source?: 'manager' | 'website' | 'email';
+  source?: ReviewSource;
 }
