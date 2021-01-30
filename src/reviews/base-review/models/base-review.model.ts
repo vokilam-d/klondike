@@ -1,5 +1,6 @@
 import { arrayProp, prop } from '@typegoose/typegoose';
 import { Media } from '../../../shared/models/media.model';
+import { ReviewSource } from '../../../shared/enums/review-source.enum';
 
 export class ReviewVote {
   @prop()
@@ -53,5 +54,5 @@ export abstract class BaseReview {
   managerComment: string;
 
   @prop({ default: '' })
-  source: 'manager' | 'website' | 'email' | 'sms';
+  source: ReviewSource;
 }
