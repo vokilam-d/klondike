@@ -61,10 +61,17 @@ export class ClientStoreReviewController {
     @Query() storeReviewDto: ClientAddStoreReviewFromEmailDto,
     @ClientLang() lang: Language
   ) {
-    await this.storeReviewService.createReview({ ...storeReviewDto, source: ReviewSource.Email }, lang);
+    let redirectQueryParam: string;
+
+    if (storeReviewDto.text) {
+      await this.storeReviewService.createReview({ ...storeReviewDto, source: ReviewSource.Email }, lang);
+      redirectQueryParam = `review-from-email=true`;
+    } else {
+      redirectQueryParam = `leave-review=true`;
+    }
 
     return {
-      url: `/otzyvy?review-from-email=true`
+      url: `/otzyvy?${redirectQueryParam}`
     };
   }
 
