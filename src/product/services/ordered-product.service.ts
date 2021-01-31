@@ -43,6 +43,8 @@ export class OrderedProductService {
       new ElasticProduct()
     );
 
+    products = await this.productService.filterListItemsByAdminSpf(products, spf);
+
     for (let product of products) {
       const salesCount = orderedSalesCountMap.get(product.id);
       product.variants[0].salesCount = salesCount;

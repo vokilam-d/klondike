@@ -63,8 +63,8 @@ import { Language } from '../../shared/enums/language.enum';
 import { ClientBreadcrumbDto } from '../../shared/dtos/client/breadcrumb.dto';
 import { Dictionary } from '../../shared/helpers/dictionary';
 import { EventsService } from '../../shared/services/events/events.service';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { adminDefaultLanguage } from '../../shared/constants';
+import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -114,11 +114,16 @@ export class ProductService implements OnApplicationBootstrap {
     // console.log('saved all');
   }
 
-  async getAdminProductsList(spf: AdminSPFDto, withVariants: boolean): Promise<ResponseDto<AdminProductListItemDto[]>> {
+  async getAdminProductsList(
+    spf: AdminSPFDto | AdminProductSPFDto,
+    withVariants: boolean
+  ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
     const filters = await this.buildAdminFilters(spf);
     let [ products, itemsFiltered ] = await this.findByFilters(spf, filters);
     const itemsTotal = await this.countProducts();
+
+    products = await this.filterListItemsByAdminSpf(products, spf);
 
     if (!withVariants) {
       products = products.map(({ variants, ...product }) => product);
@@ -127,7 +132,7 @@ export class ProductService implements OnApplicationBootstrap {
     return {
       data: products,
       page: spf.page,
-      pagesTotal: Math.ceil((itemsTotal) / spf.limit),
+      pagesTotal: Math.ceil((itemsFiltered) / spf.limit),
       itemsTotal,
       itemsFiltered: spf.hasFilters() ? itemsFiltered : undefined
     };
@@ -1607,7 +1612,6 @@ export class ProductService implements OnApplicationBootstrap {
 
     const variantsProp = getPropertyOf<AdminProductListItemDto>('variants');
     const attributesProp = getPropertyOf<AdminProductListItemDto>('attributes');
-    const attributeIdProp = getPropertyOf<AdminProductSelectedAttributeDto>('attributeId');
     const valueIdsProp = getPropertyOf<AdminProductSelectedAttributeDto>('valueIds');
 
     const allAttributes = await this.attributeService.getAllAttributes();
@@ -1620,11 +1624,6 @@ export class ProductService implements OnApplicationBootstrap {
         filters.push(filter);
         continue;
       }
-
-      filters.push({
-        fieldName: `${attributesProp}.${attributeIdProp}|${variantsProp}.${attributesProp}.${attributeIdProp}`,
-        values: [attribute.id]
-      });
       filters.push({
         fieldName: `${attributesProp}.${valueIdsProp}|${variantsProp}.${attributesProp}.${valueIdsProp}`,
         values: filter.values
@@ -1632,6 +1631,60 @@ export class ProductService implements OnApplicationBootstrap {
     }
 
     return filters;
+  }
+
+  async filterListItemsByAdminSpf(
+    listItems: AdminProductListItemDto[],
+    spf: AdminSPFDto | AdminProductSPFDto
+  ): Promise<AdminProductListItemDto[]> {
+
+    const filters: IFilter[] = await this.getValidAttributeFilters(spf.getNormalizedFilters());
+    if (!filters.length) {
+      return listItems;
+    }
+    const filteredItems: AdminProductListItemDto[] = [];
+
+    const isSelectedAttributesHaveFilter = (selectedAttrs: AdminProductSelectedAttributeDto[], filter: IFilter): boolean => {
+      const foundSelectedAttr = selectedAttrs.find(selectedAttr => selectedAttr.attributeId === filter.fieldName);
+      if (!foundSelectedAttr) { return  false; }
+
+      const foundSelectedAttrValueId = foundSelectedAttr.valueIds.find(selectedAttrValueId => filter.values.includes(selectedAttrValueId));
+      if (!foundSelectedAttrValueId) { return false; }
+
+      return true;
+    };
+
+    for (const listItem of listItems) {
+      let hasAttr: boolean = false;
+
+      for (const filter of filters) {
+        const isInRoot = isSelectedAttributesHaveFilter(listItem.attributes, filter);
+        if (isInRoot) {
+          hasAttr = true;
+          continue;
+        }
+
+        let isInVariants: boolean = false;
+        for (const variant of listItem.variants) {
+          const isInVariant = isSelectedAttributesHaveFilter(variant.attributes, filter);
+          if (isInVariant) {
+            hasAttr = true;
+            break;
+          }
+        }
+
+        if (isInVariants) {
+          hasAttr = true;
+          continue;
+        }
+      }
+
+      if (hasAttr) {
+        filteredItems.push(listItem);
+      }
+    }
+
+    return filteredItems;
   }
 
   async incrementViewsCount(productId: number): Promise<void> {
