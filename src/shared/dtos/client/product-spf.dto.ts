@@ -19,6 +19,9 @@ export class ClientProductSPFDto extends ClientSPFDto {
   @IsOptional()
   id?: string;
 
+  @IsOptional()
+  q?: string;
+
   get sortFilter(): any {
     if (this.categoryId && this.sort === EProductsSort.Popularity) {
       const categoriesProp: keyof Product = 'categories';
@@ -50,6 +53,11 @@ export class ClientProductSPFDto extends ClientSPFDto {
         }
       }
     };
+
+    // For sorting by popularity while client-searching, use sorting by sales count
+    if (this.q && this.sort === EProductsSort.Popularity) {
+      this.sort = EProductsSort.SalesCount;
+    }
 
     switch (this.sort) {
       case EProductsSort.Cheap:
