@@ -192,12 +192,12 @@ export class ProductService implements OnApplicationBootstrap {
       categoryId: spf.categoryId,
       query: spf.q,
       page: spf.page,
-      skip: spf.skip,
       limit: spf.limit,
-      sort: spf.getSortAsObj(),
+      price: spf.price,
+      skip: spf.skip,
       sortFilter: spf.sortFilter,
-      lang,
-      price: spf.price
+      sort: spf.getSortAsObj(),
+      lang
     };
     const cache = this.clientProductListCache.get(cacheKey);
     if (cache) {
