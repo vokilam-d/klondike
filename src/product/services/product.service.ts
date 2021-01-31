@@ -183,16 +183,21 @@ export class ProductService implements OnApplicationBootstrap {
 
   async getClientProductListWithFilters(spf: ClientProductSPFDto, lang: Language): Promise<ClientProductListResponseDto> {
     const attributes = await this.attributeService.getAllAttributes();
-    const spfFilters = await this.getValidAttributeFilters(spf.getNormalizedFilters(), attributes);
+    const normalizedFilters = spf.getNormalizedFilters();
+    const spfFilters = await this.getValidAttributeFilters(normalizedFilters, attributes);
+    spfFilters.push(...this.getValidNonAttributeFilters(normalizedFilters));
 
     const cacheKey = {
       spfFilters,
       categoryId: spf.categoryId,
       query: spf.q,
+      page: spf.page,
+      skip: spf.skip,
       limit: spf.limit,
       sort: spf.getSortAsObj(),
       sortFilter: spf.sortFilter,
-      lang
+      lang,
+      price: spf.price
     };
     const cache = this.clientProductListCache.get(cacheKey);
     if (cache) {
@@ -228,7 +233,7 @@ export class ProductService implements OnApplicationBootstrap {
       }
     }
 
-    let possibleMinPrice = adminListItems?.[0]?.variants[0].price || 0;
+    let possibleMinPrice = adminListItems?.[0]?.variants[0].priceInDefaultCurrency || 0;
     let possibleMaxPrice = possibleMinPrice;
 
     let filterMinPrice: number;
@@ -262,10 +267,10 @@ export class ProductService implements OnApplicationBootstrap {
 
         let isPassedByPrice: boolean = true;
         if (filterMinPrice >= 0) {
-          if (variant.price < filterMinPrice) {
+          if (variant.priceInDefaultCurrency < filterMinPrice) {
             isPassedByPrice = false;
           }
-          if (filterMaxPrice && variant.price > filterMaxPrice) {
+          if (filterMaxPrice && variant.priceInDefaultCurrency > filterMaxPrice) {
             isPassedByPrice = false;
           }
         }
@@ -285,8 +290,8 @@ export class ProductService implements OnApplicationBootstrap {
 
         }
 
-        if (variant.price < possibleMinPrice) { possibleMinPrice = variant.price; }
-        if (variant.price > possibleMaxPrice) { possibleMaxPrice = variant.price; }
+        if (variant.priceInDefaultCurrency < possibleMinPrice) { possibleMinPrice = variant.priceInDefaultCurrency; }
+        if (variant.priceInDefaultCurrency > possibleMaxPrice) { possibleMaxPrice = variant.priceInDefaultCurrency; }
       }
 
       if (filteredVariants.length) {
