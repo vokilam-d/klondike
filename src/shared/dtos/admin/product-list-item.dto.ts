@@ -24,4 +24,5 @@ export class AdminProductListItemDto {
   variants?: AdminProductVariantListItemDto[];
   createdAt: Date;
   updatedAt: Date;
+  note: string;
 }

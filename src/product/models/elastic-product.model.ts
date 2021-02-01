@@ -38,4 +38,5 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
   textReviewsCount = elasticIntegerType;
   createdAt = elasticDateType;
   updatedAt = elasticDateType;
+  note = elasticTextType;
 }

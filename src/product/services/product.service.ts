@@ -1005,6 +1005,7 @@ export class ProductService implements OnApplicationBootstrap {
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
         currency: product.variants[0].currency,
+        note: product.note,
         salesCount,
         variants
       };

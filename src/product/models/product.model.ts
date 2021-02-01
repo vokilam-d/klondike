@@ -45,6 +45,9 @@ export class Product {
   @arrayProp({ items: Number, default: [] })
   additionalServiceIds: number[];
 
+  @prop({ default: '' })
+  note: string;
+
   createdAt: Date;
   updatedAt: Date;
 

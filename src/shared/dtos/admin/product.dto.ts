@@ -9,7 +9,7 @@ import { AdminBreadcrumbDto } from './breadcrumb.dto';
 import { Product } from '../../../product/models/product.model';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
-type PickedProduct = Pick<Product, 'isEnabled' | 'name' | 'categories' | 'breadcrumbs' | 'attributes' | 'createdAt' | 'updatedAt' | 'additionalServiceIds'>;
+type PickedProduct = Pick<Product, 'isEnabled' | 'name' | 'categories' | 'breadcrumbs' | 'attributes' | 'createdAt' | 'updatedAt' | 'additionalServiceIds' | 'note'>;
 type VariantsProp = Record<keyof Pick<Product, 'variants'>, AdminAddOrUpdateProductVariantDto[]>;
 export class AdminAddOrUpdateProductDto implements PickedProduct, VariantsProp {
   @Expose()
@@ -54,9 +54,14 @@ export class AdminAddOrUpdateProductDto implements PickedProduct, VariantsProp {
   @IsNumber(undefined, { each: true })
   @IsOptional()
   additionalServiceIds: number[];
+
+  @Expose()
+  @IsString()
+  @TrimString()
+  note: string;
 }
 
-export class AdminProductDto extends AdminAddOrUpdateProductDto implements Pick<Product, 'id' | 'reviewsAvgRating'>{
+export class AdminProductDto extends AdminAddOrUpdateProductDto implements Pick<Product, 'id' | 'reviewsAvgRating'> {
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id: number;
