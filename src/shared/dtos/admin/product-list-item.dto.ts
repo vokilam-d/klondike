@@ -11,6 +11,7 @@ export class AdminProductListItemDto {
   mediaUrl: string;
   name: MultilingualTextDto;
   skus: string;
+  gtins: string;
   currency: string;
   vendorCodes: string;
   prices: string;

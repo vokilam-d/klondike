@@ -26,6 +26,7 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   sellableQty = elasticIntegerType;
   salesCount = elasticIntegerType;
   sku = elasticKeywordType;
+  gtin = elasticKeywordType;
   vendorCode = elasticKeywordType;
   attributes = {
     type: 'nested',

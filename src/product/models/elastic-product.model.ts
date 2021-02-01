@@ -26,6 +26,7 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
   quantitiesInStock = elasticTextType;
   sellableQuantities = elasticTextType;
   skus = elasticTextType;
+  gtins = elasticTextType;
   vendorCodes = elasticTextType;
   salesCount = elasticIntegerType;
   variants = {
