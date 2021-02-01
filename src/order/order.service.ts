@@ -213,7 +213,7 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const newOrder = await this.createOrder(orderDto, lang, customer, session, 'manager', user);
-      newOrder.logs.push({ time: new Date(), text: `Created order, source=${newOrder.source}, userLogin=${user.login}` });
+      newOrder.logs.push({ time: new Date(), text: `Created order, source=${newOrder.source}, userLogin=${user?.login}` });
       newOrder.status = OrderStatusEnum.PROCESSING;
       await this.fetchShipmentStatus(newOrder);
 
@@ -377,7 +377,7 @@ export class OrderService implements OnApplicationBootstrap {
         await this.setPaymentInfoByMethodId(order, newPaymentMethodId);
       }
 
-      order.logs.push({ time: new Date(), text: `Edited order, userLogin=${user.login}` });
+      order.logs.push({ time: new Date(), text: `Edited order, userLogin=${user?.login}` });
 
       return order;
     });
@@ -421,12 +421,14 @@ export class OrderService implements OnApplicationBootstrap {
         throw new NotFoundException(__('Order with id "$1" not found', lang, orderId));
       }
 
-      await this.cancelOrderPreActions(order, lang, session);
+      if (order.status !== OrderStatusEnum.CANCELED) {
+        await this.cancelOrderPreActions(order, lang, session);
+      }
       await this.customerService.removeOrderFromCustomer(order.id, session);
 
       await session.commitTransaction();
 
-      this.logger.log(`Deleted order #${order.id}, userLogin=${user.login}`);
+      this.logger.log(`Deleted order #${order.id}, userLogin=${user?.login}`);
 
       await this.deleteSearchData(order.id);
       this.updateCachedOrderCount();
@@ -434,6 +436,7 @@ export class OrderService implements OnApplicationBootstrap {
       return order;
 
     } catch (ex) {
+      console.log(ex);
       await session.abortTransaction();
       throw ex;
     } finally {
@@ -861,10 +864,10 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       if (oldIsPaid !== order.isOrderPaid) {
-        order.logs.push({ time: new Date(), text: `Changed "isOrderPaid" from "${oldIsPaid}" to "${order.isOrderPaid}", userLogin=${user.login}` });
+        order.logs.push({ time: new Date(), text: `Changed "isOrderPaid" from "${oldIsPaid}" to "${order.isOrderPaid}", userLogin=${user?.login}` });
       }
       if (oldOrderStatus !== order.status) {
-        order.logs.push({ time: new Date(), text: `Changed order status from "${oldOrderStatus}" to "${order.status}", userLogin=${user.login}` });
+        order.logs.push({ time: new Date(), text: `Changed order status from "${oldOrderStatus}" to "${order.status}", userLogin=${user?.login}` });
       }
 
       return order;
