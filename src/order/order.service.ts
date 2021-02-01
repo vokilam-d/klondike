@@ -605,12 +605,18 @@ export class OrderService implements OnApplicationBootstrap {
 
   public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto, lang: Language): Promise<Order> {
     return await this.updateOrderById(orderId, lang, async order => {
-      const oldTrackingNumber = order.shipment.trackingNumber;
-      const newTrackingNumber = shipmentDto.trackingNumber;
+      const isTrackingNumberChanged = order.shipment.trackingNumber !== shipmentDto.trackingNumber;
+      const isAddressTypeChanged = order.shipment.recipient.addressType !== shipmentDto.recipient.addressType;
+
       OrderService.patchShipmentData(order.shipment, shipmentDto);
-      if (oldTrackingNumber !== newTrackingNumber) {
+
+      if (isTrackingNumberChanged) {
         await this.fetchShipmentStatus(order);
       }
+      if (isAddressTypeChanged) {
+        order.shippingMethodName = getTranslations(order.shipment.recipient.addressType);
+      }
+
       return order;
     });
   }
