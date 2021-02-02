@@ -8,6 +8,7 @@ import { readableDate } from '../shared/helpers/readable-date.function';
 import { isInDocker } from '../shared/helpers/is-in-docker';
 import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-order.function';
 import { Language } from '../shared/enums/language.enum';
+import { InvoiceEditDto } from '../shared/dtos/admin/invoice-edit.dto';
 
 @Injectable()
 export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -18,7 +19,6 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
   private orderHtmlPath = `${__dirname}/assets/pdf-order.html`;
   private invoiceCssPath = `${__dirname}/assets/css/pdf-invoice.css`;
   private invoiceHtmlPath = `${__dirname}/assets/pdf-invoice.html`;
-  private deliveryNotePath = `${__dirname}/assets/pdf-delivery-note.html`
 
   private browser: puppeteer.Browser;
 
@@ -35,14 +35,9 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
     return this.generatePdf(this.orderHtmlPath, this.orderCssPath, context);
   }
 
-  async generateInvoicePdf(order: Order): Promise<Buffer> {
-    const context = this.buildTemplateContextForInvoice(order);
+  async generateInvoicePdf(order: Order, editDto: InvoiceEditDto): Promise<Buffer> {
+    const context = this.buildTemplateContextForInvoice(order, editDto);
     return this.generatePdf(this.invoiceHtmlPath, this.invoiceCssPath, context);
-  }
-
-  async generateDeliveryNotePdf(order: Order): Promise<Buffer> {
-    const context = this.buildTemplateContextForInvoice(order);
-    return this.generatePdf(this.deliveryNotePath, this.invoiceCssPath, context);
   }
 
   private async generatePdf(htmlPath, cssPath, context) {
@@ -80,8 +75,8 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       totalOrderCost: order.prices.totalCost,
       addressName: `${order.shipment.recipient.firstName} ${order.shipment.recipient.lastName}`,
       addressPhone: order.shipment.recipient.phone,
-      addressCity: order.shipment.recipient.settlement,
-      address: order.shipment.recipient.address,
+      addressCity: order.shipment.recipient.settlementFull || order.shipment.recipient.settlement,
+      address: order.shipment.recipient.addressFull || order.shipment.recipient.address,
       addressBuildingNumber: order.shipment.recipient.buildingNumber,
       addressFlatNumber: order.shipment.recipient.flat,
       shipping: order.shippingMethodName[lang],
@@ -103,13 +98,19 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
     };
   }
 
-  private buildTemplateContextForInvoice(order: Order): any {
+  private buildTemplateContextForInvoice(order: Order, editDto: InvoiceEditDto): any {
     const lang: Language = Language.UK;
 
     return {
       orderId: order.id,
       orderDateTime: readableDate(order.createdAt),
-      addressName: `${order.shipment.recipient.firstName} ${order.shipment.recipient.lastName}`,
+      title: editDto.title || 'Видаткова накладна',
+      addressName: editDto.addressName || `${order.shipment.recipient.firstName} ${order.shipment.recipient.lastName}`,
+      addressPhone: editDto.addressPhone || order.shipment.recipient.phone,
+      addressCity: editDto.addressCity || order.shipment.recipient.settlementFull || order.shipment.recipient.settlement,
+      address: editDto.address || order.shipment.recipient.addressFull || order.shipment.recipient.address,
+      addressBuildingNumber: editDto.addressBuildingNumber || order.shipment.recipient.buildingNumber,
+      addressFlatNumber: editDto.addressFlatNumber || order.shipment.recipient.flat,
       totalOrderCost: order.prices.totalCost,
       totalOrderCostInWords: this.convertDigitsToWords(order.prices.totalCost),
       products: order.items.map((item, index) => ({
@@ -129,7 +130,8 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       managerNameShort: process.env.BANK_DETAILS_NAME_SHORT,
       bankAccount: process.env.BANK_DETAILS_ACCOUNT,
       bankCard: process.env.BANK_DETAILS_CARD,
-      idCode: process.env.BANK_DETAILS_ID
+      idCode: process.env.BANK_DETAILS_ID,
+      showStamp: editDto.hideStamp !== true
     };
   }
 

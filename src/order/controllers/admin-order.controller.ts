@@ -14,6 +14,7 @@ import { ChangeOrderStatusDto } from '../../shared/dtos/admin/change-order-statu
 import { AuthService } from '../../auth/services/auth.service';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -55,24 +56,11 @@ export class AdminOrderController {
   @Get(':id/invoice-pdf')
   async printInvoice(
     @Param('id') id: string,
+    @Query() editDto: InvoiceEditDto,
     @Res() reply: FastifyReply<ServerResponse>,
     @AdminLang() lang: Language
   ) {
-    const { fileName, pdf } = await this.orderService.printInvoice(parseInt(id), lang);
-
-    reply
-      .type('application/pdf')
-      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(fileName)}`)
-      .send(pdf);
-  }
-
-  @Get(':id/delivery-note-pdf')
-  async printDeliveryNote(
-    @Param('id') id: string,
-    @Res() reply: FastifyReply<ServerResponse>,
-    @AdminLang() lang: Language
-  ) {
-    const { fileName, pdf } = await this.orderService.printDeliveryNote(parseInt(id), lang);
+    const { fileName, pdf } = await this.orderService.printInvoice(parseInt(id), editDto, lang);
 
     reply
       .type('application/pdf')

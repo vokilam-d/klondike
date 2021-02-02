@@ -57,6 +57,7 @@ import { AdminOrderItemDto } from '../shared/dtos/admin/order-item.dto';
 import { ClientOrderItemDto } from '../shared/dtos/client/order-item.dto';
 import { adminDefaultLanguage, clientDefaultLanguage } from '../shared/constants';
 import { UserService } from 'src/user/user.service';
+import { InvoiceEditDto } from '../shared/dtos/admin/invoice-edit.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -493,19 +494,11 @@ export class OrderService implements OnApplicationBootstrap {
     };
   }
 
-  async printInvoice(orderId: number, lang: Language) {
+  async printInvoice(orderId: number, editDto: InvoiceEditDto, lang: Language) {
     const order = await this.getOrderById(orderId, lang);
     return {
-      fileName: `Рахунок-фактура №${order.id}.pdf`,
-      pdf: await this.pdfGeneratorService.generateInvoicePdf(order.toJSON())
-    };
-  }
-
-  async printDeliveryNote(orderId: number, lang: Language) {
-    const order = await this.getOrderById(orderId, lang);
-    return {
-      fileName: `Видаткова накладна №${order.id}.pdf`,
-      pdf: await this.pdfGeneratorService.generateDeliveryNotePdf(order.toJSON())
+      fileName: `${editDto.title} №${order.id}.pdf`,
+      pdf: await this.pdfGeneratorService.generateInvoicePdf(order.toJSON(), editDto)
     };
   }
 

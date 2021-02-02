@@ -60,9 +60,13 @@
     margin: 0;
 }
 
-.invoice-details__bank-info--name, .invoice-details__customer-name {
+.invoice-details__bank-info--name,
+.invoice-details__customer {
     margin: 0;
     font-size: 14px;
+}
+
+.invoice-details__customer-name {
     font-weight: bold;
     text-transform: uppercase;
 }
