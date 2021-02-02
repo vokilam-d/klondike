@@ -437,7 +437,6 @@ export class OrderService implements OnApplicationBootstrap {
       return order;
 
     } catch (ex) {
-      console.log(ex);
       await session.abortTransaction();
       throw ex;
     } finally {
