@@ -32,4 +32,5 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
     type: 'nested',
     properties: new ElasticProductSelectedAttributeModel()
   };
+  isIncludedInShoppingFeed = elasticBooleanType;
 }

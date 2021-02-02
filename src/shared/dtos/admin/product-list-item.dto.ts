@@ -25,4 +25,5 @@ export class AdminProductListItemDto {
   createdAt: Date;
   updatedAt: Date;
   note: string;
+  isIncludedInShoppingFeed: boolean;
 }

@@ -982,7 +982,8 @@ export class ProductService implements OnApplicationBootstrap {
           oldPriceInDefaultCurrency: variant.oldPriceInDefaultCurrency,
           qtyInStock: variant.qtyInStock,
           sellableQty: variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0),
-          salesCount: variant.salesCount
+          salesCount: variant.salesCount,
+          isIncludedInShoppingFeed: variant.isIncludedInShoppingFeed
         });
       }
 
@@ -1006,6 +1007,7 @@ export class ProductService implements OnApplicationBootstrap {
         updatedAt: product.updatedAt,
         currency: product.variants[0].currency,
         note: product.note,
+        isIncludedInShoppingFeed: product.variants[0].isIncludedInShoppingFeed,
         salesCount,
         variants
       };
