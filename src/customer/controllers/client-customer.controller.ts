@@ -31,7 +31,7 @@ import { CustomerJwtGuard } from '../../auth/guards/customer-jwt.guard';
 import { CustomerLocalGuard } from '../../auth/guards/customer-local.guard';
 import { InitResetPasswordDto } from '../../shared/dtos/client/init-reset-password.dto';
 import { ResetPasswordDto } from '../../shared/dtos/client/reset-password.dto';
-import { OrderService } from '../../order/order.service';
+import { OrderService } from '../../order/services/order.service';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ClientOrderDto } from '../../shared/dtos/client/order.dto';
 import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';

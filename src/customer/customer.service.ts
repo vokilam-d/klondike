@@ -34,7 +34,7 @@ import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
-import { OrderService } from '../order/order.service';
+import { OrderService } from '../order/services/order.service';
 import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { Language } from '../shared/enums/language.enum';
 

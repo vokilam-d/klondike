@@ -3,7 +3,7 @@ import { FastifyRequest } from 'fastify';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AuthService } from '../../auth/services/auth.service';
 import { CustomerService } from '../customer.service';
-import { OrderItemService } from '../../order/order-item.service';
+import { OrderItemService } from '../../order/services/order-item.service';
 import { ClientCalculatePricesDto } from '../../shared/dtos/client/calculate-prices.dto';
 import { CreateOrderItemDto } from '../../shared/dtos/shared-dtos/create-order-item.dto';
 import { ClientOrderItemDto } from '../../shared/dtos/client/order-item.dto';

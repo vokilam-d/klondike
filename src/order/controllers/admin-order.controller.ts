@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
-import { OrderService } from '../order.service';
+import { OrderService } from '../services/order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto, UpdateOrderAdminNote, UpdateOrderManager } from '../../shared/dtos/admin/order.dto';

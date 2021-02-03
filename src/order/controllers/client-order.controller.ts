@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Req, UsePipes, ValidationPipe } from '@nestjs/common';
-import { OrderService } from '../order.service';
+import { OrderService } from '../services/order.service';
 import { FastifyRequest } from 'fastify';
 import { ClientAddOrderDto, ClientOrderDto } from '../../shared/dtos/client/order.dto';
 import { AuthService } from '../../auth/services/auth.service';

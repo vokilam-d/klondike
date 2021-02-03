@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OrderService } from '../../order/order.service';
+import { OrderService } from '../../order/services/order.service';
 import { OrderChartDataDto } from '../../shared/dtos/admin/order-chart-data.dto';
 import { adminDefaultLanguage } from '../../shared/constants';
 
