@@ -118,6 +118,6 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
   @Expose()
   additionalServiceIds: number[];
 
-  // @Expose()
-  // label: ProductLabelTypeEnum;
+  @Expose()
+  label: ProductLabelTypeEnum;
 }

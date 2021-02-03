@@ -65,6 +65,7 @@ import { Dictionary } from '../../shared/helpers/dictionary';
 import { EventsService } from '../../shared/services/events/events.service';
 import { adminDefaultLanguage } from '../../shared/constants';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
+import { ProductLabelTypeEnum } from '../../shared/enums/product-label-type.enum';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -1212,6 +1213,7 @@ export class ProductService implements OnApplicationBootstrap {
       sku: selectedVariant.sku,
       vendorCode: selectedVariant.vendorCode,
       gtin: selectedVariant.gtin,
+      label: selectedVariant.label === ProductLabelTypeEnum.Empty ? null : selectedVariant.label,
       price: selectedVariant.priceInDefaultCurrency,
       oldPrice: selectedVariant.oldPriceInDefaultCurrency,
       isDiscountApplicable: selectedVariant.isDiscountApplicable,
