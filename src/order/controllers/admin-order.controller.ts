@@ -104,9 +104,11 @@ export class AdminOrderController {
   async createInternetDocument(
     @Param('id') orderId: string,
     @Body() shipmentDto: ShipmentDto,
+    @Req() req: FastifyRequest,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
-    const order = await this.orderService.createInternetDocument(parseInt(orderId), shipmentDto, lang);
+    const user = await this.authService.getUserFromReq(req);
+    const order = await this.orderService.createInternetDocument(parseInt(orderId), shipmentDto, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -163,10 +165,12 @@ export class AdminOrderController {
   async changeAdminNote(
     @Param('id') id: number,
     @Body() noteDto: UpdateOrderAdminNote,
+    @Req() req: FastifyRequest,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const order = await this.orderService.updateOrderAdminNote(id, noteDto.adminNote, lang);
+    const user = await this.authService.getUserFromReq(req);
+    const order = await this.orderService.updateOrderAdminNote(id, noteDto.adminNote, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -177,9 +181,12 @@ export class AdminOrderController {
   async changeAdminManager(
     @Param('id') id: number,
     @Body() managerDto: UpdateOrderManager,
+    @Req() req: FastifyRequest,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
-    const order = await this.orderService.updateOrderManager(id, managerDto.userId, lang);
+
+    const user = await this.authService.getUserFromReq(req);
+    const order = await this.orderService.updateOrderManager(id, managerDto.userId, user, lang);
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
     };
@@ -189,10 +196,12 @@ export class AdminOrderController {
   async editOrderShipment(
     @Param('id') orderId: number,
     @Body() shipmentDto: ShipmentDto,
+    @Req() req: FastifyRequest,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto, lang);
+    const user = await this.authService.getUserFromReq(req);
+    const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })

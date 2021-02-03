@@ -214,7 +214,7 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const newOrder = await this.createOrder(orderDto, lang, customer, session, 'manager', user);
-      newOrder.logs.push({ time: new Date(), text: `Created order, source=${newOrder.source}, userLogin=${user?.login}` });
+      OrderService.addLog(newOrder, `Created order, source=${newOrder.source}, userLogin=${user?.login}`);
       newOrder.status = OrderStatusEnum.PROCESSING;
       await this.fetchShipmentStatus(newOrder);
 
@@ -276,7 +276,7 @@ export class OrderService implements OnApplicationBootstrap {
       OrderService.checkForCheckoutRules(newOrder, lang);
 
       newOrder.status = OrderStatusEnum.NEW;
-      newOrder.logs.push({ time: new Date(), text: `Created order, source=${newOrder.source}` });
+      OrderService.addLog(newOrder, `Created order, source=${newOrder.source}`);
 
       await newOrder.save({ session });
       await session.commitTransaction();
@@ -369,8 +369,10 @@ export class OrderService implements OnApplicationBootstrap {
       const newTrackingNumber = orderDto.shipment.trackingNumber;
       const oldPaymentMethodId = order.paymentMethodId;
       const newPaymentMethodId = orderDto.paymentMethodId;
+
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
-      await this.assignOrderManager(order, orderDto.manager?.userId);
+      await this.assignOrderManager(order, orderDto.manager?.userId, user);
+
       if (oldTrackingNumber !== newTrackingNumber) {
         await this.fetchShipmentStatus(order);
       }
@@ -378,13 +380,13 @@ export class OrderService implements OnApplicationBootstrap {
         await this.setPaymentInfoByMethodId(order, newPaymentMethodId);
       }
 
-      order.logs.push({ time: new Date(), text: `Edited order, userLogin=${user?.login}` });
+      OrderService.addLog(order, `Edited order, userLogin=${user?.login}`);
 
       return order;
     });
   }
 
-  private async assignOrderManager(order: Order, userId: string, user?: User) {
+  private async assignOrderManager(order: Order, userId: string, user: User) {
     let assignedManagerUser: User;
     if (userId) {
       assignedManagerUser = await this.userService.getUserById(userId);
@@ -412,7 +414,7 @@ export class OrderService implements OnApplicationBootstrap {
       assignedManagerMessage += `, source=system`;
     }
 
-    order.logs.push({ time: new Date(), text: assignedManagerMessage });
+    OrderService.addLog(order, assignedManagerMessage);
     this.logger.log(assignedManagerMessage);
     this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
   }
@@ -479,7 +481,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
 
     order.shippedAt = new Date();
-    order.logs.push({ time: order.shippedAt, text: `Order has been shipped` });
+    OrderService.addLog(order, `Order has been shipped`);
 
     return order;
   }
@@ -569,7 +571,7 @@ export class OrderService implements OnApplicationBootstrap {
         const newShipmentStatus = order.shipment.status;
 
         if (newShipmentStatus !== oldShipmentStatus) {
-          order.logs.push({ time: new Date(), text: `Updated shipment status to "${order.shipment.status}" - ${order.shipment.statusDescription}, source=system` });
+          OrderService.addLog(order, `Updated shipment status to "${order.shipment.status}" - ${order.shipment.statusDescription}, source=system`);
         }
 
         const oldOrderStatus = order.status;
@@ -585,7 +587,7 @@ export class OrderService implements OnApplicationBootstrap {
               break;
           }
 
-          order.logs.push({ time: new Date(), text: `Updated order status by shipment status to "${order.status}" - ${order.statusDescription[adminDefaultLanguage]}, source=system` });
+          OrderService.addLog(order, `Updated order status by shipment status to "${order.status}" - ${order.statusDescription[adminDefaultLanguage]}, source=system`);
         }
 
         await order.save({ session });
@@ -603,7 +605,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto, lang: Language): Promise<Order> {
+  public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(orderId, lang, async order => {
       const isTrackingNumberChanged = order.shipment.trackingNumber !== shipmentDto.trackingNumber;
       const isAddressTypeChanged = order.shipment.recipient.addressType !== shipmentDto.recipient.addressType;
@@ -616,6 +618,14 @@ export class OrderService implements OnApplicationBootstrap {
       if (isAddressTypeChanged) {
         order.shippingMethodName = getTranslations(order.shipment.recipient.addressType);
       }
+
+      let logMessage = `Edited order shipment`;
+      if (isTrackingNumberChanged) {
+        logMessage += `, oldTrackingNumber=${order.shipment.trackingNumber}, newTrackingNumber=${shipmentDto.trackingNumber}`;
+      }
+      logMessage += `, userLogin=${user?.login}`;
+
+      OrderService.addLog(order, logMessage);
 
       return order;
     });
@@ -806,18 +816,22 @@ export class OrderService implements OnApplicationBootstrap {
       const oldStatus = order.status;
       order.status = status;
 
-      order.logs.push({ time: new Date(), text: `Changed order status from "${oldStatus}" to "${order.status}", userLogin=${user?.login}` });
+      OrderService.addLog(order, `Changed order status from "${oldStatus}" to "${order.status}", userLogin=${user?.login}`);
 
       return order;
     });
   }
 
-  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, lang: Language): Promise<Order> {
+  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
     return this.updateOrderById(orderId, lang, async order => {
+      let logMessage: string = '';
+
       if (shipmentDto.trackingNumber) {
         order.shipment.trackingNumber = shipmentDto.trackingNumber;
         order.status = OrderStatusEnum.PACKED;
         await this.fetchShipmentStatus(order);
+
+        logMessage = `Set tracking number manually`;
       } else {
         OrderService.patchShipmentData(order.shipment, shipmentDto);
 
@@ -834,11 +848,15 @@ export class OrderService implements OnApplicationBootstrap {
         order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
         order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
         order.shipment.statusDescription = 'Новая почта ожидает поступление';
+
+        logMessage = `Created internet document`;
       }
 
       if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
         order.status = OrderStatusEnum.READY_TO_SHIP;
       }
+
+      OrderService.addLog(order, `${logMessage}, trackingNumber=${order.shipment.trackingNumber}, orderStatus=${order.status}, shipmentStatus=${order.shipment.status}, userLogin=${user?.login}`);
 
       return order;
     });
@@ -861,26 +879,28 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       if (oldIsPaid !== order.isOrderPaid) {
-        order.logs.push({ time: new Date(), text: `Changed "isOrderPaid" from "${oldIsPaid}" to "${order.isOrderPaid}", userLogin=${user?.login}` });
+        OrderService.addLog(order, `Changed "isOrderPaid" from "${oldIsPaid}" to "${order.isOrderPaid}", userLogin=${user?.login}`);
       }
       if (oldOrderStatus !== order.status) {
-        order.logs.push({ time: new Date(), text: `Changed order status from "${oldOrderStatus}" to "${order.status}", userLogin=${user?.login}` });
+        OrderService.addLog(order, `Changed order status from "${oldOrderStatus}" to "${order.status}", userLogin=${user?.login}`);
       }
 
       return order;
     });
   }
 
-  async updateOrderAdminNote(id: number, adminNote: string, lang: Language): Promise<Order> {
+  async updateOrderAdminNote(id: number, adminNote: string, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(id, lang, async order => {
+      const oldNote = order.adminNote;
       order.adminNote = adminNote;
+      OrderService.addLog(order, `Changed admin note, oldNote=${oldNote}, newNote=${adminNote}, userLogin=${user?.login}`);
       return order;
     });
   }
 
-  async updateOrderManager(id: number, userId: string, lang: Language): Promise<Order> {
+  async updateOrderManager(id: number, userId: string, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(id, lang, async order => {
-      await this.assignOrderManager(order, userId);
+      await this.assignOrderManager(order, userId, user);
       return order;
     });
   }
@@ -954,5 +974,9 @@ export class OrderService implements OnApplicationBootstrap {
 
   private static shouldAssignToKristina(order: Order): boolean {
     return order.items.some(item => item.name[clientDefaultLanguage].toLowerCase().includes('картина'));
+  }
+
+  private static addLog(order: Order, message: string): void {
+    order.logs.push({ time: new Date(), text: message });
   }
 }
