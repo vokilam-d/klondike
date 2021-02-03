@@ -40,6 +40,9 @@ export class OrderItem {
   @prop()
   slug: string;
 
+  @prop()
+  isPacked: boolean;
+
   @arrayProp({ items: OrderItemAdditionalService, _id: false, default: [] })
   additionalServices: OrderItemAdditionalService[];
 

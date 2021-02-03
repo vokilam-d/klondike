@@ -137,6 +137,16 @@ export const TRANSLATIONS = {
     ru: 'Нельзя сменить статус на "$1": заказ не оплачен',
     uk: 'Не можна змінити статус на "$1": замовлення не сплачено'
   },
+  'Cannot change status to "$1": not all order items are packed': {
+    en: 'Cannot change status to "$1": not all order items are packed',
+    ru: 'Нельзя сменить статус на "$1": не все товары упакованы',
+    uk: 'Не можна змінити статус на "$1": не всі товари упаковані'
+  },
+  'Cannot create internet document: not all order items are packed': {
+    en: 'Cannot create internet document: not all order items are packed',
+    ru: 'Не удалось создать накладную: не все товары упакованы',
+    uk: 'Не вдалось створити накладну: не всі товари упаковані'
+  },
   'Cannot change status to "$1": disallowed status': {
     en: 'Cannot change status to "$1": disallowed status',
     ru: 'Нельзя сменить статус на "$1": запрещённый статус',
@@ -331,5 +341,15 @@ export const TRANSLATIONS = {
     en: 'Password must be at least 8 characters long, consist of numbers and Latin letters, including capital letters',
     ru: 'Пароль должен быть не менее 8 символов, состоять из цифр и латинских букв, в том числе заглавных',
     uk: 'Пароль повинен бути не менше 8 символів, складатися з цифр і латинських букв, в тому числі великих'
+  },
+  'Order item with sku "$1" is not found in order "#$2"': {
+    en: 'Order item with sku "$1" is not found in order "№$2"',
+    ru: 'Товар с кодом "$1" не найден в заказе "№$2"',
+    uk: 'Товар з кодом "$1" не знайдено в замовленні "№$2"'
+  },
+  'Wrong quantity of order item "$1" is packed. Packed: "$2". Should be: "$3"': {
+    en: 'Wrong quantity of order item "$1" is packed. Packed: "$2". Should be: "$3"',
+    ru: 'Упаковано неправильное кол-во товара "$1". Упаковано: "$2". Должно быть: "$3"',
+    uk: 'Упакована неправильна кількість товару "$1". Упаковано: "$2". Повинно бути: "$3"'
   }
 }

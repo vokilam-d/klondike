@@ -15,6 +15,7 @@ import { AuthService } from '../../auth/services/auth.service';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
+import { PackOrderItemDto } from '../../shared/dtos/admin/pack-order-item.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -189,6 +190,22 @@ export class AdminOrderController {
     const order = await this.orderService.updateOrderManager(id, managerDto.userId, user, lang);
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Put(':id/is-packed')
+  async packOrderItem(
+    @Param('id') orderId: number,
+    @Body() packOrderItemDto: PackOrderItemDto,
+    @Req() req: FastifyRequest,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
+
+    const user = await this.authService.getUserFromReq(req);
+    const updated = await this.orderService.packOrderItem(orderId, packOrderItemDto, user, lang);
+
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
     };
   }
 

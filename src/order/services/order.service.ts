@@ -58,6 +58,7 @@ import { ClientOrderItemDto } from '../../shared/dtos/client/order-item.dto';
 import { adminDefaultLanguage, clientDefaultLanguage } from '../../shared/constants';
 import { UserService } from 'src/user/user.service';
 import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
+import { PackOrderItemDto } from '../../shared/dtos/admin/pack-order-item.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -770,6 +771,9 @@ export class OrderService implements OnApplicationBootstrap {
 
         case OrderStatusEnum.PACKED:
           assertStatus(OrderStatusEnum.READY_TO_PACK);
+          if (order.items.some(item => item.isPacked !== true)) {
+            throw new BadRequestException(__('Cannot change status to "$1": not all order items are packed', lang, status));
+          }
           break;
 
         case OrderStatusEnum.READY_TO_SHIP:
@@ -833,6 +837,10 @@ export class OrderService implements OnApplicationBootstrap {
 
         logMessage = `Set tracking number manually`;
       } else {
+        if (order.items.some(item => item.isPacked !== true)) {
+          throw new BadRequestException(__('Cannot create internet document: not all order items are packed', lang));
+        }
+
         OrderService.patchShipmentData(order.shipment, shipmentDto);
 
         const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId, lang);
@@ -884,6 +892,24 @@ export class OrderService implements OnApplicationBootstrap {
       if (oldOrderStatus !== order.status) {
         OrderService.addLog(order, `Changed order status from "${oldOrderStatus}" to "${order.status}", userLogin=${user?.login}`);
       }
+
+      return order;
+    });
+  }
+
+  async packOrderItem(id: number, packDto: PackOrderItemDto, user: User, lang: Language): Promise<Order> {
+    return await this.updateOrderById(id, lang, async order => {
+      const orderItem = order.items.find(item => item.sku === packDto.sku);
+      if (!orderItem) {
+        throw new BadRequestException(__('Order item with sku "$1" is not found in order "#$2"', lang, packDto.sku, order.id));
+      }
+      if (packDto.qty !== orderItem.qty) {
+        throw new BadRequestException(__('Wrong quantity of order item "$1" is packed. Packed: "$2". Should be: "$3"', lang, packDto.sku, packDto.qty, orderItem.qty));
+      }
+
+      orderItem.isPacked = true;
+
+      OrderService.addLog(order, `Order item has been packed, sku=${orderItem.sku}, userLogin=${user?.login}`);
 
       return order;
     });

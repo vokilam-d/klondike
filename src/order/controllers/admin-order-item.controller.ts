@@ -12,7 +12,6 @@ import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
 import { AdminOrderPricesDto } from '../../shared/dtos/admin/order-prices.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
