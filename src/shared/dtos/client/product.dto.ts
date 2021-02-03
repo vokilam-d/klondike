@@ -8,6 +8,7 @@ import { ClientMetaTagsDto } from './meta-tags.dto';
 import { ClientBreadcrumbDto } from './breadcrumb.dto';
 import { Language } from '../../enums/language.enum';
 import { ProductCategory } from '../../../product/models/product-category.model';
+import { ProductLabelTypeEnum } from '../../enums/product-label-type.enum';
 
 export class ClientProductCharacteristic {
   label: string;
@@ -116,4 +117,7 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
 
   @Expose()
   additionalServiceIds: number[];
+
+  // @Expose()
+  // label: ProductLabelTypeEnum;
 }
