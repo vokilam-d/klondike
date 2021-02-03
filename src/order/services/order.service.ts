@@ -401,15 +401,20 @@ export class OrderService implements OnApplicationBootstrap {
 
     order.manager = { name: assignedManagerUser.name, userId: newOrderManagerUserId };
 
-    if (newOrderManagerUserId !== oldOrderManagerUserId || user?.id.toString() !== newOrderManagerUserId) {
-      const userLogin = user ? user.login : `<client>`;
-      const assignedManagerMessage = `Assigned to manager ${assignedManagerUser.name}, orderId=${order.id}, userLogin=${userLogin}`;
-
-      order.logs.push({ time: new Date(), text: assignedManagerMessage });
-      this.logger.log(assignedManagerMessage);
-
-      this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
+    if (newOrderManagerUserId === oldOrderManagerUserId) {
+      return;
     }
+
+    let assignedManagerMessage = `Assigned to manager ${assignedManagerUser.name}, orderId=${order.id}`;
+    if (user) {
+      assignedManagerMessage += `, source=admin, userLogin=${user.login}`;
+    } else {
+      assignedManagerMessage += `, source=system`;
+    }
+
+    order.logs.push({ time: new Date(), text: assignedManagerMessage });
+    this.logger.log(assignedManagerMessage);
+    this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
   }
 
   async deleteOrder(orderId: number, user: DocumentType<User>, lang: Language): Promise<Order> {
