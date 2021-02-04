@@ -1717,10 +1717,11 @@ export class ProductService implements OnApplicationBootstrap {
     this.eventsService.on(this.productUpdatedEventName, () => {
       this.updateCachedProductCount();
       this.clientProductListCache.clear();
+      this.cachedClientProduct.clear();
     });
   }
 
-  private onProductUpdate() {
+  onProductUpdate() {
     this.eventsService.emit(this.productUpdatedEventName, {});
   }
 

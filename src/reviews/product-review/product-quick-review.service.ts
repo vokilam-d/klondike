@@ -50,6 +50,7 @@ export class ProductQuickReviewService {
 
       await this.productService.updateReviewRating(productId, lang, session);
       await session.commitTransaction();
+      this.productService.onProductUpdate();
 
       return quickReview;
 
