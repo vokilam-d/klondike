@@ -828,6 +828,10 @@ export class OrderService implements OnApplicationBootstrap {
 
   async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
     return this.updateOrderById(orderId, lang, async order => {
+      if (order.items.some(item => item.isPacked !== true)) {
+        throw new BadRequestException(__('Cannot create internet document: not all order items are packed', lang));
+      }
+
       let logMessage: string = '';
 
       if (shipmentDto.trackingNumber) {
@@ -837,10 +841,6 @@ export class OrderService implements OnApplicationBootstrap {
 
         logMessage = `Set tracking number manually`;
       } else {
-        if (order.items.some(item => item.isPacked !== true)) {
-          throw new BadRequestException(__('Cannot create internet document: not all order items are packed', lang));
-        }
-
         OrderService.patchShipmentData(order.shipment, shipmentDto);
 
         const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId, lang);
