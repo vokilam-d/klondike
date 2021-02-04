@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
-import { OrderItemService } from '../order-item.service';
+import { OrderItemService } from '../services/order-item.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { CreateOrderItemDto } from '../../shared/dtos/shared-dtos/create-order-item.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
@@ -12,7 +12,6 @@ import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
 import { AdminOrderPricesDto } from '../../shared/dtos/admin/order-prices.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))

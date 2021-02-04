@@ -6,7 +6,7 @@ import { ElasticProduct } from '../models/elastic-product.model';
 import { SearchService } from '../../shared/services/search/search.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
-import { OrderService } from '../../order/order.service';
+import { OrderService } from '../../order/services/order.service';
 
 @Injectable()
 export class OrderedProductService {

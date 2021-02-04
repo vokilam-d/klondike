@@ -15,7 +15,7 @@ export class User {
   @prop({ required: true })
   password: string;
 
-  @prop({ required: true })
+  @prop()
   name: string;
 
   @arrayProp({ items: String, default: [] })

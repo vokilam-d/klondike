@@ -1,11 +1,10 @@
 import { Expose } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { ClientProductListItemDto } from '../client/product-list-item.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
 import { BaseOrderItemAdditionalServiceDto } from './base-order-item-additional-service.dto';
 import { OrderItem } from '../../../order/models/order-item.model';
 
-export abstract class BaseOrderItemDto implements OrderItem {
+export abstract class BaseOrderItemDto implements Omit<OrderItem, 'isPacked'> {
   abstract name: any;
 
   @Expose()

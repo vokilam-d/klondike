@@ -38,6 +38,7 @@ class ElasticOrderItemModel implements Omit<Record<keyof AdminOrderItemDto, any>
     type: 'nested',
     properties: new ElasticOrderItemAdditionalService()
   }
+  isPacked = elasticBooleanType;
 }
 
 class ElasticShipmentModel implements Record<keyof Pick<ShipmentDto, 'trackingNumber' | 'status' | 'statusDescription' | 'recipient'>, any>{

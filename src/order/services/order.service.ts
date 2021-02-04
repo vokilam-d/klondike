@@ -9,55 +9,56 @@ import {
   OnApplicationBootstrap
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Order } from './models/order.model';
+import { Order } from '../models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../shared/dtos/admin/order.dto';
-import { CounterService } from '../shared/services/counter/counter.service';
-import { CustomerService } from '../customer/customer.service';
-import { AdminAddOrUpdateCustomerDto } from '../shared/dtos/admin/customer.dto';
-import { InventoryService } from '../inventory/inventory.service';
-import { FinalOrderStatuses, OrderStatusEnum, ShippedOrderStatuses } from '../shared/enums/order-status.enum';
-import { getPropertyOf } from '../shared/helpers/get-property-of.function';
-import { PdfGeneratorService } from '../pdf-generator/pdf-generator.service';
-import { addLeadingZeros } from '../shared/helpers/add-leading-zeros.function';
-import { Customer } from '../customer/models/customer.model';
-import { ProductService } from '../product/services/product.service';
-import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
+import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../../shared/dtos/admin/order.dto';
+import { CounterService } from '../../shared/services/counter/counter.service';
+import { CustomerService } from '../../customer/customer.service';
+import { AdminAddOrUpdateCustomerDto } from '../../shared/dtos/admin/customer.dto';
+import { InventoryService } from '../../inventory/inventory.service';
+import { FinalOrderStatuses, OrderStatusEnum, ShippedOrderStatuses } from '../../shared/enums/order-status.enum';
+import { getPropertyOf } from '../../shared/helpers/get-property-of.function';
+import { PdfGeneratorService } from '../../pdf-generator/pdf-generator.service';
+import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
+import { Customer } from '../../customer/models/customer.model';
+import { ProductService } from '../../product/services/product.service';
+import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import { SearchService } from '../shared/services/search/search.service';
-import { ElasticOrderModel } from './models/elastic-order.model';
-import { OrderFilterDto } from '../shared/dtos/admin/order-filter.dto';
+import { SearchService } from '../../shared/services/search/search.service';
+import { ElasticOrderModel } from '../models/elastic-order.model';
+import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ClientSession, FilterQuery } from 'mongoose';
-import { PaymentMethodService } from '../payment-method/payment-method.service';
-import { ClientAddOrderDto } from '../shared/dtos/client/order.dto';
-import { TasksService } from '../tasks/tasks.service';
-import { __, getTranslations } from '../shared/helpers/translate/translate.function';
-import { NovaPoshtaService } from '../nova-poshta/nova-poshta.service';
-import { ShipmentSenderService } from '../nova-poshta/shipment-sender.service';
-import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
+import { PaymentMethodService } from '../../payment-method/payment-method.service';
+import { ClientAddOrderDto } from '../../shared/dtos/client/order.dto';
+import { TasksService } from '../../tasks/tasks.service';
+import { __, getTranslations } from '../../shared/helpers/translate/translate.function';
+import { NovaPoshtaService } from '../../nova-poshta/nova-poshta.service';
+import { ShipmentSenderService } from '../../nova-poshta/shipment-sender.service';
+import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
-import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
-import { Shipment } from './models/shipment.model';
-import { PaymentTypeEnum } from '../shared/enums/payment-type.enum';
-import { OnlinePaymentDetailsDto } from '../shared/dtos/client/online-payment-details.dto';
+import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { ShipmentStatusEnum } from '../../shared/enums/shipment-status.enum';
+import { Shipment } from '../models/shipment.model';
+import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
+import { OnlinePaymentDetailsDto } from '../../shared/dtos/client/online-payment-details.dto';
 import { createHmac } from 'crypto';
 import { isObject } from 'src/shared/helpers/is-object.function';
-import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
-import { EmailService } from '../email/email.service';
-import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expression-early-morning.function';
-import { isProdEnv } from '../shared/helpers/is-prod-env.function';
-import { User } from '../user/models/user.model';
+import { areAddressesSame } from '../../shared/helpers/are-addresses-same.function';
+import { EmailService } from '../../email/email.service';
+import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-expression-early-morning.function';
+import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
+import { User } from '../../user/models/user.model';
 import { OrderItemService } from './order-item.service';
-import { OrderItem } from './models/order-item.model';
-import { AddressTypeEnum } from '../shared/enums/address-type.enum';
-import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
-import { Language } from '../shared/enums/language.enum';
-import { AdminOrderItemDto } from '../shared/dtos/admin/order-item.dto';
-import { ClientOrderItemDto } from '../shared/dtos/client/order-item.dto';
-import { adminDefaultLanguage, clientDefaultLanguage } from '../shared/constants';
+import { OrderItem } from '../models/order-item.model';
+import { AddressTypeEnum } from '../../shared/enums/address-type.enum';
+import { CurrencyCodeEnum } from '../../shared/enums/currency.enum';
+import { Language } from '../../shared/enums/language.enum';
+import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
+import { ClientOrderItemDto } from '../../shared/dtos/client/order-item.dto';
+import { adminDefaultLanguage, clientDefaultLanguage } from '../../shared/constants';
 import { UserService } from 'src/user/user.service';
-import { InvoiceEditDto } from '../shared/dtos/admin/invoice-edit.dto';
+import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
+import { PackOrderItemDto } from '../../shared/dtos/admin/pack-order-item.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -214,7 +215,7 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const newOrder = await this.createOrder(orderDto, lang, customer, session, 'manager', user);
-      newOrder.logs.push({ time: new Date(), text: `Created order, source=${newOrder.source}, userLogin=${user?.login}` });
+      OrderService.addLog(newOrder, `Created order, source=${newOrder.source}, userLogin=${user?.login}`);
       newOrder.status = OrderStatusEnum.PROCESSING;
       await this.fetchShipmentStatus(newOrder);
 
@@ -276,7 +277,7 @@ export class OrderService implements OnApplicationBootstrap {
       OrderService.checkForCheckoutRules(newOrder, lang);
 
       newOrder.status = OrderStatusEnum.NEW;
-      newOrder.logs.push({ time: new Date(), text: `Created order, source=${newOrder.source}` });
+      OrderService.addLog(newOrder, `Created order, source=${newOrder.source}`);
 
       await newOrder.save({ session });
       await session.commitTransaction();
@@ -369,8 +370,10 @@ export class OrderService implements OnApplicationBootstrap {
       const newTrackingNumber = orderDto.shipment.trackingNumber;
       const oldPaymentMethodId = order.paymentMethodId;
       const newPaymentMethodId = orderDto.paymentMethodId;
+
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
-      await this.assignOrderManager(order, orderDto.manager?.userId);
+      await this.assignOrderManager(order, orderDto.manager?.userId, user);
+
       if (oldTrackingNumber !== newTrackingNumber) {
         await this.fetchShipmentStatus(order);
       }
@@ -378,13 +381,13 @@ export class OrderService implements OnApplicationBootstrap {
         await this.setPaymentInfoByMethodId(order, newPaymentMethodId);
       }
 
-      order.logs.push({ time: new Date(), text: `Edited order, userLogin=${user?.login}` });
+      OrderService.addLog(order, `Edited order, userLogin=${user?.login}`);
 
       return order;
     });
   }
 
-  private async assignOrderManager(order: Order, userId: string, user?: User) {
+  private async assignOrderManager(order: Order, userId: string, user: User) {
     let assignedManagerUser: User;
     if (userId) {
       assignedManagerUser = await this.userService.getUserById(userId);
@@ -401,15 +404,20 @@ export class OrderService implements OnApplicationBootstrap {
 
     order.manager = { name: assignedManagerUser.name, userId: newOrderManagerUserId };
 
-    if (newOrderManagerUserId !== oldOrderManagerUserId || user?.id.toString() !== newOrderManagerUserId) {
-      const userLogin = user ? user.login : `<client>`;
-      const assignedManagerMessage = `Assigned to manager ${assignedManagerUser.name}, orderId=${order.id}, userLogin=${userLogin}`;
-
-      order.logs.push({ time: new Date(), text: assignedManagerMessage });
-      this.logger.log(assignedManagerMessage);
-
-      this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
+    if (newOrderManagerUserId === oldOrderManagerUserId) {
+      return;
     }
+
+    let assignedManagerMessage = `Assigned to manager ${assignedManagerUser.name}, orderId=${order.id}`;
+    if (user) {
+      assignedManagerMessage += `, source=admin, userLogin=${user.login}`;
+    } else {
+      assignedManagerMessage += `, source=system`;
+    }
+
+    OrderService.addLog(order, assignedManagerMessage);
+    this.logger.log(assignedManagerMessage);
+    this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
   }
 
   async deleteOrder(orderId: number, user: DocumentType<User>, lang: Language): Promise<Order> {
@@ -474,7 +482,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
 
     order.shippedAt = new Date();
-    order.logs.push({ time: order.shippedAt, text: `Order has been shipped` });
+    OrderService.addLog(order, `Order has been shipped`);
 
     return order;
   }
@@ -564,7 +572,7 @@ export class OrderService implements OnApplicationBootstrap {
         const newShipmentStatus = order.shipment.status;
 
         if (newShipmentStatus !== oldShipmentStatus) {
-          order.logs.push({ time: new Date(), text: `Updated shipment status to "${order.shipment.status}" - ${order.shipment.statusDescription}, source=system` });
+          OrderService.addLog(order, `Updated shipment status to "${order.shipment.status}" - ${order.shipment.statusDescription}, source=system`);
         }
 
         const oldOrderStatus = order.status;
@@ -580,7 +588,7 @@ export class OrderService implements OnApplicationBootstrap {
               break;
           }
 
-          order.logs.push({ time: new Date(), text: `Updated order status by shipment status to "${order.status}" - ${order.statusDescription[adminDefaultLanguage]}, source=system` });
+          OrderService.addLog(order, `Updated order status by shipment status to "${order.status}" - ${order.statusDescription[adminDefaultLanguage]}, source=system`);
         }
 
         await order.save({ session });
@@ -598,7 +606,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto, lang: Language): Promise<Order> {
+  public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(orderId, lang, async order => {
       const isTrackingNumberChanged = order.shipment.trackingNumber !== shipmentDto.trackingNumber;
       const isAddressTypeChanged = order.shipment.recipient.addressType !== shipmentDto.recipient.addressType;
@@ -611,6 +619,14 @@ export class OrderService implements OnApplicationBootstrap {
       if (isAddressTypeChanged) {
         order.shippingMethodName = getTranslations(order.shipment.recipient.addressType);
       }
+
+      let logMessage = `Edited order shipment`;
+      if (isTrackingNumberChanged) {
+        logMessage += `, oldTrackingNumber=${order.shipment.trackingNumber}, newTrackingNumber=${shipmentDto.trackingNumber}`;
+      }
+      logMessage += `, userLogin=${user?.login}`;
+
+      OrderService.addLog(order, logMessage);
 
       return order;
     });
@@ -755,6 +771,9 @@ export class OrderService implements OnApplicationBootstrap {
 
         case OrderStatusEnum.PACKED:
           assertStatus(OrderStatusEnum.READY_TO_PACK);
+          if (order.items.some(item => item.isPacked !== true)) {
+            throw new BadRequestException(__('Cannot change status to "$1": not all order items are packed', lang, status));
+          }
           break;
 
         case OrderStatusEnum.READY_TO_SHIP:
@@ -801,18 +820,26 @@ export class OrderService implements OnApplicationBootstrap {
       const oldStatus = order.status;
       order.status = status;
 
-      order.logs.push({ time: new Date(), text: `Changed order status from "${oldStatus}" to "${order.status}", userLogin=${user?.login}` });
+      OrderService.addLog(order, `Changed order status from "${oldStatus}" to "${order.status}", userLogin=${user?.login}`);
 
       return order;
     });
   }
 
-  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, lang: Language): Promise<Order> {
+  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
     return this.updateOrderById(orderId, lang, async order => {
+      if (order.items.some(item => item.isPacked !== true)) {
+        throw new BadRequestException(__('Cannot create internet document: not all order items are packed', lang));
+      }
+
+      let logMessage: string = '';
+
       if (shipmentDto.trackingNumber) {
         order.shipment.trackingNumber = shipmentDto.trackingNumber;
         order.status = OrderStatusEnum.PACKED;
         await this.fetchShipmentStatus(order);
+
+        logMessage = `Set tracking number manually`;
       } else {
         OrderService.patchShipmentData(order.shipment, shipmentDto);
 
@@ -829,11 +856,15 @@ export class OrderService implements OnApplicationBootstrap {
         order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
         order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
         order.shipment.statusDescription = 'Новая почта ожидает поступление';
+
+        logMessage = `Created internet document`;
       }
 
       if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
         order.status = OrderStatusEnum.READY_TO_SHIP;
       }
+
+      OrderService.addLog(order, `${logMessage}, trackingNumber=${order.shipment.trackingNumber}, orderStatus=${order.status}, shipmentStatus=${order.shipment.status}, userLogin=${user?.login}`);
 
       return order;
     });
@@ -856,26 +887,46 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       if (oldIsPaid !== order.isOrderPaid) {
-        order.logs.push({ time: new Date(), text: `Changed "isOrderPaid" from "${oldIsPaid}" to "${order.isOrderPaid}", userLogin=${user?.login}` });
+        OrderService.addLog(order, `Changed "isOrderPaid" from "${oldIsPaid}" to "${order.isOrderPaid}", userLogin=${user?.login}`);
       }
       if (oldOrderStatus !== order.status) {
-        order.logs.push({ time: new Date(), text: `Changed order status from "${oldOrderStatus}" to "${order.status}", userLogin=${user?.login}` });
+        OrderService.addLog(order, `Changed order status from "${oldOrderStatus}" to "${order.status}", userLogin=${user?.login}`);
       }
 
       return order;
     });
   }
 
-  async updateOrderAdminNote(id: number, adminNote: string, lang: Language): Promise<Order> {
+  async packOrderItem(id: number, packDto: PackOrderItemDto, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(id, lang, async order => {
-      order.adminNote = adminNote;
+      const orderItem = order.items.find(item => item.sku === packDto.sku);
+      if (!orderItem) {
+        throw new BadRequestException(__('Order item with sku "$1" is not found in order "#$2"', lang, packDto.sku, order.id));
+      }
+      if (packDto.qty !== orderItem.qty) {
+        throw new BadRequestException(__('Wrong quantity of order item "$1" is packed. Packed: "$2". Should be: "$3"', lang, packDto.sku, packDto.qty, orderItem.qty));
+      }
+
+      orderItem.isPacked = true;
+
+      OrderService.addLog(order, `Order item has been packed, sku=${orderItem.sku}, userLogin=${user?.login}`);
+
       return order;
     });
   }
 
-  async updateOrderManager(id: number, userId: string, lang: Language): Promise<Order> {
+  async updateOrderAdminNote(id: number, adminNote: string, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(id, lang, async order => {
-      await this.assignOrderManager(order, userId);
+      const oldNote = order.adminNote;
+      order.adminNote = adminNote;
+      OrderService.addLog(order, `Changed admin note, oldNote=${oldNote}, newNote=${adminNote}, userLogin=${user?.login}`);
+      return order;
+    });
+  }
+
+  async updateOrderManager(id: number, userId: string, user: User, lang: Language): Promise<Order> {
+    return await this.updateOrderById(id, lang, async order => {
+      await this.assignOrderManager(order, userId, user);
       return order;
     });
   }
@@ -949,5 +1000,9 @@ export class OrderService implements OnApplicationBootstrap {
 
   private static shouldAssignToKristina(order: Order): boolean {
     return order.items.some(item => item.name[clientDefaultLanguage].toLowerCase().includes('картина'));
+  }
+
+  private static addLog(order: Order, message: string): void {
+    order.logs.push({ time: new Date(), text: message });
   }
 }

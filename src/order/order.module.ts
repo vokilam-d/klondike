@@ -1,10 +1,10 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { AdminOrderController } from './controllers/admin-order.controller';
-import { OrderService } from './order.service';
+import { OrderService } from './services/order.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Order, OrderModel } from './models/order.model';
 import { AdminOrderItemController } from './controllers/admin-order-item.controller';
-import { OrderItemService } from './order-item.service';
+import { OrderItemService } from './services/order-item.service';
 import { ProductModule } from '../product/product.module';
 import { CustomerModule } from '../customer/customer.module';
 import { InventoryModule } from '../inventory/inventory.module';
