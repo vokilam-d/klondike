@@ -38,7 +38,8 @@ export class ClientProductCategoryDto {
 type PickedProduct = Pick<Product, 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating' | 'additionalServiceIds'>
   & Record<keyof Pick<Product, 'breadcrumbs'>, ClientBreadcrumbDto[]>;
 type PickedVariant = Pick<ProductVariant, 'sku' | 'vendorCode' | 'slug' | 'price' | 'oldPrice' | 'isDiscountApplicable'>
-  & Record<keyof Pick<ProductVariant, 'fullDescription' | 'shortDescription' | 'name'>, string>;
+  & Record<keyof Pick<ProductVariant, 'fullDescription' | 'shortDescription' | 'name'>, string>
+  & Record<keyof Pick<ProductVariant, 'label'>, any>;
 
 export class ClientProductDto implements PickedProduct, PickedVariant {
   @Expose()
@@ -119,5 +120,8 @@ export class ClientProductDto implements PickedProduct, PickedVariant {
   additionalServiceIds: number[];
 
   @Expose()
-  label: ProductLabelTypeEnum;
+  label: {
+    type: ProductLabelTypeEnum,
+    text: string
+  };
 }
