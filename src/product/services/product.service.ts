@@ -65,6 +65,7 @@ import { Dictionary } from '../../shared/helpers/dictionary';
 import { EventsService } from '../../shared/services/events/events.service';
 import { adminDefaultLanguage } from '../../shared/constants';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
+import { ProductLabelTypeEnum } from '../../shared/enums/product-label-type.enum';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -969,6 +970,7 @@ export class ProductService implements OnApplicationBootstrap {
           mediaUrl: primaryMediaUrl,
           mediaAltText: mediaAltText,
           mediaHoverUrl: secondaryMediaUrl,
+          label: variant.label,
           name: variant.name,
           slug: variant.slug,
           attributes: variant.attributes,
@@ -1107,6 +1109,10 @@ export class ProductService implements OnApplicationBootstrap {
         mediaUrl: selectedVariant.mediaUrl,
         mediaHoverUrl: selectedVariant.mediaHoverUrl,
         mediaAltText: selectedVariant.mediaAltText?.[lang],
+        label: {
+          type: selectedVariant.label === ProductLabelTypeEnum.Empty ? null : selectedVariant.label,
+          text: selectedVariant.label === ProductLabelTypeEnum.Empty ? null : __(selectedVariant.label, lang)
+        },
         allReviewsCount: product.allReviewsCount,
         textReviewsCount: product.textReviewsCount,
         reviewsAvgRating: product.reviewsAvgRating
@@ -1212,6 +1218,10 @@ export class ProductService implements OnApplicationBootstrap {
       sku: selectedVariant.sku,
       vendorCode: selectedVariant.vendorCode,
       gtin: selectedVariant.gtin,
+      label: {
+        type: selectedVariant.label === ProductLabelTypeEnum.Empty ? null : selectedVariant.label,
+        text: selectedVariant.label === ProductLabelTypeEnum.Empty ? null : __(selectedVariant.label, lang)
+      },
       price: selectedVariant.priceInDefaultCurrency,
       oldPrice: selectedVariant.oldPriceInDefaultCurrency,
       isDiscountApplicable: selectedVariant.isDiscountApplicable,

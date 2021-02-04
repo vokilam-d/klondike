@@ -2,13 +2,15 @@ import { CurrencyCodeEnum } from '../../enums/currency.enum';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
 import { AdminProductVariantDto } from './product-variant.dto';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
+import { ProductLabelTypeEnum } from '../../enums/product-label-type.enum';
 
-export class AdminProductVariantListItemDto implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty' | 'vendorCode' | 'salesCount' | 'gtin' | 'isIncludedInShoppingFeed'> {
+export class AdminProductVariantListItemDto implements Pick<AdminProductVariantDto, 'id' | 'isEnabled' | 'attributes' | 'name' | 'slug' | 'sku' | 'price' | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'qtyInStock' | 'sellableQty' | 'vendorCode' | 'salesCount' | 'gtin' | 'isIncludedInShoppingFeed' | 'label'> {
   id: string;
   isEnabled: boolean;
   mediaUrl: string;
   mediaHoverUrl: string;
   mediaAltText: MultilingualTextDto;
+  label: ProductLabelTypeEnum;
   attributes: AdminProductSelectedAttributeDto[];
   name: MultilingualTextDto;
   slug: string;

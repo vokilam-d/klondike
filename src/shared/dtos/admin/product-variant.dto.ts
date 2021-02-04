@@ -9,6 +9,7 @@ import { AdminLinkedProductDto } from './linked-product.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { AdminMetaTagsDto } from './meta-tags.dto';
+import { ProductLabelTypeEnum } from '../../enums/product-label-type.enum';
 
 type PickedVariant = Pick<ProductVariantWithQty, 'name' | 'sku' | 'vendorCode' | 'gtin' | 'slug' | 'attributes' | 'isEnabled' | 'price'
   | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'medias' | 'fullDescription' | 'shortDescription'
@@ -137,6 +138,11 @@ export class AdminAddOrUpdateProductVariantDto implements PickedVariant, Variant
   @ValidateNested({ each: true })
   @Type(() => AdminLinkedProductDto)
   crossSellProducts: AdminLinkedProductDto[];
+
+  @Expose()
+  @IsOptional()
+  @IsEnum(ProductLabelTypeEnum)
+  label: ProductLabelTypeEnum;
 }
 
 export class AdminProductVariantDto extends AdminAddOrUpdateProductVariantDto {

@@ -2,6 +2,7 @@ import { Expose, Type } from 'class-transformer';
 import { ProductVariant } from '../../../product/models/product-variant.model';
 import { Product } from '../../../product/models/product.model';
 import { Attribute } from '../../../attribute/models/attribute.model';
+import { ProductLabelTypeEnum } from '../../enums/product-label-type.enum';
 
 export class ClientProductVariantDto {
   @Expose()
@@ -40,7 +41,8 @@ export class ClientProductVariantGroupDto {
 
 type PickedProduct = Pick<Product, 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating'>;
 type PickedVariant = Pick<ProductVariant, 'slug' | 'sku' | 'price'>
-  & Record<keyof Pick<ProductVariant, 'name'>, string>;
+  & Record<keyof Pick<ProductVariant, 'name'>, string>
+  & Record<keyof Pick<ProductVariant, 'label'>, any>;
 
 export class ClientProductListItemDto implements PickedProduct, PickedVariant {
   @Expose()
@@ -63,6 +65,12 @@ export class ClientProductListItemDto implements PickedProduct, PickedVariant {
 
   @Expose()
   mediaAltText: string;
+
+  @Expose()
+  label: {
+    type: ProductLabelTypeEnum,
+    text: string
+  };
 
   @Expose()
   price: number;

@@ -1,5 +1,6 @@
 import { AddressTypeEnum } from '../../enums/address-type.enum';
 import { OrderStatusEnum } from '../../enums/order-status.enum';
+import { ProductLabelTypeEnum } from '../../enums/product-label-type.enum';
 
 export const TRANSLATIONS = {
   'Your password is outdated, we sent you an email with the instruction on how to update your password': {
@@ -326,6 +327,21 @@ export const TRANSLATIONS = {
     en: 'Canceled',
     ru: 'Отменён',
     uk: 'Скасовано'
+  },
+  [ProductLabelTypeEnum.Empty]: {
+    en: 'No value',
+    ru: 'Не выбрано',
+    uk: 'Не обрано'
+  },
+  [ProductLabelTypeEnum.New]: {
+    en: 'New',
+    ru: 'Новинка',
+    uk: 'Новинка'
+  },
+  [ProductLabelTypeEnum.Top]: {
+    en: 'Top',
+    ru: 'Топ продаж',
+    uk: 'Топ продажів'
   },
   'Cash on delivery is not available with address delivery': {
     en: 'Cash on delivery is not available with address delivery',

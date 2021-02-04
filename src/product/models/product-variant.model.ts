@@ -6,6 +6,7 @@ import { Types } from 'mongoose';
 import { CurrencyCodeEnum } from '../../shared/enums/currency.enum';
 import { LinkedProduct } from './linked-product.model';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { ProductLabelTypeEnum } from '../../shared/enums/product-label-type.enum';
 
 export class ProductVariant {
   @prop({ index: true })
@@ -79,4 +80,7 @@ export class ProductVariant {
 
   @arrayProp({ items: LinkedProduct, default: [] })
   crossSellProducts: LinkedProduct[];
+
+  @prop({ enum: ProductLabelTypeEnum })
+  label: ProductLabelTypeEnum;
 }

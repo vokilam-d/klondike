@@ -7,6 +7,7 @@ export class ElasticProductVariant implements Record<keyof AdminProductVariantLi
   currency = elasticTextType;
   id = elasticTextType;
   isEnabled = elasticBooleanType;
+  label = elasticKeywordType;
   mediaUrl = elasticTextType;
   mediaHoverUrl = elasticTextType;
   mediaAltText = {
