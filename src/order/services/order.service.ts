@@ -909,7 +909,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       orderItem.isPacked = true;
 
-      OrderService.addLog(order, `Order item has been packed, sku=${orderItem.sku}, userLogin=${user?.login}`);
+      OrderService.addLog(order, `Order item has been packed, sku=${packDto.sku}, qty=${packDto.qty}, userLogin=${user?.login}`);
 
       return order;
     });
