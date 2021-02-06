@@ -10,6 +10,7 @@ import { TrimString } from '../../decorators/trim-string.decorator';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { AdminMetaTagsDto } from './meta-tags.dto';
 import { ProductLabelTypeEnum } from '../../enums/product-label-type.enum';
+import { clientDefaultLanguage } from '../../constants';
 
 type PickedVariant = Pick<ProductVariantWithQty, 'name' | 'sku' | 'vendorCode' | 'gtin' | 'slug' | 'attributes' | 'isEnabled' | 'price'
   | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'medias' | 'fullDescription' | 'shortDescription'
@@ -44,7 +45,7 @@ export class AdminAddOrUpdateProductVariantDto implements PickedVariant, Variant
   @Expose()
   @IsString()
   @TrimString()
-  @Transform((slug, variant) => slug === '' ? transliterate(variant.name) : slug)
+  @Transform((slug, variant: AdminAddOrUpdateProductVariantDto) => transliterate(slug || variant.name[clientDefaultLanguage]))
   slug: string;
 
   @IsBoolean()

@@ -1,4 +1,4 @@
-export function transliterate(word) {
+export function transliterate(word: string) {
   return word
     .toLowerCase()
     .split('')

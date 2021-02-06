@@ -29,7 +29,7 @@ export class AdminBlogPostCreateOrUpdateDto implements Omit<BlogPost, '_id' | 'i
   name: MultilingualTextDto;
 
   @Expose()
-  @Transform((slug, post: AdminBlogPostCreateOrUpdateDto) => slug === '' ? transliterate(post.name[clientDefaultLanguage]) : slug)
+  @Transform((slug, post: AdminBlogPostCreateOrUpdateDto) => transliterate(slug || post.name[clientDefaultLanguage]))
   @IsString()
   @TrimString()
   slug: string;

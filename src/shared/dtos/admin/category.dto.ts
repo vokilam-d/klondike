@@ -24,7 +24,7 @@ export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, 
 
   @Expose()
   @IsString()
-  @Transform((slug, category) => slug === '' ? transliterate(category.name) : slug)
+  @Transform((slug, category: AdminAddOrUpdateCategoryDto) => transliterate(slug || category.name))
   @TrimString()
   slug: string;
 
