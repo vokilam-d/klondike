@@ -33,6 +33,7 @@ import { CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../shared/services/events/events.service';
 import { Dictionary } from '../shared/helpers/dictionary';
 import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { clientDefaultLanguage } from '../shared/constants';
 
 @Injectable()
 export class CategoryService implements OnApplicationBootstrap {
@@ -192,7 +193,7 @@ export class CategoryService implements OnApplicationBootstrap {
   }
 
   async createCategory(categoryDto: AdminAddOrUpdateCategoryDto): Promise<Category> {
-    categoryDto.slug = categoryDto.slug === '' ? transliterate(categoryDto.name) : categoryDto.slug;
+    categoryDto.slug = transliterate(categoryDto.slug || categoryDto.name[clientDefaultLanguage]);
 
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();
