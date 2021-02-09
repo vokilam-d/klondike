@@ -6,7 +6,7 @@ import { AddOrUpdateUserDto } from '../shared/dtos/admin/user.dto';
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { Language } from '../shared/enums/language.enum';
-import { havePermissions } from '../shared/helpers/have-permissions.function';
+import { hasPermissions, isPermissionSameOrLower } from '../shared/helpers/have-permissions.function';
 import { Role } from '../shared/enums/role.enum';
 
 @Injectable()
@@ -31,7 +31,7 @@ export class UserService {
   }
 
   async addNewUser(userDto: AddOrUpdateUserDto, currentUser: User, lang: Language): Promise<User> {
-    if (!havePermissions(currentUser, userDto.role)) {
+    if (!hasPermissions(currentUser, userDto.role)) {
       throw new ForbiddenException(__('You do not have enough permissions to create such user', lang));
     }
 
@@ -48,8 +48,8 @@ export class UserService {
       throw new NotFoundException(__('User with id "$1" not found', lang, userId));
     }
 
-    const isCurrentUserAndCanEdit = currentUser.id.equals(userToUpdate.id) && havePermissions(currentUser, updateUserDto.role);
-    const isAdminAndCanEdit = havePermissions(currentUser, Role.Administrator) && updateUserDto.role >= Role.Administrator;
+    const isCurrentUserAndCanEdit = currentUser.id.equals(userToUpdate.id) && hasPermissions(currentUser, updateUserDto.role);
+    const isAdminAndCanEdit = hasPermissions(currentUser, Role.Administrator) && isPermissionSameOrLower(updateUserDto.role, Role.Administrator);
     if (!isAdminAndCanEdit && !isCurrentUserAndCanEdit) {
       throw new ForbiddenException(__('You do not have enough permissions to edit this user', lang));
     }
@@ -73,7 +73,7 @@ export class UserService {
     if (!userToDelete) {
       throw new NotFoundException(__('User with id "$1" not found', lang, userId));
     }
-    if (!havePermissions(currentUser, Role.Administrator)) {
+    if (!hasPermissions(currentUser, Role.Administrator)) {
       throw new ForbiddenException(__('You do not have enough permissions to delete users', lang));
     }
 

@@ -59,7 +59,7 @@ import { adminDefaultLanguage, clientDefaultLanguage } from '../../shared/consta
 import { UserService } from 'src/user/user.service';
 import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
 import { PackOrderItemDto } from '../../shared/dtos/admin/pack-order-item.dto';
-import { havePermissions } from '../../shared/helpers/have-permissions.function';
+import { hasPermissions } from '../../shared/helpers/have-permissions.function';
 import { Role } from '../../shared/enums/role.enum';
 
 @Injectable()
@@ -362,7 +362,7 @@ export class OrderService implements OnApplicationBootstrap {
       const isPaymentMethodChanged = order.shipment.trackingNumber !== orderDto.shipment.trackingNumber;
       const isTrackingNumberChanged = order.paymentMethodId !== orderDto.paymentMethodId;
       const isManagerChanged = order.manager?.userId && (order.manager?.userId !== orderDto.manager?.userId);
-      if (isManagerChanged && !havePermissions(user, Role.SeniorManager)) {
+      if (isManagerChanged && !hasPermissions(user, Role.SeniorManager)) {
         throw new ForbiddenException(__('You do not have enough permissions to change assigned manager', lang));
       }
 
@@ -930,7 +930,7 @@ export class OrderService implements OnApplicationBootstrap {
   async updateOrderManager(id: number, newManagerUserId: string, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(id, lang, async order => {
       const isManagerChanged = order.manager?.userId && (order.manager?.userId !== newManagerUserId);
-      if (isManagerChanged && !havePermissions(user, Role.SeniorManager)) {
+      if (isManagerChanged && !hasPermissions(user, Role.SeniorManager)) {
         throw new ForbiddenException(__('You do not have enough permissions to change assigned manager', lang));
       }
 
