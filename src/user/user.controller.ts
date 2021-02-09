@@ -46,8 +46,12 @@ export class UserController {
 
   @UseGuards(UserJwtGuard)
   @Post()
-  async addNewUser(@Body() addUserDto: AddOrUpdateUserDto): Promise<ResponseDto<UserDto>> {
-    const newUser = await this.userService.addNewUser(addUserDto);
+  async addNewUser(
+    @Body() addUserDto: AddOrUpdateUserDto,
+    @ValidatedUser() user: DocumentType<User>,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<UserDto>> {
+    const newUser = await this.userService.addNewUser(addUserDto, user, lang);
 
     return {
       data: plainToClass(UserDto, newUser, { excludeExtraneousValues: true })
@@ -91,8 +95,12 @@ export class UserController {
 
   @UseGuards(UserJwtGuard)
   @Delete(':id')
-  async deleteUser(@Param('id') id: string, @AdminLang() lang: Language): Promise<ResponseDto<UserDto>> {
-    const updated = await this.userService.deleteUser(id, lang);
+  async deleteUser(
+    @Param('id') id: string,
+    @ValidatedUser() user: DocumentType<User>,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<UserDto>> {
+    const updated = await this.userService.deleteUser(id, user, lang);
 
     return {
       data: plainToClass(UserDto, updated, { excludeExtraneousValues: true })
