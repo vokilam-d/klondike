@@ -2,7 +2,7 @@ import { Expose, Transform } from 'class-transformer';
 import { IsEnum, IsOptional, IsString, Matches } from 'class-validator';
 import { adminDefaultLanguage, validPasswordRegex } from '../../constants';
 import { __ } from '../../helpers/translate/translate.function';
-import { Role } from '../../enums/Role.enum';
+import { Role } from '../../enums/role.enum';
 
 export class AddOrUpdateUserDto {
   @Expose()

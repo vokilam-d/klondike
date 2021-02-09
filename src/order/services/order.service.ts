@@ -60,7 +60,7 @@ import { UserService } from 'src/user/user.service';
 import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
 import { PackOrderItemDto } from '../../shared/dtos/admin/pack-order-item.dto';
 import { havePermissions } from '../../shared/helpers/have-permissions.function';
-import { Role } from '../../shared/enums/Role.enum';
+import { Role } from '../../shared/enums/role.enum';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {

@@ -7,7 +7,7 @@ import { EncryptorService } from '../shared/services/encryptor/encryptor.service
 import { __ } from '../shared/helpers/translate/translate.function';
 import { Language } from '../shared/enums/language.enum';
 import { havePermissions } from '../shared/helpers/have-permissions.function';
-import { Role } from '../shared/enums/Role.enum';
+import { Role } from '../shared/enums/role.enum';
 
 @Injectable()
 export class UserService {

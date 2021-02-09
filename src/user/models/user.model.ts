@@ -1,6 +1,6 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { Types } from "mongoose";
-import { Role } from '../../shared/enums/Role.enum';
+import { Role } from '../../shared/enums/role.enum';
 
 export class User {
 
