@@ -11,23 +11,23 @@ import { LoginDto } from '../shared/dtos/shared-dtos/login.dto';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { UserLocalGuard } from '../auth/guards/user-local.guard';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
+import { ValidatedUser } from '../shared/decorators/validated-user.decorator';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('admin/user')
 export class UserController {
 
-  constructor(private readonly userService: UserService,
-              private readonly authService: AuthService) {
-  }
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService
+  ) { }
 
   @UseGuards(UserJwtGuard)
   @Get()
-  async getUser(@Req() req): Promise<ResponseDto<UserDto>> {
-    const user: DocumentType<User> = await this.authService.getUserFromReq(req);
-    const dto = plainToClass(UserDto, user?.toJSON(), { excludeExtraneousValues: true });
+  async getUser(@ValidatedUser() user: DocumentType<User>): Promise<ResponseDto<UserDto>> {
+    const dto = plainToClass(UserDto, user.toJSON(), { excludeExtraneousValues: true });
 
     return {
       data: dto
@@ -59,8 +59,11 @@ export class UserController {
    */
   @UseGuards(UserLocalGuard)
   @Post('login')
-  async login(@Body() loginDto: LoginDto, @Req() req, @Res() res: FastifyReply<ServerResponse>) {
-    const user: DocumentType<User> = req.user;
+  async login(
+    @Body() loginDto: LoginDto,
+    @ValidatedUser() user: DocumentType<User>,
+    @Res() res: FastifyReply<ServerResponse>
+  ) {
     const userDto = plainToClass(UserDto, user, { excludeExtraneousValues: true });
 
     return this.authService.loginUser(userDto, res);
