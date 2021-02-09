@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './models/user.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
@@ -32,7 +32,7 @@ export class UserService {
 
   async addNewUser(userDto: AddOrUpdateUserDto, currentUser: User, lang: Language): Promise<User> {
     if (!havePermissions(currentUser, userDto.role)) {
-      throw new UnauthorizedException(__('You do not have enough permissions to create such user', lang));
+      throw new ForbiddenException(__('You do not have enough permissions to create such user', lang));
     }
 
     const newUser = new this.userModel(userDto);
@@ -51,7 +51,7 @@ export class UserService {
     const isCurrentUser = userToUpdate.id === currentUser.id;
     const canEdit = havePermissions(currentUser, Role.Administrator);
     if (!isCurrentUser && !canEdit) {
-      throw new UnauthorizedException(__('You do not have enough permissions to edit this user', lang));
+      throw new ForbiddenException(__('You do not have enough permissions to edit this user', lang));
     }
 
     // Update all fields except password, because it needs to be hashed before saving
@@ -74,7 +74,7 @@ export class UserService {
       throw new NotFoundException(__('User with id "$1" not found', lang, userId));
     }
     if (!havePermissions(currentUser, Role.Administrator)) {
-      throw new UnauthorizedException(__('You do not have enough permissions to delete users', lang));
+      throw new ForbiddenException(__('You do not have enough permissions to delete users', lang));
     }
 
     return userToDelete.toJSON();

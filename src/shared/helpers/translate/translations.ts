@@ -382,5 +382,10 @@ export const TRANSLATIONS = {
     en: 'You do not have enough permissions to delete users',
     ru: 'У вас недостаточно прав для удаления пользователей',
     uk: 'У вас недостатньо прав для видалення користувачів'
+  },
+  'You do not have enough permissions to change assigned manager': {
+    en: 'You do not have enough permissions to change assigned manager',
+    ru: 'У вас недостаточно прав для изменения назначенного менеджера',
+    uk: 'У вас недостатньо прав для зміни призначеного менеджера'
   }
 }
