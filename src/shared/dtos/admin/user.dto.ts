@@ -13,7 +13,6 @@ export class AddOrUpdateUserDto {
   @IsString()
   name: string;
 
-  @IsOptional()
   @Matches(validPasswordRegex, { message: __('Password must be at least 8 characters long, consist of numbers and Latin letters, including capital letters', adminDefaultLanguage) })
   password?: string;
 

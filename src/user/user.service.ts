@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './models/user.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
@@ -49,8 +49,8 @@ export class UserService {
     }
 
     const isCurrentUserAndCanEdit = currentUser.id.equals(userToUpdate.id) && havePermissions(currentUser, updateUserDto.role);
-    const isAdmin = havePermissions(currentUser, Role.Administrator);
-    if (!isAdmin && !isCurrentUserAndCanEdit) {
+    const isAdminAndCanEdit = havePermissions(currentUser, Role.Administrator) && updateUserDto.role >= Role.Administrator;
+    if (!isAdminAndCanEdit && !isCurrentUserAndCanEdit) {
       throw new ForbiddenException(__('You do not have enough permissions to edit this user', lang));
     }
 
