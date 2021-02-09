@@ -1,21 +1,29 @@
 import { Expose, Transform } from 'class-transformer';
-import { Matches } from 'class-validator';
+import { IsEnum, IsOptional, IsString, Matches } from 'class-validator';
 import { adminDefaultLanguage, validPasswordRegex } from '../../constants';
 import { __ } from '../../helpers/translate/translate.function';
+import { Role } from '../../enums/Role.enum';
 
-export class UserDto {
+export class AddOrUpdateUserDto {
   @Expose()
-  @Transform(((value, obj) => obj._id || value))
-  id: string;
-
-  @Expose()
+  @IsString()
   login: string;
 
   @Expose()
+  @IsString()
   name: string;
+
+  @IsOptional()
+  @Matches(validPasswordRegex, { message: __('Password must be at least 8 characters long, consist of numbers and Latin letters, including capital letters', adminDefaultLanguage) })
+  password?: string;
+
+  @Expose()
+  @IsEnum(Role)
+  role: Role;
 }
 
-export class AddOrUpdateUserDto extends UserDto {
-  @Matches(validPasswordRegex, { message: __('Password must be at least 8 characters long, consist of numbers and Latin letters, including capital letters', adminDefaultLanguage) })
-  password: string;
+export class UserDto extends AddOrUpdateUserDto {
+  @Expose()
+  @Transform(((value, obj) => obj._id || value))
+  id: string;
 }

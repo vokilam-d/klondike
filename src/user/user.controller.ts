@@ -79,9 +79,10 @@ export class UserController {
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: AddOrUpdateUserDto,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<UserDto>> {
-    const updated = await this.userService.updateUser(id, updateUserDto, lang);
+    const updated = await this.userService.updateUser(id, updateUserDto, user, lang);
 
     return {
       data: plainToClass(UserDto, updated, { excludeExtraneousValues: true })

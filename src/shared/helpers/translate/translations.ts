@@ -367,5 +367,20 @@ export const TRANSLATIONS = {
     en: 'Wrong quantity of order item "$1" is packed. Packed: "$2". Should be: "$3"',
     ru: 'Упаковано неправильное кол-во товара "$1". Упаковано: "$2". Должно быть: "$3"',
     uk: 'Упакована неправильна кількість товару "$1". Упаковано: "$2". Повинно бути: "$3"'
+  },
+  'You do not have enough permissions to edit this user': {
+    en: 'You do not have enough permissions to edit this user',
+    ru: 'У вас недостаточно прав для редактирования этого пользователя',
+    uk: 'У вас недостатньо прав для редагування цього користувача'
+  },
+  'You do not have enough permissions to create such user': {
+    en: 'You do not have enough permissions to create such user',
+    ru: 'У вас недостаточно прав для создания такого пользователя',
+    uk: 'У вас недостатньо прав для створення такого користувача'
+  },
+  'You do not have enough permissions to delete users': {
+    en: 'You do not have enough permissions to delete users',
+    ru: 'У вас недостаточно прав для удаления пользователей',
+    uk: 'У вас недостатньо прав для видалення користувачів'
   }
 }
