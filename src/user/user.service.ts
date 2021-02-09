@@ -48,9 +48,9 @@ export class UserService {
       throw new NotFoundException(__('User with id "$1" not found', lang, userId));
     }
 
-    const isCurrentUser = userToUpdate.id === currentUser.id;
-    const canEdit = havePermissions(currentUser, Role.Administrator);
-    if (!isCurrentUser && !canEdit) {
+    const isCurrentUserAndCanEdit = currentUser.id.equals(userToUpdate.id) && havePermissions(currentUser, updateUserDto.role);
+    const isAdmin = havePermissions(currentUser, Role.Administrator);
+    if (!isAdmin && !isCurrentUserAndCanEdit) {
       throw new ForbiddenException(__('You do not have enough permissions to edit this user', lang));
     }
 
