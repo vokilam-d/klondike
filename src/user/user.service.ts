@@ -50,7 +50,8 @@ export class UserService {
 
     const isCurrentUserAndCanEdit = currentUser.id.equals(userToUpdate.id) && hasPermissions(currentUser, updateUserDto.role);
     const isAdminAndCanEdit = hasPermissions(currentUser, Role.Administrator) && isPermissionSameOrLower(updateUserDto.role, Role.Administrator);
-    if (!isAdminAndCanEdit && !isCurrentUserAndCanEdit) {
+    const isOwner = hasPermissions(currentUser, Role.Owner);
+    if (!isCurrentUserAndCanEdit && !isAdminAndCanEdit && !isOwner) {
       throw new ForbiddenException(__('You do not have enough permissions to edit this user', lang));
     }
 
