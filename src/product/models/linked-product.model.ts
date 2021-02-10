@@ -4,7 +4,7 @@ export class LinkedProduct {
   @prop({ required: true })
   productId: number;
 
-  @prop({ required: true })
+  @prop()
   variantId: string;
 
   @prop({ default: 0 })
