@@ -59,6 +59,8 @@ import { adminDefaultLanguage, clientDefaultLanguage } from '../../shared/consta
 import { UserService } from 'src/user/user.service';
 import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
 import { PackOrderItemDto } from '../../shared/dtos/admin/pack-order-item.dto';
+import { hasPermissions } from '../../shared/helpers/have-permissions.function';
+import { Role } from '../../shared/enums/role.enum';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -357,6 +359,13 @@ export class OrderService implements OnApplicationBootstrap {
         throw new ForbiddenException(__('Cannot edit order with status "$1"', lang, order.status));
       }
 
+      const isPaymentMethodChanged = order.shipment.trackingNumber !== orderDto.shipment.trackingNumber;
+      const isTrackingNumberChanged = order.paymentMethodId !== orderDto.paymentMethodId;
+      const isManagerChanged = order.manager?.userId && (order.manager?.userId !== orderDto.manager?.userId);
+      if (isManagerChanged && !hasPermissions(user, Role.SeniorManager)) {
+        throw new ForbiddenException(__('You do not have enough permissions to change assigned manager', lang));
+      }
+
       for (const item of order.items) {
         await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
         await this.productService.updateSearchDataById(item.productId, lang, session);
@@ -366,19 +375,13 @@ export class OrderService implements OnApplicationBootstrap {
         await this.productService.updateSearchDataById(item.productId, lang, session);
       }
 
-      const oldTrackingNumber = order.shipment.trackingNumber;
-      const newTrackingNumber = orderDto.shipment.trackingNumber;
-      const oldPaymentMethodId = order.paymentMethodId;
-      const newPaymentMethodId = orderDto.paymentMethodId;
-
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
-      await this.assignOrderManager(order, orderDto.manager?.userId, user);
 
-      if (oldTrackingNumber !== newTrackingNumber) {
+      if (isTrackingNumberChanged) {
         await this.fetchShipmentStatus(order);
       }
-      if (oldPaymentMethodId !== newPaymentMethodId) {
-        await this.setPaymentInfoByMethodId(order, newPaymentMethodId);
+      if (isPaymentMethodChanged) {
+        await this.setPaymentInfoByMethodId(order, order.paymentMethodId);
       }
 
       OrderService.addLog(order, `Edited order, userLogin=${user?.login}`);
@@ -387,10 +390,10 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  private async assignOrderManager(order: Order, userId: string, user: User) {
+  private async assignOrderManager(order: Order, newManagerUserId: string, user: User) {
     let assignedManagerUser: User;
-    if (userId) {
-      assignedManagerUser = await this.userService.getUserById(userId);
+    if (newManagerUserId) {
+      assignedManagerUser = await this.userService.getUserById(newManagerUserId);
     } else if (user) {
       assignedManagerUser = user;
     } else if (OrderService.shouldAssignToKristina(order)) {
@@ -924,9 +927,14 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async updateOrderManager(id: number, userId: string, user: User, lang: Language): Promise<Order> {
+  async updateOrderManager(id: number, newManagerUserId: string, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(id, lang, async order => {
-      await this.assignOrderManager(order, userId, user);
+      const isManagerChanged = order.manager?.userId && (order.manager?.userId !== newManagerUserId);
+      if (isManagerChanged && !hasPermissions(user, Role.SeniorManager)) {
+        throw new ForbiddenException(__('You do not have enough permissions to change assigned manager', lang));
+      }
+
+      await this.assignOrderManager(order, newManagerUserId, user);
       return order;
     });
   }

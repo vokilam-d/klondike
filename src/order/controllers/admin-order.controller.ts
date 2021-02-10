@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from '../services/order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto, UpdateOrderAdminNote, UpdateOrderManager } from '../../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../../shared/dtos/admin/order-action.dto';
 import { OrderActionEnum } from '../../shared/enums/order-action.enum';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
@@ -16,6 +16,9 @@ import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
 import { PackOrderItemDto } from '../../shared/dtos/admin/pack-order-item.dto';
+import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
+import { User } from '../../user/models/user.model';
+import { DocumentType } from '@typegoose/typegoose';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -72,10 +75,9 @@ export class AdminOrderController {
   @Post()
   async addOrder(
     @Body() orderDto: AdminAddOrUpdateOrderDto,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
-    const user = await this.authService.getUserFromReq(req);
     const created = await this.orderService.createOrderAdmin(orderDto, lang, user);
 
     return {
@@ -105,10 +107,9 @@ export class AdminOrderController {
   async createInternetDocument(
     @Param('id') orderId: string,
     @Body() shipmentDto: ShipmentDto,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
-    const user = await this.authService.getUserFromReq(req);
     const order = await this.orderService.createInternetDocument(parseInt(orderId), shipmentDto, user, lang);
 
     return {
@@ -120,10 +121,9 @@ export class AdminOrderController {
   async editOrder(
     @Param('id') orderId: string,
     @Body() orderDto: AdminAddOrUpdateOrderDto,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
-    const user = await this.authService.getUserFromReq(req);
     const updated = await this.orderService.editOrder(parseInt(orderId), orderDto, user, lang);
 
     return {
@@ -134,11 +134,10 @@ export class AdminOrderController {
   @Put(':id/status/:status')
   async changeStatus(
     @Param() params: ChangeOrderStatusDto,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const user = await this.authService.getUserFromReq(req);
     const order = await this.orderService.changeStatus(params.id, params.status, user, lang);
 
     return {
@@ -150,11 +149,10 @@ export class AdminOrderController {
   async changePaymentStatus(
     @Param('id') id: number,
     @Param('isPaid') isPaid: boolean,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const user = await this.authService.getUserFromReq(req);
     const order = await this.orderService.changeOrderPaymentStatus(id, isPaid, user, lang);
 
     return {
@@ -166,11 +164,10 @@ export class AdminOrderController {
   async changeAdminNote(
     @Param('id') id: number,
     @Body() noteDto: UpdateOrderAdminNote,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const user = await this.authService.getUserFromReq(req);
     const order = await this.orderService.updateOrderAdminNote(id, noteDto.adminNote, user, lang);
 
     return {
@@ -182,11 +179,10 @@ export class AdminOrderController {
   async changeAdminManager(
     @Param('id') id: number,
     @Body() managerDto: UpdateOrderManager,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const user = await this.authService.getUserFromReq(req);
     const order = await this.orderService.updateOrderManager(id, managerDto.userId, user, lang);
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -197,11 +193,10 @@ export class AdminOrderController {
   async packOrderItem(
     @Param('id') orderId: number,
     @Body() packOrderItemDto: PackOrderItemDto,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const user = await this.authService.getUserFromReq(req);
     const updated = await this.orderService.packOrderItem(orderId, packOrderItemDto, user, lang);
 
     return {
@@ -213,11 +208,10 @@ export class AdminOrderController {
   async editOrderShipment(
     @Param('id') orderId: number,
     @Body() shipmentDto: ShipmentDto,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const user = await this.authService.getUserFromReq(req);
     const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto, user, lang);
 
     return {
@@ -228,10 +222,9 @@ export class AdminOrderController {
   @Delete(':id')
   async deleteOrder(
     @Param('id') orderId: number,
-    @Req() req: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ) {
-    const user = await this.authService.getUserFromReq(req);
     const deleted = await this.orderService.deleteOrder(orderId, user, lang);
 
     return {

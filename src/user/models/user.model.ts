@@ -1,5 +1,6 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { Types } from "mongoose";
+import { Role } from '../../shared/enums/role.enum';
 
 export class User {
 
@@ -19,7 +20,10 @@ export class User {
   name: string;
 
   @arrayProp({ items: String, default: [] })
-  email: string[];
+  emails: string[];
+
+  @prop({ enum: Role, default: Role.Manager })
+  role: Role;
 
   createdAt: Date;
   updatedAt: Date;

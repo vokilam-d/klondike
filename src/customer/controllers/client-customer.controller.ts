@@ -38,16 +38,18 @@ import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-addre
 import { ConfirmEmailDto } from '../../shared/dtos/client/confirm-email.dto';
 import { ClientLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('customer')
 export class ClientCustomerController {
 
-  constructor(private customerService: CustomerService,
-              private orderService: OrderService,
-              private authService: AuthService) {
-  }
+  constructor(
+    private customerService: CustomerService,
+    private orderService: OrderService,
+    private authService: AuthService
+  ) { }
 
   @Get()
   async getInfo(@Req() req, @ClientLang() lang: Language): Promise<ResponseDto<ClientCustomerDto | null>> {
@@ -79,9 +81,7 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Get('details')
-  async getAccount(@Req() req, @ClientLang() lang: Language): Promise<ResponseDto<ClientCustomerDto>> {
-    const customer: DocumentType<Customer> = req.user;
-
+  async getAccount(@ValidatedUser() customer: Customer, @ClientLang() lang: Language): Promise<ResponseDto<ClientCustomerDto>> {
     return {
       data: ClientCustomerDto.transformToDto(customer, lang)
     };
@@ -90,11 +90,9 @@ export class ClientCustomerController {
   @UseGuards(CustomerJwtGuard)
   @Get('order')
   async getOrders(
-    @Req() req,
+    @ValidatedUser() customer: Customer,
     @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientOrderDto[]>> {
-    const customer: DocumentType<Customer> = req.user;
-
     const orderFilterDto = new OrderFilterDto();
     orderFilterDto.customerId = customer.id;
     orderFilterDto.limit = 100;
@@ -111,12 +109,11 @@ export class ClientCustomerController {
   @UseGuards(CustomerJwtGuard)
   @Post('password')
   async updatePassword(
-    @Req() req,
+    @ValidatedUser() customer: DocumentType<Customer>,
     @Body() dto: ClientUpdatePasswordDto,
     @Res() res: FastifyReply<ServerResponse>,
     @ClientLang() lang: Language
   ) {
-    const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.checkAndUpdatePassword(customer, dto, lang);
     const customerDto = ClientCustomerDto.transformToDto(updated, lang);
 
@@ -145,11 +142,10 @@ export class ClientCustomerController {
   @Post('login')
   async login(
     @Body() loginDto: LoginDto,
-    @Req() req,
+    @ValidatedUser() customer: DocumentType<Customer>,
     @Res() res: FastifyReply<ServerResponse>,
     @ClientLang() lang: Language
   ) {
-    const customer: DocumentType<Customer> = req.user;
     this.customerService.updateLastLoggedIn(customer.id);
     const customerDto = ClientCustomerDto.transformToDto(customer, lang);
 
@@ -179,8 +175,10 @@ export class ClientCustomerController {
 
   @UseGuards(CustomerJwtGuard)
   @Post('send-confirm-email')
-  async sendEmailConfirmationEmail(@Req() req: any, @ClientLang() lang: Language): Promise<ResponseDto<boolean>> {
-    const customer: DocumentType<Customer> = req.user;
+  async sendEmailConfirmationEmail(
+    @ValidatedUser() customer: DocumentType<Customer>,
+    @ClientLang() lang: Language
+  ): Promise<ResponseDto<boolean>> {
     await this.customerService.sendEmailConfirmationEmail(customer, lang);
 
     return { data: true };
@@ -195,12 +193,11 @@ export class ClientCustomerController {
   @UseGuards(CustomerJwtGuard)
   @Post('address')
   async addShippingAddress(
-    @Req() req,
+    @ValidatedUser() customer: DocumentType<Customer>,
     @Body() addressDto: ShipmentAddressDto,
     @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientCustomerDto>> {
 
-    const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.addShippingAddress(customer, addressDto);
 
     return {
@@ -211,13 +208,12 @@ export class ClientCustomerController {
   @UseGuards(CustomerJwtGuard)
   @Put('address/:id')
   async editShippingAddress(
-    @Req() req,
+    @ValidatedUser() customer: DocumentType<Customer>,
     @Param('id') addressId: string,
     @Body() addressDto: ShipmentAddressDto,
     @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientCustomerDto>> {
 
-    const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.editShippingAddress(customer, addressId, addressDto, lang);
 
     return {
@@ -228,12 +224,11 @@ export class ClientCustomerController {
   @UseGuards(CustomerJwtGuard)
   @Patch()
   async updateCustomer(
-    @Req() req,
+    @ValidatedUser() customer: DocumentType<Customer>,
     @Body() dto: ClientUpdateCustomerDto,
     @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientCustomerDto>> {
 
-    const customer: DocumentType<Customer> = req.user;
     const updated = await this.customerService.updateCustomerByClientDto(customer, dto);
 
     return {
