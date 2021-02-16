@@ -12,8 +12,9 @@ import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { AdminOrderPricesDto } from './order-prices.dto';
 import { AdminLogDto } from './log.dto';
 import { ManagerDto } from './manager.dto';
+import { AdminMediaDto } from './media.dto';
 
-export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid' | 'manager'> {
+export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid' | 'manager' | 'medias'> {
   @Expose()
   @IsOptional()
   @IsNumber()
@@ -116,6 +117,11 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   @IsOptional()
   @IsBoolean()
   isOrderPaid: boolean;
+
+  @Expose()
+  @IsOptional()
+  @Type(() => AdminMediaDto)
+  medias: AdminMediaDto[];
 }
 
 export class AdminOrderDto extends AdminAddOrUpdateOrderDto implements Pick<Order, 'id' | 'idForCustomer' | 'paymentMethodClientName' | 'paymentMethodAdminName' | 'shippingMethodName' | 'source' | 'logs' | 'shippedAt'> {

@@ -8,6 +8,7 @@ import { Log } from '../../shared/models/log.model';
 import { OrderPrices } from '../../shared/models/order-prices.model';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { Manager } from './manager.model';
+import { Media } from '../../shared/models/media.model';
 
 export class Order {
   @prop()
@@ -98,6 +99,9 @@ export class Order {
 
   @prop()
   source: 'client' | 'manager';
+
+  @arrayProp({ items: Media, default: [] })
+  medias: Media[];
 
 
   static collectionName: string = 'order';

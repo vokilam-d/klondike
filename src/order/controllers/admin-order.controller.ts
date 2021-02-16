@@ -1,17 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from '../services/order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateOrderDto, AdminOrderDto, UpdateOrderAdminNote, UpdateOrderManager } from '../../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../../shared/dtos/admin/order-action.dto';
 import { OrderActionEnum } from '../../shared/enums/order-action.enum';
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { ChangeOrderStatusDto } from '../../shared/dtos/admin/change-order-status.dto';
-import { AuthService } from '../../auth/services/auth.service';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
@@ -25,8 +24,8 @@ import { DocumentType } from '@typegoose/typegoose';
 @Controller('admin/orders')
 export class AdminOrderController {
 
-  constructor(private readonly orderService: OrderService,
-              private readonly authService: AuthService
+  constructor(
+    private readonly orderService: OrderService
   ) { }
 
   @Get()
@@ -111,6 +110,20 @@ export class AdminOrderController {
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
     const order = await this.orderService.createInternetDocument(parseInt(orderId), shipmentDto, user, lang);
+
+    return {
+      data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Post(':id/media')
+  async uploadMedia(
+    @Param('id') orderId: string,
+    @Request() request: FastifyRequest,
+    @ValidatedUser() user: DocumentType<User>,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
+    const order = await this.orderService.uploadMedia(request, parseInt(orderId), user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })

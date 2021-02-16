@@ -119,4 +119,5 @@ export class ElasticOrderModel implements Record<keyof AdminOrderDto, any>{
     properties: new ElasticOrderManager()
   };
   isOrderPaid = elasticBooleanType;
+  medias: any;
 }

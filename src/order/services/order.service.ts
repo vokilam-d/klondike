@@ -61,6 +61,8 @@ import { InvoiceEditDto } from '../../shared/dtos/admin/invoice-edit.dto';
 import { PackOrderItemDto } from '../../shared/dtos/admin/pack-order-item.dto';
 import { hasPermissions } from '../../shared/helpers/have-permissions.function';
 import { Role } from '../../shared/enums/role.enum';
+import { FastifyRequest } from 'fastify';
+import { MediaService } from '../../shared/services/media/media.service';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -80,6 +82,7 @@ export class OrderService implements OnApplicationBootstrap {
     private readonly orderItemService: OrderItemService,
     private readonly productService: ProductService,
     private readonly userService: UserService,
+    private readonly mediaService: MediaService,
     private readonly searchService: SearchService,
     private readonly novaPoshtaService: NovaPoshtaService,
     private readonly shipmentSenderService: ShipmentSenderService
@@ -869,6 +872,17 @@ export class OrderService implements OnApplicationBootstrap {
 
       OrderService.addLog(order, `${logMessage}, trackingNumber=${order.shipment.trackingNumber}, orderStatus=${order.status}, shipmentStatus=${order.shipment.status}, userLogin=${user?.login}`);
 
+      return order;
+    });
+  }
+
+  async uploadMedia(request: FastifyRequest, id: number, user: User, lang: Language): Promise<Order> {
+    return await this.updateOrderById(id, lang, async order => {
+      const media = await this.mediaService.upload(request, Order.collectionName, false);
+      order.medias = order.medias || [];
+
+      order.medias.push(media);
+      OrderService.addLog(order, `Uploaded media "${media.variantsUrls.original}", userLogin=${user.login}`);
       return order;
     });
   }
