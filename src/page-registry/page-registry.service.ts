@@ -98,10 +98,10 @@ export class PageRegistryService implements OnApplicationBootstrap {
   @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
   private async updateCachedPages() {
     try {
-      let pages = await this.registryModel.find().exec();
-      pages = pages.map(page => page.toJSON());
+      const pages = await this.registryModel.find().exec();
+      this.cachedPages = pages.map(page => page.toJSON());
 
-      this.cachedPages = pages;
+      this.logger.log(`Update cached pages, instanceId=${process.env.INSTANCE_ID} count=${this.cachedPages.length}`);
     } catch (e) {
       this.logger.error(`Could not update cached pages:`);
       this.logger.error(e);
@@ -118,5 +118,6 @@ export class PageRegistryService implements OnApplicationBootstrap {
 
   private onPagesUpdate() {
     this.eventsService.emit(this.pagesUpdatedEventName, {});
+    this.logger.log(`Emit onPagesUpdate, instanceId=${process.env.INSTANCE_ID}`);
   }
 }
