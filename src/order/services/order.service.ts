@@ -362,8 +362,8 @@ export class OrderService implements OnApplicationBootstrap {
         throw new ForbiddenException(__('Cannot edit order with status "$1"', lang, order.status));
       }
 
-      const isPaymentMethodChanged = order.shipment.trackingNumber !== orderDto.shipment.trackingNumber;
-      const isTrackingNumberChanged = order.paymentMethodId !== orderDto.paymentMethodId;
+      const isTrackingNumberChanged = order.shipment.trackingNumber !== orderDto.shipment.trackingNumber;
+      const isPaymentMethodChanged = order.paymentMethodId !== orderDto.paymentMethodId;
       const isManagerChanged = order.manager?.userId && (order.manager?.userId !== orderDto.manager?.userId);
       if (isManagerChanged && !hasPermissions(user, Role.SeniorManager)) {
         throw new ForbiddenException(__('You do not have enough permissions to change assigned manager', lang));
