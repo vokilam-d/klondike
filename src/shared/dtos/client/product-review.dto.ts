@@ -3,6 +3,7 @@ import { Exclude, Expose, plainToClass, Type } from 'class-transformer';
 import { AdminBaseReviewDto } from '../admin/base-review.dto';
 import { ClientMediaDto } from './media.dto';
 import { Language } from '../../enums/language.enum';
+import { ReviewSource } from '../../enums/review-source.enum';
 
 export class ClientProductReviewCommentDto extends AdminProductReviewCommentDto {
   @Exclude()
@@ -26,6 +27,9 @@ export class ClientProductReviewDto extends AdminBaseReviewDto {
   @Expose()
   @Type(() => ClientMediaDto)
   medias: ClientMediaDto[];
+
+  @Exclude()
+  source: ReviewSource;
 
   static transformToDto(review: AdminBaseReviewDto, lang: Language): ClientProductReviewDto {
     return {

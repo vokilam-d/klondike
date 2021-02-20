@@ -42,7 +42,9 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
       (reviewDto as AdminStoreReviewDto),
       lang,
       async (review, session) => {
-        await this.customerService.addStoreReview(review.customerId, review.id, session);
+        if (review.customerId) {
+          await this.customerService.addStoreReview(review.customerId, review.id, session);
+        }
       }
     );
     this.emailService.sendNewStoreReviewEmail(review).then();
