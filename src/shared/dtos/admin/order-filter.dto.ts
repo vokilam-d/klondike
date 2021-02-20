@@ -11,5 +11,10 @@ export class OrderFilterDto extends AdminSPFDto {
   @IsOptional()
   @Transform((value => Number(value)))
   @IsNumber()
+  productId?: number;
+
+  @IsOptional()
+  @Transform((value => Number(value)))
+  @IsNumber()
   id?: number;
 }

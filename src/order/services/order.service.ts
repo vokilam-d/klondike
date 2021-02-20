@@ -94,32 +94,12 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
-    let orderDtos: AdminOrderDto[];
-    let itemsFiltered: number;
-
-    if (spf.hasFilters()) {
-      const searchResponse = await this.searchByFilters(spf);
-      orderDtos = searchResponse[0];
-      itemsFiltered = searchResponse[1];
-
-    } else {
-      const conditions: FilterQuery<Order> = { };
-      if (spf.customerId) {
-        conditions.customerId = spf.customerId;
-      }
-
-      const orders: Order[] = await this.orderModel
-        .find(conditions)
-        .sort(spf.getSortAsObj())
-        .skip(spf.skip)
-        .limit(spf.limit)
-        .exec();
-
-      orderDtos = plainToClass(AdminOrderDto, orders, { excludeExtraneousValues: true });
-    }
-
+    const searchResponse = await this.searchByFilters(spf);
+    const orderDtos: AdminOrderDto[] = searchResponse[0];
+    const itemsFiltered: number = searchResponse[1];
     const itemsTotal = await this.countOrders();
     const pagesTotal = Math.ceil((itemsFiltered ?? itemsTotal) / spf.limit);
+
     return {
       data: orderDtos,
       itemsTotal,
@@ -534,6 +514,12 @@ export class OrderService implements OnApplicationBootstrap {
     if (spf.customerId) {
       const customerIdProp = getPropertyOf<AdminOrderDto>('customerId');
       filters.push({ fieldName: customerIdProp, values: [spf.customerId] });
+    }
+
+    if (spf.productId) {
+      const itemsProp = getPropertyOf<AdminOrderDto>('items');
+      const productIdProp = getPropertyOf<AdminOrderItemDto>('productId');
+      filters.push({ fieldName: `${itemsProp}.${productIdProp}`, values: [spf.productId] });
     }
 
     return this.searchService.searchByFilters<AdminOrderDto>(
