@@ -27,7 +27,7 @@ const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPe
 export class OrderItemService {
   constructor(
     @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
-    @Inject(forwardRef(() => CustomerService)) private readonly productService: ProductService,
+    @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
     private readonly additionalServiceService: AdditionalServiceService
   ) { }
 
