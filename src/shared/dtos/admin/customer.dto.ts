@@ -3,8 +3,10 @@ import { IsBoolean, IsDate, IsEmail, IsNumber, IsOptional, IsString, ValidateIf,
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { Customer } from '../../../customer/models/customer.model';
 
-export class AdminAddOrUpdateCustomerDto {
+export class AdminAddOrUpdateCustomerDto implements
+  Pick<Customer, 'firstName' | 'lastName' | 'email' | 'phoneNumber' | 'createdAt' | 'lastLoggedIn' | 'isLocked' | 'isEmailConfirmed' | 'isPhoneNumberConfirmed' | 'addresses' | 'note' | 'deprecatedAddresses' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'storeReviewIds' | 'productReviewIds' | 'wishlistProductIds' | 'oauthId' | 'isRegisteredByThirdParty'> {
   @Expose()
   @IsString()
   @TrimString()
@@ -31,10 +33,6 @@ export class AdminAddOrUpdateCustomerDto {
   @Expose()
   @IsOptional()
   password: any;
-
-  @Expose()
-  @IsOptional()
-  deprecatedPasswordHash: any;
 
   @Expose()
   @IsOptional()
@@ -79,7 +77,11 @@ export class AdminAddOrUpdateCustomerDto {
 
   @Expose()
   @IsNumber(undefined, { each: true })
-  reviewIds: number[];
+  storeReviewIds: number[];
+
+  @Expose()
+  @IsNumber(undefined, { each: true })
+  productReviewIds: number[];
 
   @Expose()
   @IsNumber(undefined, { each: true })
@@ -99,9 +101,9 @@ export class AdminAddOrUpdateCustomerDto {
   @IsNumber()
   totalOrdersCost: number;
 
-  oauthId?: string;
+  oauthId: string;
 
-  isRegisteredByThirdParty?: boolean;
+  isRegisteredByThirdParty: boolean;
 }
 
 export class AdminCustomerDto extends AdminAddOrUpdateCustomerDto {

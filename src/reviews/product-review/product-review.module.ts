@@ -8,6 +8,7 @@ import { ProductModule } from '../../product/product.module';
 import { ClientProductReviewController } from './client-product-review.controller';
 import { ProductQuickReviewService } from './product-quick-review.service';
 import { EmailModule } from '../../email/email.module';
+import { CustomerModule } from '../../customer/customer.module';
 
 const productReviewModel = {
   name: ProductReviewModel.modelName,
@@ -25,6 +26,7 @@ const productQuickReviewModel = {
   imports: [
     MongooseModule.forFeature([productReviewModel, productQuickReviewModel]),
     forwardRef(() => ProductModule),
+    forwardRef(() => CustomerModule),
     EmailModule
   ],
   providers: [ProductReviewService, ProductQuickReviewService],

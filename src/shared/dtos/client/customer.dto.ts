@@ -5,7 +5,7 @@ import { ClientOrderItemDto } from './order-item.dto';
 import { Language } from '../../enums/language.enum';
 
 export class ClientCustomerDto implements
-  Pick<Customer, 'id' | 'firstName' | 'lastName' | 'email' | 'phoneNumber' | 'addresses' | 'isEmailConfirmed' | 'totalOrdersCount' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'reviewIds' | 'wishlistProductIds'>,
+  Pick<Customer, 'id' | 'firstName' | 'lastName' | 'email' | 'phoneNumber' | 'addresses' | 'isEmailConfirmed' | 'totalOrdersCount' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'storeReviewIds' | 'productReviewIds' | 'wishlistProductIds'>,
   Record<keyof Pick<Customer, 'cart'>, ClientOrderItemDto[]> {
   @Expose()
   id: number;
@@ -45,7 +45,10 @@ export class ClientCustomerDto implements
   orderIds: number[];
 
   @Expose()
-  reviewIds: number[];
+  storeReviewIds: number[];
+
+  @Expose()
+  productReviewIds: number[];
 
   @Expose()
   wishlistProductIds: number[];
@@ -62,7 +65,8 @@ export class ClientCustomerDto implements
       lastName: customer.lastName,
       orderIds: customer.orderIds,
       phoneNumber: customer.phoneNumber,
-      reviewIds: customer.reviewIds,
+      storeReviewIds: customer.storeReviewIds,
+      productReviewIds: customer.productReviewIds,
       totalOrdersCost: customer.totalOrdersCost,
       totalOrdersCount: customer.totalOrdersCount,
       wishlistProductIds: customer.wishlistProductIds

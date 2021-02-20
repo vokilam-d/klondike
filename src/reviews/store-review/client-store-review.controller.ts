@@ -16,7 +16,6 @@ import { Language } from '../../shared/enums/language.enum';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 import { ReviewSource } from '../../shared/enums/review-source.enum';
-import { getValidReviewSource } from '../../shared/helpers/get-valid-review-source.function';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('store-reviews')

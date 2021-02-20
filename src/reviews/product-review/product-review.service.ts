@@ -20,6 +20,7 @@ import { ProductQuickReview } from './models/product-quick-review.model';
 import { EventsService } from '../../shared/services/events/events.service';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
+import { CustomerService } from '../../customer/customer.service';
 
 interface RatingInfo {
   allReviewsCount: number;
@@ -37,6 +38,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   constructor(
     @InjectModel(ProductReview.name) protected readonly reviewModel: ReturnModelType<typeof ProductReview>,
     @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
+    @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
     protected readonly quickReviewService: ProductQuickReviewService,
     protected readonly searchService: SearchService,
     protected readonly counterService: CounterService,
@@ -63,7 +65,14 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
   }
 
   async createReview(reviewDto: AdminProductReviewDto | ClientAddProductReviewDto, lang: Language): Promise<AdminProductReviewDto> {
-    const review = await super.createReview((reviewDto as AdminProductReviewDto), lang, (review: ProductReview, session) => this.productService.updateReviewRating(review.productId, lang, session));
+    const review = await super.createReview(
+      (reviewDto as AdminProductReviewDto),
+      lang,
+      async (review: ProductReview, session) => {
+        await this.productService.updateReviewRating(review.productId, lang, session);
+        await this.customerService.addProductReview(review.customerId, review.id, session);
+      });
+
     this.emailService.sendNewProductReviewEmail(review).then();
     return review;
   }

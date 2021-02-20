@@ -37,6 +37,7 @@ import { areAddressesSame } from '../shared/helpers/are-addresses-same.function'
 import { OrderService } from '../order/services/order.service';
 import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { Language } from '../shared/enums/language.enum';
+import { clientDefaultLanguage } from '../shared/constants';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -44,14 +45,15 @@ export class CustomerService implements OnApplicationBootstrap {
   private logger = new Logger(CustomerService.name);
   private cachedCustomerCount: number;
 
-  constructor(@InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
-              @Inject(forwardRef(() => AuthService)) private authService: AuthService,
-              @Inject(forwardRef(() => OrderService)) private orderService: OrderService,
-              private readonly searchService: SearchService,
-              private readonly encryptor: EncryptorService,
-              private readonly emailService: EmailService,
-              private readonly counterService: CounterService) {
-  }
+  constructor(
+    @InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
+    @Inject(forwardRef(() => AuthService)) private authService: AuthService,
+    @Inject(forwardRef(() => OrderService)) private orderService: OrderService,
+    private readonly searchService: SearchService,
+    private readonly encryptor: EncryptorService,
+    private readonly emailService: EmailService,
+    private readonly counterService: CounterService
+  ) { }
 
   onApplicationBootstrap(): any {
     this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
@@ -460,6 +462,26 @@ export class CustomerService implements OnApplicationBootstrap {
 
   async emptyCart(customer: DocumentType<Customer>, session: ClientSession): Promise<DocumentType<Customer>> {
     customer.cart = [];
+    await customer.save({ session });
+
+    return customer;
+  }
+
+  async addStoreReview(customerId: number, storeReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
+    const customer = await this.getCustomerById(customerId, clientDefaultLanguage, false) as DocumentType<Customer>;
+    customer.storeReviewIds = customer.storeReviewIds || [];
+    customer.storeReviewIds.push(storeReviewId);
+
+    await customer.save({ session });
+
+    return customer;
+  }
+
+  async addProductReview(customerId: number, productReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
+    const customer = await this.getCustomerById(customerId, clientDefaultLanguage, false) as DocumentType<Customer>;
+    customer.productReviewIds = customer.productReviewIds || [];
+    customer.productReviewIds.push(productReviewId);
+
     await customer.save({ session });
 
     return customer;

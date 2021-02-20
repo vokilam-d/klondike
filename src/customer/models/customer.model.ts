@@ -55,7 +55,10 @@ export class Customer {
   deprecatedAddresses: string[];
 
   @arrayProp({ items: Number, default: [] })
-  reviewIds: number[];
+  storeReviewIds: number[];
+
+  @arrayProp({ items: Number, default: [] })
+  productReviewIds: number[];
 
   @arrayProp({ items: Number, default: [] })
   orderIds: number[];
