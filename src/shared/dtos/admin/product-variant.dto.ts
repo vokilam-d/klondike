@@ -12,10 +12,11 @@ import { AdminMetaTagsDto } from './meta-tags.dto';
 import { ProductLabelTypeEnum } from '../../enums/product-label-type.enum';
 import { clientDefaultLanguage } from '../../constants';
 
-type PickedVariant = Pick<ProductVariantWithQty, 'name' | 'sku' | 'vendorCode' | 'gtin' | 'slug' | 'attributes' | 'isEnabled' | 'price'
-  | 'oldPrice' | 'currency' | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'medias' | 'fullDescription' | 'shortDescription'
-  | 'metaTags' | 'qtyInStock' | 'isDiscountApplicable' | 'salesCount' | 'isIncludedInShoppingFeed' | 'googleAdsProductTitle'
-  | 'relatedProducts' | 'crossSellProducts'>;
+type PickedVariant = Pick<ProductVariantWithQty, 'name' | 'sku' | 'vendorCode' | 'gtin' | 'slug'
+  | 'attributes' | 'isEnabled' | 'price' | 'oldPrice' | 'currency' | 'purchasePrice' | 'purchaseCurrency'
+  | 'priceInDefaultCurrency' | 'oldPriceInDefaultCurrency' | 'medias' | 'fullDescription' | 'shortDescription'
+  | 'metaTags' | 'qtyInStock' | 'isDiscountApplicable' | 'salesCount' | 'isIncludedInShoppingFeed'
+  | 'googleAdsProductTitle' | 'relatedProducts' | 'crossSellProducts'>;
 type VariantStringProps = Record<keyof Pick<ProductVariantWithQty, 'id'>, string>;
 
 export class AdminAddOrUpdateProductVariantDto implements PickedVariant, VariantStringProps {
@@ -75,6 +76,15 @@ export class AdminAddOrUpdateProductVariantDto implements PickedVariant, Variant
   @Expose()
   @IsEnum(CurrencyCodeEnum)
   currency: CurrencyCodeEnum;
+
+  @Expose()
+  @Transform(price => parseFloat(price))
+  @IsNumber()
+  purchasePrice: number;
+
+  @Expose()
+  @IsEnum(CurrencyCodeEnum)
+  purchaseCurrency: CurrencyCodeEnum;
 
   @Expose()
   @IsOptional()

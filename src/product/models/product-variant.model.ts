@@ -46,6 +46,12 @@ export class ProductVariant {
   currency: CurrencyCodeEnum;
 
   @prop({ default: 0 })
+  purchasePrice: number;
+
+  @prop({ default: CurrencyCodeEnum.UAH })
+  purchaseCurrency: CurrencyCodeEnum;
+
+  @prop({ default: 0 })
   priceInDefaultCurrency: number;
 
   @prop({ default: null })
