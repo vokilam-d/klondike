@@ -73,6 +73,7 @@ export class OrderService implements OnApplicationBootstrap {
   constructor(
     @InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
     @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
+    @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
     private readonly counterService: CounterService,
     private readonly paymentMethodService: PaymentMethodService,
     private readonly tasksService: TasksService,
@@ -80,7 +81,7 @@ export class OrderService implements OnApplicationBootstrap {
     private readonly pdfGeneratorService: PdfGeneratorService,
     private readonly inventoryService: InventoryService,
     private readonly orderItemService: OrderItemService,
-    private readonly productService: ProductService,
+    // private readonly productService: ProductService,
     private readonly userService: UserService,
     private readonly mediaService: MediaService,
     private readonly searchService: SearchService,
