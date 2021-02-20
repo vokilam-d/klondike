@@ -81,7 +81,6 @@ export class OrderService implements OnApplicationBootstrap {
     private readonly pdfGeneratorService: PdfGeneratorService,
     private readonly inventoryService: InventoryService,
     private readonly orderItemService: OrderItemService,
-    // private readonly productService: ProductService,
     private readonly userService: UserService,
     private readonly mediaService: MediaService,
     private readonly searchService: SearchService,
