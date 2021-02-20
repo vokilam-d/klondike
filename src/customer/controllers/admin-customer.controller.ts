@@ -19,9 +19,9 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminAddOrUpdateCustomerDto, AdminCustomerDto } from '../../shared/dtos/admin/customer.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { CustomerReviewsAverageRatingDto } from '../../shared/dtos/admin/customer-reviews-average-rating.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -43,6 +43,18 @@ export class AdminCustomerController {
 
     return {
       data: plainToClass(AdminCustomerDto, customer, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Get(':id/avg-reviews-rating')
+  async getCustomerAverageReviewsRating(
+    @Param('id') id: string,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<CustomerReviewsAverageRatingDto>> {
+    const avgRating = await this.customerService.getCustomerReviewsAverageRating(parseInt(id), lang);
+
+    return {
+      data: plainToClass(CustomerReviewsAverageRatingDto, avgRating, { excludeExtraneousValues: true })
     };
   }
 

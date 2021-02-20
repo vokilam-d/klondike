@@ -8,6 +8,8 @@ import { AuthModule } from '../auth/auth.module';
 import { EmailModule } from '../email/email.module';
 import { CartController } from './controllers/cart.controller';
 import { OrderModule } from '../order/order.module';
+import { StoreReviewModule } from '../reviews/store-review/store-review.module';
+import { ProductReviewModule } from '../reviews/product-review/product-review.module';
 
 const customerModel = {
   name: CustomerModel.modelName,
@@ -20,7 +22,9 @@ const customerModel = {
     MongooseModule.forFeature([customerModel]),
     forwardRef(() => AuthModule),
     forwardRef(() => EmailModule),
-    forwardRef(() => OrderModule)
+    forwardRef(() => OrderModule),
+    forwardRef(() => StoreReviewModule),
+    forwardRef(() => ProductReviewModule)
   ],
   providers: [CustomerService],
   controllers: [AdminCustomerController, ClientCustomerController, CartController],

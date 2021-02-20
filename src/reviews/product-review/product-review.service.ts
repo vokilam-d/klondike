@@ -18,7 +18,6 @@ import { EmailService } from '../../email/email.service';
 import { ProductQuickReviewService } from './product-quick-review.service';
 import { ProductQuickReview } from './models/product-quick-review.model';
 import { EventsService } from '../../shared/services/events/events.service';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
 import { CustomerService } from '../../customer/customer.service';
 
@@ -102,6 +101,29 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
 
   async deleteReviewsByProductId(productId: number, session: ClientSession) {
     return this.reviewModel.deleteMany({ productId }).session(session).exec();
+  }
+
+  async countAverageRatingByIds(reviewIds: number[]): Promise<number> {
+    if (!reviewIds.length) { return 0; }
+
+    const ratingProp: keyof ProductReview = 'rating';
+    const ratingAggregation: { rating: number }[] = await this.reviewModel.aggregate([
+      {
+        $match: {
+          _id: {
+            $in: reviewIds
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          rating: { $avg: `$${ratingProp}` }
+        }
+      }
+    ]);
+
+    return Math.round(ratingAggregation[0].rating * 10) / 10;
   }
 
   transformReviewToDto(

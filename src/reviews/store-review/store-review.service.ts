@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { StoreReview } from './models/store-review.model';
@@ -27,12 +27,12 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
 
   constructor(
     @InjectModel(StoreReview.name) protected readonly reviewModel: ReturnModelType<typeof StoreReview>,
+    @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
     protected readonly counterService: CounterService,
     protected readonly searchService: SearchService,
     protected readonly emailService: EmailService,
     protected readonly mediaService: MediaService,
-    protected readonly eventsService: EventsService,
-    private readonly customerService: CustomerService
+    protected readonly eventsService: EventsService
   ) {
     super();
   }
@@ -67,6 +67,29 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
     const avgRating = Math.round(ratingAggregation[0].rating * 10) / 10;
     this.cachedAvgRating = avgRating;
     return avgRating;
+  }
+
+  async countAverageRatingByIds(reviewIds: number[]): Promise<number> {
+    if (!reviewIds.length) { return 0; }
+
+    const ratingProp: keyof StoreReview = 'rating';
+    const ratingAggregation: { rating: number }[] = await this.reviewModel.aggregate([
+      {
+        $match: {
+          _id: {
+            $in: reviewIds
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          rating: { $avg: `$${ratingProp}` }
+        }
+      }
+    ]);
+
+    return Math.round(ratingAggregation[0].rating * 10) / 10;
   }
 
   transformReviewToDto(review: DocumentType<StoreReview>, ipAddress?: string, userId?: string, customerId?: number): AdminStoreReviewDto {

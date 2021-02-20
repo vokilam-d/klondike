@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AdminStoreReviewController } from './admin-store-review.controller';
 import { StoreReviewService } from './store-review.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -14,8 +14,13 @@ const storeReviewModel = {
 };
 
 @Module({
-  imports: [MongooseModule.forFeature([storeReviewModel]), EmailModule, CustomerModule],
+  imports: [
+    MongooseModule.forFeature([storeReviewModel]),
+    EmailModule,
+    forwardRef(() => CustomerModule)
+  ],
   controllers: [AdminStoreReviewController, ClientStoreReviewController],
-  providers: [StoreReviewService]
+  providers: [StoreReviewService],
+  exports: [StoreReviewService]
 })
 export class StoreReviewModule {}

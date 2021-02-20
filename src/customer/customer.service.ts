@@ -35,9 +35,11 @@ import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-c
 import { CronExpression } from '@nestjs/schedule';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
 import { OrderService } from '../order/services/order.service';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { Language } from '../shared/enums/language.enum';
 import { clientDefaultLanguage } from '../shared/constants';
+import { CustomerReviewsAverageRatingDto } from '../shared/dtos/admin/customer-reviews-average-rating.dto';
+import { StoreReviewService } from '../reviews/store-review/store-review.service';
+import { ProductReviewService } from '../reviews/product-review/product-review.service';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -49,6 +51,8 @@ export class CustomerService implements OnApplicationBootstrap {
     @InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
     @Inject(forwardRef(() => AuthService)) private authService: AuthService,
     @Inject(forwardRef(() => OrderService)) private orderService: OrderService,
+    @Inject(forwardRef(() => StoreReviewService)) private storeReviewService: StoreReviewService,
+    @Inject(forwardRef(() => ProductReviewService)) private productReviewService: ProductReviewService,
     private readonly searchService: SearchService,
     private readonly encryptor: EncryptorService,
     private readonly emailService: EmailService,
@@ -114,6 +118,23 @@ export class CustomerService implements OnApplicationBootstrap {
 
   async getCustomerByOauthId(oauthId: string): Promise<DocumentType<Customer>> {
     return this.customerModel.findOne({ oauthId }).exec();
+  }
+
+  async getCustomerReviewsAverageRating(customerId: number, lang: Language): Promise<CustomerReviewsAverageRatingDto> {
+    const customer = await this.getCustomerById(customerId, lang);
+    const storeAvg = await this.storeReviewService.countAverageRatingByIds(customer.storeReviewIds);
+    const productAvg = await this.productReviewService.countAverageRatingByIds(customer.productReviewIds);
+
+    return {
+      storeReviews: {
+        count: customer.storeReviewIds.length,
+        avgRating: storeAvg
+      },
+      productReviews: {
+        count: customer.productReviewIds.length,
+        avgRating: productAvg
+      }
+    };
   }
 
   private async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
