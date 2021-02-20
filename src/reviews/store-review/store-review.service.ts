@@ -10,12 +10,10 @@ import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticStoreReviewModel } from './models/elastic-store-review.model';
 import { plainToClass } from 'class-transformer';
 import { EmailService } from '../../email/email.service';
-import { ClientAddStoreReviewDto, ClientAddStoreReviewFromEmailDto } from '../../shared/dtos/client/add-store-review.dto';
+import { ClientAddStoreReviewDto } from '../../shared/dtos/client/add-store-review.dto';
 import { EventsService } from '../../shared/services/events/events.service';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
 import { CustomerService } from '../../customer/customer.service';
-import { Customer } from '../../customer/models/customer.model';
 
 @Injectable()
 export class StoreReviewService extends BaseReviewService<StoreReview, AdminStoreReviewDto> implements OnApplicationBootstrap {
@@ -36,6 +34,14 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
   ) {
     super();
   }
+
+  // async onApplicationBootstrap() {
+  //   const reviews = await this.reviewModel.find().exec();
+  //   for (const review of reviews) {
+  //     await review.save();
+  //   }
+  //   this.reindexAllSearchData();
+  // }
 
   async createReview(reviewDto: AdminStoreReviewDto | ClientAddStoreReviewDto, lang: Language): Promise<AdminStoreReviewDto> {
     const review = await super.createReview(

@@ -24,7 +24,7 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { ProductWithQty } from '../models/product-with-qty.model';
 import { AdminProductVariantListItemDto } from '../../shared/dtos/admin/product-variant-list-item.dto';
-import { DEFAULT_CURRENCY } from '../../shared/enums/currency.enum';
+import { CurrencyCodeEnum, DEFAULT_CURRENCY } from '../../shared/enums/currency.enum';
 import { ElasticProduct } from '../models/elastic-product.model';
 import { IFilter, SortingPaginatingFilterDto } from '../../shared/dtos/shared-dtos/spf.dto';
 import { ClientProductListItemDto, ClientProductVariantDto, ClientProductVariantGroupDto } from '../../shared/dtos/client/product-list-item.dto';
@@ -107,12 +107,14 @@ export class ProductService implements OnApplicationBootstrap {
     // const products = await this.productModel.find().exec();
     // for (const product of products) {
     //   for (const variant of product.variants) {
-    //     variant.name.uk = variant.name.uk.replace(/поталу/g, 'поталі').replace(/Поталу/g, 'Поталі');
+    //     variant.purchasePrice = 0;
+    //     variant.purchaseCurrency = CurrencyCodeEnum.UAH;
     //   }
     //   await product.save();
     //   console.log('saved product', product.id);
     // }
     // console.log('saved all');
+    // this.reindexAllSearchData();
   }
 
   async getAdminProductsList(
