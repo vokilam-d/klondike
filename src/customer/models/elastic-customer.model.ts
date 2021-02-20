@@ -29,7 +29,8 @@ export class ElasticCustomerModel implements Record<keyof AdminCustomerDto, any>
   password = elasticTextType;
   deprecatedPasswordHash = elasticTextType;
   phoneNumber = elasticTextType;
-  reviewIds = elasticIntegerType;
+  storeReviewIds = elasticIntegerType;
+  productReviewIds = elasticIntegerType;
   totalOrdersCost = elasticFloatType;
   wishlistProductIds = elasticIntegerType;
   isRegisteredByThirdParty = elasticBooleanType;
