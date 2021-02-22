@@ -32,8 +32,8 @@ import { areMultilingualTextsEqual } from '../shared/helpers/are-multilingual-te
 import { CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../shared/services/events/events.service';
 import { Dictionary } from '../shared/helpers/dictionary';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { clientDefaultLanguage } from '../shared/constants';
+import { CronProd } from '../shared/decorators/prod-cron.decorator';
 
 @Injectable()
 export class CategoryService implements OnApplicationBootstrap {
@@ -541,7 +541,7 @@ export class CategoryService implements OnApplicationBootstrap {
     return source;
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  @CronProd(CronExpression.EVERY_HOUR)
   private async updateCachedCategories() {
     this.cachedTreesMap.clear();
     this.cachedLinkedCategories.clear();

@@ -63,6 +63,7 @@ import { hasPermissions } from '../../shared/helpers/have-permissions.function';
 import { Role } from '../../shared/enums/role.enum';
 import { FastifyRequest } from 'fastify';
 import { MediaService } from '../../shared/services/media/media.service';
+import { CronProd } from '../../shared/decorators/prod-cron.decorator';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -446,7 +447,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_30_MINUTES)
+  @CronProd(CronExpression.EVERY_30_MINUTES)
   private updateCachedOrderCount() {
     this.orderModel.estimatedDocumentCount().exec()
       .then(count => this.cachedOrderCount = count)

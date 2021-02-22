@@ -4,11 +4,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { ClientSession, UpdateQuery } from 'mongoose';
 import { __ } from '../shared/helpers/translate/translate.function';
-import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../shared/services/events/events.service';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 import { Language } from '../shared/enums/language.enum';
+import { CronProd } from '../shared/decorators/prod-cron.decorator';
 
 @Injectable()
 export class PageRegistryService implements OnApplicationBootstrap {
@@ -95,7 +94,7 @@ export class PageRegistryService implements OnApplicationBootstrap {
     return deleted;
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  @CronProd(CronExpression.EVERY_HOUR)
   private async updateCachedPages() {
     try {
       const pages = await this.registryModel.find().exec();

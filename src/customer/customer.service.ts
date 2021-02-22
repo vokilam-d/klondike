@@ -31,7 +31,6 @@ import { __ } from '../shared/helpers/translate/translate.function';
 import { InitResetPasswordDto } from '../shared/dtos/client/init-reset-password.dto';
 import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
 import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
-import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
 import { OrderService } from '../order/services/order.service';
@@ -40,6 +39,7 @@ import { clientDefaultLanguage } from '../shared/constants';
 import { CustomerReviewsAverageRatingDto } from '../shared/dtos/admin/customer-reviews-average-rating.dto';
 import { StoreReviewService } from '../reviews/store-review/store-review.service';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
+import { CronProd } from '../shared/decorators/prod-cron.decorator';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -301,7 +301,7 @@ export class CustomerService implements OnApplicationBootstrap {
     }
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  @CronProd(CronExpression.EVERY_HOUR)
   private updateCachedCustomerCount() {
     this.customerModel.estimatedDocumentCount().exec()
       .then(count => this.cachedCustomerCount = count)

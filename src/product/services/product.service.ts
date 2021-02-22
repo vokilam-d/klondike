@@ -24,7 +24,7 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { ProductWithQty } from '../models/product-with-qty.model';
 import { AdminProductVariantListItemDto } from '../../shared/dtos/admin/product-variant-list-item.dto';
-import { CurrencyCodeEnum, DEFAULT_CURRENCY } from '../../shared/enums/currency.enum';
+import { DEFAULT_CURRENCY } from '../../shared/enums/currency.enum';
 import { ElasticProduct } from '../models/elastic-product.model';
 import { IFilter, SortingPaginatingFilterDto } from '../../shared/dtos/shared-dtos/spf.dto';
 import { ClientProductListItemDto, ClientProductVariantDto, ClientProductVariantGroupDto } from '../../shared/dtos/client/product-list-item.dto';
@@ -66,6 +66,7 @@ import { EventsService } from '../../shared/services/events/events.service';
 import { adminDefaultLanguage } from '../../shared/constants';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
 import { ProductLabelTypeEnum } from '../../shared/enums/product-label-type.enum';
+import { CronProd } from '../../shared/decorators/prod-cron.decorator';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -1727,7 +1728,7 @@ export class ProductService implements OnApplicationBootstrap {
     this.eventsService.emit(this.productUpdatedEventName, {});
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  @CronProd(CronExpression.EVERY_HOUR)
   private updateCachedProductCount() {
     this.productModel.estimatedDocumentCount().exec()
       .then(count => this.cachedProductCount = count)

@@ -15,7 +15,7 @@ import { getCronExpressionEarlyMorning } from '../shared/helpers/get-cron-expres
 import { sortByMultilingualLabel } from '../shared/helpers/sort-by-label.function';
 import { Language } from '../shared/enums/language.enum';
 import { EventsService } from '../shared/services/events/events.service';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { CronProd } from '../shared/decorators/prod-cron.decorator';
 
 @Injectable()
 export class AttributeService implements OnApplicationBootstrap {
@@ -148,7 +148,7 @@ export class AttributeService implements OnApplicationBootstrap {
     this.eventsService.emit(this.attrbiutesUpdatedEventName, {});
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  @CronProd(CronExpression.EVERY_HOUR)
   private updateCachedAttributes() {
     this.attributeModel.find()
       .exec()
