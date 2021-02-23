@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Inventory } from './models/inventory.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { ClientSession } from 'mongoose';
@@ -13,10 +13,13 @@ import { Language } from '../shared/enums/language.enum';
 @Injectable()
 export class InventoryService {
 
-  constructor(@InjectModel(Inventory.name) private readonly inventoryModel: ReturnModelType<typeof Inventory>,
-              private readonly logger: FileLogger
+  private readonly logger = new Logger(InventoryService.name);
+
+  constructor(
+    @InjectModel(Inventory.name) private readonly inventoryModel: ReturnModelType<typeof Inventory>,
+    // private readonly logger: FileLogger
   ) {
-    this.logger.setContext(InventoryService.name);
+    // this.logger.setContext(InventoryService.name);
   }
 
   async createInventory(sku: string, productId: number, qtyInStock: number = 0, session: ClientSession): Promise<DocumentType<Inventory>> {
