@@ -848,7 +848,7 @@ export class OrderService implements OnApplicationBootstrap {
         order.shipment.sender.settlement = shipmentSender.city;
         order.shipment.sender.addressType = shipmentSender.addressType;
 
-        this.fileLogger.log(`Creating internet document for orderId=${order.id}, cost=${shipmentDto.cost} paymentMethod=${shipmentDto.paymentMethod}, payerType=${shipmentDto.payerType}, backwardMoneyDelivery=${shipmentDto.backwardMoneyDelivery}...`);
+        this.fileLogger.log(`Creating internet document for orderId=${order.id}, cost=${shipmentDto.cost}, payerType=${shipmentDto.payerType}, backwardMoneyDelivery=${shipmentDto.backwardMoneyDelivery}...`);
 
         const { trackingNumber, estimatedDeliveryDate } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentType);
         order.shipment.trackingNumber = trackingNumber;

@@ -158,7 +158,7 @@ export class NovaPoshtaService {
       }];
     }
 
-    this.fileLogger.log(`Creating internet document for payer=${saveInternetDocumentRequestBody.methodProperties.PayerType}, cost=${saveInternetDocumentRequestBody.methodProperties.Cost}, backwardDeliveryPayer=${saveInternetDocumentRequestBody.methodProperties.BackwardDeliveryData?.[0]?.PayerType}...`);
+    this.fileLogger.log(`Creating internet document for cost=${saveInternetDocumentRequestBody.methodProperties.Cost}, payerType=${saveInternetDocumentRequestBody.methodProperties.PayerType}, backwardDeliveryPayer=${saveInternetDocumentRequestBody.methodProperties.BackwardDeliveryData?.[0]?.PayerType}...`);
 
     const { data: internetDocumentSaveResponse } = await this.http.post(this.apiUrl, saveInternetDocumentRequestBody).toPromise();
 
