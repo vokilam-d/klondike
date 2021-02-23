@@ -12,6 +12,7 @@ import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.
 import { ShipmentSender } from './models/shipment-sender.model';
 import { ShipmentSenderService } from './shipment-sender.service';
 import { ShipmentPayerEnum } from '../shared/enums/shipment-payer.enum';
+import { FileLogger } from '../logger/file-logger.service';
 
 @Injectable()
 export class NovaPoshtaService {
@@ -24,8 +25,11 @@ export class NovaPoshtaService {
 
   constructor(
     private readonly http: HttpService,
-    private readonly shipmentSenderService: ShipmentSenderService
-  ) { }
+    private readonly shipmentSenderService: ShipmentSenderService,
+    private readonly fileLogger: FileLogger
+  ) {
+    this.fileLogger.setContext(NovaPoshtaService.name);
+  }
 
   public async shipmentRecipient(spf: ClientSPFDto): Promise<ShipmentAddressDto> {
 
@@ -146,13 +150,15 @@ export class NovaPoshtaService {
     };
 
     if (orderPaymentMethod === PaymentTypeEnum.CASH_ON_DELIVERY) {
-      const redelivery = shipment.backwardMoneyDelivery ? shipment.backwardMoneyDelivery : shipment.cost;
+      const redelivery = shipment.backwardMoneyDelivery || shipment.cost;
       saveInternetDocumentRequestBody.methodProperties.BackwardDeliveryData = [{
         PayerType: ShipmentPayerEnum.RECIPIENT, // Cash on delivery is always paid by recipient
         CargoType: 'Money',
         RedeliveryString: redelivery
       }];
     }
+
+    this.fileLogger.log(`Creating internet document for payer=${saveInternetDocumentRequestBody.methodProperties.PayerType}, cost=${saveInternetDocumentRequestBody.methodProperties.Cost}, backwardDeliveryPayer=${saveInternetDocumentRequestBody.methodProperties.BackwardDeliveryData[0]?.PayerType}`);
 
     const { data: internetDocumentSaveResponse } = await this.http.post(this.apiUrl, saveInternetDocumentRequestBody).toPromise();
 

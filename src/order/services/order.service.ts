@@ -64,6 +64,7 @@ import { Role } from '../../shared/enums/role.enum';
 import { FastifyRequest } from 'fastify';
 import { MediaService } from '../../shared/services/media/media.service';
 import { CronProd } from '../../shared/decorators/prod-cron.decorator';
+import { FileLogger } from '../../logger/file-logger.service';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -86,8 +87,11 @@ export class OrderService implements OnApplicationBootstrap {
     private readonly mediaService: MediaService,
     private readonly searchService: SearchService,
     private readonly novaPoshtaService: NovaPoshtaService,
-    private readonly shipmentSenderService: ShipmentSenderService
-  ) { }
+    private readonly shipmentSenderService: ShipmentSenderService,
+    private readonly fileLogger: FileLogger
+  ) {
+    this.fileLogger.setContext(OrderService.name);
+  }
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
@@ -844,6 +848,8 @@ export class OrderService implements OnApplicationBootstrap {
         order.shipment.sender.settlement = shipmentSender.city;
         order.shipment.sender.addressType = shipmentSender.addressType;
 
+        this.fileLogger.log(`Creating internet document for orderId=${order.id}, cost=${shipmentDto.cost} paymentMethod=${shipmentDto.paymentMethod}, payerType=${shipmentDto.payerType}, backwardMoneyDelivery=${shipmentDto.backwardMoneyDelivery}...`);
+
         const { trackingNumber, estimatedDeliveryDate } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentType);
         order.shipment.trackingNumber = trackingNumber;
         order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
@@ -851,6 +857,7 @@ export class OrderService implements OnApplicationBootstrap {
         order.shipment.statusDescription = 'Новая почта ожидает поступление';
 
         logMessage = `Created internet document`;
+        this.fileLogger.log(`${logMessage}, trackingNumber=${trackingNumber}`);
       }
 
       if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
@@ -864,11 +871,12 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async uploadMedia(request: FastifyRequest, id: number, user: User, lang: Language): Promise<Order> {
-    return await this.updateOrderById(id, lang, async order => {
-      const media = await this.mediaService.upload(request, Order.collectionName, false);
-      order.medias = order.medias || [];
+    const media = await this.mediaService.upload(request, Order.collectionName, false);
 
+    return await this.updateOrderById(id, lang, async order => {
+      order.medias = order.medias || [];
       order.medias.push(media);
+
       OrderService.addLog(order, `Uploaded media "${media.variantsUrls.original}", userLogin=${user.login}`);
       return order;
     });
