@@ -2,7 +2,7 @@ import { Injectable, Logger, Scope } from '@nestjs/common';
 import { createWriteStream, WriteStream } from 'fs';
 import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 
-@Injectable({ scope: Scope.DEFAULT })
+@Injectable({ scope: Scope.TRANSIENT })
 export class FileLogger extends Logger {
 
   private writeStream: WriteStream;
