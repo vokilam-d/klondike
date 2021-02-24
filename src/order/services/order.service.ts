@@ -675,7 +675,6 @@ export class OrderService implements OnApplicationBootstrap {
 
     if (!isCashOnDelivery && isReceived || isCashOnDelivery && isCashPickedUp) {
       order.status = OrderStatusEnum.FINISHED;
-      order.isOrderPaid = true;
     } else if (order.shipment.status === ShipmentStatusEnum.RECIPIENT_DENIED) {
       order.status = OrderStatusEnum.RECIPIENT_DENIED;
     } else if (isJustSent) {
@@ -775,9 +774,6 @@ export class OrderService implements OnApplicationBootstrap {
 
         case OrderStatusEnum.READY_TO_SHIP:
           assertStatus(OrderStatusEnum.PACKED);
-          if (order.paymentType !== PaymentTypeEnum.CASH_ON_DELIVERY && !order.isOrderPaid) {
-            throw new BadRequestException(__('Cannot change status to "$1": order is not paid', lang, status));
-          }
           break;
 
         case OrderStatusEnum.RETURNING:
