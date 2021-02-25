@@ -569,7 +569,7 @@ export class OrderService implements OnApplicationBootstrap {
         const newShipmentStatus = order.shipment.status;
 
         if (newShipmentStatus !== oldShipmentStatus) {
-          OrderService.addLog(order, `Updated shipment status to "${order.shipment.status}" - ${order.shipment.statusDescription}, source=system`);
+          OrderService.addLog(order, `Updated shipment status to "${order.shipment.status} - ${order.shipment.statusDescription}", source=system`);
         }
 
         const oldOrderStatus = order.status;
@@ -585,7 +585,7 @@ export class OrderService implements OnApplicationBootstrap {
               break;
           }
 
-          OrderService.addLog(order, `Updated order status by shipment status to "${order.status}" - ${order.statusDescription[adminDefaultLanguage]}, source=system`);
+          OrderService.addLog(order, `Updated order status by shipment status to "${order.status} - ${order.statusDescription[adminDefaultLanguage]}", source=system`);
         }
 
         await order.save({ session });
