@@ -863,14 +863,14 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async uploadMedia(request: FastifyRequest, id: number, user: User, lang: Language): Promise<Order> {
+  async uploadMedia(request: FastifyRequest, id: number, login: string, lang: Language): Promise<Order> {
     const media = await this.mediaService.upload(request, Order.collectionName, false);
 
     return await this.updateOrderById(id, lang, async order => {
       order.medias = order.medias || [];
       order.medias.push(media);
 
-      OrderService.addLog(order, `Uploaded media "${media.variantsUrls.original}", userLogin=${user.login}`);
+      OrderService.addLog(order, `Uploaded media "${media.variantsUrls.original}", userLogin=${login}`);
       return order;
     });
   }

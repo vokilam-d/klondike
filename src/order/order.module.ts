@@ -18,6 +18,7 @@ import { NovaPoshtaModule } from '../nova-poshta/nova-poshta.module';
 import { EmailModule } from '../email/email.module';
 import { AdditionalServiceModule } from '../additional-service/additional-service.module';
 import { UserModule } from '../user/user.module';
+import { AdminOrderMediaController } from './controllers/admin-order-media.controller';
 
 const orderModel = {
   name: OrderModel.modelName,
@@ -41,7 +42,7 @@ const orderModel = {
     NovaPoshtaModule,
     AdditionalServiceModule
   ],
-  controllers: [AdminOrderController, AdminOrderItemController, ClientOrderController],
+  controllers: [AdminOrderController, AdminOrderItemController, AdminOrderMediaController, ClientOrderController],
   providers: [OrderService, OrderItemService],
   exports: [OrderService, OrderItemService]
 })

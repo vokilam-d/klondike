@@ -116,20 +116,6 @@ export class AdminOrderController {
     };
   }
 
-  @Post(':id/media')
-  async uploadMedia(
-    @Param('id') orderId: string,
-    @Request() request: FastifyRequest,
-    @ValidatedUser() user: DocumentType<User>,
-    @AdminLang() lang: Language
-  ): Promise<ResponseDto<AdminOrderDto>> {
-    const order = await this.orderService.uploadMedia(request, parseInt(orderId), user, lang);
-
-    return {
-      data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
-    };
-  }
-
   @Put(':id')
   async editOrder(
     @Param('id') orderId: string,

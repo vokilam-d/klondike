@@ -74,6 +74,8 @@ export class AuthService {
 
   async getUserFromReq(req: FastifyRequest): Promise<DocumentType<User> | undefined> {
     const id = await this.getEntityIdFromReq(req, authConstants.JWT_ADMIN_COOKIE_NAME);
+    if (!id) { return; }
+
     return this.userService.getUserById(id);
   }
 
