@@ -13,6 +13,7 @@ export class UserJwtStrategy extends PassportStrategy(Strategy, authConstants.US
   constructor(private userService: UserService) {
     super({
       jwtFromRequest: (req: FastifyRequest) => {
+        console.log({cookies: req?.cookies});
         const jwtCookie = req?.cookies?.[authConstants.JWT_ADMIN_COOKIE_NAME];
 
         if (isProdEnv()) {
