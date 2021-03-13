@@ -574,9 +574,8 @@ export class OrderService implements OnApplicationBootstrap {
 
         const oldOrderStatus = order.status;
         OrderService.updateOrderStatusByShipment(order);
-        const newOrderStatus = order.status;
-        if (newOrderStatus !== oldOrderStatus) {
-          switch (newOrderStatus) {
+        if (order.status !== oldOrderStatus) {
+          switch (order.status) {
             case OrderStatusEnum.SHIPPED:
               await this.shippedOrderPostActions(order, lang, session);
               break;
@@ -668,16 +667,14 @@ export class OrderService implements OnApplicationBootstrap {
     const isCashOnDelivery = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
-    const isReadyToShip = order.status === OrderStatusEnum.READY_TO_PACK
-      || order.status === OrderStatusEnum.PACKED
-      || order.status === OrderStatusEnum.READY_TO_SHIP;
-    const isJustSent = isReadyToShip && order.shipment.status === ShipmentStatusEnum.HEADING_TO_CITY;
+    const isShipped = order.shipment.status === ShipmentStatusEnum.HEADING_TO_CITY
+      || order.shipment.status === ShipmentStatusEnum.IN_CITY;
 
     if (!isCashOnDelivery && isReceived || isCashOnDelivery && isCashPickedUp) {
       order.status = OrderStatusEnum.FINISHED;
     } else if (order.shipment.status === ShipmentStatusEnum.RECIPIENT_DENIED) {
       order.status = OrderStatusEnum.RECIPIENT_DENIED;
-    } else if (isJustSent) {
+    } else if (isShipped) {
       order.status = OrderStatusEnum.SHIPPED;
     }
   }
