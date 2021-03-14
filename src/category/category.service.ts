@@ -214,7 +214,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
       newCategoryModel.breadcrumbs = await this.buildBreadcrumbs(newCategoryModel);
 
-      const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(categoryDto.medias, Category.collectionName);
+      const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(categoryDto.medias, Category.collectionName);
       newCategoryModel.medias = savedMedias;
 
       await newCategoryModel.save({ session });
@@ -254,7 +254,7 @@ export class CategoryService implements OnApplicationBootstrap {
         }
       }
 
-      const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(categoryDto.medias, Category.collectionName);
+      const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(categoryDto.medias, Category.collectionName);
       categoryDto.medias = savedMedias;
 
       Object.keys(categoryDto).forEach(key => {

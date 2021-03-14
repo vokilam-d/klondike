@@ -529,7 +529,7 @@ export class ProductService implements OnApplicationBootstrap {
 
       for (const dtoVariant of productDto.variants) {
         const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
-        const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(dtoVariant.medias, Product.collectionName);
+        const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(dtoVariant.medias, Product.collectionName);
 
         tmpMediasToDelete.push(...tmpMedias);
         savedVariant.medias = await this.mediaService.duplicateSavedMedias(savedMedias, Product.collectionName);
@@ -589,7 +589,7 @@ export class ProductService implements OnApplicationBootstrap {
       }
 
       for (const variantDto of variantsToAdd) {
-        const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(variantDto.medias, Product.collectionName);
+        const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(variantDto.medias, Product.collectionName);
         variantDto.medias = savedMedias;
         tmpMediasToDelete.push(...tmpMedias);
 
@@ -614,7 +614,7 @@ export class ProductService implements OnApplicationBootstrap {
           }
         }
 
-        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(variantInDto.medias, Product.collectionName);
+        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(variantInDto.medias, Product.collectionName);
         variantInDto.medias = savedMedias;
         tmpMediasToDelete.push(...checkedTmpMedias);
 

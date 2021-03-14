@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
-import { pipeline as pipelineImport } from 'stream';
+import { pipeline } from 'stream';
 import * as sharp from 'sharp';
 import { FastifyRequest } from 'fastify';
 import { join, parse } from 'path';
@@ -11,8 +11,20 @@ import { readableBytes } from '../../helpers/readable-bytes.function';
 import { MediaVariantEnum } from '../../enums/media-variant.enum';
 import { AdminMediaDto } from '../../dtos/admin/media.dto';
 
-const pipeline = promisify(pipelineImport);
+const pipelinePromise = promisify(pipeline);
 
+export const waitFor = (fn, ...args): Promise<any> => {
+  return new Promise<any>((resolve, reject) => {
+    fn(...args, (err) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve();
+    })
+  })
+}
 interface ResizeOptions {
   variant: MediaVariantEnum;
   maxDimension: number | null;
@@ -41,9 +53,10 @@ export class MediaService {
   private allowedExt = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.tiff', '.gif'];
   private logger = new Logger(MediaService.name);
 
-  async upload(request: FastifyRequest, entityDirName: string, saveToTmp: boolean = true): Promise<Media> {
+  async upload(request: FastifyRequest, entityDirName: string, saveToTmp: boolean = true, resize: boolean = false): Promise<Media> {
 
     return new Promise<Media>((resolve, reject) => {
+      let isRejected: boolean = false;
 
       request.multipart(
         async (field, file, fileName, _encoding, _mimetype) => {
@@ -53,13 +66,12 @@ export class MediaService {
             reject(new BadRequestException(`Type of the file '${fileName}' is not allowed`));
             return;
           }
+          name = transliterate(name).substring(0, 100);
 
           const saveDirName = saveToTmp
             ? join(this.uploadDirName, this.tmpDirName, entityDirName)
             : join(this.uploadDirName, entityDirName);
           await fs.promises.mkdir(saveDirName, { recursive: true });
-
-          name = transliterate(name).substring(0, 100);
 
           const media = new Media();
           const metadataCallback  = (err, metadata: sharp.Metadata) => {
@@ -70,14 +82,39 @@ export class MediaService {
             media.size = readableBytes(metadata.size);
             media.dimensions = `${metadata.width}x${metadata.height} px`;
           };
-          const resize = sharp().jpeg({ progressive: true, quality: 100 }).metadata(metadataCallback);
-          const newFileName = await this.getUniqueFileName(saveDirName, `${name}.jpeg`);
-          const writeStream = fs.createWriteStream(join(saveDirName, newFileName));
-          media.variantsUrls.original = `${join('/', saveDirName, newFileName)}`;
 
-          await pipeline(file, resize, writeStream);
+          const fullFileNameOfOriginal = await this.getUniqueFileName(saveDirName, `${name}.jpeg`);
+          const { name: fileNameOfOriginal } = parse(fullFileNameOfOriginal);
+          const resizeOptions = resize ? this.resizeOptions : this.resizeOptions.filter(option => option.variant === MediaVariantEnum.Original);
 
-          resolve(media);
+          let resizedCount = 0;
+          for (const resizeOption of resizeOptions) {
+            const isOriginal = resizeOption.variant === MediaVariantEnum.Original;
+
+            const resizeStream = sharp()
+              .resize(resizeOption.maxDimension, resizeOption.maxDimension, { fit: 'inside' })
+              .jpeg({ progressive: true, quality: isOriginal ? 100: 80 })
+              .metadata(isOriginal ? metadataCallback : () => {})
+
+            const fileName = isOriginal ? fullFileNameOfOriginal : `${fileNameOfOriginal}_${resizeOption.variant}${ext}`;
+            const pathToFile = join(saveDirName, fileName);
+            const writeStream = fs.createWriteStream(pathToFile);
+
+            pipeline(file, resizeStream, writeStream, (err) => {
+              if (err) {
+                isRejected = true;
+                reject(err);
+                return;
+              }
+
+              media.variantsUrls[resizeOption.variant] = `/${pathToFile}`;
+              resizedCount++;
+
+              if (!isRejected && resizedCount === resizeOptions.length) {
+                resolve(media);
+              }
+            });
+          }
         },
         error => {
           if (error) {
@@ -89,7 +126,7 @@ export class MediaService {
     });
   }
 
-  async checkTmpAndSaveMedias(mediaDtos: AdminMediaDto[], mediaTypeDirName: string): Promise<{ tmpMedias: Media[], savedMedias: Media[] }> {
+  async checkForTmpAndSaveMedias(mediaDtos: AdminMediaDto[], mediaTypeDirName: string): Promise<{ tmpMedias: Media[], savedMedias: Media[] }> {
     const tmpMedias = [];
     const savedMedias = [];
 
@@ -97,7 +134,7 @@ export class MediaService {
       const isTmp = media.variantsUrls.original.includes('/tmp/');
       if (isTmp) {
         tmpMedias.push(media);
-        savedMedias.push(await this.processAndSave(media, mediaTypeDirName, true));
+        savedMedias.push(await this.resizeMediaDtoAndSave(media, mediaTypeDirName, true));
       } else {
         savedMedias.push(media);
       }
@@ -106,7 +143,7 @@ export class MediaService {
     return { tmpMedias, savedMedias };
   }
 
-  private async processAndSave(mediaDto: AdminMediaDto, mediaTypeDirName: string, isTmp: boolean): Promise<Media> {
+  private async resizeMediaDtoAndSave(mediaDto: AdminMediaDto, mediaTypeDirName: string, isInTmp: boolean): Promise<Media> {
     const media = new Media();
     media.altText = mediaDto.altText;
     media.isHidden = mediaDto.isHidden;
@@ -114,7 +151,7 @@ export class MediaService {
     media.dimensions = mediaDto.dimensions;
 
     const { base: tmpFileName } = parse(mediaDto.variantsUrls.original);
-    const pathToOldFile = isTmp
+    const pathToOldFile = isInTmp
       ? join(this.uploadDirName, this.tmpDirName, mediaTypeDirName, tmpFileName)
       : join(this.uploadDirName, mediaTypeDirName, tmpFileName);
 
@@ -133,7 +170,7 @@ export class MediaService {
         .jpeg({ progressive: true });
       const readStream = fs.createReadStream(pathToOldFile, { autoClose: false });
 
-      await pipeline(readStream, resizeStream, writeStream);
+      await pipelinePromise(readStream, resizeStream, writeStream);
 
       media.variantsUrls[option.variant] = `/${pathToNewFile}`;
     }
@@ -146,7 +183,7 @@ export class MediaService {
   async duplicateSavedMedias(medias: Media[], mediaTypeDirName: string): Promise<Media[]> {
     const duplicated: Media[] = [];
     for (const media of medias) {
-      duplicated.push(await this.processAndSave(media, mediaTypeDirName, false));
+      duplicated.push(await this.resizeMediaDtoAndSave(media, mediaTypeDirName, false));
     }
     return duplicated;
   }

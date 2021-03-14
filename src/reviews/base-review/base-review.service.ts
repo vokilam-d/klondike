@@ -79,7 +79,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       review.id = await this.counterService.getCounter(this.collectionName, session);
       review.createdAt = new Date();
 
-      const { tmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(reviewDto.medias, this.collectionName);
+      const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(reviewDto.medias, this.collectionName);
       review.medias = savedMedias;
 
       await review.save({ session });
@@ -119,7 +119,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
         }
       }
 
-      const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkTmpAndSaveMedias(reviewDto.medias, this.collectionName);
+      const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(reviewDto.medias, this.collectionName);
       reviewDto.medias = savedMedias;
       tmpMedias.push(...checkedTmpMedias);
 
