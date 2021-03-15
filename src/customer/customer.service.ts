@@ -104,13 +104,20 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async getCustomerByIdOrEmail(idOrEmail: string | number): Promise<DocumentType<Customer>> {
-    if (!idOrEmail) { return; }
+    if (idOrEmail === undefined || idOrEmail === null || idOrEmail === '') { return; }
+
+    let id = parseInt(idOrEmail as string);
+    if (isNaN(id)) {
+      id = null;
+    }
+
+    const email = idOrEmail.toString()
 
     return this.customerModel
       .findOne({
         $or: [
-          { _id: Number(idOrEmail) },
-          { email: idOrEmail.toString() }
+          { _id: id },
+          { email }
         ]
       })
       .exec();
