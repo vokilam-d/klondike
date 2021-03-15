@@ -30,6 +30,7 @@ import { LoggerModule } from './logger/logger.module';
 import { AdditionalServiceModule } from './additional-service/additional-service.module';
 import { AnnouncementModule } from './announcement/announcement.module';
 import { ChartModule } from './chart/chart.module';
+import { BannerModule } from './banner/banner.module';
 
 @Module({
   imports: [
@@ -74,7 +75,8 @@ import { ChartModule } from './chart/chart.module';
     LoggerModule,
     AdditionalServiceModule,
     AnnouncementModule,
-    ChartModule
+    ChartModule,
+    BannerModule
   ],
   providers: [
     GlobalExceptionFilter,

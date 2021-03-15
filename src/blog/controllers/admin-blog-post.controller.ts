@@ -29,7 +29,7 @@ export class AdminBlogPostController {
     @Param('id') blogPostId: string,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminBlogPostDto>> {
-    const blogPost = await this.blogPostService.getBlogPost(blogPostId, lang);
+    const blogPost = await this.blogPostService.getBlogPost(parseInt(blogPostId), lang);
 
     return {
       data: plainToClass(AdminBlogPostDto, blogPost, { excludeExtraneousValues: true })
@@ -52,7 +52,7 @@ export class AdminBlogPostController {
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminBlogPostDto>> {
 
-    const updated = await this.blogPostService.updateBlogPost(blogPostId, blogPostDto, lang);
+    const updated = await this.blogPostService.updateBlogPost(parseInt(blogPostId), blogPostDto, lang);
 
     return {
       data: plainToClass(AdminBlogPostDto, updated, { excludeExtraneousValues: true })

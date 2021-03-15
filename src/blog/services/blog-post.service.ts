@@ -63,7 +63,7 @@ export class BlogPostService {
     }
   }
 
-  async updateBlogPost(blogPostId: string, blogPostDto: AdminBlogPostCreateOrUpdateDto, lang: Language): Promise<DocumentType<BlogPost>> {
+  async updateBlogPost(blogPostId: number, blogPostDto: AdminBlogPostCreateOrUpdateDto, lang: Language): Promise<DocumentType<BlogPost>> {
     const blogPost = await this.getBlogPost(blogPostId, lang);
 
     Object.keys(blogPostDto).forEach(key => blogPost[key] = blogPostDto[key]);
@@ -127,7 +127,7 @@ export class BlogPostService {
       .sort(((a, b) => b.sortOrder - a.sortOrder));
   }
 
-  async getBlogPost(id: string, lang: Language): Promise<DocumentType<BlogPost>> {
+  async getBlogPost(id: number, lang: Language): Promise<DocumentType<BlogPost>> {
     const found = await this.blogPostModel.findById(id).exec();
     if (!found) {
       throw new NotFoundException(__('Blog post with id "$1" not found', lang, id));
