@@ -48,13 +48,13 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     super();
   }
 
-  // async onApplicationBootstrap() {
+  async onApplicationBootstrap() {
   //   const reviews = await this.reviewModel.find().exec();
   //   for (const review of reviews) {
   //     await review.save();
   //   }
   //   this.reindexAllSearchData();
-  // }
+  }
 
   async findReviewsByProductId(productId: number,
                                onlyEnabled: boolean,

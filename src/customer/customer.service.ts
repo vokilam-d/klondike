@@ -59,7 +59,7 @@ export class CustomerService implements OnApplicationBootstrap {
     private readonly counterService: CounterService
   ) { }
 
-  onApplicationBootstrap(): any {
+  async onApplicationBootstrap() {
     this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
     // this.reindexAllSearchData();
   }
@@ -111,7 +111,7 @@ export class CustomerService implements OnApplicationBootstrap {
       id = null;
     }
 
-    const email = idOrEmail.toString()
+    const email = idOrEmail.toString();
 
     return this.customerModel
       .findOne({
