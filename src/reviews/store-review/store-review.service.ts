@@ -35,22 +35,20 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
     super();
   }
 
-  // async onApplicationBootstrap() {
+  async onApplicationBootstrap() {
   //   const reviews = await this.reviewModel.find().exec();
   //   for (const review of reviews) {
   //     await review.save();
   //   }
   //   this.reindexAllSearchData();
-  // }
+  }
 
   async createReview(reviewDto: AdminStoreReviewDto | ClientAddStoreReviewDto, lang: Language): Promise<AdminStoreReviewDto> {
     const review = await super.createReview(
       (reviewDto as AdminStoreReviewDto),
       lang,
       async (review, session) => {
-        if (review.customerId) {
-          await this.customerService.addStoreReview(review.customerId, review.id, session);
-        }
+        await this.customerService.addStoreReview(review.customerId || review.email, review.id, session);
       }
     );
     this.emailService.sendNewStoreReviewEmail(review).then();

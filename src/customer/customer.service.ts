@@ -103,6 +103,19 @@ export class CustomerService implements OnApplicationBootstrap {
     return serialized ? found.toJSON() : found;
   }
 
+  async getCustomerByIdOrEmail(idOrEmail: string | number): Promise<DocumentType<Customer>> {
+    if (!idOrEmail) { return; }
+
+    return this.customerModel
+      .findOne({
+        $or: [
+          { _id: Number(idOrEmail) },
+          { email: idOrEmail.toString() }
+        ]
+      })
+      .exec();
+  }
+
   async getCustomerByEmailOrPhoneNumber(emailOrPhone: string): Promise<DocumentType<Customer>> {
     if (!emailOrPhone) { return; }
 
@@ -488,8 +501,10 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async addStoreReview(customerId: number, storeReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
-    const customer = await this.getCustomerById(customerId, clientDefaultLanguage, false) as DocumentType<Customer>;
+  async addStoreReview(customerIdOrEmail: number | string, storeReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
+    const customer = await this.getCustomerByIdOrEmail(customerIdOrEmail);
+    if (!customer) { return; }
+
     customer.storeReviewIds = customer.storeReviewIds || [];
     customer.storeReviewIds.push(storeReviewId);
 
@@ -498,8 +513,10 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async addProductReview(customerId: number, productReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
-    const customer = await this.getCustomerById(customerId, clientDefaultLanguage, false) as DocumentType<Customer>;
+  async addProductReview(customerIdOrEmail: number | string, productReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
+    const customer = await this.getCustomerByIdOrEmail(customerIdOrEmail);
+    if (!customer) { return; }
+
     customer.productReviewIds = customer.productReviewIds || [];
     customer.productReviewIds.push(productReviewId);
 
