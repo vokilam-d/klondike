@@ -75,7 +75,7 @@ export class EmailService {
       this.sendEmail({ to, subject, html, attachment, emailType }).then();
     }
 
-    if (notifyClient) {
+    if (notifyClient && order.customerEmail) {
       const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
       const subject = `Ваш заказ №${order.idForCustomer} получен`;
       return this.sendEmail({ to, subject, html, attachment, emailType });
