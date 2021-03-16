@@ -11,7 +11,6 @@ import { AdminStoreReviewDto } from '../shared/dtos/admin/store-review.dto';
 import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-order.function';
 import { Language } from '../shared/enums/language.enum';
 import { clientDefaultLanguage } from '../shared/constants';
-import { User } from '../user/models/user.model';
 import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 
 enum EEmailType {
@@ -63,7 +62,7 @@ export class EmailService {
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
   }
 
-  async sendOrderConfirmationEmail(order: Order, lang: Language, notifyManagers: boolean, notifyClient: boolean = true) {
+  async sendOrderConfirmationEmail(order: Order, lang: Language, notifyManagers: boolean, notifyClient: boolean) {
     const emailType = EEmailType.OrderConfirmation;
     const html = this.generateOrderEmailHtml(order, emailType);
     const attachment = await this.generateOrderAttachment(order, lang);
@@ -94,11 +93,11 @@ export class EmailService {
     return this.getEmailHtml(emailType, context);
   }
 
-  async sendAssignedOrderManagerEmail(order: Order, assignedManagerUser: User) {
+  async sendAssignedOrderManagerEmail(order: Order) {
     if (!isProdEnv()) { return; }
 
     const subject = `Заказ №${order.idForCustomer} (${order.customerLastName}) `
-      + `назначен менеджеру ${assignedManagerUser.name}. Оформил ${order.source}`;
+      + `назначен менеджеру ${order.manager.name}. Оформил ${order.source}`;
 
     return this.sendEmail({
       to: this.newOrderManagerAssignedListenerEmails,

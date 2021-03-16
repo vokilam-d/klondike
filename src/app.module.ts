@@ -31,6 +31,7 @@ import { AdditionalServiceModule } from './additional-service/additional-service
 import { AnnouncementModule } from './announcement/announcement.module';
 import { ChartModule } from './chart/chart.module';
 import { BotModule } from './bot/bot.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -76,7 +77,8 @@ import { BotModule } from './bot/bot.module';
     AdditionalServiceModule,
     AnnouncementModule,
     ChartModule,
-    BotModule
+    BotModule,
+    NotificationModule
   ],
   providers: [
     GlobalExceptionFilter,

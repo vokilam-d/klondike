@@ -40,12 +40,16 @@ import { CustomerReviewsAverageRatingDto } from '../shared/dtos/admin/customer-r
 import { StoreReviewService } from '../reviews/store-review/store-review.service';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { CronProd } from '../shared/decorators/prod-cron.decorator';
+import { Subject } from 'rxjs';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
 
   private logger = new Logger(CustomerService.name);
   private cachedCustomerCount: number;
+
+  customerRegistered$ = new Subject<{ customer: Customer, token: string }>();
+  emailConfirmationRequested$ = new Subject<{ customer: Customer, token: string }>();
 
   constructor(
     @InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
@@ -55,7 +59,7 @@ export class CustomerService implements OnApplicationBootstrap {
     @Inject(forwardRef(() => ProductReviewService)) private productReviewService: ProductReviewService,
     private readonly searchService: SearchService,
     private readonly encryptor: EncryptorService,
-    private readonly emailService: EmailService,
+    // private readonly emailService: EmailService,
     private readonly counterService: CounterService
   ) { }
 
@@ -194,7 +198,8 @@ export class CustomerService implements OnApplicationBootstrap {
     const created = await this.createCustomer(adminCustomerDto);
 
     const token = await this.authService.createCustomerEmailConfirmToken(created);
-    this.emailService.sendRegisterSuccessEmail(created, token).then();
+    // this.emailService.sendRegisterSuccessEmail(created, token).then();
+    this.customerRegistered$.next({ customer: created, token });
 
     return created;
   }
@@ -445,7 +450,8 @@ export class CustomerService implements OnApplicationBootstrap {
     }
 
     const token = await this.authService.createCustomerEmailConfirmToken(customer);
-    await this.emailService.sendEmailConfirmationEmail(customer, token);
+    // await this.emailService.sendEmailConfirmationEmail(customer, token);
+    this.emailConfirmationRequested$.next({ customer, token });
   }
 
   async addShippingAddress(customer: DocumentType<Customer>, addressDto: ShipmentAddressDto): Promise<Customer> {

@@ -13,7 +13,7 @@ const taskModel = {
 @Module({
   imports: [
     MongooseModule.forFeature([taskModel]),
-    EmailModule
+    // EmailModule
   ],
   providers: [
     TasksService

@@ -9,6 +9,7 @@ import { EmailService } from '../email/email.service';
 import { TaskTypeEnum } from '../shared/enums/task-type.enum';
 import { isProdPrimaryInstance } from '../shared/helpers/is-prod-primary-instance.function';
 import { Language } from '../shared/enums/language.enum';
+import { Subject } from 'rxjs';
 
 @Injectable()
 export class TasksService implements OnApplicationBootstrap {
@@ -17,6 +18,8 @@ export class TasksService implements OnApplicationBootstrap {
   private readonly delaysInDays: { [t in TaskTypeEnum]?: number; } = {
     [TaskTypeEnum.SendEmail]: 14
   };
+
+  leaveReviewRequested$ = new Subject<{ order: Order, lang: Language }>();
 
   constructor(@InjectModel(Task.name) private readonly taskModel: ReturnModelType<typeof Task>,
               private readonly emailService: EmailService,
@@ -75,7 +78,8 @@ export class TasksService implements OnApplicationBootstrap {
   private buildJob(taskType: TaskTypeEnum, args: any[]): () => any {
     switch (taskType) {
       case TaskTypeEnum.SendEmail:
-        return () => this.emailService.sendLeaveReviewEmail(args[0], args[1]);
+        // return () => this.emailService.sendLeaveReviewEmail(args[0], args[1]);
+        return () => this.leaveReviewRequested$.next({ order: args[0], lang: args[1] });
     }
   }
 }

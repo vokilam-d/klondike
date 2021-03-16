@@ -32,7 +32,7 @@ const orderModel = {
     forwardRef(() => CustomerModule),
     forwardRef(() => AuthModule),
     forwardRef(() => ProductModule),
-    EmailModule,
+    // EmailModule,
     TasksModule,
     ShippingMethodModule,
     UserModule,

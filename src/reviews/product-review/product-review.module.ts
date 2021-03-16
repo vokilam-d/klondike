@@ -27,7 +27,7 @@ const productQuickReviewModel = {
     MongooseModule.forFeature([productReviewModel, productQuickReviewModel]),
     forwardRef(() => ProductModule),
     forwardRef(() => CustomerModule),
-    EmailModule
+    // EmailModule
   ],
   providers: [ProductReviewService, ProductQuickReviewService],
   controllers: [AdminProductReviewController, ClientProductReviewController],

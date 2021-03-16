@@ -28,7 +28,7 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
     @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
     protected readonly counterService: CounterService,
     protected readonly searchService: SearchService,
-    protected readonly emailService: EmailService,
+    // protected readonly emailService: EmailService,
     protected readonly mediaService: MediaService,
     protected readonly eventsService: EventsService
   ) {
@@ -51,7 +51,8 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
         await this.customerService.addStoreReview(review.customerId || review.email, review.id, session);
       }
     );
-    this.emailService.sendNewStoreReviewEmail(review).then();
+    // this.emailService.sendNewStoreReviewEmail(review).then();
+    this.newReview$.next(review);
     return review;
   }
 

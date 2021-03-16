@@ -41,7 +41,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     protected readonly quickReviewService: ProductQuickReviewService,
     protected readonly searchService: SearchService,
     protected readonly counterService: CounterService,
-    protected readonly emailService: EmailService,
+    // protected readonly emailService: EmailService,
     protected readonly mediaService: MediaService,
     protected readonly eventsService: EventsService
   ) {
@@ -80,7 +80,8 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
         await this.customerService.addProductReview(review.customerId || review.email, review.id, session);
       });
 
-    this.emailService.sendNewProductReviewEmail(review).then();
+    // this.emailService.sendNewProductReviewEmail(review).then();
+    this.newReview$.next(review);
     return review;
   }
 
