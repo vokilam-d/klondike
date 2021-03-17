@@ -10,6 +10,7 @@ import { ITelegramUser } from '../interfaces/user.interface';
 import { ITelegramChat } from '../interfaces/chat.interface';
 import { BotCommand } from '../enums/bot-command.enum';
 import { IBotCommand } from '../interfaces/bot-command.interface';
+import { isProdPrimaryInstance } from '../../shared/helpers/is-prod-primary-instance.function';
 
 @Injectable()
 export class BotConfigurationService implements OnApplicationBootstrap {
@@ -136,6 +137,10 @@ export class BotConfigurationService implements OnApplicationBootstrap {
   }
 
   private async setCommands(): Promise<any> {
+    if (!isProdPrimaryInstance()) {
+      return;
+    }
+
     const descriptions = {
       [BotCommand.SetAsAdminOrderChat]: 'Уведомлять о заказах',
       [BotCommand.SetAsAdminHealthChat]: 'Уведомлять об ошибках',
