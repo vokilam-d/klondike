@@ -22,7 +22,7 @@ export class TasksService implements OnApplicationBootstrap {
   leaveReviewRequested$ = new Subject<{ order: Order, lang: Language }>();
 
   constructor(@InjectModel(Task.name) private readonly taskModel: ReturnModelType<typeof Task>,
-              private readonly emailService: EmailService,
+              // private readonly emailService: EmailService,
               private readonly scheduler: SchedulerRegistry) {
   }
 

@@ -52,10 +52,12 @@ export class NotificationService implements OnApplicationBootstrap {
 
   private async onNewProductReview(review: AdminProductReviewDto): Promise<void> {
     this.emailService.sendNewProductReviewEmail(review).then();
+    this.botService.onNewProductReview(review).then();
   }
 
   private async onNewStoreReview(review: AdminStoreReviewDto): Promise<void> {
     this.emailService.sendNewStoreReviewEmail(review).then();
+    this.botService.onNewStoreReview(review).then();
   }
 
   private async onPasswordReset(customer: Customer, token: string): Promise<void> {
