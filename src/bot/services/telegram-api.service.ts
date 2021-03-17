@@ -45,7 +45,15 @@ export class TelegramApiService {
   private async execMethod(methodName: string, data: any): Promise<any> {
     const url = `${this.apiHost}/bot${this.token}/${methodName}`;
     try {
-      return await this.http.post(url, data).toPromise();
+      const response = await this.http.post(url, data).toPromise();
+      if (response.data?.ok !== true) {
+        this.logger.error(`Method "${methodName}" failed:`)
+        this.logger.error({ request: data, response: response.data });
+      } else {
+        this.logger.log(`Method "${methodName}" sucess:`)
+        this.logger.log({ request: data, response: response.data });
+
+      }
     } catch (error) {
       this.logger.error(`Method "${methodName}" failed:`)
       this.logger.error({ config: error.config, error: error.response?.data || error.response || error });
