@@ -48,13 +48,13 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     super();
   }
 
-  // async onApplicationBootstrap() {
+  async onApplicationBootstrap() {
   //   const reviews = await this.reviewModel.find().exec();
   //   for (const review of reviews) {
   //     await review.save();
   //   }
   //   this.reindexAllSearchData();
-  // }
+  }
 
   async findReviewsByProductId(productId: number,
                                onlyEnabled: boolean,
@@ -77,9 +77,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
       lang,
       async (review: ProductReview, session) => {
         await this.productService.updateReviewRating(review.productId, lang, session);
-        if (review.customerId) {
-          await this.customerService.addProductReview(review.customerId, review.id, session);
-        }
+        await this.customerService.addProductReview(review.customerId || review.email, review.id, session);
       });
 
     this.emailService.sendNewProductReviewEmail(review).then();

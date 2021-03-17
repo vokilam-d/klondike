@@ -59,7 +59,7 @@ export class CustomerService implements OnApplicationBootstrap {
     private readonly counterService: CounterService
   ) { }
 
-  onApplicationBootstrap(): any {
+  async onApplicationBootstrap() {
     this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
     // this.reindexAllSearchData();
   }
@@ -101,6 +101,26 @@ export class CustomerService implements OnApplicationBootstrap {
     }
 
     return serialized ? found.toJSON() : found;
+  }
+
+  async getCustomerByIdOrEmail(idOrEmail: string | number): Promise<DocumentType<Customer>> {
+    if (idOrEmail === undefined || idOrEmail === null || idOrEmail === '') { return; }
+
+    let id = parseInt(idOrEmail as string);
+    if (isNaN(id)) {
+      id = null;
+    }
+
+    const email = idOrEmail.toString();
+
+    return this.customerModel
+      .findOne({
+        $or: [
+          { _id: id },
+          { email }
+        ]
+      })
+      .exec();
   }
 
   async getCustomerByEmailOrPhoneNumber(emailOrPhone: string): Promise<DocumentType<Customer>> {
@@ -488,8 +508,10 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async addStoreReview(customerId: number, storeReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
-    const customer = await this.getCustomerById(customerId, clientDefaultLanguage, false) as DocumentType<Customer>;
+  async addStoreReview(customerIdOrEmail: number | string, storeReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
+    const customer = await this.getCustomerByIdOrEmail(customerIdOrEmail);
+    if (!customer) { return; }
+
     customer.storeReviewIds = customer.storeReviewIds || [];
     customer.storeReviewIds.push(storeReviewId);
 
@@ -498,8 +520,10 @@ export class CustomerService implements OnApplicationBootstrap {
     return customer;
   }
 
-  async addProductReview(customerId: number, productReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
-    const customer = await this.getCustomerById(customerId, clientDefaultLanguage, false) as DocumentType<Customer>;
+  async addProductReview(customerIdOrEmail: number | string, productReviewId: number, session: ClientSession): Promise<DocumentType<Customer>> {
+    const customer = await this.getCustomerByIdOrEmail(customerIdOrEmail);
+    if (!customer) { return; }
+
     customer.productReviewIds = customer.productReviewIds || [];
     customer.productReviewIds.push(productReviewId);
 
