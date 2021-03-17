@@ -49,7 +49,7 @@ export class BannerService {
       case EBannerItemType.post:
         const post = await this.blogPostService.getBlogPost(id, lang);
 
-        item.media = post.medias[0];
+        item.media = post.featuredMedia;
         item.slug = post.slug;
         break;
     }
