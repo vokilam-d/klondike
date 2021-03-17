@@ -1,7 +1,6 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { EmailService } from '../../email/email.service';
 import { OrderService } from '../../order/services/order.service';
-import { ProductService } from '../../product/services/product.service';
 import { ProductReviewService } from '../../reviews/product-review/product-review.service';
 import { StoreReviewService } from '../../reviews/store-review/store-review.service';
 import { AuthService } from '../../auth/services/auth.service';
@@ -9,13 +8,13 @@ import { CustomerService } from '../../customer/customer.service';
 import { TasksService } from '../../tasks/tasks.service';
 import { Order } from '../../order/models/order.model';
 import { Language } from '../../shared/enums/language.enum';
-import { ProductReview } from '../../reviews/product-review/models/product-review.model';
-import { StoreReview } from '../../reviews/store-review/models/store-review.model';
 import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { AdminStoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
 import { Customer } from '../../customer/models/customer.model';
 import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
 import { BotService } from '../../bot/services/bot.service';
+import { GlobalExceptionFilter } from '../../shared/filters/global-exception.filter';
+import { ModuleRef } from '@nestjs/core';
 
 @Injectable()
 export class NotificationService implements OnApplicationBootstrap {
@@ -27,7 +26,8 @@ export class NotificationService implements OnApplicationBootstrap {
     private readonly storeReviewService: StoreReviewService,
     private readonly authService: AuthService,
     private readonly customerService: CustomerService,
-    private readonly tasksService: TasksService
+    private readonly tasksService: TasksService,
+    private readonly moduleRef: ModuleRef
   ) { }
 
   async onApplicationBootstrap() {
@@ -39,6 +39,9 @@ export class NotificationService implements OnApplicationBootstrap {
     this.customerService.customerRegistered$.subscribe(event => this.onCustomerRegistration(event.customer, event.token));
     this.customerService.emailConfirmationRequested$.subscribe(event => this.onEmailConfirmationRequest(event.customer, event.token));
     this.tasksService.leaveReviewRequested$.subscribe(event => this.onLeaveReviewRequested(event.order, event.lang));
+
+    const filter = this.moduleRef.get<GlobalExceptionFilter>(GlobalExceptionFilter, { strict: false });
+    filter.internalServerError$.subscribe(event => this.onInternalServerError(event));
   }
 
   private async onNewOrder(order: Order, lang: Language): Promise<void> {
@@ -74,5 +77,9 @@ export class NotificationService implements OnApplicationBootstrap {
 
   private async onLeaveReviewRequested(order: Order, lang: Language): Promise<void> {
     this.emailService.sendLeaveReviewEmail(order, lang).then();
+  }
+
+  private async onInternalServerError(error: any): Promise<void> {
+    this.botService.onInternalServerError(error).then();
   }
 }

@@ -138,4 +138,23 @@ export class BotService implements OnApplicationBootstrap {
 
     return url + postfix;
   }
+
+  async onInternalServerError(error: any) {
+    const str = JSON.stringify(error, null, 2);
+    const toEscape = ['`', '\\'];
+    let escapedStr: string = '';
+    for (const strElement of str) {
+      if (toEscape.includes(strElement)) {
+        escapedStr += String.fromCharCode(92);
+      }
+
+      escapedStr += strElement;
+    }
+
+    const message = '```json\n'
+      + escapedStr
+      + '\n```';
+
+    this.telegramApiService.sendMessage(this.botConfig.adminHealthChat, message);
+  }
 }
