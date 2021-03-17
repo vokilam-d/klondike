@@ -11,6 +11,7 @@ import { ITelegramChat } from '../interfaces/chat.interface';
 import { BotCommand } from '../enums/bot-command.enum';
 import { IBotCommand } from '../interfaces/bot-command.interface';
 import { isProdPrimaryInstance } from '../../shared/helpers/is-prod-primary-instance.function';
+import { EventsService } from '../../shared/services/events/events.service';
 
 @Injectable()
 export class BotConfigurationService implements OnApplicationBootstrap {
@@ -28,7 +29,8 @@ export class BotConfigurationService implements OnApplicationBootstrap {
 
   constructor(
     @InjectModel(BotData.name) private readonly botDataModel: ReturnModelType<typeof BotDataModel>,
-    private readonly telegramApiService: TelegramApiService
+    private readonly telegramApiService: TelegramApiService,
+    private readonly eventsService: EventsService
   ) { }
 
   async onApplicationBootstrap() {
@@ -36,6 +38,8 @@ export class BotConfigurationService implements OnApplicationBootstrap {
     this.getOwnerIds().then();
     this.getBotInfo().then();
     this.setCommands().then();
+
+    this.handleChatUpdating();
   }
 
   async onCommand(chat: ITelegramChat, commandText: string, user: ITelegramUser): Promise<void> {
@@ -93,6 +97,7 @@ export class BotConfigurationService implements OnApplicationBootstrap {
     }
 
     this.logger.log(`Set ${chatType} to ${chat.id}, userId=${user.id}`);
+    this.eventsService.emit(chatType, chat.id);
     this.telegramApiService.sendMessage(chat.id, message).then();
   }
 
@@ -160,5 +165,11 @@ export class BotConfigurationService implements OnApplicationBootstrap {
       this.logger.error(`Could not set bot commands:`);
       this.logger.error(response?.data);
     }
+  }
+
+  private handleChatUpdating() {
+    this.eventsService.on(BotDataType.AdminHealthChat, (data: any) => this._adminHealthChat = data);
+    this.eventsService.on(BotDataType.AdminOrderChat, (data: any) => this._adminOrderChat = data);
+    this.eventsService.on(BotDataType.AdminReviewsChat, (data: any) => this._adminReviewsChat = data);
   }
 }
