@@ -67,15 +67,15 @@ export class BotConfigurationService implements OnApplicationBootstrap {
     switch (chatType) {
       case BotDataType.AdminHealthChat:
         this._adminHealthChat = chat.id;
-        message = `Теперь оповещения ошибки будут отправляться в этот чат`;
+        message = `Теперь ошибки будут приходить в этот чат`;
         break;
       case BotDataType.AdminOrderChat:
         this._adminOrderChat = chat.id;
-        message = `Теперь оповещения о заказах будут отправляться в этот чат`;
+        message = `Теперь оповещения о заказах будут приходить в этот чат`;
         break;
       case BotDataType.AdminReviewsChat:
         this._adminReviewsChat = chat.id;
-        message = `Теперь оповещения об отзывах будут отправляться в этот чат`;
+        message = `Теперь оповещения об отзывах будут приходить в этот чат`;
         break;
       default:
         return;
