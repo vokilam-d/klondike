@@ -52,8 +52,9 @@ export class TelegramApiService {
       } else {
         this.logger.log(`Method "${methodName}" sucess:`)
         this.logger.log({ request: data, response: response.data });
-
       }
+
+      return response;
     } catch (error) {
       this.logger.error(`Method "${methodName}" failed:`)
       this.logger.error({ config: error.config, error: error.response?.data || error.response || error });
