@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CategoryService } from '../../category/category.service';
 import { ProductService } from '../../product/services/product.service';
 import { BlogPostService } from '../../blog/services/blog-post.service';
@@ -10,15 +10,19 @@ import { ReturnModelType } from '@typegoose/typegoose';
 import { Banner, BannerModel } from '../models/banner.model';
 import { AdminUpdateBannerDto } from '../../shared/dtos/admin/update-banner.dto';
 import { AdminCreateBannerItemDto } from '../../shared/dtos/admin/create-banner-item.dto';
+import { FastifyRequest } from 'fastify';
+import { Media } from '../../shared/models/media.model';
+import { MediaService } from '../../shared/services/media/media.service';
 
 @Injectable()
 export class BannerService {
 
   constructor(
     @InjectModel(Banner.name) private readonly bannerModel: ReturnModelType<typeof BannerModel>,
-    @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
-    @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
-    @Inject(forwardRef(() => BlogPostService)) private readonly blogPostService: BlogPostService
+    private readonly productService: ProductService,
+    private readonly categoryService: CategoryService,
+    private readonly blogPostService: BlogPostService,
+    private readonly mediaService: MediaService
   ) {
   }
 
@@ -87,5 +91,9 @@ export class BannerService {
     }
 
     return createdBanner;
+  }
+
+  async uploadMedia(request: FastifyRequest): Promise<Media> {
+    return this.mediaService.upload(request, Banner.collectionName, false, true);
   }
 }

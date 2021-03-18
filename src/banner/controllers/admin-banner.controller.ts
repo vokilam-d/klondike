@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Request } from '@nestjs/common';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { AdminCreateBannerItemDto } from '../../shared/dtos/admin/create-banner-item.dto';
@@ -8,6 +8,9 @@ import { BannerService } from '../services/banner.service';
 import { EBannerItemType } from '../../shared/enums/banner-item-type.enum';
 import { plainToClass } from 'class-transformer';
 import { AdminUpdateBannerDto } from '../../shared/dtos/admin/update-banner.dto';
+import { FastifyRequest } from 'fastify';
+import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
+import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 
 @Controller('admin/banner')
 export class AdminBannerController {
@@ -37,6 +40,16 @@ export class AdminBannerController {
     return {
       data: plainToClass(AdminBannerItemDto, created, { excludeExtraneousValues: true })
     };
+  }
+
+  @Post('media')
+  async uploadMedia(
+    @Request() request: FastifyRequest,
+    @AdminLang() lang: Language
+  ): Promise<AdminMediaDto> {
+    const media = await this.bannerService.uploadMedia(request);
+
+    return plainToClass(AdminMediaDto, media, { excludeExtraneousValues: true });
   }
 
   @Post()
