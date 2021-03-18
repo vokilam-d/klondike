@@ -15,7 +15,7 @@ export class AdminBannerController {
   constructor(
     private readonly bannerService: BannerService
   ) { }
-  
+
   @Get()
   async getBanner(
     @AdminLang() lang: Language
@@ -32,7 +32,7 @@ export class AdminBannerController {
     @Body() createBannerItemDto: AdminCreateBannerItemDto,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminBannerItemDto>> {
-    const created = await this.bannerService.createBannerItem(createBannerItemDto.id, createBannerItemDto.type, lang);
+    const created = await this.bannerService.createBannerItem(createBannerItemDto, lang);
 
     return {
       data: plainToClass(AdminBannerItemDto, created, { excludeExtraneousValues: true })

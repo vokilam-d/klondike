@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { Banner, BannerModel } from '../models/banner.model';
 import { AdminUpdateBannerDto } from '../../shared/dtos/admin/update-banner.dto';
+import { AdminCreateBannerItemDto } from '../../shared/dtos/admin/create-banner-item.dto';
 
 @Injectable()
 export class BannerService {
@@ -21,17 +22,17 @@ export class BannerService {
   ) {
   }
 
-  async createBannerItem(id: number, type: EBannerItemType, lang: Language): Promise<AdminBannerItemDto> {
+  async createBannerItem(createBannerItemDto: AdminCreateBannerItemDto, lang: Language): Promise<AdminBannerItemDto> {
     const item = new AdminBannerItemDto();
 
-    item.id = id;
-    item.type = type;
+    item.type = createBannerItemDto.type;
 
-    switch (type) {
+    switch (createBannerItemDto.type) {
       case EBannerItemType.product:
-        const product = await this.productService.getProductWithQtyById(id, lang);
+        const product = await this.productService.getProductWithQtyById(createBannerItemDto.id, lang);
         const productVariant = product.variants[0];
 
+        item.id = createBannerItemDto.id;
         item.media = productVariant.medias[0];
         item.slug = productVariant.slug;
         item.price = productVariant.price;
@@ -40,17 +41,24 @@ export class BannerService {
         break;
 
       case EBannerItemType.category:
-        const category = await this.categoryService.getCategoryById(id, lang);
+        const category = await this.categoryService.getCategoryById(createBannerItemDto.id, lang);
 
+        item.id = createBannerItemDto.id;
         item.media = category.medias[0];
         item.slug = category.slug;
         break;
 
       case EBannerItemType.post:
-        const post = await this.blogPostService.getBlogPost(id, lang);
+        const post = await this.blogPostService.getBlogPost(createBannerItemDto.id, lang);
 
+        item.id = createBannerItemDto.id;
         item.media = post.featuredMedia;
         item.slug = post.slug;
+        break;
+
+      case EBannerItemType.manual:
+        item.slug = createBannerItemDto.slug;
+        item.media = createBannerItemDto.media;
         break;
     }
 
@@ -74,7 +82,7 @@ export class BannerService {
     const createdBanner = [];
 
     for (const bannerItem of banner.bannerItems) {
-      const createdBannerItem = await this.createBannerItem(bannerItem.id, bannerItem.type, lang);
+      const createdBannerItem = await this.createBannerItem(bannerItem, lang);
       createdBanner.push(createdBannerItem);
     }
 
