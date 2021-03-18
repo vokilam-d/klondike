@@ -825,8 +825,10 @@ export class OrderService implements OnApplicationBootstrap {
 
   async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
     return this.updateOrderById(orderId, lang, async order => {
-      if (order.items.some(item => item.isPacked !== true)) {
-        throw new BadRequestException(__('Cannot create internet document: not all order items are packed', lang));
+      const isItemNotPacked = order.items.some(item => item.isPacked !== true);
+      const hasNoMedias = order.medias.length === 0;
+      if (isItemNotPacked || hasNoMedias) {
+        throw new BadRequestException(__('Cannot create internet document: attach a photo or pack all items', lang));
       }
 
       let logMessage: string = '';
