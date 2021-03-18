@@ -827,7 +827,7 @@ export class OrderService implements OnApplicationBootstrap {
     return this.updateOrderById(orderId, lang, async order => {
       const isItemNotPacked = order.items.some(item => item.isPacked !== true);
       const hasNoMedias = order.medias.length === 0;
-      if (isItemNotPacked || hasNoMedias) {
+      if (isItemNotPacked && hasNoMedias) {
         throw new BadRequestException(__('Cannot create internet document: attach a photo or pack all items', lang));
       }
 
