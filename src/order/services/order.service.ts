@@ -65,12 +65,16 @@ import { FastifyRequest } from 'fastify';
 import { MediaService } from '../../shared/services/media/media.service';
 import { CronProd } from '../../shared/decorators/prod-cron.decorator';
 import { FileLogger } from '../../logger/file-logger.service';
+import { Subject } from 'rxjs';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
 
   private logger = new Logger(OrderService.name);
   private cachedOrderCount: number;
+
+  orderCreated$ = new Subject<{ order: Order, lang: Language }>();
+  managerAssigned$ = new Subject<Order>();
 
   constructor(
     @InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
@@ -79,7 +83,7 @@ export class OrderService implements OnApplicationBootstrap {
     private readonly counterService: CounterService,
     private readonly paymentMethodService: PaymentMethodService,
     private readonly tasksService: TasksService,
-    private readonly emailService: EmailService,
+    // private readonly emailService: EmailService,
     private readonly pdfGeneratorService: PdfGeneratorService,
     private readonly inventoryService: InventoryService,
     private readonly orderItemService: OrderItemService,
@@ -217,7 +221,8 @@ export class OrderService implements OnApplicationBootstrap {
 
       this.addSearchData(newOrder).then();
       this.updateCachedOrderCount();
-      this.emailService.sendOrderConfirmationEmail(newOrder, lang, isProdEnv(), false).then();
+      // this.emailService.sendOrderConfirmationEmail(newOrder, lang, isProdEnv(), false).then();
+      this.orderCreated$.next({ order: newOrder, lang });
 
       return newOrder;
 
@@ -277,7 +282,8 @@ export class OrderService implements OnApplicationBootstrap {
       await this.addSearchData(newOrder);
       this.updateCachedOrderCount();
 
-      this.emailService.sendOrderConfirmationEmail(newOrder, lang, isProdEnv()).then();
+      // this.emailService.sendOrderConfirmationEmail(newOrder, lang, isProdEnv()).then();
+      this.orderCreated$.next({ order: newOrder, lang });
       this.tasksService.sendLeaveReviewEmail(newOrder, lang)
         .catch(err => this.logger.error(`Could not create task to send "Leave a review" email: ${err.message}`));
 
@@ -408,7 +414,8 @@ export class OrderService implements OnApplicationBootstrap {
 
     OrderService.addLog(order, assignedManagerMessage);
     this.logger.log(assignedManagerMessage);
-    this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
+    // this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
+    this.managerAssigned$.next(order);
   }
 
   async deleteOrder(orderId: number, user: DocumentType<User>, lang: Language): Promise<Order> {
@@ -818,8 +825,10 @@ export class OrderService implements OnApplicationBootstrap {
 
   async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
     return this.updateOrderById(orderId, lang, async order => {
-      if (order.items.some(item => item.isPacked !== true)) {
-        throw new BadRequestException(__('Cannot create internet document: not all order items are packed', lang));
+      const isItemNotPacked = order.items.some(item => item.isPacked !== true);
+      const hasNoMedias = order.medias.length === 0;
+      if (isItemNotPacked && hasNoMedias) {
+        throw new BadRequestException(__('Cannot create internet document: attach a photo or pack all items', lang));
       }
 
       let logMessage: string = '';

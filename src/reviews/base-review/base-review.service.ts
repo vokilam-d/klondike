@@ -18,6 +18,7 @@ import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-exp
 import { EventsService } from '../../shared/services/events/events.service';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
+import { Subject } from 'rxjs';
 
 type IReviewCallback<T = any> = (review: T, session: ClientSession) => Promise<any>;
 
@@ -39,6 +40,8 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
   protected cachedEnabledReviewsCount: number = null;
 
   private readonly reviewUpdatedEventKey: string = 'review-updated';
+
+  newReview$ = new Subject<U>();
 
   onApplicationBootstrap(): any {
     this.searchService.ensureCollection(this.collectionName, new this.ElasticReview());

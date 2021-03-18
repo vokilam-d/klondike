@@ -17,7 +17,7 @@ const storeReviewModel = {
 @Module({
   imports: [
     MongooseModule.forFeature([storeReviewModel]),
-    EmailModule,
+    // EmailModule,
     forwardRef(() => CustomerModule)
   ],
   controllers: [AdminStoreReviewController, ClientStoreReviewController],

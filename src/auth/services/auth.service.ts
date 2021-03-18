@@ -21,6 +21,7 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
+import { Subject } from 'rxjs';
 
 interface IGoogleIDToken {
   sub: string;
@@ -45,6 +46,8 @@ export class AuthService {
 
   private logger = new Logger(AuthService.name);
 
+  passwordReset$ = new Subject<{ customer: Customer, token: string }>();
+
   constructor(@Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
               private readonly userService: UserService,
               private readonly http: HttpService,
@@ -52,7 +55,7 @@ export class AuthService {
               private readonly confirmEmailService: ConfirmEmailService,
               private readonly adapterHost: HttpAdapterHost,
               private readonly encryptor: EncryptorService,
-              private readonly emailService: EmailService,
+              // private readonly emailService: EmailService,
               private readonly jwtService: JwtService) {
   }
 
@@ -209,7 +212,8 @@ export class AuthService {
 
   async initResetCustomerPassword(customer: Customer) {
     const resetModel = await this.resetPasswordService.create(customer);
-    await this.emailService.sendResetPasswordEmail(customer, resetModel.token);
+    // await this.emailService.sendResetPasswordEmail(customer, resetModel.token);
+    this.passwordReset$.next({ customer, token: resetModel.token });
 
     return true;
   }

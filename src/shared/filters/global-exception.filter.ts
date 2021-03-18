@@ -1,10 +1,12 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { Subject } from 'rxjs';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
 
   private logger = new Logger(GlobalExceptionFilter.name);
+  public internalServerError$ = new Subject<any>();
 
   constructor() {
   }
@@ -37,14 +39,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     } else {
       statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
-      this.logger.error({
+      const errorObj = {
         statusCode,
         message: exception.message,
         stack: exception.stack?.split('\n').map(str => str.trim()),
         timestamp,
         method,
         path
-      });
+      };
+      this.logger.error(errorObj);
+      this.internalServerError$.next(errorObj);
     }
 
     res.status(statusCode).send({

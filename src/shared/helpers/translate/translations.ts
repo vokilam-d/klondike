@@ -143,10 +143,10 @@ export const TRANSLATIONS = {
     ru: 'Нельзя сменить статус на "$1": не все товары упакованы',
     uk: 'Не можна змінити статус на "$1": не всі товари упаковані'
   },
-  'Cannot create internet document: not all order items are packed': {
-    en: 'Cannot create internet document: not all order items are packed',
-    ru: 'Не удалось создать накладную: не все товары упакованы',
-    uk: 'Не вдалось створити накладну: не всі товари упаковані'
+  'Cannot create internet document: attach a photo or pack all items': {
+    en: 'Cannot create internet document: attach a photo or pack all items',
+    ru: 'Не удалось создать накладную: приложите фото или упакуйте все товары',
+    uk: 'Не вдалось створити накладну: додайте фото або упакуйте все товари'
   },
   'Cannot change status to "$1": disallowed status': {
     en: 'Cannot change status to "$1": disallowed status',
