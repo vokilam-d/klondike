@@ -25,5 +25,8 @@ export class AdminBannerItemDto {
   oldPrice: number;
 
   @Expose()
-  label: ProductLabelTypeEnum;
+  label: {
+    type: ProductLabelTypeEnum,
+    text: string
+  };
 }
