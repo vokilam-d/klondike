@@ -41,8 +41,8 @@ export class BannerService {
         item.id = createBannerItemDto.id;
         item.media = productVariant.medias[0];
         item.slug = productVariant.slug;
-        item.price = productVariant.price;
-        item.oldPrice = productVariant.oldPrice;
+        item.price = productVariant.priceInDefaultCurrency;
+        item.oldPrice = productVariant.oldPriceInDefaultCurrency;
         item.label = {
           type: productVariant.label === ProductLabelTypeEnum.Empty ? null : productVariant.label,
           text: productVariant.label === ProductLabelTypeEnum.Empty ? null : __(productVariant.label, lang)
