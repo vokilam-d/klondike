@@ -13,6 +13,8 @@ import { AdminCreateBannerItemDto } from '../../shared/dtos/admin/create-banner-
 import { FastifyRequest } from 'fastify';
 import { Media } from '../../shared/models/media.model';
 import { MediaService } from '../../shared/services/media/media.service';
+import { ProductLabelTypeEnum } from '../../shared/enums/product-label-type.enum';
+import { __ } from '../../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class BannerService {
@@ -41,7 +43,10 @@ export class BannerService {
         item.slug = productVariant.slug;
         item.price = productVariant.price;
         item.oldPrice = productVariant.oldPrice;
-        item.label = productVariant?.label;
+        item.label = {
+          type: productVariant.label === ProductLabelTypeEnum.Empty ? null : productVariant.label,
+          text: productVariant.label === ProductLabelTypeEnum.Empty ? null : __(productVariant.label, lang)
+        };
         break;
 
       case EBannerItemType.category:

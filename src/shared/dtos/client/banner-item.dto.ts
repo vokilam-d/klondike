@@ -29,7 +29,10 @@ export class ClientBannerItemDto implements
   oldPrice: number;
 
   @Expose()
-  label: ProductLabelTypeEnum;
+  label: {
+    type: ProductLabelTypeEnum,
+    text: string
+  };
 
   static transformToDto(adminBannerItemDto: AdminBannerItemDto, lang: Language): ClientBannerItemDto {
     return {
