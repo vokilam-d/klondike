@@ -27,7 +27,8 @@ const blogCategoryModel = {
     PageRegistryModule
   ],
   controllers: [AdminBlogPostController, AdminBlogCategoryController, ClientBlogController],
-  providers: [BlogPostService, BlogCategoryService]
+  providers: [BlogPostService, BlogCategoryService],
+  exports: [BlogPostService]
 })
 export class BlogModule {
 }
