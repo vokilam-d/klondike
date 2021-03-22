@@ -37,7 +37,7 @@ export class BotService implements OnApplicationBootstrap {
       + `${order.isCallbackNeeded ? 'Перезвонить' : 'Не звонить'}\\.\n`;
 
     if (order.clientNote) {
-      text += `Коммент клиента: _${order.clientNote}_\\.\n`
+      text += `Коммент клиента: _${_(order.clientNote)}_\\.\n`
     }
 
     const itemsPluralText = order.items.length === 1 ? 'товар' : order.items.length > 4 ? 'товаров' : 'товара';
