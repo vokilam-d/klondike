@@ -1,7 +1,7 @@
-const STARTING_HOUR = 4;
+const STARTING_HOUR = 2;
 const STARTING_MINUTE = 10;
 const MINUTES_IN_HOUR = 60;
-const DELAY_BETWEEN_JOBS_IN_MINS = 3;
+const DELAY_BETWEEN_JOBS_IN_MINS = 2;
 
 let jobsCount = 0;
 
