@@ -11,8 +11,6 @@ export class BotController {
 
   @Post('tg-webhook')
   webhook(@Body() update: ITelegramUpdate) {
-    console.log(update);
-
     if (update.message?.text?.startsWith('/')) {
       this.botConfig.onCommand(update.message.chat, update.message.text, update.message.from);
     }
