@@ -29,9 +29,6 @@ export class Order {
   @prop()
   customerLastName: string;
 
-  @prop()
-  customerMiddleName: string;
-
   @prop({ default: '' })
   customerEmail: string;
 

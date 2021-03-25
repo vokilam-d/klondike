@@ -14,7 +14,7 @@ import { AdminLogDto } from './log.dto';
 import { ManagerDto } from './manager.dto';
 import { AdminMediaDto } from './media.dto';
 
-export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerMiddleName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid' | 'manager' | 'medias'> {
+export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'customerFirstName' | 'customerLastName' | 'customerPhoneNumber' | 'customerNote' | 'shouldSaveAddress' | 'createdAt' | 'paymentMethodId' | 'paymentType' | 'isCallbackNeeded' | 'shipment' | 'items' | 'status' | 'clientNote' | 'adminNote' | 'logs' | 'prices' | 'isOrderPaid' | 'manager' | 'medias'> {
   @Expose()
   @IsOptional()
   @IsNumber()
@@ -31,12 +31,6 @@ export class AdminAddOrUpdateOrderDto implements Pick<Order, 'customerId' | 'cus
   @IsString()
   @TrimString()
   customerLastName: string;
-
-  @Expose()
-  @IsOptional()
-  @IsString()
-  @TrimString()
-  customerMiddleName: string;
 
   @Expose()
   @IsOptional()

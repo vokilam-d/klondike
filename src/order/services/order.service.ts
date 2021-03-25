@@ -314,7 +314,6 @@ export class OrderService implements OnApplicationBootstrap {
     newOrder.customerEmail = customer.email;
     newOrder.customerFirstName = customer.firstName;
     newOrder.customerLastName = customer.lastName;
-    newOrder.customerMiddleName = customer.lastName;
     newOrder.customerPhoneNumber = customer.phoneNumber;
     newOrder.customerNote = customer.note;
     newOrder.createdAt = new Date();
