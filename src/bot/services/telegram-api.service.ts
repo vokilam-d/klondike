@@ -49,9 +49,6 @@ export class TelegramApiService {
       if (response.data?.ok !== true) {
         this.logger.error(`Method "${methodName}" failed:`)
         this.logger.error({ request: data, response: response.data });
-      } else {
-        this.logger.log(`Method "${methodName}" sucess:`)
-        this.logger.log({ request: data, response: response.data });
       }
 
       return response;
