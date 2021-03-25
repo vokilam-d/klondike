@@ -69,16 +69,18 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
   }
 
   private buildTemplateContextForOrder(order: Order, lang: Language): any {
+    const recipient = order.shipment.recipient;
+
     return {
       orderId: order.idForCustomer,
       orderDateTime: readableDate(order.createdAt),
       totalOrderCost: order.prices.totalCost,
-      addressName: `${order.shipment.recipient.firstName} ${order.shipment.recipient.lastName}`,
-      addressPhone: order.shipment.recipient.phone,
-      addressCity: order.shipment.recipient.settlementFull || order.shipment.recipient.settlement,
-      address: order.shipment.recipient.addressFull || order.shipment.recipient.address,
-      addressBuildingNumber: order.shipment.recipient.buildingNumber,
-      addressFlatNumber: order.shipment.recipient.flat,
+      addressName: recipient.middleName ? `${recipient.firstName} ${recipient.lastName}` : `${recipient.lastName} ${recipient.firstName} ${recipient.middleName}`,
+      addressPhone: recipient.phone,
+      addressCity: recipient.settlementFull || recipient.settlement,
+      address: recipient.addressFull || recipient.address,
+      addressBuildingNumber: recipient.buildingNumber,
+      addressFlatNumber: recipient.flat,
       shipping: order.shippingMethodName[lang],
       shippingTip: isFreeShippingForOrder(order) ? 'бесплатная доставка' : 'оплачивается получателем',
       payment: order.paymentMethodClientName[lang],
@@ -100,17 +102,18 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
 
   private buildTemplateContextForInvoice(order: Order, editDto: InvoiceEditDto): any {
     const lang: Language = Language.UK;
+    const recipient = order.shipment.recipient;
 
     return {
       orderId: order.id,
       orderDateTime: readableDate(order.createdAt),
       title: editDto.title || 'Видаткова накладна',
-      addressName: editDto.addressName || `${order.shipment.recipient.firstName} ${order.shipment.recipient.lastName}`,
-      addressPhone: editDto.addressPhone || order.shipment.recipient.phone,
-      addressCity: editDto.addressCity || order.shipment.recipient.settlementFull || order.shipment.recipient.settlement,
-      address: editDto.address || order.shipment.recipient.addressFull || order.shipment.recipient.address,
-      addressBuildingNumber: editDto.addressBuildingNumber || order.shipment.recipient.buildingNumber,
-      addressFlatNumber: editDto.addressFlatNumber || order.shipment.recipient.flat,
+      addressName: editDto.addressName || (recipient.middleName ? `${recipient.firstName} ${recipient.lastName}` : `${recipient.lastName} ${recipient.firstName} ${recipient.middleName}`),
+      addressPhone: editDto.addressPhone || recipient.phone,
+      addressCity: editDto.addressCity || recipient.settlementFull || recipient.settlement,
+      address: editDto.address || recipient.addressFull || recipient.address,
+      addressBuildingNumber: editDto.addressBuildingNumber || recipient.buildingNumber,
+      addressFlatNumber: editDto.addressFlatNumber || recipient.flat,
       totalOrderCost: order.prices.totalCost,
       totalOrderCostInWords: this.convertDigitsToWords(order.prices.totalCost),
       products: order.items.map((item, index) => ({
@@ -160,5 +163,3 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
     await this.browser.close();
   }
 }
-
-
