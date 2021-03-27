@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable } from '@nestjs/common';
-import { ProductService } from '../../product/services/product.service';
+import { AdminProductService } from '../../product/services/admin-product.service';
 import { CustomerService } from '../../customer/customer.service';
 import { OrderItem } from '../models/order-item.model';
 import { __, getTranslations } from '../../shared/helpers/translate/translate.function';
@@ -17,6 +17,7 @@ import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { CreateOrderItemDto } from '../../shared/dtos/shared-dtos/create-order-item.dto';
 import { Language } from '../../shared/enums/language.enum';
 import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { ClientProductService } from '../../product/services/client-product.service';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [
   { totalCostBreakpoint: 500, discountPercent: 5 },
@@ -27,7 +28,8 @@ const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPe
 export class OrderItemService {
   constructor(
     @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
-    @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
+    @Inject(forwardRef(() => AdminProductService)) private readonly adminProductService: AdminProductService,
+    @Inject(forwardRef(() => ClientProductService)) private readonly clientProductService: ClientProductService,
     private readonly additionalServiceService: AdditionalServiceService
   ) { }
 
@@ -40,7 +42,7 @@ export class OrderItemService {
   ): Promise<OrderItem> {
 
     if (!product) {
-      product = await this.productService.getProductWithQtyBySku(sku, lang);
+      product = await this.adminProductService.getProductWithQtyBySku(sku, lang);
       variant = product?.variants.find(v => v.sku === sku);
       if (!product || !variant) { throw new BadRequestException(__('Product with sku "$1" not found', lang, sku)); }
     }
@@ -98,7 +100,7 @@ export class OrderItemService {
   }
 
   async calcOrderPrices(orderItems: (OrderItem | ClientOrderItemDto)[], customer: Customer, lang: Language): Promise<OrderPrices> {
-    const products = await this.productService.getProductsWithQtyBySkus(orderItems.map(item => item.sku));
+    const products = await this.adminProductService.getProductsWithQtyBySkus(orderItems.map(item => item.sku));
 
     // Sum of real cost of each item (based on its actual price) = (price * quantity)
     let itemsRealCost: number = 0;
@@ -172,7 +174,7 @@ export class OrderItemService {
     spf.limit = crossSellProducts.length;
     spf.id = idsArr.join(queryParamArrayDelimiter);
     spf.sort = EProductsSort.SalesCount;
-    let { data: products } = await this.productService.getClientProductList(spf, lang);
+    let { data: products } = await this.clientProductService.getClientProductList(spf, lang);
 
     return products.filter(product => product.isInStock);
   }

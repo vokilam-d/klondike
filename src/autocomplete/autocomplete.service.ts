@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { ProductService } from '../product/services/product.service';
 import { AutocompleteItemDto } from '../shared/dtos/client/autocomplete-item.dto';
 import { CategoryService } from '../category/category.service';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { AutocompleteItemType } from '../shared/enums/autocomplete-item-type.enum';
 import { Language } from '../shared/enums/language.enum';
+import { ClientProductService } from '../product/services/client-product.service';
 
 @Injectable()
 export class AutocompleteService {
 
-  constructor(private readonly productService: ProductService,
-              private readonly categoryService: CategoryService
+  constructor(
+    private readonly productService: ClientProductService,
+    private readonly categoryService: CategoryService
   ) { }
 
   async findByQuery(query: string, lang: Language): Promise<AutocompleteItemDto[]> {

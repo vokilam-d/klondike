@@ -13,7 +13,6 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
-import { ProductService } from '../services/product.service';
 import { ClientProductDto } from '../../shared/dtos/client/product.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { ClientProductSPFDto } from '../../shared/dtos/client/product-spf.dto';
@@ -31,16 +30,18 @@ import { plainToClass } from 'class-transformer';
 import { ClientLinkedCategoryDto } from '../../shared/dtos/client/linked-category.dto';
 import { ClientLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { ClientProductService } from '../services/client-product.service';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('products')
 export class ClientProductController {
-  constructor(@Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
-              private readonly productService: ProductService,
-              private readonly moduleRef: ModuleRef,
-              private readonly quickReviewService: ProductQuickReviewService) {
-  }
+  constructor(
+    @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
+    private readonly productService: ClientProductService,
+    private readonly moduleRef: ModuleRef,
+    private readonly quickReviewService: ProductQuickReviewService
+  ) { }
 
   @Get()
   async findProducts(@Query() spf: ClientProductSPFDto, @ClientLang() lang: Language): Promise<ClientProductListResponseDto> {

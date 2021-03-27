@@ -1,7 +1,7 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { Category } from './models/category.model';
 import { PageRegistryService } from '../page-registry/page-registry.service';
-import { ProductService } from '../product/services/product.service';
+import { AdminProductService } from '../product/services/admin-product.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { AdminAddOrUpdateCategoryDto, AdminCategoryDto } from '../shared/dtos/admin/category.dto';
@@ -47,7 +47,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
   constructor(
     @InjectModel(Category.name) private readonly categoryModel: ReturnModelType<typeof Category>,
-    @Inject(forwardRef(() => ProductService)) private productService: ProductService,
+    @Inject(forwardRef(() => AdminProductService)) private productService: AdminProductService,
     private readonly pageRegistryService: PageRegistryService,
     private readonly counterService: CounterService,
     private readonly mediaService: MediaService,

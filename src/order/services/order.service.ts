@@ -21,7 +21,7 @@ import { getPropertyOf } from '../../shared/helpers/get-property-of.function';
 import { PdfGeneratorService } from '../../pdf-generator/pdf-generator.service';
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 import { Customer } from '../../customer/models/customer.model';
-import { ProductService } from '../../product/services/product.service';
+import { AdminProductService } from '../../product/services/admin-product.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { SearchService } from '../../shared/services/search/search.service';
@@ -79,7 +79,7 @@ export class OrderService implements OnApplicationBootstrap {
   constructor(
     @InjectModel(Order.name) private readonly orderModel: ReturnModelType<typeof Order>,
     @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
-    @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
+    @Inject(forwardRef(() => AdminProductService)) private readonly productService: AdminProductService,
     private readonly counterService: CounterService,
     private readonly paymentMethodService: PaymentMethodService,
     private readonly tasksService: TasksService,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ProductService } from './product.service';
+import { AdminProductService } from './admin-product.service';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { Product } from '../models/product.model';
 import { ElasticProduct } from '../models/elastic-product.model';
@@ -11,7 +11,7 @@ import { OrderService } from '../../order/services/order.service';
 @Injectable()
 export class OrderedProductService {
 
-  constructor(private readonly productService: ProductService,
+  constructor(private readonly productService: AdminProductService,
               private readonly orderService: OrderService,
               private readonly searchService: SearchService
   ) { }

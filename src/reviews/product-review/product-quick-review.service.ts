@@ -1,7 +1,7 @@
 import { ForbiddenException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ReturnModelType } from '@typegoose/typegoose';
-import { ProductService } from '../../product/services/product.service';
+import { AdminProductService } from '../../product/services/admin-product.service';
 import { ProductQuickReview } from './models/product-quick-review.model';
 import { AddProductQuickReviewDto } from '../../shared/dtos/client/add-product-quick-review.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
@@ -14,7 +14,7 @@ export class ProductQuickReviewService {
 
   constructor(
     @InjectModel(ProductQuickReview.name) protected readonly quickReviewModel: ReturnModelType<typeof ProductQuickReview>,
-    @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService
+    @Inject(forwardRef(() => AdminProductService)) private readonly productService: AdminProductService
   ) {}
 
   async createQuickReview(

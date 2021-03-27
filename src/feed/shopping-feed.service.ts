@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ProductService } from '../product/services/product.service';
+import { AdminProductService } from '../product/services/admin-product.service';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { create } from 'xmlbuilder2/lib';
 import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
@@ -77,7 +77,7 @@ export class ShoppingFeedService {
   facebookShoppingFeedFileName = 'facebook_shopping_feed.xml';
   reviewsFeedFileName = 'google_shopping_review.xml';
 
-  constructor(private readonly productService: ProductService,
+  constructor(private readonly productService: AdminProductService,
               private readonly attributeService: AttributeService,
               private readonly reviewService: ProductReviewService) {
   }

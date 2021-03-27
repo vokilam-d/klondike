@@ -1,5 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { ProductService } from './services/product.service';
+import { AdminProductService } from './services/admin-product.service';
 import { Product, ProductModel } from './models/product.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { InventoryModule } from '../inventory/inventory.module';
@@ -12,6 +12,7 @@ import { AttributeModule } from '../attribute/attribute.module';
 import { CurrencyModule } from '../currency/currency.module';
 import { OrderModule } from '../order/order.module';
 import { OrderedProductService } from './services/ordered-product.service';
+import { ClientProductService } from './services/client-product.service';
 
 const productModel = {
   name: ProductModel.modelName,
@@ -31,7 +32,7 @@ const productModel = {
     forwardRef(() => CategoryModule)
   ],
   controllers: [AdminProductController, ClientProductController],
-  providers: [ProductService, OrderedProductService],
-  exports: [ProductService]
+  providers: [AdminProductService, ClientProductService, OrderedProductService],
+  exports: [AdminProductService, ClientProductService]
 })
 export class ProductModule {}

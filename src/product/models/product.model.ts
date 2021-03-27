@@ -30,6 +30,12 @@ export class Product {
   @arrayProp({ items: ProductVariant, _id: true })
   variants: ProductVariant[];
 
+  @prop()
+  isSeparateListItems: boolean;
+
+  @prop()
+  hasAggregatorPage: boolean;
+
   @prop({ default: 0 })
   allReviewsCount: number;
 

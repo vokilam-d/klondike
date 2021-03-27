@@ -12,7 +12,7 @@ import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { ElasticAggregator } from '../models/elastic-aggregator.model';
 import { AdminAggregatorDto } from '../../shared/dtos/admin/aggregator.dto';
 import { ClientAggregatedProductsTableDto } from '../../shared/dtos/client/aggregated-products-table.dto';
-import { ProductService } from '../../product/services/product.service';
+import { AdminProductService } from '../../product/services/admin-product.service';
 import { ClientProductSPFDto } from '../../shared/dtos/client/product-spf.dto';
 import { IFilter } from '../../shared/dtos/shared-dtos/spf.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
@@ -27,7 +27,7 @@ export class AggregatorService {
   private logger = new Logger(AggregatorService.name);
 
   constructor(@InjectModel(Aggregator.name) private readonly aggregatorModel: ReturnModelType<typeof Aggregator>,
-              private readonly productService: ProductService,
+              private readonly productService: AdminProductService,
               private readonly counterService: CounterService,
               private readonly searchService: SearchService
   ) { }

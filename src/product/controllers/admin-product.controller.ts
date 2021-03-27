@@ -16,7 +16,7 @@ import {
   ValidationPipe
 } from '@nestjs/common';
 import { AdminAddOrUpdateProductDto, AdminProductDto } from '../../shared/dtos/admin/product.dto';
-import { ProductService } from '../services/product.service';
+import { AdminProductService } from '../services/admin-product.service';
 import { plainToClass } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
@@ -40,7 +40,7 @@ import { Language } from '../../shared/enums/language.enum';
 @Controller('admin/products')
 export class AdminProductController {
 
-  constructor(private readonly productsService: ProductService,
+  constructor(private readonly productsService: AdminProductService,
               private readonly orderedProductService: OrderedProductService,
   ) { }
 

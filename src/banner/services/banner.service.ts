@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CategoryService } from '../../category/category.service';
-import { ProductService } from '../../product/services/product.service';
+import { AdminProductService } from '../../product/services/admin-product.service';
 import { BlogPostService } from '../../blog/services/blog-post.service';
 import { EBannerItemType } from '../../shared/enums/banner-item-type.enum';
 import { Language } from '../../shared/enums/language.enum';
@@ -21,7 +21,7 @@ export class BannerService {
 
   constructor(
     @InjectModel(Banner.name) private readonly bannerModel: ReturnModelType<typeof BannerModel>,
-    private readonly productService: ProductService,
+    private readonly productService: AdminProductService,
     private readonly categoryService: CategoryService,
     private readonly blogPostService: BlogPostService,
     private readonly mediaService: MediaService

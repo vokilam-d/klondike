@@ -4,7 +4,7 @@ import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
 import { BaseReviewService } from '../base-review/base-review.service';
 import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dto';
 import { ProductReview, ProductReviewComment } from './models/product-review.model';
-import { ProductService } from '../../product/services/product.service';
+import { AdminProductService } from '../../product/services/admin-product.service';
 import { ClientSession, FilterQuery } from 'mongoose';
 import { CounterService } from '../../shared/services/counter/counter.service';
 import { MediaService } from '../../shared/services/media/media.service';
@@ -36,7 +36,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
 
   constructor(
     @InjectModel(ProductReview.name) protected readonly reviewModel: ReturnModelType<typeof ProductReview>,
-    @Inject(forwardRef(() => ProductService)) private readonly productService: ProductService,
+    @Inject(forwardRef(() => AdminProductService)) private readonly productService: AdminProductService,
     @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
     protected readonly quickReviewService: ProductQuickReviewService,
     protected readonly searchService: SearchService,
