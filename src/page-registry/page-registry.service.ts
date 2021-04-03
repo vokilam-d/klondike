@@ -94,7 +94,7 @@ export class PageRegistryService implements OnApplicationBootstrap {
     return deleted;
   }
 
-  @CronProd(CronExpression.EVERY_HOUR)
+  @CronProd(CronExpression.EVERY_30_SECONDS)
   private async updateCachedPages() {
     try {
       const pages = await this.registryModel.find().exec();
