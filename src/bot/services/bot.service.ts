@@ -62,7 +62,7 @@ export class BotService implements OnApplicationBootstrap {
 
     let text = `*${this.escapeString(review.name)}* оставил\\(а\\) отзыв о товаре *"${this.escapeString(review.productName)}"*\n`
       + `Оценка: *${review.rating}*\n`
-      + `Откуда: *${review.source}*\n`;
+      + `Откуда: *${this.escapeString(review.source)}*\n`;
 
     if (review.medias.length) {
       text += `Кол\\-во фото: *${review.medias.length}*\n`;
@@ -85,7 +85,7 @@ export class BotService implements OnApplicationBootstrap {
 
     let text = `*${this.escapeString(review.name)}* оставил\\(а\\) отзыв о магазине\n`
       + `Оценка: *${review.rating}*\n`
-      + `Откуда: *${review.source}*\n`;
+      + `Откуда: *${this.escapeString(review.source)}*\n`;
 
     if (review.medias.length) {
       text += `Кол\\-во фото: *${review.medias.length}*\n`;
