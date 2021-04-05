@@ -390,7 +390,7 @@ export class OrderService implements OnApplicationBootstrap {
       assignedManagerUser = await this.userService.getUserById(newManagerUserId);
     } else if (user) {
       assignedManagerUser = user;
-    } else if (OrderService.shouldAssignToKristina(order)) {
+    } else if (await this.shouldAssignToKristina(order)) {
       assignedManagerUser = await this.userService.getUserById('5fff628d7db0790020149858'); // Кристина
     } else {
       assignedManagerUser = await this.userService.getUserById('5ef9c63aae2fd882393081c3'); // default Елена
@@ -1017,8 +1017,10 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  private static shouldAssignToKristina(order: Order): boolean {
-    return order.items.some(item => item.name[clientDefaultLanguage].toLowerCase().includes('картина'));
+  private async shouldAssignToKristina(order: Order): Promise<boolean> {
+    const purchasedProductIds = order.items.map(item => item.productId);
+    const products = await this.productService.getProductsWithQtyByIds(purchasedProductIds);
+    return !products.flatMap(product => product.categories).some(category => category.id == 3); // Not gilding product
   }
 
   private static addLog(order: Order, message: string): void {
