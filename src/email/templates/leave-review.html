@@ -27,8 +27,15 @@
             margin: 0px;
         }
 
+        @media only screen and (min-width: 600px) {
+            .desk-hidden {
+                display: none;
+            }
+        }
+
         /*
         @media only screen and (max-width: 600px) {
+
             p, ul li, ol li, a {
                 font-size: 16px !important
             }
@@ -730,6 +737,12 @@
     <table width="600" cellspacing="0" cellpadding="0" bgcolor="#ffffff " align="center"
            style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;background-color:#FFFFFF;">
         <tr style="border-collapse:collapse;"></tr>
+    </table>
+    <table class="desk-hidden" width="600" cellspacing="0" cellpadding="0" bgcolor="#ffffff " align="center"
+           style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;background-color:#FFFFFF;">
+        <tr style="border-collapse:collapse;">
+            <td style="height:300px"></td>
+        </tr>
     </table>
 </div>
 
