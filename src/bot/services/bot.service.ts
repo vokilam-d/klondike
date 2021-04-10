@@ -26,15 +26,17 @@ export class BotService implements OnApplicationBootstrap {
     const _ = this.escapeString;
 
     let text = `Заказ №${order.id}\n`
-      + `${_(order.customerFirstName)} ${_(order.customerLastName)}, ${_(phone)}\\.\n`;
+      + `${_(order.customerFirstName)} ${_(order.customerLastName)}, ${_(phone)}\\.`;
 
     if (order.customerNote) {
-      text += `\\(${_(order.customerNote)}\\)\\.\n`
+      text += ` (_${_(order.customerNote)}_\\)\\.`
     }
 
-    text += `${_(order.shipment.recipient.settlement)}, ${_(order.shipment.recipient.address)}\\.\n`
+    text += `\n${_(order.shipment.recipient.settlement)}, ${_(order.shipment.recipient.address)}\\.\n`
+      + `${_(order.shipment.recipient.settlement)}, ${_(order.shipment.recipient.address)}\\.\n`
       + `${_(order.paymentMethodAdminName.ru)}\\.\n`
-      + `${order.isCallbackNeeded ? 'Перезвонить' : 'Не звонить'}\\.\n`;
+      + `${order.isCallbackNeeded ? 'Перезвонить' : 'Не звонить'}\\.\n`
+      + `Менеджер: ${order.manager.name}\\.\n`;
 
     if (order.clientNote) {
       text += `Коммент клиента: _${_(order.clientNote)}_\\.\n`
