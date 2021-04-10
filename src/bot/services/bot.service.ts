@@ -32,7 +32,7 @@ export class BotService implements OnApplicationBootstrap {
       text += ` (_${_(order.customerNote)}_\\)\\.`
     }
 
-    text += `\n${_(order.shipment.recipient.settlement)}, ${_(order.shipment.recipient.address)}\\.\n`
+    text += `\n`
       + `${_(order.shipment.recipient.settlement)}, ${_(order.shipment.recipient.address)}\\.\n`
       + `${_(order.paymentMethodAdminName.ru)}\\.\n`
       + `${order.isCallbackNeeded ? 'Перезвонить' : 'Не звонить'}\\.\n`
