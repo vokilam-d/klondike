@@ -1,9 +1,5 @@
-import { ArrayMinSize, IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Expose, Type } from 'class-transformer';
+import { Expose } from 'class-transformer';
 import { Order } from '../../../order/models/order.model';
-import { ShipmentDto } from '../admin/shipment.dto';
-import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
-import { TrimString } from '../../decorators/trim-string.decorator';
 import { ClientOrderItemDto } from './order-item.dto';
 import { ClientOrderPricesDto } from './order-prices.dto';
 import { Language } from '../../enums/language.enum';
@@ -11,61 +7,26 @@ import { AdminOrderDto } from '../admin/order.dto';
 import { AdminOrderItemDto } from '../admin/order-item.dto';
 import { OrderItem } from '../../../order/models/order-item.model';
 import { PaymentTypeEnum } from '../../enums/payment-type.enum';
+import { OrderContactInfoDto } from '../shared-dtos/order-contact-info.dto';
+import { ClientShipmentDto } from './shipment.dto';
 
-export class ClientAddOrderDto implements
-  Pick<Order, 'paymentMethodId' | 'isCallbackNeeded' | 'clientNote'>,
-  Record<keyof Pick<Order, 'items'>, ClientOrderItemDto[]>
-{
-  @Expose()
-  @IsOptional()
-  @IsString()
-  @TrimString()
-  email: string;
-
-  @Expose()
-  @ValidateNested()
-  @Type(() => ShipmentAddressDto)
-  address: ShipmentAddressDto;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  paymentMethodId: string;
-
-  @Expose()
-  @IsBoolean()
-  isCallbackNeeded: boolean;
-
-  @Expose()
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => ClientOrderItemDto)
-  items: ClientOrderItemDto[];
-
-  @Expose()
-  @IsOptional()
-  @IsString()
-  @TrimString()
-  clientNote: string;
-}
-
-export class ClientOrderDto extends ClientAddOrderDto implements
-  Pick<Order, 'shipment' | 'createdAt'>,
+export class ClientOrderDto implements
+  Pick<Order, 'createdAt' | 'isCallbackNeeded'>,
+  Record<keyof Pick<Order, 'items'>, ClientOrderItemDto[]>,
   Record<keyof Pick<Order, 'prices'>, ClientOrderPricesDto>,
-  Record<keyof Pick<Order, 'shippingMethodName'>, string>
+  Record<keyof Pick<Order, 'shipment'>, ClientShipmentDto>
 {
   @Expose()
   id: string;
 
   @Expose()
-  shippingMethodName: string;
-
-  @Expose()
   paymentMethodName: string;
 
   @Expose()
-  shipment: ShipmentDto;
+  contactInfo: OrderContactInfoDto;
+
+  @Expose()
+  shipment: ClientShipmentDto;
 
   @Expose()
   status: string;
@@ -79,22 +40,28 @@ export class ClientOrderDto extends ClientAddOrderDto implements
   @Expose()
   isOnlinePayment: boolean;
 
+  @Expose()
+  isCallbackNeeded: boolean;
+
+  @Expose()
+  items: ClientOrderItemDto[];
+
+  @Expose()
+  note: string;
+
   static transformToDto(order: Order | AdminOrderDto, lang: Language): ClientOrderDto {
     const orderItems = order.items as (OrderItem | AdminOrderItemDto)[];
     return {
-      address: order.shipment.recipient,
-      clientNote: order.clientNote,
+      contactInfo: order.customerContactInfo,
+      note: order.notes.client,
       createdAt: order.createdAt,
-      email: order.customerEmail,
       id: order.idForCustomer,
       isCallbackNeeded: order.isCallbackNeeded,
       isOnlinePayment: order.paymentType === PaymentTypeEnum.ONLINE_PAYMENT,
       items: orderItems.map(item => ClientOrderItemDto.transformToDto(item, lang)),
-      paymentMethodId: order.paymentMethodId,
       paymentMethodName: order.paymentMethodClientName[lang],
       prices: ClientOrderPricesDto.transformToDto(order.prices, lang),
-      shipment: order.shipment,
-      shippingMethodName: order.shippingMethodName[lang],
+      shipment: ClientShipmentDto.transformToDto(order.shipment, lang),
       status: order.statusDescription[lang]
     };
   }

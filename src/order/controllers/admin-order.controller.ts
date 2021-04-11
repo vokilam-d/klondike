@@ -28,7 +28,7 @@ import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { ChangeOrderStatusDto } from '../../shared/dtos/admin/change-order-status.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
@@ -124,7 +124,7 @@ export class AdminOrderController {
   @Post(':id/internet-document')
   async createInternetDocument(
     @Param('id') orderId: string,
-    @Body() shipmentDto: ShipmentDto,
+    @Body() shipmentDto: BaseShipmentDto,
     @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
@@ -225,7 +225,7 @@ export class AdminOrderController {
   @Patch(':id/shipment')
   async editOrderShipment(
     @Param('id') orderId: number,
-    @Body() shipmentDto: ShipmentDto,
+    @Body() shipmentDto: BaseShipmentDto,
     @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {

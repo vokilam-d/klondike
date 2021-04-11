@@ -5,7 +5,7 @@ import { AdminCurrencyDto } from '../shared/dtos/admin/currency.dto';
 import { plainToClass } from 'class-transformer';
 import { CurrencyCodeEnum } from '../shared/enums/currency.enum';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
 

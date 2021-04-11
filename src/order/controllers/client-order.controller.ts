@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from '../services/order.service';
 import { FastifyRequest } from 'fastify';
-import { ClientAddOrderDto, ClientOrderDto } from '../../shared/dtos/client/order.dto';
+import { ClientOrderDto } from '../../shared/dtos/client/order.dto';
 import { AuthService } from '../../auth/services/auth.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
@@ -10,6 +10,7 @@ import { stripLeadingZeros } from '../../shared/helpers/strip-leading-zeros.func
 import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
 import { ClientLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { ClientAddOrderDto } from '../../shared/dtos/client/add-order.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @Controller('order')

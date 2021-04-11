@@ -19,7 +19,7 @@ import { __ } from '../../shared/helpers/translate/translate.function';
 import { HttpAdapterHost } from '@nestjs/core';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
 import { Subject } from 'rxjs';
 

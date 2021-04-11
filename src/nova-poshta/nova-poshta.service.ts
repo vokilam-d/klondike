@@ -1,7 +1,7 @@
 import { BadRequestException, HttpService, Injectable } from '@nestjs/common';
 import { SettlementDto } from '../shared/dtos/shared-dtos/settlement.dto';
 import { WarehouseDto } from '../shared/dtos/shared-dtos/warehouse.dto';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { ShipmentStatusEnum } from '../shared/enums/shipment-status.enum';
 import { StreetDto } from '../shared/dtos/shared-dtos/street.dto';
 import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
@@ -60,7 +60,7 @@ export class NovaPoshtaService {
     }
   }
 
-  public async createInternetDocument(shipment: ShipmentDto,
+  public async createInternetDocument(shipment: BaseShipmentDto,
                                       sender: ShipmentSender,
                                       orderPaymentMethod: PaymentTypeEnum) {
 
@@ -101,7 +101,7 @@ export class NovaPoshtaService {
     if (recipient.addressType === AddressTypeEnum.DOORS) {
       saveAddressRequestBody.methodProperties.BuildingNumber = recipient.buildingNumber;
       saveAddressRequestBody.methodProperties.Flat = recipient.flat;
-      saveAddressRequestBody.methodProperties.Note = recipient.note;
+      saveAddressRequestBody.methodProperties.Note = '';
     }
 
     const { data: saveAddressResponse } = await this.http.post(this.apiUrl, saveAddressRequestBody).toPromise();
@@ -197,12 +197,12 @@ export class NovaPoshtaService {
     }));
   }
 
-  public async fetchShipment(trackingNumber: string): Promise<ShipmentDto> {
+  public async fetchShipment(trackingNumber: string): Promise<BaseShipmentDto> {
     const shipments = await this.fetchShipments([trackingNumber]);
     return shipments[0];
   }
 
-  public async fetchShipments(trackingNumbers: string[]): Promise<ShipmentDto[]> {
+  public async fetchShipments(trackingNumbers: string[]): Promise<BaseShipmentDto[]> {
     if (!trackingNumbers?.length) { return []; }
 
     const maxDocumentsCountInRequest = 100;

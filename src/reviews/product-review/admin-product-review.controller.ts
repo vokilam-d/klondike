@@ -7,7 +7,7 @@ import { AdminProductReviewDto } from '../../shared/dtos/admin/product-review.dt
 import { ProductReviewService } from './product-review.service';
 import { AdminProductReviewFilterDto } from '../../shared/dtos/admin/product-review-filter.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 

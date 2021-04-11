@@ -7,7 +7,7 @@ import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { ReservedInventory } from './models/reserved-inventory.model';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { FileLogger } from '../logger/file-logger.service';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../shared/enums/language.enum';
 
 @Injectable()

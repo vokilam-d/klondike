@@ -8,7 +8,7 @@ import { ProductReviewService } from '../reviews/product-review/product-review.s
 import { StoreReviewService } from '../reviews/store-review/store-review.service';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 
 @UseGuards(UserJwtGuard)
 @Controller('admin/email-test')

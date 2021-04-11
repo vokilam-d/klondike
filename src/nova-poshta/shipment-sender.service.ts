@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ShipmentSender } from './models/shipment-sender.model';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../shared/enums/language.enum';
 
 @Injectable()

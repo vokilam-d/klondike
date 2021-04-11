@@ -3,9 +3,9 @@ import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { AddressTypeEnum } from '../../enums/address-type.enum';
 import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { ShipmentAddress } from '../../models/shipment-address.model';
 
-export class ShipmentAddressDto {
-
+export class ShipmentAddressDto implements ShipmentAddress {
   @Exclude()
   _id?: any;
 
@@ -58,31 +58,6 @@ export class ShipmentAddressDto {
   @IsString()
   @TrimString()
   @IsOptional()
-  @Transform(value => normalizePhoneNumber(value))
-  phone?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  firstName?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  lastName?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  middleName?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
   buildingNumber?: string;
 
   @Expose()
@@ -90,12 +65,6 @@ export class ShipmentAddressDto {
   @TrimString()
   @IsOptional()
   flat?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  note?: string;
 
   @Expose()
   @IsOptional()

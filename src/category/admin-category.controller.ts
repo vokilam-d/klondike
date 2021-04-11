@@ -24,7 +24,7 @@ import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { AdminCategoryTreeItemDto } from '../shared/dtos/admin/category-tree-item.dto';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
 

@@ -4,7 +4,7 @@ import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminPaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { plainToClass } from 'class-transformer';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
 

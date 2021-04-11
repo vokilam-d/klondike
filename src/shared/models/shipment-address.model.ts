@@ -7,46 +7,31 @@ export class ShipmentAddress {
   _id?: Types.ObjectId;
 
   @prop({ enum: AddressTypeEnum })
-  addressType?: AddressTypeEnum;
+  type?: AddressTypeEnum;
 
   @prop()
   settlementId?: string;
 
   @prop()
-  settlement?: string;
+  settlementName?: string;
 
   @prop()
-  settlementFull?: string;
+  settlementNameFull?: string;
 
   @prop()
   addressId?: string;
 
   @prop()
-  address?: string;
+  addressName?: string;
 
   @prop()
-  addressFull?: string;
-
-  @prop()
-  phone?: string;
-
-  @prop()
-  firstName?: string;
-
-  @prop()
-  lastName?: string;
-
-  @prop()
-  middleName?: string;
+  addressNameFull?: string;
 
   @prop()
   buildingNumber?: string;
 
   @prop()
   flat?: string;
-
-  @prop()
-  note?: string;
 
   @prop()
   isDefault?: boolean;

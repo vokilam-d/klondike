@@ -19,7 +19,7 @@ import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-it
 import { ClientAggregatedProductDto } from '../../shared/dtos/client/aggregated-product.dto';
 import { CounterService } from '../../shared/services/counter/counter.service';
 import { Language } from '../../shared/enums/language.enum';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 
 @Injectable()
 export class AggregatorService {

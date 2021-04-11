@@ -16,7 +16,7 @@ import { ClientSPFDto } from '../../shared/dtos/client/spf.dto';
 import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instance-cron.decorator';
 import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-expression-early-morning.function';
 import { EventsService } from '../../shared/services/events/events.service';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
 import { Subject } from 'rxjs';
 

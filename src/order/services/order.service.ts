@@ -29,14 +29,13 @@ import { ElasticOrderModel } from '../models/elastic-order.model';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ClientSession, FilterQuery } from 'mongoose';
 import { PaymentMethodService } from '../../payment-method/payment-method.service';
-import { ClientAddOrderDto } from '../../shared/dtos/client/order.dto';
 import { TasksService } from '../../tasks/tasks.service';
 import { __, getTranslations } from '../../shared/helpers/translate/translate.function';
 import { NovaPoshtaService } from '../../nova-poshta/nova-poshta.service';
 import { ShipmentSenderService } from '../../nova-poshta/shipment-sender.service';
 import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { ShipmentStatusEnum } from '../../shared/enums/shipment-status.enum';
 import { Shipment } from '../models/shipment.model';
 import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
@@ -66,6 +65,7 @@ import { MediaService } from '../../shared/services/media/media.service';
 import { CronProd } from '../../shared/decorators/prod-cron.decorator';
 import { FileLogger } from '../../logger/file-logger.service';
 import { Subject } from 'rxjs';
+import { ClientAddOrderDto } from '../../shared/dtos/client/add-order.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -83,7 +83,6 @@ export class OrderService implements OnApplicationBootstrap {
     private readonly counterService: CounterService,
     private readonly paymentMethodService: PaymentMethodService,
     private readonly tasksService: TasksService,
-    // private readonly emailService: EmailService,
     private readonly pdfGeneratorService: PdfGeneratorService,
     private readonly inventoryService: InventoryService,
     private readonly orderItemService: OrderItemService,
@@ -262,7 +261,7 @@ export class OrderService implements OnApplicationBootstrap {
         customer = await this.customerService.adminCreateCustomer(customerDto, lang, session) as any;
       }
 
-      const shipment = new ShipmentDto();
+      const shipment = new BaseShipmentDto();
       shipment.recipient = orderDto.address;
 
       const prices = await this.orderItemService.calcOrderPrices(orderDto.items, customer, lang);
@@ -309,7 +308,6 @@ export class OrderService implements OnApplicationBootstrap {
     const newOrder = new this.orderModel(orderDto);
 
     newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
-    newOrder.idForCustomer = addLeadingZeros(newOrder.id);
     newOrder.customerId = customer.id;
     newOrder.customerEmail = customer.email;
     newOrder.customerFirstName = customer.firstName;
@@ -564,10 +562,10 @@ export class OrderService implements OnApplicationBootstrap {
       }).exec();
 
       const trackingNumbers: string[] = orders.map(order => order.shipment.trackingNumber);
-      const shipments: ShipmentDto[] = await this.novaPoshtaService.fetchShipments(trackingNumbers);
+      const shipments: BaseShipmentDto[] = await this.novaPoshtaService.fetchShipments(trackingNumbers);
 
       for (const order of orders) {
-        const shipment: ShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
+        const shipment: BaseShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
         if (!shipment) { continue; }
 
         const oldShipmentStatus = order.shipment.status;
@@ -609,7 +607,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
+  public async updateOrderShipment(orderId: number, shipmentDto: BaseShipmentDto, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(orderId, lang, async order => {
       const isTrackingNumberChanged = shipmentDto.trackingNumber && shipmentDto.trackingNumber !== order.shipment.trackingNumber;
       const isAddressTypeChanged = shipmentDto.recipient && shipmentDto.recipient.addressType !== order.shipment.recipient.addressType;
@@ -641,7 +639,7 @@ export class OrderService implements OnApplicationBootstrap {
     let estimatedDeliveryDate: string = '';
 
     if (order.shipment.trackingNumber) {
-      const shipmentDto: ShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
+      const shipmentDto: BaseShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
       status = shipmentDto?.status || '';
       statusDescription = shipmentDto?.statusDescription || '';
       estimatedDeliveryDate = shipmentDto?.estimatedDeliveryDate || '';
@@ -654,7 +652,7 @@ export class OrderService implements OnApplicationBootstrap {
     OrderService.updateOrderStatusByShipment(order);
   }
 
-  private static patchShipmentData(shipment: Shipment, shipmentDto: ShipmentDto) {
+  private static patchShipmentData(shipment: Shipment, shipmentDto: BaseShipmentDto) {
     const copyValues = (fromObject: any, toObject: any) => {
       for (const key of Object.keys(fromObject)) {
         if (fromObject[key] === undefined) { continue; }
@@ -823,7 +821,7 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
+  async createInternetDocument(orderId: number, shipmentDto: BaseShipmentDto, user: User, lang: Language): Promise<Order> {
     return this.updateOrderById(orderId, lang, async order => {
       const isItemNotPacked = order.items.some(item => item.isPacked !== true);
       const hasNoMedias = order.medias.length === 0;

@@ -19,7 +19,7 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminAggregatorDto } from '../../shared/dtos/admin/aggregator.dto';
 import { plainToClass } from 'class-transformer';
 import { AggregatorService } from '../services/aggregator.service';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 

@@ -1,8 +1,9 @@
 import { prop } from '@typegoose/typegoose';
 import { ShipmentStatusEnum } from '../../shared/enums/shipment-status.enum';
-import { ShipmentPaymentMethodEnum } from '../../shared/enums/shipment-payment-method.enum';
 import { ShipmentPayerEnum } from '../../shared/enums/shipment-payer.enum';
-import { ShipmentAddress } from '../../shared/models/shipment-address.model';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { getTranslations } from '../../shared/helpers/translate/translate.function';
+import { ShipmentCounterparty } from '../../shared/models/shipment-counterparty.model';
 
 export class Shipment {
 
@@ -18,20 +19,16 @@ export class Shipment {
   @prop()
   statusDescription?: string;
 
-  @prop({ default: new ShipmentAddress() })
-  sender?: ShipmentAddress;
+  @prop({ default: new ShipmentCounterparty() })
+  sender?: ShipmentCounterparty;
 
-  @prop({ default: new ShipmentAddress() })
-  recipient?: ShipmentAddress;
+  @prop({ default: new ShipmentCounterparty() })
+  recipient?: ShipmentCounterparty;
+
+  get shippingMethodDescription(): MultilingualText { return getTranslations(this.recipient.address.type); }
 
   @prop()
   payerType?: ShipmentPayerEnum;
-
-  @prop()
-  paymentMethod?: ShipmentPaymentMethodEnum;
-
-  @prop()
-  date?: string;
 
   @prop()
   weight?: string;

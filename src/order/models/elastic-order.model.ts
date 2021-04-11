@@ -1,7 +1,7 @@
 import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
 import { ElasticShipmentAddressModel } from '../../shared/models/elastic-shipment-address.model';
 import { elasticBooleanType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { ElasticLog } from '../../shared/models/elastic-log.model';
 import { OrderItemAdditionalService } from './order-item-additional-service.model';
 import { AdminOrderItemDto } from '../../shared/dtos/admin/order-item.dto';
@@ -41,7 +41,7 @@ class ElasticOrderItemModel implements Omit<Record<keyof AdminOrderItemDto, any>
   isPacked = elasticBooleanType;
 }
 
-class ElasticShipmentModel implements Record<keyof Pick<ShipmentDto, 'trackingNumber' | 'status' | 'statusDescription' | 'recipient'>, any>{
+class ElasticShipmentModel implements Record<keyof Pick<BaseShipmentDto, 'trackingNumber' | 'status' | 'statusDescription' | 'recipient'>, any>{
   trackingNumber = elasticTextType;
   status = elasticTextType;
   statusDescription = elasticTextType;

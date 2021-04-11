@@ -4,7 +4,7 @@ import { ReturnModelType } from '@typegoose/typegoose';
 import { AdminPaymentMethodDto } from '../shared/dtos/admin/payment-method.dto';
 import { PaymentMethod } from './models/payment-method.model';
 import { __ } from '../shared/helpers/translate/translate.function';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../shared/enums/language.enum';
 
 @Injectable()

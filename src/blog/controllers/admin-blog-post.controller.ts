@@ -7,7 +7,7 @@ import { AdminBlogPostCreateOrUpdateDto, AdminBlogPostDto } from '../../shared/d
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 

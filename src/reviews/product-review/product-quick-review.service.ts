@@ -6,7 +6,7 @@ import { ProductQuickReview } from './models/product-quick-review.model';
 import { AddProductQuickReviewDto } from '../../shared/dtos/client/add-product-quick-review.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { ClientSession } from 'mongoose';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()

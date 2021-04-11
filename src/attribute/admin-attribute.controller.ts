@@ -21,7 +21,7 @@ import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))

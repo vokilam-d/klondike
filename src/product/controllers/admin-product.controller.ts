@@ -30,7 +30,7 @@ import { ReservedInventory } from '../../inventory/models/reserved-inventory.mod
 import { OrderedProductService } from '../services/ordered-product.service';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
 import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 
