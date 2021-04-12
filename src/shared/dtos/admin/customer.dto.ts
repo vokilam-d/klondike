@@ -4,31 +4,14 @@ import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
 import { TrimString } from '../../decorators/trim-string.decorator';
 import { Customer } from '../../../customer/models/customer.model';
+import { ContactInfoDto } from '../shared-dtos/contact-info.dto';
+import { CustomerContactInfoDto } from '../shared-dtos/customer-contact-info.dto';
 
 export class AdminAddOrUpdateCustomerDto implements
-  Pick<Customer, 'firstName' | 'lastName' | 'email' | 'phoneNumber' | 'createdAt' | 'lastLoggedIn' | 'isLocked' | 'isEmailConfirmed' | 'isPhoneNumberConfirmed' | 'addresses' | 'note' | 'deprecatedAddresses' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'storeReviewIds' | 'productReviewIds' | 'wishlistProductIds' | 'oauthId' | 'isRegisteredByThirdParty'> {
+  Pick<Customer, 'contactInfo' | 'createdAt' | 'lastLoggedIn' | 'isLocked' | 'isEmailConfirmed' | 'isPhoneNumberConfirmed' | 'addresses' | 'note' | 'deprecatedAddresses' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'storeReviewIds' | 'productReviewIds' | 'wishlistProductIds' | 'oauthId' | 'isRegisteredByThirdParty'> {
   @Expose()
-  @IsString()
-  @TrimString()
-  firstName: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  lastName: string;
-
-  @Expose()
-  @IsOptional()
-  @ValidateIf(c => c.email !== '')
-  @IsEmail()
-  email: string;
-
-  @Expose()
-  @IsOptional()
-  @IsString()
-  @TrimString()
-  @Transform(value => normalizePhoneNumber(value))
-  phoneNumber: string;
+  @Type(() => CustomerContactInfoDto)
+  contactInfo: CustomerContactInfoDto;
 
   @Expose()
   @IsOptional()

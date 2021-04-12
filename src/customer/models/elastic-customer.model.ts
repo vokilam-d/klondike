@@ -7,11 +7,11 @@ import {
   elasticIntegerType,
   elasticTextType
 } from '../../shared/constants';
-import { ElasticShipmentAddressModel } from '../../shared/models/elastic-shipment-address.model';
+import { ElasticShipmentAddress } from '../../shared/models/elastic-shipment-address.model';
 
 export class ElasticCustomerModel implements Record<keyof AdminCustomerDto, any> {
   addresses = {
-    properties: new ElasticShipmentAddressModel()
+    properties: new ElasticShipmentAddress()
   };
   createdAt = elasticDateType;
   deprecatedAddresses = elasticTextType;

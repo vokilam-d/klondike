@@ -5,7 +5,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Customer, CustomerModel } from './models/customer.model';
 import { ClientCustomerController } from './controllers/client-customer.controller';
 import { AuthModule } from '../auth/auth.module';
-import { EmailModule } from '../email/email.module';
 import { CartController } from './controllers/cart.controller';
 import { OrderModule } from '../order/order.module';
 import { StoreReviewModule } from '../reviews/store-review/store-review.module';
@@ -21,7 +20,6 @@ const customerModel = {
   imports: [
     MongooseModule.forFeature([customerModel]),
     forwardRef(() => AuthModule),
-    // forwardRef(() => EmailModule),
     forwardRef(() => OrderModule),
     forwardRef(() => StoreReviewModule),
     forwardRef(() => ProductReviewModule)

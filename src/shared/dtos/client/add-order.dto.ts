@@ -2,7 +2,7 @@ import { Order } from '../../../order/models/order.model';
 import { ClientOrderItemDto } from './order-item.dto';
 import { Expose, Type } from 'class-transformer';
 import { ArrayMinSize, IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { OrderContactInfoDto } from '../shared-dtos/order-contact-info.dto';
+import { CustomerContactInfoDto } from '../shared-dtos/customer-contact-info.dto';
 import { ContactInfoDto } from '../shared-dtos/contact-info.dto';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
@@ -12,8 +12,8 @@ export class ClientAddOrderDto implements
   Record<keyof Pick<Order, 'items'>, ClientOrderItemDto[]>
 {
   @ValidateNested()
-  @Type(() => OrderContactInfoDto)
-  customerContactInfo: OrderContactInfoDto;
+  @Type(() => CustomerContactInfoDto)
+  customerContactInfo: CustomerContactInfoDto;
 
   @ValidateNested()
   @Type(() => ContactInfoDto)

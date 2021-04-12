@@ -1,7 +1,7 @@
-import { elasticAutocompleteType, elasticBooleanType, elasticTextType } from '../constants';
+import { elasticBooleanType, elasticTextType } from '../constants';
 import { ShipmentAddressDto } from '../dtos/shared-dtos/shipment-address.dto';
 
-export class ElasticShipmentAddressModel implements Record<keyof ShipmentAddressDto, any>{
+export class ElasticShipmentAddress implements Record<keyof ShipmentAddressDto, any> {
   _id = elasticTextType;
   id = elasticTextType;
   addressType = elasticTextType;
@@ -11,14 +11,7 @@ export class ElasticShipmentAddressModel implements Record<keyof ShipmentAddress
   addressId = elasticTextType;
   address = elasticTextType;
   addressFull = elasticTextType;
-  phone = elasticAutocompleteType;
-  firstName = elasticAutocompleteType;
-  middleName = elasticAutocompleteType;
-  lastName = elasticAutocompleteType;
   buildingNumber = elasticTextType;
   flat = elasticTextType;
-  note = elasticTextType;
-  warehouseId = elasticTextType;
-  warehouse = elasticTextType;
   isDefault = elasticBooleanType;
 }

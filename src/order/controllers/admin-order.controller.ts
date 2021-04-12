@@ -1,34 +1,14 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Put,
-  Query,
-  Res,
-  UseGuards,
-  UsePipes,
-  ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from '../services/order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
-import {
-  AdminAddOrUpdateOrderDto,
-  AdminOrderDto,
-  UpdateOrderAdminNote,
-  UpdateOrderManager
-} from '../../shared/dtos/admin/order.dto';
+import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../../shared/dtos/admin/order-action.dto';
 import { OrderActionEnum } from '../../shared/enums/order-action.enum';
 import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
-import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { ChangeOrderStatusDto } from '../../shared/dtos/admin/change-order-status.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
@@ -37,6 +17,11 @@ import { PackOrderItemDto } from '../../shared/dtos/admin/pack-order-item.dto';
 import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
 import { User } from '../../user/models/user.model';
 import { DocumentType } from '@typegoose/typegoose';
+import { AdminAddOrUpdateOrderDto } from '../../shared/dtos/admin/add-or-update-order.dto';
+import { UpdateOrderAdminNote } from '../../shared/dtos/admin/update-order-admin-note.dto';
+import { UpdateOrderManager } from '../../shared/dtos/admin/update-order-manager.dto';
+import { AdminShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-internet-document.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -124,11 +109,11 @@ export class AdminOrderController {
   @Post(':id/internet-document')
   async createInternetDocument(
     @Param('id') orderId: string,
-    @Body() shipmentDto: BaseShipmentDto,
+    @Body() createIntDocDto: CreateInternetDocumentDto,
     @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
-    const order = await this.orderService.createInternetDocument(parseInt(orderId), shipmentDto, user, lang);
+    const order = await this.orderService.createInternetDocument(parseInt(orderId), createIntDocDto, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -186,7 +171,7 @@ export class AdminOrderController {
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const order = await this.orderService.updateOrderAdminNote(id, noteDto.adminNote, user, lang);
+    const order = await this.orderService.updateOrderAdminNote(id, noteDto.note, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
@@ -225,7 +210,7 @@ export class AdminOrderController {
   @Patch(':id/shipment')
   async editOrderShipment(
     @Param('id') orderId: number,
-    @Body() shipmentDto: BaseShipmentDto,
+    @Body() shipmentDto: AdminShipmentDto,
     @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {

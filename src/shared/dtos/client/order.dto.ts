@@ -7,7 +7,7 @@ import { AdminOrderDto } from '../admin/order.dto';
 import { AdminOrderItemDto } from '../admin/order-item.dto';
 import { OrderItem } from '../../../order/models/order-item.model';
 import { PaymentTypeEnum } from '../../enums/payment-type.enum';
-import { OrderContactInfoDto } from '../shared-dtos/order-contact-info.dto';
+import { CustomerContactInfoDto } from '../shared-dtos/customer-contact-info.dto';
 import { ClientShipmentDto } from './shipment.dto';
 
 export class ClientOrderDto implements
@@ -23,7 +23,7 @@ export class ClientOrderDto implements
   paymentMethodName: string;
 
   @Expose()
-  contactInfo: OrderContactInfoDto;
+  contactInfo: CustomerContactInfoDto;
 
   @Expose()
   shipment: ClientShipmentDto;

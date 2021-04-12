@@ -8,23 +8,11 @@ import { OrderPrices } from '../../shared/models/order-prices.model';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { Manager } from './manager.model';
 import { Media } from '../../shared/models/media.model';
-import { OrderContactInfo } from './order-contact-info.model';
+import { CustomerContactInfo } from './customer-contact-info.model';
 import { OrderPaymentInfo } from './order-payment-info.model';
 import { OrderNotes } from './order-notes.model';
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 
-// customerFirstName -> customerContactInfo.firstName
-// customerLastName -> customerContactInfo.lastName
-// customerEmail -> customerContactInfo.email
-// customerPhoneNumber -> customerContactInfo.phoneNumber
-// paymentMethodId -> paymentInfo.methodId
-// paymentType -> paymentInfo.type
-// paymentMethodClientName -> paymentInfo.methodClientName
-// paymentMethodAdminName -> paymentInfo.methodAdminName
-// shippingMethodName -> shipment.shippingMethodDescription
-// clientNote -> notes.fromCustomer
-// adminNote -> notes.fromAdmin
-// customerNote -> notes.aboutCustomer
 export class Order {
   @prop()
   _id: number;
@@ -38,7 +26,7 @@ export class Order {
   customerId: number;
 
   @prop()
-  customerContactInfo: OrderContactInfo;
+  customerContactInfo: CustomerContactInfo;
 
   @prop({ default: new Date() })
   createdAt: Date;

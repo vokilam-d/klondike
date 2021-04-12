@@ -1,7 +1,6 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { AddressTypeEnum } from '../../enums/address-type.enum';
-import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
 import { TrimString } from '../../decorators/trim-string.decorator';
 import { ShipmentAddress } from '../../models/shipment-address.model';
 
@@ -11,6 +10,7 @@ export class ShipmentAddressDto implements ShipmentAddress {
 
   @Expose()
   @Transform(((value, obj) => obj._id || value))
+  @IsOptional()
   id?: string;
 
   @Expose()

@@ -5,7 +5,6 @@ import { Task } from './models/task.model';
 import { ReturnModelType } from '@typegoose/typegoose';
 import { CronJob } from 'cron';
 import { Order } from '../order/models/order.model';
-import { EmailService } from '../email/email.service';
 import { TaskTypeEnum } from '../shared/enums/task-type.enum';
 import { isProdPrimaryInstance } from '../shared/helpers/is-prod-primary-instance.function';
 import { Language } from '../shared/enums/language.enum';
@@ -21,10 +20,10 @@ export class TasksService implements OnApplicationBootstrap {
 
   leaveReviewRequested$ = new Subject<{ order: Order, lang: Language }>();
 
-  constructor(@InjectModel(Task.name) private readonly taskModel: ReturnModelType<typeof Task>,
-              // private readonly emailService: EmailService,
-              private readonly scheduler: SchedulerRegistry) {
-  }
+  constructor(
+    @InjectModel(Task.name) private readonly taskModel: ReturnModelType<typeof Task>,
+    private readonly scheduler: SchedulerRegistry
+  ) { }
 
   onApplicationBootstrap() {
     if (isProdPrimaryInstance()) {

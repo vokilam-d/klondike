@@ -8,47 +8,47 @@ import { ShipmentCounterparty } from '../../shared/models/shipment-counterparty.
 export class Shipment {
 
   @prop()
-  trackingNumber?: string;
+  trackingNumber: string;
 
   @prop()
-  estimatedDeliveryDate?: string;
+  estimatedDeliveryDate: string;
 
   @prop()
-  status?: ShipmentStatusEnum;
+  status: ShipmentStatusEnum;
 
   @prop()
-  statusDescription?: string;
+  statusDescription: string;
 
   @prop({ default: new ShipmentCounterparty() })
-  sender?: ShipmentCounterparty;
+  sender: ShipmentCounterparty;
 
   @prop({ default: new ShipmentCounterparty() })
-  recipient?: ShipmentCounterparty;
+  recipient: ShipmentCounterparty;
 
   get shippingMethodDescription(): MultilingualText { return getTranslations(this.recipient.address.type); }
 
   @prop()
-  payerType?: ShipmentPayerEnum;
+  payerType: ShipmentPayerEnum;
 
   @prop()
-  weight?: string;
+  weight: string;
 
   @prop()
-  length?: string;
+  length: string;
 
   @prop()
-  width?: string;
+  width: string;
 
   @prop()
-  height?: string;
+  height: string;
 
   @prop()
-  backwardMoneyDelivery?: string;
+  backwardMoneyDelivery: string;
 
   @prop()
-  cost?: string;
+  cost: string;
 
   @prop()
-  description?: string;
+  description: string;
 
 }

@@ -11,64 +11,64 @@ export abstract class BaseShipmentDto implements Shipment {
   @Expose()
   @IsOptional()
   @Transform(value => value ? value.replace(/\D/g, '') : value)
-  trackingNumber?: string;
+  trackingNumber: string;
 
   @Expose()
   @IsOptional()
-  estimatedDeliveryDate?: string;
+  estimatedDeliveryDate: string;
 
   @Expose()
   @IsOptional()
-  status?: ShipmentStatusEnum;
+  status: ShipmentStatusEnum;
 
   @Expose()
   @IsString()
   @IsOptional()
   @TrimString()
-  statusDescription?: string;
-
-  @Expose()
-  @IsInt()
-  @IsOptional()
-  senderId?: number;
+  statusDescription: string;
 
   @Expose()
   @Type(() => ShipmentCounterpartyDto)
   @IsOptional()
-  recipient?: ShipmentCounterpartyDto;
+  sender: ShipmentCounterpartyDto;
+
+  @Expose()
+  @Type(() => ShipmentCounterpartyDto)
+  @IsOptional()
+  recipient: ShipmentCounterpartyDto;
 
   abstract shippingMethodDescription: any;
 
   @Expose()
   @IsOptional()
-  payerType?: ShipmentPayerEnum;
+  payerType: ShipmentPayerEnum;
 
   @Expose()
   @IsOptional()
-  weight?: string;
+  weight: string;
 
   @Expose()
   @IsOptional()
-  length?: string;
+  length: string;
 
   @Expose()
   @IsOptional()
-  width?: string;
+  width: string;
 
   @Expose()
   @IsOptional()
-  height?: string;
+  height: string;
 
   @Expose()
   @IsOptional()
-  backwardMoneyDelivery?: string;
+  backwardMoneyDelivery: string;
 
   @Expose()
   @IsOptional()
-  cost?: string;
+  cost: string;
 
   @Expose()
   @IsOptional()
-  description?: string;
+  description: string;
 
 }

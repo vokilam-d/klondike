@@ -50,16 +50,15 @@ export class CustomerService implements OnApplicationBootstrap {
 
   customerRegistered$ = new Subject<{ customer: Customer, token: string }>();
   emailConfirmationRequested$ = new Subject<{ customer: Customer, token: string }>();
+  emailChanged$ = new Subject<{ oldEmail: string, newEmail: string }>();
 
   constructor(
     @InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
     @Inject(forwardRef(() => AuthService)) private authService: AuthService,
-    @Inject(forwardRef(() => OrderService)) private orderService: OrderService,
     @Inject(forwardRef(() => StoreReviewService)) private storeReviewService: StoreReviewService,
     @Inject(forwardRef(() => ProductReviewService)) private productReviewService: ProductReviewService,
     private readonly searchService: SearchService,
     private readonly encryptor: EncryptorService,
-    // private readonly emailService: EmailService,
     private readonly counterService: CounterService
   ) { }
 
@@ -161,7 +160,7 @@ export class CustomerService implements OnApplicationBootstrap {
     };
   }
 
-  private async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
+  private async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<DocumentType<Customer>> {
     const newCustomer = new this.customerModel(customerDto);
     newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
     newCustomer.createdAt = new Date();
@@ -170,10 +169,10 @@ export class CustomerService implements OnApplicationBootstrap {
     this.addSearchData(newCustomer);
     this.updateCachedCustomerCount();
 
-    return newCustomer.toJSON();
+    return newCustomer;
   }
 
-  async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, lang: Language, session?: ClientSession): Promise<Customer> {
+  async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, lang: Language, session?: ClientSession): Promise<DocumentType<Customer>> {
     const foundByEmail = await this.customerModel.findOne({ email: customerDto.email }).exec();
     if (customerDto.email && foundByEmail) {
       throw new ConflictException(__('Customer with email "$1" already exists', lang, customerDto.email));
@@ -249,14 +248,14 @@ export class CustomerService implements OnApplicationBootstrap {
 
   }
 
-  async updateCustomerByClientDto(customer: DocumentType<Customer>, customerDto: ClientUpdateCustomerDto): Promise<Customer> {
+  async updateCustomerByClientDto(customer: DocumentType<Customer>, updateCustomerDto: ClientUpdateCustomerDto): Promise<Customer> {
     const session = await this.customerModel.db.startSession();
     session.startTransaction();
 
     try {
-      await this.processEmailChange(customer.email, customerDto.email, session);
+      await this.processEmailChange(customer.contactInfo.email, updateCustomerDto.contactInfo.email, session);
 
-      Object.keys(customerDto).forEach(key => customer[key] = customerDto[key]);
+      Object.keys(updateCustomerDto.contactInfo).forEach(key => customer.contactInfo[key] = updateCustomerDto.contactInfo[key]);
       await customer.save({ session });
       await session.commitTransaction();
 
@@ -541,7 +540,7 @@ export class CustomerService implements OnApplicationBootstrap {
   private async processEmailChange(oldEmail: string, newEmail: string, session: ClientSession): Promise<void> {
     if (oldEmail === newEmail) { return; }
 
-    await this.orderService.changeCustomerEmail(oldEmail, newEmail, session);
+    this.emailChanged$.next({ oldEmail, newEmail });
   }
 
   private async reindexAllSearchData() {

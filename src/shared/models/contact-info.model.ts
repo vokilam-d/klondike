@@ -1,15 +1,15 @@
 import { prop } from '@typegoose/typegoose';
 
 export class ContactInfo {
-  @prop()
+  @prop({ default: '' })
   lastName: string;
 
-  @prop()
+  @prop({ default: '' })
   firstName: string;
 
-  @prop({ required: false })
+  @prop({ required: false, default: '' })
   middleName?: string;
 
-  @prop()
+  @prop({ index: true, default: '' })
   phoneNumber: string;
 }
