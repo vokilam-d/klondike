@@ -29,7 +29,7 @@ export class BotService implements OnApplicationBootstrap {
       + `${_(order.customerFirstName)} ${_(order.customerLastName)}, ${_(phone)}\\.`;
 
     if (order.customerNote) {
-      text += ` (_${_(order.customerNote)}_\\)\\.`
+      text += ` \\(_${_(order.customerNote)}_\\)\\.`
     }
 
     text += `\n`
