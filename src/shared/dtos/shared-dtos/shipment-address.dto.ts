@@ -16,7 +16,7 @@ export class ShipmentAddressDto implements ShipmentAddress {
   @Expose()
   @IsEnum(AddressTypeEnum)
   @IsOptional()
-  addressType?: AddressTypeEnum;
+  type?: AddressTypeEnum;
 
   @Expose()
   @IsString()
@@ -28,13 +28,13 @@ export class ShipmentAddressDto implements ShipmentAddress {
   @IsString()
   @TrimString()
   @IsOptional()
-  settlement?: string;
+  settlementName?: string;
 
   @Expose()
   @IsString()
   @TrimString()
   @IsOptional()
-  settlementFull?: string;
+  settlementNameFull?: string;
 
   @Expose()
   @IsString()
@@ -46,13 +46,13 @@ export class ShipmentAddressDto implements ShipmentAddress {
   @IsString()
   @TrimString()
   @IsOptional()
-  address?: string;
+  addressName?: string;
 
   @Expose()
   @IsString()
   @TrimString()
   @IsOptional()
-  addressFull?: string;
+  addressNameFull?: string;
 
   @Expose()
   @IsString()

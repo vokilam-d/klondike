@@ -22,7 +22,7 @@ class ElasticOrderItemAdditionalService implements Record<keyof OrderItemAdditio
   price = elasticFloatType;
 }
 
-class ElasticOrderItemModel implements Omit<Record<keyof AdminOrderItemDto, any>, 'crossSellProducts'> {
+export class ElasticOrderItemModel implements Omit<Record<keyof AdminOrderItemDto, any>, 'crossSellProducts'> {
   cost = elasticFloatType;
   oldCost = elasticFloatType;
   imageUrl = elasticTextType;
@@ -76,7 +76,7 @@ class ElasticOrderNotes implements Record<keyof AdminOrderNotesDto, any> {
   fromCustomer = elasticTextType;
 }
 
-class ElasticCustomerContactInfo extends ElasticContactInfo implements Record<keyof CustomerContactInfoDto, any> {
+export class ElasticCustomerContactInfo extends ElasticContactInfo implements Record<keyof CustomerContactInfoDto, any> {
   email = elasticTextType;
 }
 

@@ -71,6 +71,7 @@ import { ContactInfo } from '../../shared/models/contact-info.model';
 import { AdminShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-internet-document.dto';
 import { ShipmentAddress } from '../../shared/models/shipment-address.model';
+import { NovaPoshtaShipmentDto } from '../../shared/dtos/admin/nova-poshta-shipment.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -150,7 +151,7 @@ export class OrderService implements OnApplicationBootstrap {
       console.log('saved', order.id);
     }
 
-    // this.reindexAllSearchData();
+    this.reindexAllSearchData();
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
@@ -583,10 +584,10 @@ export class OrderService implements OnApplicationBootstrap {
       }).exec();
 
       const trackingNumbers: string[] = orders.map(order => order.shipment.trackingNumber);
-      const shipments: AdminShipmentDto[] = await this.novaPoshtaService.fetchShipments(trackingNumbers);
+      const shipments: NovaPoshtaShipmentDto[] = await this.novaPoshtaService.fetchShipments(trackingNumbers);
 
       for (const order of orders) {
-        const shipment: AdminShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
+        const shipment: NovaPoshtaShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
         if (!shipment) { continue; }
 
         const oldShipmentStatus = order.shipment.status;
@@ -650,16 +651,16 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  private async fetchShipmentStatus(order) {
+  private async fetchShipmentStatus(order): Promise<void> {
     let status: string = '';
     let statusDescription: string = '';
     let estimatedDeliveryDate: string = '';
 
     if (order.shipment.trackingNumber) {
-      const shipmentDto: AdminShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
+      const shipmentDto: NovaPoshtaShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
       status = shipmentDto?.status || '';
       statusDescription = shipmentDto?.statusDescription || '';
-      estimatedDeliveryDate = shipmentDto?.estimatedDeliveryDate || '';
+      estimatedDeliveryDate = shipmentDto?.scheduledDeliveryDate || '';
     }
 
     order.shipment.status = status;

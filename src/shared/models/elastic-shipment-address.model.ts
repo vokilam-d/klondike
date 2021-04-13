@@ -4,13 +4,13 @@ import { ShipmentAddressDto } from '../dtos/shared-dtos/shipment-address.dto';
 export class ElasticShipmentAddress implements Record<keyof ShipmentAddressDto, any> {
   _id = elasticTextType;
   id = elasticTextType;
-  addressType = elasticTextType;
+  type = elasticTextType;
   settlementId = elasticTextType;
-  settlement = elasticTextType;
-  settlementFull = elasticTextType;
+  settlementName = elasticTextType;
+  settlementNameFull = elasticTextType;
   addressId = elasticTextType;
-  address = elasticTextType;
-  addressFull = elasticTextType;
+  addressName = elasticTextType;
+  addressNameFull = elasticTextType;
   buildingNumber = elasticTextType;
   flat = elasticTextType;
   isDefault = elasticBooleanType;

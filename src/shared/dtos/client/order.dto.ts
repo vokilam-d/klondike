@@ -53,13 +53,13 @@ export class ClientOrderDto implements
     const orderItems = order.items as (OrderItem | AdminOrderItemDto)[];
     return {
       contactInfo: order.customerContactInfo,
-      note: order.notes.client,
+      note: order.notes.fromCustomer,
       createdAt: order.createdAt,
       id: order.idForCustomer,
       isCallbackNeeded: order.isCallbackNeeded,
-      isOnlinePayment: order.paymentType === PaymentTypeEnum.ONLINE_PAYMENT,
+      isOnlinePayment: order.paymentInfo.type === PaymentTypeEnum.ONLINE_PAYMENT,
       items: orderItems.map(item => ClientOrderItemDto.transformToDto(item, lang)),
-      paymentMethodName: order.paymentMethodClientName[lang],
+      paymentMethodName: order.paymentInfo.methodClientName[lang],
       prices: ClientOrderPricesDto.transformToDto(order.prices, lang),
       shipment: ClientShipmentDto.transformToDto(order.shipment, lang),
       status: order.statusDescription[lang]

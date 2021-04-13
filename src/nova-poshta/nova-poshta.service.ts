@@ -13,12 +13,7 @@ import { ShipmentSenderService } from './shipment-sender.service';
 import { ShipmentPayerEnum } from '../shared/enums/shipment-payer.enum';
 import { FileLogger } from '../logger/file-logger.service';
 import { ContactInfoDto } from '../shared/dtos/shared-dtos/contact-info.dto';
-
-interface NovaPoshtaShipment {
-  trackingNumber: string;
-  status: string;
-  statusDescription: string;
-}
+import { NovaPoshtaShipmentDto } from '../shared/dtos/admin/nova-poshta-shipment.dto';
 
 @Injectable()
 export class NovaPoshtaService {
@@ -95,12 +90,12 @@ export class NovaPoshtaService {
         ContactPersonRef: contactPersonRef,
         SettlementRef: recipient.address.settlementId,
         AddressRef: recipient.address.addressId,
-        AddressType: recipient.address.addressType
+        AddressType: recipient.address.type
       },
       apiKey: sender.apiKey
     };
 
-    if (recipient.address.addressType === AddressTypeEnum.DOORS) {
+    if (recipient.address.type === AddressTypeEnum.DOORS) {
       saveAddressRequestBody.methodProperties.BuildingNumber = recipient.address.buildingNumber;
       saveAddressRequestBody.methodProperties.Flat = recipient.address.flat;
       saveAddressRequestBody.methodProperties.Note = '';
@@ -130,7 +125,7 @@ export class NovaPoshtaService {
         RecipientAddress: recipientAddress,
         ContactRecipient: contactPersonRef,
         RecipientsPhone: recipient.contactInfo.phoneNumber,
-        ServiceType: sender.addressType + recipient.address.addressType,
+        ServiceType: sender.addressType + recipient.address.type,
         CargoType: 'Cargo',
         ParamsOptionsSeats: false,
         Cost: shipment.cost,
@@ -199,12 +194,12 @@ export class NovaPoshtaService {
     }));
   }
 
-  public async fetchShipment(trackingNumber: string): Promise<NovaPoshtaShipment> {
+  public async fetchShipment(trackingNumber: string): Promise<NovaPoshtaShipmentDto> {
     const shipments = await this.fetchShipments([trackingNumber]);
     return shipments[0];
   }
 
-  public async fetchShipments(trackingNumbers: string[]): Promise<NovaPoshtaShipment[]> {
+  public async fetchShipments(trackingNumbers: string[]): Promise<NovaPoshtaShipmentDto[]> {
     if (!trackingNumbers?.length) { return []; }
 
     const maxDocumentsCountInRequest = 100;
@@ -236,7 +231,8 @@ export class NovaPoshtaService {
     return responseDocuments.map(shipment => ({
       trackingNumber: shipment.Number,
       status: NovaPoshtaService.toShipmentStatus(shipment.StatusCode),
-      statusDescription: shipment.Status
+      statusDescription: shipment.Status,
+      scheduledDeliveryDate: shipment.ScheduledDeliveryDate,
     }));
   }
 
