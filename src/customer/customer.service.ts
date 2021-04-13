@@ -22,7 +22,6 @@ import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientRegisterDto } from '../shared/dtos/client/register.dto';
 import { AuthService } from '../auth/services/auth.service';
-import { ClientUpdateCustomerDto } from '../shared/dtos/client/update-customer.dto';
 import { ClientUpdatePasswordDto } from '../shared/dtos/client/update-password.dto';
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
 import { OrderItem } from '../order/models/order-item.model';

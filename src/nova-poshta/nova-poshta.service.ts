@@ -8,11 +8,17 @@ import { ClientSPFDto } from '../shared/dtos/client/spf.dto';
 import { AddressTypeEnum } from '../shared/enums/address-type.enum';
 import { PaymentTypeEnum } from '../shared/enums/payment-type.enum';
 import { ShipmentPaymentMethodEnum } from '../shared/enums/shipment-payment-method.enum';
-import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
 import { ShipmentSender } from './models/shipment-sender.model';
 import { ShipmentSenderService } from './shipment-sender.service';
 import { ShipmentPayerEnum } from '../shared/enums/shipment-payer.enum';
 import { FileLogger } from '../logger/file-logger.service';
+import { ContactInfoDto } from '../shared/dtos/shared-dtos/contact-info.dto';
+
+interface NovaPoshtaShipment {
+  trackingNumber: string;
+  status: string;
+  statusDescription: string;
+}
 
 @Injectable()
 export class NovaPoshtaService {
@@ -31,7 +37,7 @@ export class NovaPoshtaService {
     this.fileLogger.setContext(NovaPoshtaService.name);
   }
 
-  public async shipmentRecipient(spf: ClientSPFDto): Promise<ShipmentAddressDto> {
+  public async shipmentRecipient(spf: ClientSPFDto): Promise<ContactInfoDto[]> {
 
     const { data: response } = await this.http.post(this.apiUrl,
       {
@@ -48,16 +54,12 @@ export class NovaPoshtaService {
       throw new BadRequestException(response.errors.join(', '));
     }
 
-    if (response.data.length === 1) {
-      const counterparty = response.data[0];
-      return {
-        lastName: counterparty.LastName,
-        firstName: counterparty.FirstName,
-        middleName: counterparty.MiddleName
-      };
-    } else {
-      return {};
-    }
+    return response.data.map(counterparty => ({
+      lastName: counterparty.LastName,
+      firstName: counterparty.FirstName,
+      middleName: counterparty.MiddleName,
+      phoneNumber: ''
+    }));
   }
 
   public async createInternetDocument(shipment: BaseShipmentDto,
@@ -69,11 +71,11 @@ export class NovaPoshtaService {
       modelName: 'ContactPerson',
       calledMethod: 'save',
       methodProperties: {
-        FirstName: recipient.firstName,
-        LastName: recipient.lastName,
-        MiddleName: recipient.middleName,
+        FirstName: recipient.contactInfo.firstName,
+        LastName: recipient.contactInfo.lastName,
+        MiddleName: recipient.contactInfo.middleName,
         CounterpartyRef: sender.counterpartyRef,
-        Phone: recipient.phone
+        Phone: recipient.contactInfo.phoneNumber
       },
       apiKey: sender.apiKey
     };
@@ -91,16 +93,16 @@ export class NovaPoshtaService {
       calledMethod: 'save',
       methodProperties: {
         ContactPersonRef: contactPersonRef,
-        SettlementRef: recipient.settlementId,
-        AddressRef: recipient.addressId,
-        AddressType: recipient.addressType
+        SettlementRef: recipient.address.settlementId,
+        AddressRef: recipient.address.addressId,
+        AddressType: recipient.address.addressType
       },
       apiKey: sender.apiKey
     };
 
-    if (recipient.addressType === AddressTypeEnum.DOORS) {
-      saveAddressRequestBody.methodProperties.BuildingNumber = recipient.buildingNumber;
-      saveAddressRequestBody.methodProperties.Flat = recipient.flat;
+    if (recipient.address.addressType === AddressTypeEnum.DOORS) {
+      saveAddressRequestBody.methodProperties.BuildingNumber = recipient.address.buildingNumber;
+      saveAddressRequestBody.methodProperties.Flat = recipient.address.flat;
       saveAddressRequestBody.methodProperties.Note = '';
     }
 
@@ -127,8 +129,8 @@ export class NovaPoshtaService {
         CityRecipient: cityRef,
         RecipientAddress: recipientAddress,
         ContactRecipient: contactPersonRef,
-        RecipientsPhone: recipient.phone,
-        ServiceType: sender.addressType + recipient.addressType,
+        RecipientsPhone: recipient.contactInfo.phoneNumber,
+        ServiceType: sender.addressType + recipient.address.addressType,
         CargoType: 'Cargo',
         ParamsOptionsSeats: false,
         Cost: shipment.cost,
@@ -197,12 +199,12 @@ export class NovaPoshtaService {
     }));
   }
 
-  public async fetchShipment(trackingNumber: string): Promise<BaseShipmentDto> {
+  public async fetchShipment(trackingNumber: string): Promise<NovaPoshtaShipment> {
     const shipments = await this.fetchShipments([trackingNumber]);
     return shipments[0];
   }
 
-  public async fetchShipments(trackingNumbers: string[]): Promise<BaseShipmentDto[]> {
+  public async fetchShipments(trackingNumbers: string[]): Promise<NovaPoshtaShipment[]> {
     if (!trackingNumbers?.length) { return []; }
 
     const maxDocumentsCountInRequest = 100;
