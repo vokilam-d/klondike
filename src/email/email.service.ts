@@ -222,6 +222,7 @@ export class EmailService {
       products: order.items.map(item => ({
         name: item.name[clientDefaultLanguage],
         sku: item.sku,
+        vendorCode: item.vendorCode,
         qty: item.qty,
         price: item.price,
         oldPrice: item.oldPrice,

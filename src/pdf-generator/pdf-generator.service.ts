@@ -87,6 +87,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       products: order.items.map(item => ({
         name: item.name[lang],
         sku: item.sku,
+        vendorCode: item.vendorCode,
         qty: item.qty,
         price: item.price,
         oldPrice: item.oldPrice,
@@ -120,6 +121,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
         index: index + 1,
         name: item.name[lang],
         sku: item.sku,
+        vendorCode: item.vendorCode,
         qty: item.qty,
         price: item.price,
         oldPrice: item.oldPrice,
