@@ -20,11 +20,9 @@ import { FastifyReply } from 'fastify';
 import { ServerResponse } from 'http';
 import { LoginDto } from '../../shared/dtos/shared-dtos/login.dto';
 import { Customer } from '../models/customer.model';
-import { plainToClass } from 'class-transformer';
 import { ClientCustomerDto } from '../../shared/dtos/client/customer.dto';
 import { AuthService } from '../../auth/services/auth.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
-import { ClientUpdateCustomerDto } from '../../shared/dtos/client/update-customer.dto';
 import { DocumentType } from '@typegoose/typegoose';
 import { ClientUpdatePasswordDto } from '../../shared/dtos/client/update-password.dto';
 import { CustomerJwtGuard } from '../../auth/guards/customer-jwt.guard';
@@ -39,6 +37,7 @@ import { ConfirmEmailDto } from '../../shared/dtos/client/confirm-email.dto';
 import { ClientLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
+import { CustomerContactInfoDto } from '../../shared/dtos/shared-dtos/customer-contact-info.dto';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -225,7 +224,7 @@ export class ClientCustomerController {
   @Patch()
   async updateCustomer(
     @ValidatedUser() customer: DocumentType<Customer>,
-    @Body() dto: ClientUpdateCustomerDto,
+    @Body() dto: CustomerContactInfoDto,
     @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientCustomerDto>> {
 

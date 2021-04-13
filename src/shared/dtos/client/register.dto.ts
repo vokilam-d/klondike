@@ -1,4 +1,4 @@
-import { IsEmail, IsString, Matches } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches } from 'class-validator';
 import { clientDefaultLanguage, validPasswordRegex } from '../../constants';
 import { TrimString } from '../../decorators/trim-string.decorator';
 import { __ } from '../../helpers/translate/translate.function';
@@ -11,6 +11,11 @@ export class ClientRegisterDto {
   @IsString()
   @TrimString()
   lastName: string;
+
+  @IsString()
+  @TrimString()
+  @IsOptional()
+  middleName: string;
 
   @IsEmail()
   email: string;

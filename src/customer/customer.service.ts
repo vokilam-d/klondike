@@ -22,7 +22,6 @@ import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientRegisterDto } from '../shared/dtos/client/register.dto';
 import { AuthService } from '../auth/services/auth.service';
-import { EmailService } from '../email/email.service';
 import { ClientUpdateCustomerDto } from '../shared/dtos/client/update-customer.dto';
 import { ClientUpdatePasswordDto } from '../shared/dtos/client/update-password.dto';
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
@@ -33,14 +32,14 @@ import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
 import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
 import { CronExpression } from '@nestjs/schedule';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
-import { OrderService } from '../order/services/order.service';
 import { Language } from '../shared/enums/language.enum';
-import { clientDefaultLanguage } from '../shared/constants';
 import { CustomerReviewsAverageRatingDto } from '../shared/dtos/admin/customer-reviews-average-rating.dto';
 import { StoreReviewService } from '../reviews/store-review/store-review.service';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { CronProd } from '../shared/decorators/prod-cron.decorator';
 import { Subject } from 'rxjs';
+import { CustomerContactInfo } from '../order/models/customer-contact-info.model';
+import { CustomerContactInfoDto } from '../shared/dtos/shared-dtos/customer-contact-info.dto';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -116,11 +115,13 @@ export class CustomerService implements OnApplicationBootstrap {
 
     const email = idOrEmail.toString();
 
+    const contactInfoProp: keyof Customer = 'contactInfo';
+    const emailProp: keyof CustomerContactInfo = 'email';
     return this.customerModel
       .findOne({
         $or: [
           { _id: id },
-          { email }
+          { [`${contactInfoProp}.${emailProp}`]: email }
         ]
       })
       .exec();
@@ -129,11 +130,14 @@ export class CustomerService implements OnApplicationBootstrap {
   async getCustomerByEmailOrPhoneNumber(emailOrPhone: string): Promise<DocumentType<Customer>> {
     if (!emailOrPhone) { return; }
 
+    const contactInfoProp: keyof Customer = 'contactInfo';
+    const emailProp: keyof CustomerContactInfo = 'email';
+    const phoneProp: keyof CustomerContactInfo = 'phoneNumber';
     return this.customerModel
       .findOne({
         $or: [
-          { email: emailOrPhone },
-          { phoneNumber: emailOrPhone }
+          { [`${contactInfoProp}.${emailProp}`]: emailOrPhone },
+          { [`${contactInfoProp}.${phoneProp}`]: emailOrPhone }
         ]
       })
       .exec();
@@ -160,7 +164,7 @@ export class CustomerService implements OnApplicationBootstrap {
     };
   }
 
-  private async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<DocumentType<Customer>> {
+  private async createCustomer(customerDto: Partial<Customer>, session?: ClientSession): Promise<DocumentType<Customer>> {
     const newCustomer = new this.customerModel(customerDto);
     newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
     newCustomer.createdAt = new Date();
@@ -173,51 +177,57 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, lang: Language, session?: ClientSession): Promise<DocumentType<Customer>> {
-    const foundByEmail = await this.customerModel.findOne({ email: customerDto.email }).exec();
-    if (customerDto.email && foundByEmail) {
-      throw new ConflictException(__('Customer with email "$1" already exists', lang, customerDto.email));
+    const contactInfoProp: keyof Customer = 'contactInfo';
+    const emailProp: keyof CustomerContactInfo = 'email';
+    const foundByEmail = await this.customerModel.findOne({ [`${contactInfoProp}.${emailProp}`]: customerDto.contactInfo.email }).exec();
+
+    if (customerDto.contactInfo.email && foundByEmail) {
+      throw new ConflictException(__('Customer with email "$1" already exists', lang, customerDto.contactInfo.email));
     }
 
     return this.createCustomer(customerDto, session);
   }
 
   async clientRegisterCustomer(registerDto: ClientRegisterDto, lang: Language): Promise<Customer> {
-    const foundByEmail = await this.customerModel.findOne({ email: registerDto.email }).exec();
+    const contactInfoProp: keyof Customer = 'contactInfo';
+    const emailProp: keyof CustomerContactInfo = 'email';
+    const foundByEmail = await this.customerModel.findOne({ [`${contactInfoProp}.${emailProp}`]: registerDto.email }).exec();
     if (foundByEmail) {
       throw new ConflictException(__('Customer with email "$1" already exists', lang, registerDto.email));
     }
 
-    const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
-    adminCustomerDto.firstName = registerDto.firstName;
-    adminCustomerDto.lastName = registerDto.lastName;
-    adminCustomerDto.email = registerDto.email;
-    adminCustomerDto.password = await this.encryptor.hash(registerDto.password);
-    adminCustomerDto.lastLoggedIn = new Date();
+    const customerObj = new Customer();
+    customerObj.contactInfo = new CustomerContactInfo();
+    customerObj.contactInfo.firstName = registerDto.firstName;
+    customerObj.contactInfo.lastName = registerDto.lastName;
+    customerObj.contactInfo.email = registerDto.email;
+    customerObj.password = await this.encryptor.hash(registerDto.password);
+    customerObj.lastLoggedIn = new Date();
 
-    const created = await this.createCustomer(adminCustomerDto);
+    const created = await this.createCustomer(customerObj);
 
     const token = await this.authService.createCustomerEmailConfirmToken(created);
-    // this.emailService.sendRegisterSuccessEmail(created, token).then();
     this.customerRegistered$.next({ customer: created, token });
 
     return created;
   }
 
   createCustomerByThirdParty(oauthId: string, firstName: string, lastName: string, email: string): Promise<Customer> {
-    const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
-    adminCustomerDto.oauthId = oauthId;
-    adminCustomerDto.firstName = firstName;
-    adminCustomerDto.lastName = lastName;
+    const customerObj = new Customer();
+    customerObj.oauthId = oauthId;
+    customerObj.contactInfo = new CustomerContactInfo();
+    customerObj.contactInfo.firstName = firstName;
+    customerObj.contactInfo.lastName = lastName;
     if (email) {
-      adminCustomerDto.email = email;
+      customerObj.contactInfo.email = email;
     }
-    adminCustomerDto.password = '';
-    adminCustomerDto.lastLoggedIn = new Date();
+    customerObj.password = '';
+    customerObj.lastLoggedIn = new Date();
 
-    adminCustomerDto.isEmailConfirmed = true;
-    adminCustomerDto.isRegisteredByThirdParty = true;
+    customerObj.isEmailConfirmed = true;
+    customerObj.isRegisteredByThirdParty = true;
 
-    return this.createCustomer(adminCustomerDto);
+    return this.createCustomer(customerObj);
   }
 
   async updateCustomerById(customerId: number, customerDto: AdminAddOrUpdateCustomerDto, lang: Language): Promise<Customer> {
@@ -230,7 +240,7 @@ export class CustomerService implements OnApplicationBootstrap {
         throw new NotFoundException(__('Customer with id "$1" not found', lang, customerId));
       }
 
-      await this.processEmailChange(found.email, customerDto.email, session);
+      await this.processEmailChange(found.contactInfo.email, customerDto.contactInfo.email, session);
 
       Object.keys(customerDto).forEach(key => found[key] = customerDto[key]);
       await found.save({ session });
@@ -248,14 +258,14 @@ export class CustomerService implements OnApplicationBootstrap {
 
   }
 
-  async updateCustomerByClientDto(customer: DocumentType<Customer>, updateCustomerDto: ClientUpdateCustomerDto): Promise<Customer> {
+  async updateCustomerByClientDto(customer: DocumentType<Customer>, contactInfoDto: CustomerContactInfoDto): Promise<Customer> {
     const session = await this.customerModel.db.startSession();
     session.startTransaction();
 
     try {
-      await this.processEmailChange(customer.contactInfo.email, updateCustomerDto.contactInfo.email, session);
+      await this.processEmailChange(customer.contactInfo.email, contactInfoDto.email, session);
 
-      Object.keys(updateCustomerDto.contactInfo).forEach(key => customer.contactInfo[key] = updateCustomerDto.contactInfo[key]);
+      Object.keys(contactInfoDto).forEach(key => customer.contactInfo[key] = contactInfoDto[key]);
       await customer.save({ session });
       await session.commitTransaction();
 
@@ -500,7 +510,7 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async confirmCustomerEmail(customer: DocumentType<Customer>) {
-    if (!customer.email || customer.isEmailConfirmed) { return; }
+    if (!customer.contactInfo.email || customer.isEmailConfirmed) { return; }
 
     customer.isEmailConfirmed = true;
     await customer.save();
