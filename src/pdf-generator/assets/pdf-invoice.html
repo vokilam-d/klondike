@@ -44,7 +44,7 @@
         <tr class="products__product">
             <td class="products__number">{{this.index}}</td>
             <td class="products__name">
-                {{ this.name }} <span class="products__sku">(SKU: {{ this.sku }})</span>
+                {{ this.name }} <span class="products__sku">(SKU: {{ this.sku }}{{#if this.vendorCode}}, Артикул: {{ this.vendorCode }}{{/if}})</span>
 
                 {{#each this.additionalServices}}
                 <div class="products__additional-service">
