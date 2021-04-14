@@ -37,6 +37,7 @@ import { EventsService } from '../../shared/services/events/events.service';
 import { ProductLabelTypeEnum } from '../../shared/enums/product-label-type.enum';
 import { CronProd } from '../../shared/decorators/prod-cron.decorator';
 import { AdminProductService } from './admin-product.service';
+import { stripHtmlTags } from '../../shared/helpers/strip-html-tags.function';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -572,8 +573,10 @@ export class ClientProductService implements OnApplicationBootstrap {
       selectedVariant.metaTags.title.uk = `Купити ${selectedVariant.googleAdsProductTitle?.uk || selectedVariant.name.uk}`;
     }
     if (!selectedVariant.metaTags.description.ru.trim()) {
-      selectedVariant.metaTags.description.ru = selectedVariant.fullDescription.ru.substr(0, 200);
-      selectedVariant.metaTags.description.uk = selectedVariant.fullDescription.uk.substr(0, 200);
+      const noTagsRu = stripHtmlTags(selectedVariant.fullDescription.ru);
+      selectedVariant.metaTags.description.ru = noTagsRu.substr(0, 200);
+      const noTagsUk = stripHtmlTags(selectedVariant.fullDescription.uk);
+      selectedVariant.metaTags.description.uk = noTagsUk.substr(0, 200);
     }
 
     return {
