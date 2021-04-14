@@ -567,6 +567,15 @@ export class ClientProductService implements OnApplicationBootstrap {
       variantGroups = plainToClass(ClientProductVariantGroupDto, variantGroups, { excludeExtraneousValues: true });
     }
 
+    if (!selectedVariant.metaTags.title.ru.trim()) {
+      selectedVariant.metaTags.title.ru = `Купить ${selectedVariant.googleAdsProductTitle?.ru || selectedVariant.name.ru}`;
+      selectedVariant.metaTags.title.uk = `Купити ${selectedVariant.googleAdsProductTitle?.uk || selectedVariant.name.uk}`;
+    }
+    if (!selectedVariant.metaTags.description.ru.trim()) {
+      selectedVariant.metaTags.description.ru = selectedVariant.fullDescription.ru.substr(0, 200);
+      selectedVariant.metaTags.description.uk = selectedVariant.fullDescription.uk.substr(0, 200);
+    }
+
     return {
       id: createClientProductId(productWithQty._id, selectedVariant._id.toString()),
       productId: productWithQty._id,
