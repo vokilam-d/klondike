@@ -11,7 +11,7 @@ import { CustomerContactInfoDto } from '../shared-dtos/customer-contact-info.dto
 import { ClientShipmentDto } from './shipment.dto';
 
 export class ClientOrderDto implements
-  Pick<Order, 'createdAt' | 'isCallbackNeeded'>,
+  Pick<Order, 'createdAt' | 'isCallbackNeeded' | 'customerContactInfo'>,
   Record<keyof Pick<Order, 'items'>, ClientOrderItemDto[]>,
   Record<keyof Pick<Order, 'prices'>, ClientOrderPricesDto>,
   Record<keyof Pick<Order, 'shipment'>, ClientShipmentDto>
@@ -23,7 +23,7 @@ export class ClientOrderDto implements
   paymentMethodName: string;
 
   @Expose()
-  contactInfo: CustomerContactInfoDto;
+  customerContactInfo: CustomerContactInfoDto;
 
   @Expose()
   shipment: ClientShipmentDto;
@@ -52,7 +52,7 @@ export class ClientOrderDto implements
   static transformToDto(order: Order | AdminOrderDto, lang: Language): ClientOrderDto {
     const orderItems = order.items as (OrderItem | AdminOrderItemDto)[];
     return {
-      contactInfo: order.customerContactInfo,
+      customerContactInfo: order.customerContactInfo,
       note: order.notes.fromCustomer,
       createdAt: order.createdAt,
       id: order.idForCustomer,

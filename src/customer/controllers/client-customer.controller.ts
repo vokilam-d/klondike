@@ -4,7 +4,6 @@ import {
   Controller,
   Get,
   Param,
-  Patch,
   Post,
   Put,
   Req,
@@ -221,14 +220,14 @@ export class ClientCustomerController {
   }
 
   @UseGuards(CustomerJwtGuard)
-  @Patch()
+  @Put('contact-info')
   async updateCustomer(
     @ValidatedUser() customer: DocumentType<Customer>,
     @Body() dto: CustomerContactInfoDto,
     @ClientLang() lang: Language
   ): Promise<ResponseDto<ClientCustomerDto>> {
 
-    const updated = await this.customerService.updateCustomerByClientDto(customer, dto);
+    const updated = await this.customerService.updateContactInfo(customer, dto);
 
     return {
       data: ClientCustomerDto.transformToDto(updated, lang)
