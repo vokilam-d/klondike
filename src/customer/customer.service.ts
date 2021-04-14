@@ -63,6 +63,37 @@ export class CustomerService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
     // this.reindexAllSearchData();
+    //
+    // (async () => {
+    //   const customers = await this.customerModel.find().exec();
+    // for (const customer of customers) {
+    //   const json = customer.toJSON();
+    //   customer.contactInfo = new CustomerContactInfo();
+    //   customer.contactInfo.firstName = json.firstName;
+    //   customer.set('firstName', undefined);
+    //   customer.contactInfo.lastName = json.lastName;
+    //   customer.set('lastName', undefined);
+    //   customer.contactInfo.email = json.email;
+    //   customer.set('email', undefined);
+    //   customer.contactInfo.phoneNumber = json.phoneNumber;
+    //   customer.set('phoneNumber', undefined);
+    //
+    //   for (let i = 0; i < (customer.addresses || []).length; i++){
+    //     const address = (customer.addresses || [])[i];
+    //     const jsonAddress = (json.addresses || [])[i];
+    //     address.addressName = jsonAddress.address;
+    //     address.addressNameFull = jsonAddress.addressFull;
+    //     address.settlementName = jsonAddress.settlement;
+    //     address.settlementNameFull = jsonAddress.settlementFull;
+    //     address.type = jsonAddress.addressType;
+    //   }
+    //
+    //   await customer.save();
+    //   console.log('saved customer', customer.id);
+    // }
+    // console.log('saved customer all');
+    // this.reindexAllSearchData();
+    // })();
   }
 
   async getCustomersList(spf: AdminSPFDto): Promise<ResponseDto<AdminCustomerDto[]>> {
@@ -257,7 +288,7 @@ export class CustomerService implements OnApplicationBootstrap {
 
   }
 
-  async updateCustomerByClientDto(customer: DocumentType<Customer>, contactInfoDto: CustomerContactInfoDto): Promise<Customer> {
+  async updateContactInfo(customer: DocumentType<Customer>, contactInfoDto: CustomerContactInfoDto): Promise<Customer> {
     const session = await this.customerModel.db.startSession();
     session.startTransaction();
 

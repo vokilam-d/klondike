@@ -107,51 +107,77 @@ export class OrderService implements OnApplicationBootstrap {
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
     // this.reindexAllSearchData();
 
-    console.log('start find');
-    const orders = [] || await this.orderModel.find().exec();
-    console.log('end find');
-
-    for (const order of orders) {
-      order.customerContactInfo = new CustomerContactInfo();
-      order.customerContactInfo.firstName = (order as any).customerFirstName;
-      order.customerContactInfo.lastName = (order as any).customerLastName;
-      order.customerContactInfo.email = (order as any).customerEmail;
-      order.customerContactInfo.phoneNumber = (order as any).customerPhoneNumber;
-
-      order.paymentInfo = new OrderPaymentInfo();
-      order.paymentInfo.methodId = (order as any).paymentMethodId;
-      order.paymentInfo.type = (order as any).paymentType;
-      order.paymentInfo.methodClientName = (order as any).paymentMethodClientName;
-      order.paymentInfo.methodAdminName = (order as any).paymentMethodAdminName;
-
-      order.notes = new OrderNotes();
-      order.notes.fromCustomer = (order as any).clientNote;
-      order.notes.fromAdmin = (order as any).adminNote;
-      order.notes.aboutCustomer = (order as any).customerNote;
-
-      const oldRecipientAddr = (order as any).shipment.recipient;
-      order.shipment.recipient = new ShipmentCounterparty();
-      order.shipment.recipient.contactInfo = new ContactInfo();
-      order.shipment.recipient.contactInfo.firstName = oldRecipientAddr.firstName;
-      order.shipment.recipient.contactInfo.lastName = oldRecipientAddr.lastName;
-      order.shipment.recipient.contactInfo.middleName = oldRecipientAddr.middleName;
-      order.shipment.recipient.contactInfo.phoneNumber = oldRecipientAddr.phoneNumber;
-      order.shipment.recipient.address = oldRecipientAddr;
-
-      const oldSenderAddr = (order as any).shipment.sender;
-      order.shipment.sender = new ShipmentCounterparty();
-      order.shipment.sender.contactInfo = new ContactInfo();
-      order.shipment.sender.contactInfo.firstName = oldSenderAddr.firstName;
-      order.shipment.sender.contactInfo.lastName = oldSenderAddr.lastName;
-      order.shipment.sender.contactInfo.middleName = oldSenderAddr.middleName;
-      order.shipment.sender.contactInfo.phoneNumber = oldSenderAddr.phoneNumber;
-      order.shipment.sender.address = oldSenderAddr;
-
-      // await order.save();
-      console.log('saved', order.id);
-    }
-
-    this.reindexAllSearchData();
+    // console.log('start find');
+    // const orders = await this.orderModel.find({_id: {$gte: 452}}).exec();
+    // console.log('end find');
+    //
+    // for (const order of orders) {
+    //   const json = order.toJSON();
+    //   const oldRecipientAddr = json.shipment.recipient;
+    //   order.customerContactInfo = new CustomerContactInfo();
+    //   order.customerContactInfo.firstName = json.customerFirstName;
+    //   order.set('customerFirstName', undefined);
+    //   order.customerContactInfo.lastName = json.customerLastName;
+    //   order.set('customerLastName', undefined);
+    //   order.customerContactInfo.email = json.customerEmail;
+    //   order.set('customerEmail', undefined);
+    //   order.customerContactInfo.phoneNumber = json.customerPhoneNumber;
+    //   order.set('customerPhoneNumber', undefined);
+    //   order.customerContactInfo.middleName = oldRecipientAddr.middleName || '';
+    //
+    //   order.paymentInfo = new OrderPaymentInfo();
+    //   order.paymentInfo.methodId = json.paymentMethodId;
+    //   order.set('paymentMethodId', undefined);
+    //   order.paymentInfo.type = json.paymentType;
+    //   order.set('paymentType', undefined);
+    //   order.paymentInfo.methodClientName = json.paymentMethodClientName;
+    //   order.set('paymentMethodClientName', undefined);
+    //   order.paymentInfo.methodAdminName = json.paymentMethodAdminName;
+    //   order.set('paymentMethodAdminName', undefined);
+    //
+    //   order.notes = new OrderNotes();
+    //   order.notes.fromCustomer = json.clientNote;
+    //   order.set('clientNote', undefined);
+    //   order.notes.fromAdmin = json.adminNote;
+    //   order.set('adminNote', undefined);
+    //   order.notes.aboutCustomer = json.customerNote;
+    //   order.set('customerNote', undefined);
+    //
+    //   order.shipment = new Shipment();
+    //   order.shipment.recipient = new ShipmentCounterparty();
+    //   order.shipment.recipient.contactInfo = new ContactInfo();
+    //   order.shipment.recipient.contactInfo.firstName = oldRecipientAddr.firstName;
+    //   order.shipment.recipient.contactInfo.lastName = oldRecipientAddr.lastName;
+    //   order.shipment.recipient.contactInfo.middleName = oldRecipientAddr.middleName || '';
+    //   order.shipment.recipient.contactInfo.phoneNumber = oldRecipientAddr.phoneNumber || json.customerPhoneNumber;
+    //   order.shipment.recipient.address = oldRecipientAddr;
+    //   order.shipment.recipient.address.addressName = oldRecipientAddr.address;
+    //   order.shipment.recipient.address.addressNameFull = oldRecipientAddr.addressFull;
+    //   order.shipment.recipient.address.settlementName = oldRecipientAddr.settlement;
+    //   order.shipment.recipient.address.settlementNameFull = oldRecipientAddr.settlementFull;
+    //   order.shipment.recipient.address.type = oldRecipientAddr.addressType;
+    //
+    //   const oldSenderAddr = json.shipment.sender;
+    //   order.shipment.sender = new ShipmentCounterparty();
+    //   order.shipment.sender.contactInfo = new ContactInfo();
+    //   order.shipment.sender.contactInfo.firstName = oldSenderAddr.firstName;
+    //   order.shipment.sender.contactInfo.lastName = oldSenderAddr.lastName;
+    //   order.shipment.sender.contactInfo.middleName = oldSenderAddr.middleName;
+    //   order.shipment.sender.contactInfo.phoneNumber = oldSenderAddr.phoneNumber;
+    //   order.shipment.sender.address = oldSenderAddr;
+    //   order.shipment.sender.address.addressName = oldSenderAddr.address;
+    //   order.shipment.sender.address.addressNameFull = oldSenderAddr.addressFull;
+    //   order.shipment.sender.address.settlementName = oldSenderAddr.settlement;
+    //   order.shipment.sender.address.settlementNameFull = oldSenderAddr.settlementFull;
+    //   order.shipment.sender.address.type = oldSenderAddr.addressType;
+    //
+    //   // console.dir(order.toJSON(), {depth: 10});
+    //   await order.save();
+    //   console.log('saved order', order.id);
+    // }
+    // console.log('saved order all');
+    //
+    // this.reindexAllSearchData();
   }
 
   async getOrdersList(spf: OrderFilterDto): Promise<ResponseDto<AdminOrderDto[]>> {
