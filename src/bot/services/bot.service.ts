@@ -30,7 +30,7 @@ export class BotService implements OnApplicationBootstrap {
       + `${_(order.customerContactInfo.firstName)} ${_(order.customerContactInfo.lastName)}, ${_(phone)}\\.`;
 
     if (order.notes.aboutCustomer) {
-      text += ` (_${_(order.notes.aboutCustomer)}_\\)\\.`
+      text += ` \\(_${_(order.notes.aboutCustomer)}_\\)\\.`
     }
 
     text += `\n`

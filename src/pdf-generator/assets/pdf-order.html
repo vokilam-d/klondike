@@ -68,7 +68,7 @@
                 <td class="products__name">
                     {{ this.name }}
                     <div class="products__sku">
-                        SKU: {{ this.sku }}
+                        SKU: {{ this.sku }}{{#if this.vendorCode}}, Артикул: {{ this.vendorCode }}{{/if}}
                     </div>
 
                     {{#each this.additionalServices}}

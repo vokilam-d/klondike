@@ -277,7 +277,6 @@ export class OrderService implements OnApplicationBootstrap {
       const newOrder = await this.createOrder(addOrUpdateOrderDto, lang, customer, session, 'manager', user);
       OrderService.addLog(newOrder, `Created order, source=${newOrder.source}, userLogin=${user?.login}`);
       newOrder.status = OrderStatusEnum.PROCESSING;
-      await this.fetchShipmentStatus(newOrder);
 
       await newOrder.save({ session });
 
@@ -518,11 +517,11 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  private async shippedOrderPostActions(order: Order, lang: Language, session: ClientSession): Promise<Order> {
+  private async shippedOrderPostActions(order: Order, session: ClientSession): Promise<Order> {
     for (const item of order.items) {
       await this.inventoryService.removeFromOrderedAndStock(item.sku, item.qty, order.id, session);
       await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
-      await this.productService.updateSearchDataById(item.productId, lang, session);
+      await this.productService.updateSearchDataById(item.productId, adminDefaultLanguage, session);
     }
 
     order.shippedAt = new Date();
@@ -625,21 +624,7 @@ export class OrderService implements OnApplicationBootstrap {
           OrderService.addLog(order, `Updated shipment status to "${order.shipment.status} - ${order.shipment.statusDescription}", source=system`);
         }
 
-        const oldOrderStatus = order.status;
-        OrderService.updateOrderStatusByShipment(order);
-        if (order.status !== oldOrderStatus) {
-          switch (order.status) {
-            case OrderStatusEnum.SHIPPED:
-              await this.shippedOrderPostActions(order, lang, session);
-              break;
-            case OrderStatusEnum.FINISHED:
-              await this.finishedOrderPostActions(order, session);
-              break;
-          }
-
-          OrderService.addLog(order, `Updated order status by shipment status to "${order.status} - ${order.statusDescription[adminDefaultLanguage]}", source=system`);
-        }
-
+        await this.updateOrderStatusByShipment(order, session);
         await order.save({ session });
         await this.updateSearchData(order);
       }
@@ -656,18 +641,19 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   public async updateOrderShipment(orderId: number, shipmentDto: AdminShipmentDto, user: User, lang: Language): Promise<Order> {
-    return await this.updateOrderById(orderId, lang, async order => {
+    return await this.updateOrderById(orderId, lang, async (order, session) => {
       const isTrackingNumberChanged = shipmentDto.trackingNumber && shipmentDto.trackingNumber !== order.shipment.trackingNumber;
+      const oldTrackingNumber = order.shipment.trackingNumber;
 
       OrderService.patchShipmentData(order.shipment, shipmentDto);
 
       if (isTrackingNumberChanged) {
-        await this.fetchShipmentStatus(order);
+        await this.fetchShipmentStatus(order, session);
       }
 
       let logMessage = `Edited order shipment`;
       if (isTrackingNumberChanged) {
-        logMessage += `, oldTrackingNumber=${order.shipment.trackingNumber}, newTrackingNumber=${shipmentDto.trackingNumber}`;
+        logMessage += `, oldTrackingNumber=${oldTrackingNumber}, newTrackingNumber=${shipmentDto.trackingNumber}`;
       }
       logMessage += `, userLogin=${user?.login}`;
 
@@ -677,7 +663,7 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  private async fetchShipmentStatus(order): Promise<void> {
+  private async fetchShipmentStatus(order, session: ClientSession): Promise<void> {
     let status: string = '';
     let statusDescription: string = '';
     let estimatedDeliveryDate: string = '';
@@ -693,7 +679,7 @@ export class OrderService implements OnApplicationBootstrap {
     order.shipment.statusDescription = statusDescription;
     order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
 
-    OrderService.updateOrderStatusByShipment(order);
+    await this.updateOrderStatusByShipment(order, session);
   }
 
   private static patchShipmentData(shipment: Shipment, shipmentDto: AdminShipmentDto) {
@@ -712,19 +698,27 @@ export class OrderService implements OnApplicationBootstrap {
     copyValues(shipmentDto, shipment);
   }
 
-  private static updateOrderStatusByShipment(order: Order) {
+  private async updateOrderStatusByShipment(order: Order, session: ClientSession): Promise<void> {
+    const oldStatus = order.status;
     const isCashOnDelivery = order.paymentInfo.type === PaymentTypeEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
     const isShipped = order.shipment.status === ShipmentStatusEnum.HEADING_TO_CITY
       || order.shipment.status === ShipmentStatusEnum.IN_CITY;
 
-    if (!isCashOnDelivery && isReceived || isCashOnDelivery && isCashPickedUp) {
+    if ((!isCashOnDelivery && isReceived || isCashOnDelivery && isCashPickedUp) && order.status !== OrderStatusEnum.FINISHED) {
       order.status = OrderStatusEnum.FINISHED;
+      await this.finishedOrderPostActions(order, session);
     } else if (order.shipment.status === ShipmentStatusEnum.RECIPIENT_DENIED) {
       order.status = OrderStatusEnum.RECIPIENT_DENIED;
-    } else if (isShipped) {
+    } else if (isShipped && order.status !== OrderStatusEnum.SHIPPED) {
       order.status = OrderStatusEnum.SHIPPED;
+      await this.shippedOrderPostActions(order, session);
+    }
+
+    if (oldStatus !== order.status) {
+      let logMessage = `Updated order status by shipment status to "${order.status} - ${order.statusDescription[adminDefaultLanguage]}"`;
+      OrderService.addLog(order, logMessage);
     }
   }
 
@@ -787,8 +781,8 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async updateShipmentStatus(orderId: number, lang: Language): Promise<Order> {
-    return this.updateOrderById(orderId, lang, async order => {
-      await this.fetchShipmentStatus(order);
+    return this.updateOrderById(orderId, lang, async (order, session) => {
+      await this.fetchShipmentStatus(order, session);
       return order;
     });
   }
@@ -813,8 +807,8 @@ export class OrderService implements OnApplicationBootstrap {
 
         case OrderStatusEnum.PACKED:
           assertStatus(OrderStatusEnum.READY_TO_PACK);
-          if (order.items.some(item => item.isPacked !== true)) {
-            throw new BadRequestException(__('Cannot change status to "$1": not all order items are packed', lang, status));
+          if (order.items.some(item => item.isPacked !== true) && order.medias.length === 0) {
+            throw new BadRequestException(__('Cannot change status to "$1": attach photo or pack all order items', lang, status));
           }
           break;
 
@@ -846,7 +840,7 @@ export class OrderService implements OnApplicationBootstrap {
           }
 
           if (!ShippedOrderStatuses.includes(order.status)) {
-            await this.shippedOrderPostActions(order, lang, session);
+            await this.shippedOrderPostActions(order, session);
           }
           await this.finishedOrderPostActions(order, session);
           break;
@@ -866,21 +860,26 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async createInternetDocument(orderId: number, createIntDocDto: CreateInternetDocumentDto, user: User, lang: Language): Promise<Order> {
-    return this.updateOrderById(orderId, lang, async order => {
+    return this.updateOrderById(orderId, lang, async (order, session) => {
       const isItemsNotPacked = order.items.some(item => item.isPacked !== true);
       const hasNoMedias = order.medias.length === 0;
       if (isItemsNotPacked && hasNoMedias) {
         throw new BadRequestException(__('Cannot create internet document: attach a photo or pack all items', lang));
       }
 
+      order.status = OrderStatusEnum.PACKED;
+      if (order.paymentInfo.type === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
+        order.status = OrderStatusEnum.READY_TO_SHIP;
+      }
+
       let logMessage: string = '';
 
       if (createIntDocDto.trackingNumber) {
         order.shipment.trackingNumber = createIntDocDto.trackingNumber;
-        order.status = OrderStatusEnum.PACKED;
-        await this.fetchShipmentStatus(order);
+        await this.fetchShipmentStatus(order, session);
 
         logMessage = `Set tracking number manually`;
+
       } else {
         order.shipment.recipient.address = plainToClass(ShipmentAddress, createIntDocDto, { excludeExtraneousValues: true });
 
@@ -902,10 +901,6 @@ export class OrderService implements OnApplicationBootstrap {
 
         logMessage = `Created internet document`;
         this.fileLogger.log(`${logMessage}, trackingNumber=${trackingNumber}`);
-      }
-
-      if (order.paymentInfo.type === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
-        order.status = OrderStatusEnum.READY_TO_SHIP;
       }
 
       OrderService.addLog(order, `${logMessage}, trackingNumber=${order.shipment.trackingNumber}, orderStatus=${order.status}, shipmentStatus=${order.shipment.status}, userLogin=${user?.login}`);
