@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Attribute } from './models/attribute.model';
+import { Attribute, AttributeValue } from './models/attribute.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
+import { AdminAttributeDto, AdminAttributeValueDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
@@ -98,6 +98,33 @@ export class AttributeService implements OnApplicationBootstrap {
     for (const value of attribute.values) {
       value.id = value.id.toLowerCase();
     }
+
+    await attribute.save();
+    this.addSearchData(attribute);
+    this.onAttributesUpdate();
+
+    return attribute;
+  }
+
+  async createAttributeValue(attributeId: string, attributeValueDto: AdminAttributeValueDto, lang: Language): Promise<DocumentType<Attribute>> {
+    const attribute = await this.attributeModel.findById(attributeId).exec();
+    if (!attribute) {
+      throw new BadRequestException(__('Attribute with id "$1" not found', lang, attributeId));
+    }
+
+    const duplicateValue = attribute.values.find(value => value.id === attributeValueDto.id);
+    if (duplicateValue) {
+      throw new BadRequestException(__('Attribute value with id "$1" already exists', lang, attributeValueDto.id));
+    }
+
+    const attributeValue = new AttributeValue();
+    attributeValue.id = attributeValueDto.id;
+    attributeValue.label = attributeValueDto.label;
+    attributeValue.color = attributeValueDto.color;
+    attributeValue.isDefault = attributeValueDto.isDefault;
+
+    attribute.values.push(attributeValue);
+    attribute.values = sortByMultilingualLabel(attribute.values, lang);
 
     await attribute.save();
     this.addSearchData(attribute);
