@@ -138,10 +138,10 @@ export const TRANSLATIONS = {
     ru: 'Нельзя сменить статус на "$1": заказ не оплачен',
     uk: 'Не можна змінити статус на "$1": замовлення не сплачено'
   },
-  'Cannot change status to "$1": not all order items are packed': {
-    en: 'Cannot change status to "$1": not all order items are packed',
-    ru: 'Нельзя сменить статус на "$1": не все товары упакованы',
-    uk: 'Не можна змінити статус на "$1": не всі товари упаковані'
+  'Cannot change status to "$1": attach photo or pack all order items': {
+    en: 'Cannot change status to "$1": attach photo or pack all order items',
+    ru: 'Нельзя сменить статус на "$1": приложите фото или упакуйте все товары',
+    uk: 'Не можна змінити статус на "$1": прикладіть фото або упакуйте всі товари'
   },
   'Cannot create internet document: attach a photo or pack all items': {
     en: 'Cannot create internet document: attach a photo or pack all items',
