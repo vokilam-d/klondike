@@ -1,6 +1,8 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Subject } from 'rxjs';
+import { User } from '../../user/models/user.model';
+import { Customer } from '../../customer/models/customer.model';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -21,6 +23,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let statusCode;
     let httpError;
 
+    const user = (req as any).user as User | Customer;
+    let userInfo: string;
+    if (user) {
+      if ((user as User).login) {
+        userInfo = `userLogin=${(user as User).login}`;
+      } else {
+        userInfo = `userId=${user.id}, userEmail=${(user as Customer).email}`;
+      }
+    }
+
     if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
       httpError = exception.getResponse();
@@ -33,6 +45,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message: exception.message,
         timestamp,
         method,
+        ...(userInfo ? { userInfo } : {}),
         path
       });
 
@@ -45,6 +58,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         stack: exception.stack?.split('\n').map(str => str.trim()),
         timestamp,
         method,
+        ...(userInfo ? { userInfo } : {}),
         path
       };
       this.logger.error(errorObj);
