@@ -9,8 +9,9 @@ import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductVariantWithQty, ProductWithQty } from '../product/models/product-with-qty.model';
 import { AttributeService } from '../attribute/attribute.service';
 import { ProductSelectedAttribute } from '../product/models/product-selected-attribute.model';
-import { clientDefaultLanguage, priceThresholdForFreeShipping } from '../shared/constants';
+import { priceThresholdForFreeShipping } from '../shared/constants';
 import { MultilingualText } from '../shared/models/multilingual-text.model';
+import { Language } from '../shared/enums/language.enum';
 
 type cdata = { $: string };
 
@@ -18,18 +19,19 @@ interface IShoppingFeedItem {
   'g:id': cdata;
   'g:title': cdata;
   'g:link': cdata;
-  'g:price': cdata;
+  'g:price'?: cdata;
   'g:sale_price'?: cdata;
   'g:description': cdata;
-  'g:product_type': cdata;
+  'g:product_type'?: cdata;
   'g:image_link'?: cdata;
   'g:additional_image_link'?: cdata;
-  'g:condition': string;
-  'g:identifier_exists': string;
+  'g:condition'?: string;
+  'g:identifier_exists'?: string;
   'g:availability'?: string;
   'g:brand': cdata;
-  'g:mpn': cdata;
-  'g:gtin': cdata;
+  'g:mpn'?: cdata;
+  'g:gtin'?: cdata;
+  'g:override'?: cdata;
 }
 
 interface IShoppingReviewProduct {
@@ -85,37 +87,20 @@ export class ShoppingFeedService {
   async generateShoppingAdsFeed(customizeFeedItemFunction?: (item: IShoppingFeedItem,
     variant: ProductVariantWithQty) => IShoppingFeedItem): Promise<string> {
 
+    const lang : Language = Language.RU;
     const items: IShoppingFeedItem[] = [];
-
-    const manufacturerAttrId = 'manufacturer';
-    const attributes = await this.attributeService.getAllAttributes();
-    const manufacturerAttr = attributes.find(attr => attr.id === manufacturerAttrId);
     const products = await this.getAllProducts();
 
-    const getBrand = (attributes: ProductSelectedAttribute[]): string => {
-      const selectedBrandAttr = attributes.find(attr => attr.attributeId === manufacturerAttrId);
-      if (!selectedBrandAttr) { return ''; }
+    for (const product of products) {
+      if (!product.isEnabled) { continue; }
 
-      return selectedBrandAttr.valueIds.reduce((acc, valueId) => {
-        const value = manufacturerAttr.values.find(value => value.id === valueId);
-        const label = value.label[clientDefaultLanguage].match(/\((.+)\)/)?.[1] || value.label[clientDefaultLanguage]; // get everything from inside "()", if any
+      let brand: string = await this.getBrand(product.attributes, lang);
 
-        return acc ? `${acc}, ${label}` : label;
-      }, '');
-    }
-
-    products.forEach(product => {
-      if (!product.isEnabled) { return; }
-
-      let brand: string = getBrand(product.attributes);
-
-      product.variants.forEach(variant => {
-        if (!variant.isEnabled || !variant.isIncludedInShoppingFeed) { return; }
-
-        const description = variant.fullDescription || variant.shortDescription || new MultilingualText();
+      for (const variant of product.variants) {
+        if (!variant.isEnabled || !variant.isIncludedInShoppingFeed) { continue; }
 
         if (!brand) {
-          brand = getBrand(variant.attributes);
+          brand = await this.getBrand(variant.attributes, lang);
         }
 
         let price: number;
@@ -134,15 +119,13 @@ export class ShoppingFeedService {
             'g:price': '0.00 UAH'
           }
         };
-        const title = variant.googleAdsProductTitle[clientDefaultLanguage] || variant.name[clientDefaultLanguage];
-
         let item: IShoppingFeedItem = {
           'g:id': { $: variant.sku },
-          'g:title': { $: title && title.length > 150 ? title.substring(0, 150) : title },
+          'g:title': ShoppingFeedService.getFeedItemTitle(variant, lang),
           'g:link': { $: `http://klondike.com.ua/${variant.slug}` },
           'g:price': { $: `${price} UAH` },
           ...(salePrice ? { 'g:sale_price': { $: `${salePrice} UAH` } } : {}),
-          'g:description': { $: stripHtmlTags(description[clientDefaultLanguage]).replace(/\r?\n|\n/g, ' ') },
+          'g:description': ShoppingFeedService.getFeedItemDescriptions(variant, lang),
           'g:condition': 'new',
           'g:brand': { $: brand },
           'g:mpn': { $: variant.vendorCode || '' },
@@ -159,9 +142,23 @@ export class ShoppingFeedService {
         }
 
         items.push(item);
-      })
-    });
+      }
+    }
 
+    return ShoppingFeedService.getXMLFeedString(items);
+  }
+
+  private static getFeedItemDescriptions(variant: ProductVariantWithQty, lang: Language) {
+    const description = variant.fullDescription || variant.shortDescription || new MultilingualText();
+    return { $: stripHtmlTags(description[lang]).replace(/\r?\n|\n/g, ' ') };
+  }
+
+  private static getFeedItemTitle(variant: ProductVariantWithQty, lang: Language) {
+    const title = variant.googleAdsProductTitle[lang] || variant.name[lang];
+    return { $: title && title.length > 150 ? title.substring(0, 150) : title };
+  }
+
+  private static getXMLFeedString(items: IShoppingFeedItem[]) {
     const doc = create({ version: '1.0' }).ele({
       rss: {
         '@': {
@@ -180,6 +177,21 @@ export class ShoppingFeedService {
     const feed = doc.end({ prettyPrint: true, allowEmptyTags: true });
     return feed.toString();
   }
+
+  private async getBrand(attributes: ProductSelectedAttribute[], lang: Language): Promise<string> {
+    const manufacturerAttrId = 'manufacturer';
+    const allAttributes = await this.attributeService.getAllAttributes();
+    const manufacturerAttr = allAttributes.find(attr => attr.id === manufacturerAttrId);
+    const selectedBrandAttr = attributes.find(attr => attr.attributeId === manufacturerAttrId);
+    if (!selectedBrandAttr) { return ''; }
+
+    return selectedBrandAttr.valueIds.reduce((acc, valueId) => {
+      const value = manufacturerAttr.values.find(value => value.id === valueId);
+      const label = value.label[lang].match(/\((.+)\)/)?.[1] || value.label[lang]; // get everything from inside "()", if any
+      return acc ? `${acc}, ${label}` : label;
+    }, '');
+  }
+
   async generateGoogleShoppingAdsFeed(): Promise<string> {
     return await this.generateShoppingAdsFeed((item, variant) => {
       let imageLink: string = '';
@@ -224,6 +236,36 @@ export class ShoppingFeedService {
     });
   }
 
+  async generateFacebookShoppingLocalizationFeed(lang : Language): Promise<string> {
+    const items: IShoppingFeedItem[] = [];
+    for (const product of await this.getAllProducts()) {
+      if (!product.isEnabled) { continue; }
+
+      let brand: string = await this.getBrand(product.attributes, lang);
+
+      for (const variant of product.variants) {
+        if (!variant.isEnabled || !variant.isIncludedInShoppingFeed) { continue; }
+
+        if (!brand) {
+          brand = await this.getBrand(variant.attributes, lang);
+        }
+
+        let item: IShoppingFeedItem = {
+          'g:id': { $: variant.sku },
+          'g:override': { $: 'uk_UA' },
+          'g:title': ShoppingFeedService.getFeedItemTitle(variant, lang),
+          'g:link': { $: `http://klondike.com.ua/ua/${variant.slug}` },
+          'g:description': ShoppingFeedService.getFeedItemDescriptions(variant, lang),
+          'g:brand': { $: brand },
+        };
+
+        items.push(item);
+      }
+    }
+
+    return ShoppingFeedService.getXMLFeedString(items);
+  }
+
   async generateGoogleProductReviewsFeed(): Promise<string> {
     const products = await this.getAllProducts();
     const reviewDtos = await this.getAllReviews();
@@ -249,7 +291,7 @@ export class ShoppingFeedService {
               sku: { $: variant.sku }
             }
           },
-          product_name: { $: variant.name[clientDefaultLanguage] },
+          product_name: { $: variant.name[Language.RU] },
           product_url: { $: variantUrl }
         });
       });
@@ -321,6 +363,6 @@ export class ShoppingFeedService {
   }
 
   private buildProductType(breadcrumbs: Breadcrumb[]): string {
-    return breadcrumbs.map(breadcrumb => breadcrumb.name[clientDefaultLanguage]).join(' > ');
+    return breadcrumbs.map(breadcrumb => breadcrumb.name[Language.RU]).join(' > ');
   }
 }
