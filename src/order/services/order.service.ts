@@ -646,6 +646,20 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
+  public async updateTrackingNumber(orderId: number, newTrackingNumber: string, user: User, lang: Language): Promise<Order> {
+    return await this.updateOrderById(orderId, lang, async (order, session) => {
+      if (newTrackingNumber === order.shipment.trackingNumber) {
+        return order;
+      }
+      const oldTrackingNumber = order.shipment.trackingNumber;
+      order.shipment.trackingNumber = newTrackingNumber;
+
+      await this.fetchShipmentStatus(order, session);
+      OrderService.addLog(order, `Edited order shipment tracking number, oldTrackingNumber=${oldTrackingNumber}, newTrackingNumber=${newTrackingNumber} userLogin=${user?.login}`);
+      return order;
+    });
+  }
+
   private async fetchShipmentStatus(order, session: ClientSession): Promise<void> {
     let status: string = '';
     let statusDescription: string = '';

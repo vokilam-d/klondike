@@ -23,6 +23,7 @@ import { UpdateOrderManager } from '../../shared/dtos/admin/update-order-manager
 import { AdminShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-internet-document.dto';
 import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
+import { UpdateTrackingNumberDto } from '../../shared/dtos/admin/update-tracking-number.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -217,6 +218,21 @@ export class AdminOrderController {
   ): Promise<ResponseDto<AdminOrderDto>> {
 
     const updated = await this.orderService.updateRecipientAddress(orderId, addressDto, user, lang);
+
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Put(':id/tracking-number')
+  async updateTrackingNumber(
+    @Param('id') orderId: number,
+    @Body() trackingNumberDto: UpdateTrackingNumberDto,
+    @ValidatedUser() user: DocumentType<User>,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
+
+    const updated = await this.orderService.updateTrackingNumber(orderId, trackingNumberDto.trackingNumber, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
