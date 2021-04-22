@@ -93,8 +93,7 @@ class ElasticOrderPaymentInfo implements Record<keyof AdminOrderPaymentInfoDto, 
   type = elasticTextType;
 }
 
-export class ElasticOrder implements Record<keyof AdminOrderDto, any>{
-  _id = elasticIntegerType;
+export class ElasticOrder implements Omit<Record<keyof AdminOrderDto, any>, '_id'> {
   createdAt = elasticDateType;
   customerContactInfo = {
     type: 'nested',

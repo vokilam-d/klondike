@@ -105,7 +105,7 @@ export class OrderService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     this.handleCustomerEmailChange();
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
-    // this.reindexAllSearchData();
+    this.reindexAllSearchData();
 
     // console.log('start find');
     // const orders = await this.orderModel.find({_id: {$gte: 452}}).exec();
@@ -775,9 +775,18 @@ export class OrderService implements OnApplicationBootstrap {
 
     await this.searchService.deleteCollection(Order.collectionName);
     await this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
-    await this.searchService.addDocuments(Order.collectionName, dtos);
 
-    this.logger.log(`Reindexed`);
+    // const threshold = 5000;
+    // let currentStartIdx = 0;
+    // while (currentStartIdx < (dtos.length + threshold)) {
+    //   const filteredDtos = dtos.slice(currentStartIdx, threshold);
+    //   await this.searchService.addDocuments(Order.collectionName, filteredDtos);
+    //   currentStartIdx += threshold;
+    //
+    //   this.logger.log(`Reindexed ${threshold} items`);
+    // }
+    //
+    // this.logger.log(`Reindexed finished`);
   }
 
   async updateShipmentStatus(orderId: number, lang: Language): Promise<Order> {
