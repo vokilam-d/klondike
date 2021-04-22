@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from '../services/order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
@@ -22,6 +22,7 @@ import { UpdateOrderAdminNote } from '../../shared/dtos/admin/update-order-admin
 import { UpdateOrderManager } from '../../shared/dtos/admin/update-order-manager.dto';
 import { AdminShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-internet-document.dto';
+import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -207,15 +208,15 @@ export class AdminOrderController {
     };
   }
 
-  @Patch(':id/shipment')
-  async editOrderShipment(
+  @Put(':id/recipient-address')
+  async updateRecipientAddress(
     @Param('id') orderId: number,
-    @Body() shipmentDto: AdminShipmentDto,
+    @Body() addressDto: ShipmentAddressDto,
     @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
 
-    const updated = await this.orderService.updateOrderShipment(orderId, shipmentDto, user, lang);
+    const updated = await this.orderService.updateRecipientAddress(orderId, addressDto, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })

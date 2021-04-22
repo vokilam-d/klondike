@@ -64,14 +64,11 @@ import { Subject } from 'rxjs';
 import { ClientAddOrderDto } from '../../shared/dtos/client/add-order.dto';
 import { AdminAddOrUpdateOrderDto } from '../../shared/dtos/admin/add-or-update-order.dto';
 import { CustomerContactInfo } from '../models/customer-contact-info.model';
-import { OrderPaymentInfo } from '../models/order-payment-info.model';
-import { OrderNotes } from '../models/order-notes.model';
-import { ShipmentCounterparty } from '../../shared/models/shipment-counterparty.model';
-import { ContactInfo } from '../../shared/models/contact-info.model';
 import { AdminShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-internet-document.dto';
 import { ShipmentAddress } from '../../shared/models/shipment-address.model';
 import { NovaPoshtaShipmentDto } from '../../shared/dtos/admin/nova-poshta-shipment.dto';
+import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -640,25 +637,11 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  public async updateOrderShipment(orderId: number, shipmentDto: AdminShipmentDto, user: User, lang: Language): Promise<Order> {
+  public async updateRecipientAddress(orderId: number, addressDto: ShipmentAddressDto, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(orderId, lang, async (order, session) => {
-      const isTrackingNumberChanged = shipmentDto.trackingNumber && shipmentDto.trackingNumber !== order.shipment.trackingNumber;
-      const oldTrackingNumber = order.shipment.trackingNumber;
+      order.shipment.recipient.address = addressDto;
 
-      OrderService.patchShipmentData(order.shipment, shipmentDto);
-
-      if (isTrackingNumberChanged) {
-        await this.fetchShipmentStatus(order, session);
-      }
-
-      let logMessage = `Edited order shipment`;
-      if (isTrackingNumberChanged) {
-        logMessage += `, oldTrackingNumber=${oldTrackingNumber}, newTrackingNumber=${shipmentDto.trackingNumber}`;
-      }
-      logMessage += `, userLogin=${user?.login}`;
-
-      OrderService.addLog(order, logMessage);
-
+      OrderService.addLog(order, `Edited order shipment recipient address, userLogin=${user?.login}`);
       return order;
     });
   }
