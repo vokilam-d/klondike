@@ -105,7 +105,7 @@ export class OrderService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     this.handleCustomerEmailChange();
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
-    this.reindexAllSearchData();
+    // this.reindexAllSearchData();
 
     // console.log('start find');
     // const orders = await this.orderModel.find({_id: {$gte: 452}}).exec();
