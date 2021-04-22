@@ -771,22 +771,26 @@ export class OrderService implements OnApplicationBootstrap {
   private async reindexAllSearchData() {
     this.logger.log(`Start reindex all search data`);
     const orders = await this.orderModel.find().sort({ _id: -1 }).exec();
+    this.logger.log(`Start map to dtos`);
     const dtos = orders.map(order => plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true }));
 
+    this.logger.log(`Start delete collection`);
     await this.searchService.deleteCollection(Order.collectionName);
+    this.logger.log(`Start ensure collection`);
     await this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
 
-    // const threshold = 5000;
-    // let currentStartIdx = 0;
-    // while (currentStartIdx < (dtos.length + threshold)) {
-    //   const filteredDtos = dtos.slice(currentStartIdx, threshold);
-    //   await this.searchService.addDocuments(Order.collectionName, filteredDtos);
-    //   currentStartIdx += threshold;
-    //
-    //   this.logger.log(`Reindexed ${threshold} items`);
-    // }
-    //
-    // this.logger.log(`Reindexed finished`);
+    const threshold = 500;
+    let currentStartIdx = 0;
+    while (currentStartIdx < dtos.length) {
+      const filteredDtos = dtos.slice(currentStartIdx, currentStartIdx + threshold);
+      this.logger.log(`Start adding ${filteredDtos.length} documents (${currentStartIdx}-${currentStartIdx+threshold})`);
+      await this.searchService.addDocuments(Order.collectionName, filteredDtos);
+      this.logger.log(`Reindexed ${filteredDtos.length} items (${currentStartIdx}-${currentStartIdx+threshold})`);
+
+      currentStartIdx += threshold;
+    }
+
+    this.logger.log(`Reindexed finished`);
   }
 
   async updateShipmentStatus(orderId: number, lang: Language): Promise<Order> {

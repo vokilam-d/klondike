@@ -29,7 +29,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       if ((user as User).login) {
         userInfo = `userLogin=${(user as User).login}`;
       } else {
-        userInfo = `userId=${user.id}, userEmail=${(user as Customer).email}`;
+        userInfo = `userId=${user.id}, userEmail=${(user as Customer).contactInfo.email}`;
       }
     }
 
