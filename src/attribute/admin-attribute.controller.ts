@@ -14,14 +14,13 @@ import {
   ValidationPipe
 } from '@nestjs/common';
 import { AttributeService } from './attribute.service';
-import { AdminAttributeDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
+import { AdminAttributeDto, AdminAttributeValueDto, AdminCreateAttributeDto, AdminUpdateAttributeDto } from '../shared/dtos/admin/attribute.dto';
 import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
-import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -31,7 +30,6 @@ export class AdminAttributeController {
 
   constructor(private readonly attributeService: AttributeService) {
   }
-
 
   @Get()
   async getAttributes(@Query() spf: AdminSPFDto): Promise<ResponseDto<AdminAttributeDto[]>> {
@@ -56,6 +54,19 @@ export class AdminAttributeController {
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminAttributeDto>> {
     const created = await this.attributeService.createAttribute(attributeDto, lang);
+
+    return {
+      data: plainToClass(AdminAttributeDto, created, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Post(':id/value')
+  async createAttributeValue(
+    @Param('id') attributeId: string,
+    @Body() attributeValueDto: AdminAttributeValueDto,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminAttributeDto>> {
+    const created = await this.attributeService.createAttributeValue(attributeId, attributeValueDto, lang);
 
     return {
       data: plainToClass(AdminAttributeDto, created, { excludeExtraneousValues: true })

@@ -33,6 +33,11 @@ export const TRANSLATIONS = {
     ru: 'Атрибут с id "$1" уже существует',
     uk: 'Атрибут з id "$1" вже існує'
   },
+  'Attribute value with id "$1" already exists': {
+    en: 'Attribute value with id "$1" already exists',
+    ru: 'Опция атрибута с id "$1" уже существует',
+    uk: 'Опція атрибута з id "$1" вже існує'
+  },
   'Additional service with id "$1" already exists': {
     en: 'Additional service with id "$1" already exists',
     ru: 'Дополнительная услуга с id "$1" уже существует',
