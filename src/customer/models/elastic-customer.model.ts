@@ -5,6 +5,7 @@ import { ElasticCustomerContactInfo, ElasticOrderItemModel } from '../../order/m
 
 export class ElasticCustomerModel implements Record<keyof AdminCustomerDto, any> {
   addresses = {
+    type: 'nested',
     properties: new ElasticShipmentAddress()
   };
   createdAt = elasticDateType;
