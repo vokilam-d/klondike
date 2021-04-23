@@ -23,6 +23,7 @@ export class AdminOrderDto implements Order {
   idForCustomer: string;
 
   @Expose()
+  @Type(() => CustomerContactInfoDto)
   customerContactInfo: CustomerContactInfoDto;
 
   @Expose()

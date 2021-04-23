@@ -136,6 +136,9 @@ export class ElasticOrder implements Omit<Record<keyof AdminOrderDto, any>, '_id
   shippedAt = elasticDateType;
   source = elasticTextType;
   status = elasticTextType;
-  statusDescription = elasticTextType;
+  statusDescription = {
+    type: 'nested',
+    properties: new ElasticMultilingualText('text')
+  };
   updatedAt = elasticDateType;
 }

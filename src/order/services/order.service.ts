@@ -767,7 +767,7 @@ export class OrderService implements OnApplicationBootstrap {
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   private async reindexAllSearchData() {
     this.logger.log(`Start reindex all search data`);
-    const orders = await this.orderModel.find().sort({ _id: -1 }).exec();
+    const orders = await this.orderModel.find().exec();
     this.logger.log(`Start map to dtos`);
     const dtos = orders.map(order => plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true }));
 
@@ -776,13 +776,13 @@ export class OrderService implements OnApplicationBootstrap {
     this.logger.log(`Start ensure collection`);
     await this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
 
-    const threshold = 500;
+    const threshold = 5000;
     let currentStartIdx = 0;
     while (currentStartIdx < dtos.length) {
       const filteredDtos = dtos.slice(currentStartIdx, currentStartIdx + threshold);
-      this.logger.log(`Start adding ${filteredDtos.length} documents (${currentStartIdx}-${currentStartIdx+threshold})`);
+      this.logger.log(`Start adding ${filteredDtos.length} documents (${currentStartIdx}-${currentStartIdx+filteredDtos.length})`);
       await this.searchService.addDocuments(Order.collectionName, filteredDtos);
-      this.logger.log(`Reindexed ${filteredDtos.length} items (${currentStartIdx}-${currentStartIdx+threshold})`);
+      this.logger.log(`Reindexed ${filteredDtos.length} items (${currentStartIdx}-${currentStartIdx+filteredDtos.length})`);
 
       currentStartIdx += threshold;
     }
