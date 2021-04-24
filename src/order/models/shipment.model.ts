@@ -19,10 +19,10 @@ export class Shipment {
   @prop()
   statusDescription: string;
 
-  @prop({ default: new ShipmentCounterparty() })
+  @prop({ default: new ShipmentCounterparty(), _id: false })
   sender: ShipmentCounterparty;
 
-  @prop({ default: new ShipmentCounterparty() })
+  @prop({ default: new ShipmentCounterparty(), _id: false })
   recipient: ShipmentCounterparty;
 
   get shippingMethodDescription(): MultilingualText { return getTranslations(this.recipient.address.type); }

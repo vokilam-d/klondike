@@ -4,7 +4,7 @@ import { MultilingualText } from '../../models/multilingual-text.model';
 
 function translate(str: keyof typeof TRANSLATIONS | string, lang: Language, ...args: any): string {
 
-  let translation: string = TRANSLATIONS[str]?.[lang] || str;
+  let translation: string = TRANSLATIONS[str]?.[lang] || str || '';
 
   for (let i = 0; i < args.length; i++) {
     const keyToReplace = '$' + (i + 1);

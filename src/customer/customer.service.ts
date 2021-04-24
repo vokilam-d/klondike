@@ -65,7 +65,9 @@ export class CustomerService implements OnApplicationBootstrap {
     // this.reindexAllSearchData();
     //
     // (async () => {
-    //   const customers = await this.customerModel.find().exec();
+    //   this.logger.log(`Start find`);
+    //   const customers = await this.customerModel.find().sort({_id: -1}).exec();
+    //   this.logger.log(`End find`);
     // for (const customer of customers) {
     //   const json = customer.toJSON();
     //   customer.contactInfo = new CustomerContactInfo();

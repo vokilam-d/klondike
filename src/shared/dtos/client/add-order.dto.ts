@@ -1,6 +1,6 @@
 import { Order } from '../../../order/models/order.model';
 import { ClientOrderItemDto } from './order-item.dto';
-import { Expose, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { ArrayMinSize, IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { CustomerContactInfoDto } from '../shared-dtos/customer-contact-info.dto';
 import { ContactInfoDto } from '../shared-dtos/contact-info.dto';
@@ -17,6 +17,7 @@ export class ClientAddOrderDto implements
 
   @ValidateNested()
   @Type(() => ContactInfoDto)
+  @IsOptional()
   recipientContactInfo: ContactInfoDto;
 
   @ValidateNested()

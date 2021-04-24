@@ -3,9 +3,9 @@ import { ShipmentAddress } from './shipment-address.model';
 import { prop } from '@typegoose/typegoose';
 
 export class ShipmentCounterparty {
-  @prop()
+  @prop({ _id: false, default: new ContactInfo() })
   contactInfo: ContactInfo;
 
-  @prop()
+  @prop({ default: new ShipmentAddress() })
   address: ShipmentAddress;
 }

@@ -29,6 +29,7 @@ export class AdminAddOrUpdateOrderDto implements
 
   @ValidateNested()
   @Type(() => ContactInfoDto)
+  @IsOptional()
   recipientContactInfo: ContactInfoDto;
 
   @ValidateNested()

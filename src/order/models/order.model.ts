@@ -25,7 +25,7 @@ export class Order {
   @prop({ index: true })
   customerId: number;
 
-  @prop()
+  @prop({ _id: false, default: new CustomerContactInfo() })
   customerContactInfo: CustomerContactInfo;
 
   @prop({ default: new Date() })
@@ -37,7 +37,7 @@ export class Order {
   @prop({ default: null })
   shippedAt: Date;
 
-  @prop()
+  @prop({ _id: false, default: new OrderPaymentInfo() })
   paymentInfo: OrderPaymentInfo;
 
   @prop()
@@ -49,7 +49,7 @@ export class Order {
   @prop({ default: new Manager(), _id: false })
   manager: Manager;
 
-  @arrayProp({ items: OrderItem })
+  @arrayProp({ items: OrderItem, _id: false, default: [] })
   items: OrderItem[];
 
   @prop()
@@ -57,13 +57,13 @@ export class Order {
 
   get statusDescription(): MultilingualText { return getTranslations(this.status); }
 
-  @prop()
+  @prop({ _id: false, default: new OrderNotes() })
   notes: OrderNotes;
 
   @arrayProp({ items: Log, default: [] })
   logs: Log[];
 
-  @prop()
+  @prop({ _id: false, default: new OrderPrices() })
   prices: OrderPrices;
 
   @prop({ default: false })
@@ -72,7 +72,7 @@ export class Order {
   @prop()
   source: 'client' | 'manager';
 
-  @arrayProp({ items: Media, default: [] })
+  @arrayProp({ items: Media, default: [], _id: false })
   medias: Media[];
 
 

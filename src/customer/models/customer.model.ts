@@ -10,7 +10,7 @@ export class Customer {
   set id(id: number) { this._id = id; }
   get id(): number { return this._id; }
 
-  @prop()
+  @prop({ default: new CustomerContactInfo() })
   contactInfo: CustomerContactInfo;
 
   @prop({ default: null })

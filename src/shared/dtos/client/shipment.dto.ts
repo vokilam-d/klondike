@@ -9,7 +9,7 @@ export class ClientShipmentDto extends BaseShipmentDto {
 
   static transformToDto(shipment: Shipment, lang: Language): ClientShipmentDto {
     return {
-      ...plainToClass(Shipment, shipment, { excludeExtraneousValues: true }),
+      ...plainToClass(ClientShipmentDto, shipment, { excludeExtraneousValues: true }),
       shippingMethodDescription: shipment.shippingMethodDescription[lang]
     };
   }

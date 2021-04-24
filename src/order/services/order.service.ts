@@ -69,6 +69,10 @@ import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-intern
 import { ShipmentAddress } from '../../shared/models/shipment-address.model';
 import { NovaPoshtaShipmentDto } from '../../shared/dtos/admin/nova-poshta-shipment.dto';
 import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
+import { OrderNotes } from '../models/order-notes.model';
+import { ShipmentCounterparty } from '../../shared/models/shipment-counterparty.model';
+import { OrderPaymentInfo } from '../models/order-payment-info.model';
+import { ContactInfo } from '../../shared/models/contact-info.model';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -100,59 +104,61 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap() {
-    this.handleCustomerEmailChange();
     this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
     // this.reindexAllSearchData();
 
-    // console.log('start find');
-    // const orders = await this.orderModel.find({_id: {$gte: 452}}).exec();
-    // console.log('end find');
+    // (async () => {this.logger.log('Start find');
+    // const orders = await this.orderModel.find().sort({_id: -1}).lean().exec();
+    // this.logger.log('End find');
     //
     // for (const order of orders) {
-    //   const json = order.toJSON();
+    //   // const json = order.toJSON();
+    //   const json = JSON.parse(JSON.stringify(order));
     //   const oldRecipientAddr = json.shipment.recipient;
     //   order.customerContactInfo = new CustomerContactInfo();
     //   order.customerContactInfo.firstName = json.customerFirstName;
-    //   order.set('customerFirstName', undefined);
+    //   delete order['customerFirstName'];
     //   order.customerContactInfo.lastName = json.customerLastName;
-    //   order.set('customerLastName', undefined);
+    //   delete order['customerLastName'];
     //   order.customerContactInfo.email = json.customerEmail;
-    //   order.set('customerEmail', undefined);
+    //   delete order['customerEmail'];
     //   order.customerContactInfo.phoneNumber = json.customerPhoneNumber;
-    //   order.set('customerPhoneNumber', undefined);
+    //   delete order['customerPhoneNumber'];
     //   order.customerContactInfo.middleName = oldRecipientAddr.middleName || '';
     //
     //   order.paymentInfo = new OrderPaymentInfo();
     //   order.paymentInfo.methodId = json.paymentMethodId;
-    //   order.set('paymentMethodId', undefined);
+    //   delete order['paymentMethodId'];
     //   order.paymentInfo.type = json.paymentType;
-    //   order.set('paymentType', undefined);
+    //   delete order['paymentType'];
     //   order.paymentInfo.methodClientName = json.paymentMethodClientName;
-    //   order.set('paymentMethodClientName', undefined);
+    //   delete order['paymentMethodClientName'];
     //   order.paymentInfo.methodAdminName = json.paymentMethodAdminName;
-    //   order.set('paymentMethodAdminName', undefined);
+    //   delete order['paymentMethodAdminName'];
     //
     //   order.notes = new OrderNotes();
-    //   order.notes.fromCustomer = json.clientNote;
-    //   order.set('clientNote', undefined);
-    //   order.notes.fromAdmin = json.adminNote;
-    //   order.set('adminNote', undefined);
-    //   order.notes.aboutCustomer = json.customerNote;
-    //   order.set('customerNote', undefined);
+    //   order.notes.fromCustomer = json.clientNote || '';
+    //   delete order['clientNote'];
+    //   order.notes.fromAdmin = json.adminNote || '';
+    //   delete order['adminNote'];
+    //   order.notes.aboutCustomer = json.customerNote || '';
+    //   delete order['customerNote'];
     //
-    //   order.shipment = new Shipment();
     //   order.shipment.recipient = new ShipmentCounterparty();
     //   order.shipment.recipient.contactInfo = new ContactInfo();
     //   order.shipment.recipient.contactInfo.firstName = oldRecipientAddr.firstName;
     //   order.shipment.recipient.contactInfo.lastName = oldRecipientAddr.lastName;
     //   order.shipment.recipient.contactInfo.middleName = oldRecipientAddr.middleName || '';
-    //   order.shipment.recipient.contactInfo.phoneNumber = oldRecipientAddr.phoneNumber || json.customerPhoneNumber;
-    //   order.shipment.recipient.address = oldRecipientAddr;
-    //   order.shipment.recipient.address.addressName = oldRecipientAddr.address;
+    //   order.shipment.recipient.contactInfo.phoneNumber = oldRecipientAddr.phone || json.customerPhoneNumber;
+    //   order.shipment.recipient.address = new ShipmentAddress();
+    //   order.shipment.recipient.address.addressName = oldRecipientAddr.address || oldRecipientAddr.addressFull;
     //   order.shipment.recipient.address.addressNameFull = oldRecipientAddr.addressFull;
-    //   order.shipment.recipient.address.settlementName = oldRecipientAddr.settlement;
+    //   order.shipment.recipient.address.settlementName = oldRecipientAddr.settlement || oldRecipientAddr.settlementFull;
     //   order.shipment.recipient.address.settlementNameFull = oldRecipientAddr.settlementFull;
     //   order.shipment.recipient.address.type = oldRecipientAddr.addressType;
+    //   order.shipment.recipient.address.buildingNumber = oldRecipientAddr.buildingNumber;
+    //   order.shipment.recipient.address.flat = oldRecipientAddr.flat;
+    //   order.shipment.recipient.address._id = oldRecipientAddr._id;
     //
     //   const oldSenderAddr = json.shipment.sender;
     //   order.shipment.sender = new ShipmentCounterparty();
@@ -160,19 +166,26 @@ export class OrderService implements OnApplicationBootstrap {
     //   order.shipment.sender.contactInfo.firstName = oldSenderAddr.firstName;
     //   order.shipment.sender.contactInfo.lastName = oldSenderAddr.lastName;
     //   order.shipment.sender.contactInfo.middleName = oldSenderAddr.middleName;
-    //   order.shipment.sender.contactInfo.phoneNumber = oldSenderAddr.phoneNumber;
-    //   order.shipment.sender.address = oldSenderAddr;
-    //   order.shipment.sender.address.addressName = oldSenderAddr.address;
+    //   order.shipment.sender.contactInfo.phoneNumber = oldSenderAddr.phone;
+    //   order.shipment.sender.address = new ShipmentAddress();
+    //   order.shipment.sender.address.addressName = oldSenderAddr.address || oldSenderAddr.addressFull;
     //   order.shipment.sender.address.addressNameFull = oldSenderAddr.addressFull;
-    //   order.shipment.sender.address.settlementName = oldSenderAddr.settlement;
+    //   order.shipment.sender.address.settlementName = oldSenderAddr.settlement || oldSenderAddr.settlementFull;
     //   order.shipment.sender.address.settlementNameFull = oldSenderAddr.settlementFull;
     //   order.shipment.sender.address.type = oldSenderAddr.addressType;
+    //   order.shipment.sender.address.buildingNumber = oldSenderAddr.buildingNumber;
+    //   order.shipment.sender.address.flat = oldSenderAddr.flat;
+    //   order.shipment.sender.address._id = oldSenderAddr._id;
     //
     //   // console.dir(order.toJSON(), {depth: 10});
-    //   await order.save();
-    //   console.log('saved order', order.id);
+    //   // await order.save();
+    //   // console.log('saved order', order.id);
+    //   await this.orderModel.updateOne({_id:order._id}, order).exec();
+    //   console.log('saved order', order._id);
     // }
     // console.log('saved order all');
+    //   this.reindexAllSearchData()
+    // })()
     //
     // this.reindexAllSearchData();
   }
@@ -199,7 +212,7 @@ export class OrderService implements OnApplicationBootstrap {
       from.setHours(0, 0, 0);
     }
 
-    const conditions: FilterQuery<Order> = { };
+    const conditions: FilterQuery<Order> = {};
     conditions.createdAt = {
       $gte: from
     };
@@ -272,11 +285,11 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const newOrder = await this.createOrder(addOrUpdateOrderDto, lang, customer, session, 'manager', user);
-      OrderService.addLog(newOrder, `Created order, source=${newOrder.source}, userLogin=${user?.login}`);
+      newOrder.notes.fromAdmin = addOrUpdateOrderDto.note;
       newOrder.status = OrderStatusEnum.PROCESSING;
+      OrderService.addLog(newOrder, `Created order, source=${newOrder.source}, userLogin=${user?.login}`);
 
       await newOrder.save({ session });
-
       await session.commitTransaction();
 
       this.logger.log(`Created order by manager, orderId=${newOrder.id}, userLogin=${user?.login}`);
@@ -322,6 +335,7 @@ export class OrderService implements OnApplicationBootstrap {
       const prices = await this.orderItemService.calcOrderPrices(addOrderDto.items, customer, lang);
 
       const newOrder = await this.createOrder({ ...addOrderDto, prices }, lang, customer, session, 'client');
+      newOrder.notes.fromCustomer = addOrderDto.note;
 
       OrderService.checkForCheckoutRules(newOrder, lang);
 
@@ -333,7 +347,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       this.logger.log(`Created order, source=${newOrder.source}, orderId=${newOrder.id}, customerId=${customer.id}`);
 
-      await this.addSearchData(newOrder);
+      this.addSearchData(newOrder).then();
       this.updateCachedOrderCount();
 
       this.orderCreated$.next({ order: newOrder, lang });
@@ -365,6 +379,7 @@ export class OrderService implements OnApplicationBootstrap {
     newOrder.customerId = customer.id;
     newOrder.notes.aboutCustomer = customer.note;
     newOrder.shipment.recipient.contactInfo = orderDto.recipientContactInfo || orderDto.customerContactInfo;
+    newOrder.shipment.recipient.address = orderDto.address;
     newOrder.createdAt = new Date();
     newOrder.status = OrderStatusEnum.NEW;
 
@@ -379,7 +394,12 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const additionalServiceIds = additionalServices.map(service => service.id);
-      newOrder.items[i] = await this.orderItemService.createOrderItem({ sku, qty, additionalServiceIds, omitReserved: false }, lang, false, product, variant);
+      newOrder.items[i] = await this.orderItemService.createOrderItem({
+        sku,
+        qty,
+        additionalServiceIds,
+        omitReserved: false
+      }, lang, false, product, variant);
 
       await this.inventoryService.addToOrdered(sku, qty, newOrder.id, session);
       await this.productService.updateSearchDataById(productId, lang, session);
@@ -504,7 +524,8 @@ export class OrderService implements OnApplicationBootstrap {
   private updateCachedOrderCount() {
     this.orderModel.estimatedDocumentCount().exec()
       .then(count => this.cachedOrderCount = count)
-      .catch(_ => {});
+      .catch(_ => {
+      });
   }
 
   private async cancelOrderPreActions(order: Order, lang: Language, session: ClientSession): Promise<void> {
@@ -610,7 +631,9 @@ export class OrderService implements OnApplicationBootstrap {
 
       for (const order of orders) {
         const shipment: NovaPoshtaShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
-        if (!shipment) { continue; }
+        if (!shipment) {
+          continue;
+        }
 
         const oldShipmentStatus = order.shipment.status;
         order.shipment.status = shipment.status;
@@ -682,7 +705,9 @@ export class OrderService implements OnApplicationBootstrap {
   private static patchShipmentData(shipment: Shipment, shipmentDto: AdminShipmentDto) {
     const copyValues = (fromObject: any, toObject: any) => {
       for (const key of Object.keys(fromObject)) {
-        if (fromObject[key] === undefined) { continue; }
+        if (fromObject[key] === undefined) {
+          continue;
+        }
 
         if (isObject(fromObject[key])) {
           copyValues(fromObject[key], toObject[key]);
@@ -690,7 +715,7 @@ export class OrderService implements OnApplicationBootstrap {
           toObject[key] = fromObject[key];
         }
       }
-    }
+    };
 
     copyValues(shipmentDto, shipment);
   }
@@ -740,7 +765,7 @@ export class OrderService implements OnApplicationBootstrap {
 
     const secretKey = process.env.MERCHANT_SECRET_KEY;
     const merchantSignature = createHmac('md5', secretKey)
-      .update([ merchantAccount, merchantDomainName, orderReference, orderDate, amount, currency, ...itemNames, ...itemCounts, ...itemPrices ].join(';'))
+      .update([merchantAccount, merchantDomainName, orderReference, orderDate, amount, currency, ...itemNames, ...itemCounts, ...itemPrices].join(';'))
       .digest('hex');
 
     return {
@@ -761,7 +786,7 @@ export class OrderService implements OnApplicationBootstrap {
       clientEmail: order.customerContactInfo.email,
       clientPhone: order.customerContactInfo.phoneNumber,
       language: Language.RU.toUpperCase()
-    }
+    };
   }
 
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
@@ -780,9 +805,9 @@ export class OrderService implements OnApplicationBootstrap {
     let currentStartIdx = 0;
     while (currentStartIdx < dtos.length) {
       const filteredDtos = dtos.slice(currentStartIdx, currentStartIdx + threshold);
-      this.logger.log(`Start adding ${filteredDtos.length} documents (${currentStartIdx}-${currentStartIdx+filteredDtos.length})`);
+      this.logger.log(`Start adding ${filteredDtos.length} documents (${currentStartIdx}-${currentStartIdx + filteredDtos.length})`);
       await this.searchService.addDocuments(Order.collectionName, filteredDtos);
-      this.logger.log(`Reindexed ${filteredDtos.length} items (${currentStartIdx}-${currentStartIdx+filteredDtos.length})`);
+      this.logger.log(`Reindexed ${filteredDtos.length} items (${currentStartIdx}-${currentStartIdx + filteredDtos.length})`);
 
       currentStartIdx += threshold;
     }
@@ -804,7 +829,7 @@ export class OrderService implements OnApplicationBootstrap {
         if (order.status !== statusToAssert) {
           throw new BadRequestException(__('Cannot change status to "$1": order must be with status "$2"', lang, status, statusToAssert));
         }
-      }
+      };
 
       switch (status) {
         case OrderStatusEnum.PROCESSING:
@@ -903,7 +928,10 @@ export class OrderService implements OnApplicationBootstrap {
 
         this.fileLogger.log(`Creating internet document for orderId=${order.id}, cost=${createIntDocDto.cost}, payerType=${createIntDocDto.payerType}, backwardMoneyDelivery=${createIntDocDto.backwardMoneyDelivery}...`);
 
-        const { trackingNumber, estimatedDeliveryDate } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentInfo.type);
+        const {
+          trackingNumber,
+          estimatedDeliveryDate
+        } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentInfo.type);
         order.shipment.trackingNumber = trackingNumber;
         order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
         order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
@@ -997,24 +1025,6 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async handleCustomerEmailChange(): Promise<void> {
-    const customerContactInfoProp: keyof Order = 'customerContactInfo';
-    const emailProp: keyof CustomerContactInfo = 'email';
-
-    this.customerService.emailChanged$.subscribe(({ oldEmail, newEmail }) => {
-      this.orderModel
-        .updateMany(
-          { [`${customerContactInfoProp}.${emailProp}`]: oldEmail },
-          { [`${customerContactInfoProp}.${emailProp}`]: newEmail }
-        )
-        .exec()
-        .catch(error => {
-          this.logger.error(`Could not update emails in customer contact info:`)
-          this.logger.log(error);
-        });
-    });
-  }
-
   private async setPaymentInfoByMethodId(order: Order, paymentMethodId: string): Promise<Order> {
     if (order.paymentInfo.methodId === paymentMethodId) {
       return order;
@@ -1045,8 +1055,8 @@ export class OrderService implements OnApplicationBootstrap {
     const filterQuery: FilterQuery<Order> = {
       status: { $in: ShippedOrderStatuses },
       shippedAt: {
-        ...(dateFrom ? { $gte: dateFrom  } : { }),
-        ...(dateTo ? { $lte: dateTo } : { })
+        ...(dateFrom ? { $gte: dateFrom } : {}),
+        ...(dateTo ? { $lte: dateTo } : {})
       }
     };
 
@@ -1055,8 +1065,8 @@ export class OrderService implements OnApplicationBootstrap {
     const qtyProp: keyof OrderItem = 'qty';
     const projection = {
       [`${itemsProp}.${productIdProp}`]: 1,
-      [`${itemsProp}.${qtyProp}`]: 1,
-    }
+      [`${itemsProp}.${qtyProp}`]: 1
+    };
 
     return this.orderModel.find(filterQuery, projection).exec();
   }
@@ -1064,7 +1074,9 @@ export class OrderService implements OnApplicationBootstrap {
   private static checkForCheckoutRules(order: Order, lang: Language) {
     const errors: string[] = [];
     const isCashOnDeliveryMethod = order.paymentInfo.type === PaymentTypeEnum.CASH_ON_DELIVERY;
-    if (!isCashOnDeliveryMethod) { return; }
+    if (!isCashOnDeliveryMethod) {
+      return;
+    }
 
     if (order.shipment.recipient.address.type === AddressTypeEnum.DOORS) {
       errors.push(__('Cash on delivery is not available with address delivery', lang));

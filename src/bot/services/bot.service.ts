@@ -106,6 +106,8 @@ export class BotService implements OnApplicationBootstrap {
   }
 
   private escapeString(str: string): string {
+    if (!str) { str = ''; }
+
     const toEscape = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!' ];
     let escapedStr: string = '';
     for (const strElement of str) {
