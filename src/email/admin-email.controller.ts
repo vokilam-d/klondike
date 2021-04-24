@@ -8,7 +8,6 @@ import { ProductReviewService } from '../reviews/product-review/product-review.s
 import { StoreReviewService } from '../reviews/store-review/store-review.service';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
 
 @UseGuards(UserJwtGuard)
 @Controller('admin/email-test')
@@ -33,7 +32,7 @@ export class AdminEmailController {
 
     const orderService = this.moduleRef.get(OrderService, { strict: false });
     const order = await orderService.getOrderById(parseInt(orderId as any), lang);
-    order.customerEmail = body.email;
+    order.customerContactInfo.email = body.email;
 
     return this.emailService.sendOrderConfirmationEmail(order, lang, false, true);
   }
@@ -50,7 +49,7 @@ export class AdminEmailController {
 
     const orderService = this.moduleRef.get(OrderService, { strict: false });
     const order = await orderService.getOrderById(parseInt(orderId as any), lang);
-    order.customerEmail = body.email;
+    order.customerContactInfo.email = body.email;
 
     return this.emailService.sendLeaveReviewEmail(order, lang);
   }

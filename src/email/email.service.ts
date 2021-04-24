@@ -69,13 +69,13 @@ export class EmailService {
 
     if (notifyManagers) {
       const to = this.newOrderListenerEmails;
-      const subject = `Новый заказ №${order.idForCustomer} (${order.customerLastName}).`
+      const subject = `Новый заказ №${order.idForCustomer} (${order.customerContactInfo.lastName}).`
         + ` Менеджер ${order.manager?.name}. Оформил ${order.source}`;
       this.sendEmail({ to, subject, html, attachment, emailType }).then();
     }
 
-    if (notifyClient && order.customerEmail) {
-      const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
+    if (notifyClient && order.customerContactInfo.email) {
+      const to = `${order.customerContactInfo.firstName} ${order.customerContactInfo.lastName} <${order.customerContactInfo.email}>`;
       const subject = `Ваш заказ №${order.idForCustomer} получен`;
       return this.sendEmail({ to, subject, html, attachment, emailType });
     }
@@ -96,7 +96,7 @@ export class EmailService {
   async sendAssignedOrderManagerEmail(order: Order) {
     if (!isProdEnv()) { return; }
 
-    const subject = `Заказ №${order.idForCustomer} (${order.customerLastName}) `
+    const subject = `Заказ №${order.idForCustomer} (${order.customerContactInfo.lastName}) `
       + `назначен менеджеру ${order.manager.name}. Оформил ${order.source}`;
 
     return this.sendEmail({
@@ -110,8 +110,8 @@ export class EmailService {
 
   async sendLeaveReviewEmail(order: Order, lang: Language) {
     const emailType = EEmailType.LeaveReview;
-    const to = `${order.customerFirstName} ${order.customerLastName} <${order.customerEmail}>`;
-    const subject = `${order.customerFirstName}, поделитесь мнением о покупке`;
+    const to = `${order.customerContactInfo.firstName} ${order.customerContactInfo.lastName} <${order.customerContactInfo.email}>`;
+    const subject = `${order.customerContactInfo.firstName}, поделитесь мнением о покупке`;
 
     const context = this.getLeaveReviewTemplateContext(order, lang);
     const html = this.getEmailHtml(emailType, context);
@@ -121,11 +121,11 @@ export class EmailService {
 
   sendRegisterSuccessEmail(customer: Customer, token: string) {
     const emailType = EEmailType.RegistrationSuccess;
-    const to = customer.email;
+    const to = customer.contactInfo.email;
     const subject = 'Добро пожаловать';
     const html = this.getEmailHtml(
       emailType,
-      { email: customer.email, firstName: customer.firstName, lastName: customer.lastName, token }
+      { email: customer.contactInfo.email, firstName: customer.contactInfo.firstName, token }
     );
 
     return this.sendEmail({ to, subject, html, emailType });
@@ -133,11 +133,11 @@ export class EmailService {
 
   sendEmailConfirmationEmail(customer: Customer, token: string) {
     const emailType = EEmailType.EmailConfirmation;
-    const to = customer.email;
+    const to = customer.contactInfo.email;
     const subject = 'Подтвердите email';
     const html = this.getEmailHtml(
       emailType,
-      { email: customer.email, firstName: customer.firstName, lastName: customer.lastName, token }
+      { email: customer.contactInfo.email, firstName: customer.contactInfo.firstName, token }
     );
 
     return this.sendEmail({ to, subject, html, emailType });
@@ -145,9 +145,9 @@ export class EmailService {
 
   sendResetPasswordEmail(customer: Customer, token: string) {
     const emailType = EEmailType.ResetPassword;
-    const to = customer.email;
+    const to = customer.contactInfo.email;
     const subject = 'Восстановление пароля';
-    const html = this.getEmailHtml(emailType, { firstName: customer.firstName, lastName: customer.lastName, token });
+    const html = this.getEmailHtml(emailType, { firstName: customer.contactInfo.firstName, token });
 
     return this.sendEmail({ to, subject, html, emailType });
   }
@@ -205,20 +205,19 @@ export class EmailService {
 
   private getOrderConfirmationTemplateContext(order: Order): any {
     return {
-      firstName: order.customerFirstName,
-      lastName: order.customerLastName,
+      firstName: order.customerContactInfo.firstName,
       orderId: order.idForCustomer,
       orderDateTime: readableDate(order.createdAt),
       totalOrderCost: order.prices.totalCost,
-      addressName: `${order.shipment.recipient.lastName} ${order.shipment.recipient.firstName}`,
-      addressPhone: order.shipment.recipient.phone,
-      addressCity: order.shipment.recipient.settlement,
-      address: order.shipment.recipient.address,
-      addressBuildingNumber: order.shipment.recipient.buildingNumber,
-      addressFlatNumber: order.shipment.recipient.flat,
-      shipping: order.shippingMethodName[clientDefaultLanguage],
+      addressName: `${order.shipment.recipient.contactInfo.lastName} ${order.shipment.recipient.contactInfo.firstName} ${order.shipment.recipient.contactInfo.middleName}`,
+      addressPhone: order.shipment.recipient.contactInfo.phoneNumber,
+      addressCity: order.shipment.recipient.address.settlementNameFull,
+      address: order.shipment.recipient.address.addressNameFull,
+      addressBuildingNumber: order.shipment.recipient.address.buildingNumber,
+      addressFlatNumber: order.shipment.recipient.address.flat,
+      shipping: order.shipment.shippingMethodDescription[clientDefaultLanguage],
       shippingTip: isFreeShippingForOrder(order) ? 'бесплатная доставка' : 'оплачивается получателем',
-      payment: order.paymentMethodClientName[clientDefaultLanguage],
+      payment: order.paymentInfo.methodClientName[clientDefaultLanguage],
       products: order.items.map(item => ({
         name: item.name[clientDefaultLanguage],
         sku: item.sku,
@@ -233,7 +232,7 @@ export class EmailService {
       })),
       totalProductsCost: order.prices.itemsCost,
       discountValue: order.prices.discountValue,
-      clientNote: order.clientNote,
+      clientNote: order.notes.fromCustomer,
       isCallbackNeeded: order.isCallbackNeeded
     };
   }
@@ -252,10 +251,9 @@ export class EmailService {
     }
 
     return {
-      firstName: order.customerFirstName,
-      lastName: order.customerLastName,
+      firstName: order.customerContactInfo.firstName,
       customerId: order.customerId,
-      email: order.customerEmail,
+      email: order.customerContactInfo.email,
       productRows
     };
   }

@@ -22,8 +22,6 @@ import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { ClientRegisterDto } from '../shared/dtos/client/register.dto';
 import { AuthService } from '../auth/services/auth.service';
-import { EmailService } from '../email/email.service';
-import { ClientUpdateCustomerDto } from '../shared/dtos/client/update-customer.dto';
 import { ClientUpdatePasswordDto } from '../shared/dtos/client/update-password.dto';
 import { EncryptorService } from '../shared/services/encryptor/encryptor.service';
 import { OrderItem } from '../order/models/order-item.model';
@@ -33,14 +31,14 @@ import { ResetPasswordDto } from '../shared/dtos/client/reset-password.dto';
 import { ShipmentAddressDto } from '../shared/dtos/shared-dtos/shipment-address.dto';
 import { CronExpression } from '@nestjs/schedule';
 import { areAddressesSame } from '../shared/helpers/are-addresses-same.function';
-import { OrderService } from '../order/services/order.service';
 import { Language } from '../shared/enums/language.enum';
-import { clientDefaultLanguage } from '../shared/constants';
 import { CustomerReviewsAverageRatingDto } from '../shared/dtos/admin/customer-reviews-average-rating.dto';
 import { StoreReviewService } from '../reviews/store-review/store-review.service';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { CronProd } from '../shared/decorators/prod-cron.decorator';
 import { Subject } from 'rxjs';
+import { CustomerContactInfo } from '../order/models/customer-contact-info.model';
+import { CustomerContactInfoDto } from '../shared/dtos/shared-dtos/customer-contact-info.dto';
 
 @Injectable()
 export class CustomerService implements OnApplicationBootstrap {
@@ -50,22 +48,54 @@ export class CustomerService implements OnApplicationBootstrap {
 
   customerRegistered$ = new Subject<{ customer: Customer, token: string }>();
   emailConfirmationRequested$ = new Subject<{ customer: Customer, token: string }>();
+  emailChanged$ = new Subject<{ oldEmail: string, newEmail: string }>();
 
   constructor(
     @InjectModel(Customer.name) private readonly customerModel: ReturnModelType<typeof Customer>,
     @Inject(forwardRef(() => AuthService)) private authService: AuthService,
-    @Inject(forwardRef(() => OrderService)) private orderService: OrderService,
     @Inject(forwardRef(() => StoreReviewService)) private storeReviewService: StoreReviewService,
     @Inject(forwardRef(() => ProductReviewService)) private productReviewService: ProductReviewService,
     private readonly searchService: SearchService,
     private readonly encryptor: EncryptorService,
-    // private readonly emailService: EmailService,
     private readonly counterService: CounterService
   ) { }
 
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Customer.collectionName, new ElasticCustomerModel());
     // this.reindexAllSearchData();
+    //
+    // (async () => {
+    //   this.logger.log(`Start find`);
+    //   const customers = await this.customerModel.find().sort({_id: -1}).exec();
+    //   this.logger.log(`End find`);
+    // for (const customer of customers) {
+    //   const json = customer.toJSON();
+    //   customer.contactInfo = new CustomerContactInfo();
+    //   customer.contactInfo.firstName = json.firstName;
+    //   customer.set('firstName', undefined);
+    //   customer.contactInfo.lastName = json.lastName;
+    //   customer.set('lastName', undefined);
+    //   customer.contactInfo.email = json.email;
+    //   customer.set('email', undefined);
+    //   customer.contactInfo.phoneNumber = json.phoneNumber;
+    //   customer.set('phoneNumber', undefined);
+    //
+    //   for (let i = 0; i < (customer.addresses || []).length; i++){
+    //     const address = (customer.addresses || [])[i];
+    //     const jsonAddress = (json.addresses || [])[i];
+    //     address.addressName = jsonAddress.address;
+    //     address.addressNameFull = jsonAddress.addressFull;
+    //     address.settlementName = jsonAddress.settlement;
+    //     address.settlementNameFull = jsonAddress.settlementFull;
+    //     address.type = jsonAddress.addressType;
+    //   }
+    //
+    //   await customer.save();
+    //   console.log('saved customer', customer.id);
+    // }
+    // console.log('saved customer all');
+    // this.reindexAllSearchData();
+    // })();
   }
 
   async getCustomersList(spf: AdminSPFDto): Promise<ResponseDto<AdminCustomerDto[]>> {
@@ -117,11 +147,13 @@ export class CustomerService implements OnApplicationBootstrap {
 
     const email = idOrEmail.toString();
 
+    const contactInfoProp: keyof Customer = 'contactInfo';
+    const emailProp: keyof CustomerContactInfo = 'email';
     return this.customerModel
       .findOne({
         $or: [
           { _id: id },
-          { email }
+          { [`${contactInfoProp}.${emailProp}`]: email }
         ]
       })
       .exec();
@@ -130,11 +162,14 @@ export class CustomerService implements OnApplicationBootstrap {
   async getCustomerByEmailOrPhoneNumber(emailOrPhone: string): Promise<DocumentType<Customer>> {
     if (!emailOrPhone) { return; }
 
+    const contactInfoProp: keyof Customer = 'contactInfo';
+    const emailProp: keyof CustomerContactInfo = 'email';
+    const phoneProp: keyof CustomerContactInfo = 'phoneNumber';
     return this.customerModel
       .findOne({
         $or: [
-          { email: emailOrPhone },
-          { phoneNumber: emailOrPhone }
+          { [`${contactInfoProp}.${emailProp}`]: emailOrPhone },
+          { [`${contactInfoProp}.${phoneProp}`]: emailOrPhone }
         ]
       })
       .exec();
@@ -161,7 +196,7 @@ export class CustomerService implements OnApplicationBootstrap {
     };
   }
 
-  private async createCustomer(customerDto: AdminAddOrUpdateCustomerDto, session?: ClientSession): Promise<Customer> {
+  private async createCustomer(customerDto: Partial<Customer>, session?: ClientSession): Promise<DocumentType<Customer>> {
     const newCustomer = new this.customerModel(customerDto);
     newCustomer.id = await this.counterService.getCounter(Customer.collectionName, session);
     newCustomer.createdAt = new Date();
@@ -170,55 +205,61 @@ export class CustomerService implements OnApplicationBootstrap {
     this.addSearchData(newCustomer);
     this.updateCachedCustomerCount();
 
-    return newCustomer.toJSON();
+    return newCustomer;
   }
 
-  async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, lang: Language, session?: ClientSession): Promise<Customer> {
-    const foundByEmail = await this.customerModel.findOne({ email: customerDto.email }).exec();
-    if (customerDto.email && foundByEmail) {
-      throw new ConflictException(__('Customer with email "$1" already exists', lang, customerDto.email));
+  async adminCreateCustomer(customerDto: AdminAddOrUpdateCustomerDto, lang: Language, session?: ClientSession): Promise<DocumentType<Customer>> {
+    const contactInfoProp: keyof Customer = 'contactInfo';
+    const emailProp: keyof CustomerContactInfo = 'email';
+    const foundByEmail = await this.customerModel.findOne({ [`${contactInfoProp}.${emailProp}`]: customerDto.contactInfo.email }).exec();
+
+    if (customerDto.contactInfo.email && foundByEmail) {
+      throw new ConflictException(__('Customer with email "$1" already exists', lang, customerDto.contactInfo.email));
     }
 
     return this.createCustomer(customerDto, session);
   }
 
   async clientRegisterCustomer(registerDto: ClientRegisterDto, lang: Language): Promise<Customer> {
-    const foundByEmail = await this.customerModel.findOne({ email: registerDto.email }).exec();
+    const contactInfoProp: keyof Customer = 'contactInfo';
+    const emailProp: keyof CustomerContactInfo = 'email';
+    const foundByEmail = await this.customerModel.findOne({ [`${contactInfoProp}.${emailProp}`]: registerDto.email }).exec();
     if (foundByEmail) {
       throw new ConflictException(__('Customer with email "$1" already exists', lang, registerDto.email));
     }
 
-    const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
-    adminCustomerDto.firstName = registerDto.firstName;
-    adminCustomerDto.lastName = registerDto.lastName;
-    adminCustomerDto.email = registerDto.email;
-    adminCustomerDto.password = await this.encryptor.hash(registerDto.password);
-    adminCustomerDto.lastLoggedIn = new Date();
+    const customerObj = new Customer();
+    customerObj.contactInfo = new CustomerContactInfo();
+    customerObj.contactInfo.firstName = registerDto.firstName;
+    customerObj.contactInfo.lastName = registerDto.lastName;
+    customerObj.contactInfo.email = registerDto.email;
+    customerObj.password = await this.encryptor.hash(registerDto.password);
+    customerObj.lastLoggedIn = new Date();
 
-    const created = await this.createCustomer(adminCustomerDto);
+    const created = await this.createCustomer(customerObj);
 
     const token = await this.authService.createCustomerEmailConfirmToken(created);
-    // this.emailService.sendRegisterSuccessEmail(created, token).then();
     this.customerRegistered$.next({ customer: created, token });
 
     return created;
   }
 
   createCustomerByThirdParty(oauthId: string, firstName: string, lastName: string, email: string): Promise<Customer> {
-    const adminCustomerDto = new AdminAddOrUpdateCustomerDto();
-    adminCustomerDto.oauthId = oauthId;
-    adminCustomerDto.firstName = firstName;
-    adminCustomerDto.lastName = lastName;
+    const customerObj = new Customer();
+    customerObj.oauthId = oauthId;
+    customerObj.contactInfo = new CustomerContactInfo();
+    customerObj.contactInfo.firstName = firstName;
+    customerObj.contactInfo.lastName = lastName;
     if (email) {
-      adminCustomerDto.email = email;
+      customerObj.contactInfo.email = email;
     }
-    adminCustomerDto.password = '';
-    adminCustomerDto.lastLoggedIn = new Date();
+    customerObj.password = '';
+    customerObj.lastLoggedIn = new Date();
 
-    adminCustomerDto.isEmailConfirmed = true;
-    adminCustomerDto.isRegisteredByThirdParty = true;
+    customerObj.isEmailConfirmed = true;
+    customerObj.isRegisteredByThirdParty = true;
 
-    return this.createCustomer(adminCustomerDto);
+    return this.createCustomer(customerObj);
   }
 
   async updateCustomerById(customerId: number, customerDto: AdminAddOrUpdateCustomerDto, lang: Language): Promise<Customer> {
@@ -231,7 +272,7 @@ export class CustomerService implements OnApplicationBootstrap {
         throw new NotFoundException(__('Customer with id "$1" not found', lang, customerId));
       }
 
-      await this.processEmailChange(found.email, customerDto.email, session);
+      await this.processEmailChange(found.contactInfo.email, customerDto.contactInfo.email, session);
 
       Object.keys(customerDto).forEach(key => found[key] = customerDto[key]);
       await found.save({ session });
@@ -249,14 +290,14 @@ export class CustomerService implements OnApplicationBootstrap {
 
   }
 
-  async updateCustomerByClientDto(customer: DocumentType<Customer>, customerDto: ClientUpdateCustomerDto): Promise<Customer> {
+  async updateContactInfo(customer: DocumentType<Customer>, contactInfoDto: CustomerContactInfoDto): Promise<Customer> {
     const session = await this.customerModel.db.startSession();
     session.startTransaction();
 
     try {
-      await this.processEmailChange(customer.email, customerDto.email, session);
+      await this.processEmailChange(customer.contactInfo.email, contactInfoDto.email, session);
 
-      Object.keys(customerDto).forEach(key => customer[key] = customerDto[key]);
+      Object.keys(contactInfoDto).forEach(key => customer.contactInfo[key] = contactInfoDto[key]);
       await customer.save({ session });
       await session.commitTransaction();
 
@@ -501,7 +542,7 @@ export class CustomerService implements OnApplicationBootstrap {
   }
 
   async confirmCustomerEmail(customer: DocumentType<Customer>) {
-    if (!customer.email || customer.isEmailConfirmed) { return; }
+    if (!customer.contactInfo.email || customer.isEmailConfirmed) { return; }
 
     customer.isEmailConfirmed = true;
     await customer.save();
@@ -541,7 +582,7 @@ export class CustomerService implements OnApplicationBootstrap {
   private async processEmailChange(oldEmail: string, newEmail: string, session: ClientSession): Promise<void> {
     if (oldEmail === newEmail) { return; }
 
-    await this.orderService.changeCustomerEmail(oldEmail, newEmail, session);
+    this.emailChanged$.next({ oldEmail, newEmail });
   }
 
   private async reindexAllSearchData() {

@@ -4,7 +4,7 @@ import { ReturnModelType } from '@typegoose/typegoose';
 import { ShippingMethod } from './models/shipping-method.model';
 import { AdminShippingMethodDto } from '../shared/dtos/admin/shipping-method.dto';
 import { __ } from '../shared/helpers/translate/translate.function';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../shared/enums/language.enum';
 
 @Injectable()

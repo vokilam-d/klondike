@@ -3,24 +3,16 @@ import { Customer } from '../../../customer/models/customer.model';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { ClientOrderItemDto } from './order-item.dto';
 import { Language } from '../../enums/language.enum';
+import { CustomerContactInfoDto } from '../shared-dtos/customer-contact-info.dto';
 
 export class ClientCustomerDto implements
-  Pick<Customer, 'id' | 'firstName' | 'lastName' | 'email' | 'phoneNumber' | 'addresses' | 'isEmailConfirmed' | 'totalOrdersCount' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'storeReviewIds' | 'productReviewIds' | 'wishlistProductIds'>,
+  Pick<Customer, 'id' | 'contactInfo' | 'addresses' | 'isEmailConfirmed' | 'totalOrdersCount' | 'totalOrdersCost' | 'discountPercent' | 'orderIds' | 'storeReviewIds' | 'productReviewIds' | 'wishlistProductIds'>,
   Record<keyof Pick<Customer, 'cart'>, ClientOrderItemDto[]> {
   @Expose()
   id: number;
 
   @Expose()
-  firstName: string;
-
-  @Expose()
-  lastName: string;
-
-  @Expose()
-  email: string;
-
-  @Expose()
-  phoneNumber: string;
+  contactInfo: CustomerContactInfoDto;
 
   @Expose()
   cart: ClientOrderItemDto[];
@@ -58,13 +50,10 @@ export class ClientCustomerDto implements
       addresses: customer.addresses,
       cart: customer.cart.map(item => ClientOrderItemDto.transformToDto(item, lang)),
       discountPercent: customer.discountPercent,
-      email: customer.email,
-      firstName: customer.firstName,
+      contactInfo: customer.contactInfo,
       id: customer.id,
       isEmailConfirmed: customer.isEmailConfirmed,
-      lastName: customer.lastName,
       orderIds: customer.orderIds,
-      phoneNumber: customer.phoneNumber,
       storeReviewIds: customer.storeReviewIds,
       productReviewIds: customer.productReviewIds,
       totalOrdersCost: customer.totalOrdersCost,

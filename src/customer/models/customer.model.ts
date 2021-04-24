@@ -1,6 +1,7 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { OrderItem } from '../../order/models/order-item.model';
 import { ShipmentAddress } from '../../shared/models/shipment-address.model';
+import { CustomerContactInfo } from '../../order/models/customer-contact-info.model';
 
 export class Customer {
   @prop()
@@ -9,17 +10,8 @@ export class Customer {
   set id(id: number) { this._id = id; }
   get id(): number { return this._id; }
 
-  @prop({ default: '' })
-  firstName: string;
-
-  @prop({ default: '' })
-  lastName: string;
-
-  @prop({ index: true })
-  email: string;
-
-  @prop({ index: true, default: '' })
-  phoneNumber: string;
+  @prop({ default: new CustomerContactInfo() })
+  contactInfo: CustomerContactInfo;
 
   @prop({ default: null })
   password: string;

@@ -5,10 +5,7 @@ type LangugeKeys = {
   [key in Language]: string;
 };
 
-interface IMultilingualText extends LangugeKeys {
-}
-
-export class MultilingualText implements IMultilingualText {
+export class MultilingualText implements LangugeKeys {
   @prop({ default: '' })
   ru: string = '';
 

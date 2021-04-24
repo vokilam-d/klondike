@@ -1,22 +1,22 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { AddressTypeEnum } from '../../enums/address-type.enum';
-import { normalizePhoneNumber } from '../../helpers/normalize-phone-number.function';
 import { TrimString } from '../../decorators/trim-string.decorator';
+import { ShipmentAddress } from '../../models/shipment-address.model';
 
-export class ShipmentAddressDto {
-
+export class ShipmentAddressDto implements ShipmentAddress {
   @Exclude()
   _id?: any;
 
   @Expose()
   @Transform(((value, obj) => obj._id || value))
+  @IsOptional()
   id?: string;
 
   @Expose()
   @IsEnum(AddressTypeEnum)
   @IsOptional()
-  addressType?: AddressTypeEnum;
+  type?: AddressTypeEnum;
 
   @Expose()
   @IsString()
@@ -28,13 +28,13 @@ export class ShipmentAddressDto {
   @IsString()
   @TrimString()
   @IsOptional()
-  settlement?: string;
+  settlementName?: string;
 
   @Expose()
   @IsString()
   @TrimString()
   @IsOptional()
-  settlementFull?: string;
+  settlementNameFull?: string;
 
   @Expose()
   @IsString()
@@ -46,38 +46,13 @@ export class ShipmentAddressDto {
   @IsString()
   @TrimString()
   @IsOptional()
-  address?: string;
+  addressName?: string;
 
   @Expose()
   @IsString()
   @TrimString()
   @IsOptional()
-  addressFull?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  @Transform(value => normalizePhoneNumber(value))
-  phone?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  firstName?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  lastName?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  middleName?: string;
+  addressNameFull?: string;
 
   @Expose()
   @IsString()
@@ -90,12 +65,6 @@ export class ShipmentAddressDto {
   @TrimString()
   @IsOptional()
   flat?: string;
-
-  @Expose()
-  @IsString()
-  @TrimString()
-  @IsOptional()
-  note?: string;
 
   @Expose()
   @IsOptional()

@@ -16,7 +16,7 @@ import { ClientOrderItemDto } from '../../shared/dtos/client/order-item.dto';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { CreateOrderItemDto } from '../../shared/dtos/shared-dtos/create-order-item.dto';
 import { Language } from '../../shared/enums/language.enum';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { ClientProductService } from '../../product/services/client-product.service';
 
 const TOTAL_COST_DISCOUNT_BREAKPOINTS: { totalCostBreakpoint: number, discountPercent: number }[] = [

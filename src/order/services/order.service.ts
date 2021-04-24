@@ -11,7 +11,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Order } from '../models/order.model';
 import { DocumentType, ReturnModelType } from '@typegoose/typegoose';
-import { AdminAddOrUpdateOrderDto, AdminOrderDto } from '../../shared/dtos/admin/order.dto';
+import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
 import { CounterService } from '../../shared/services/counter/counter.service';
 import { CustomerService } from '../../customer/customer.service';
 import { AdminAddOrUpdateCustomerDto } from '../../shared/dtos/admin/customer.dto';
@@ -19,24 +19,21 @@ import { InventoryService } from '../../inventory/inventory.service';
 import { FinalOrderStatuses, OrderStatusEnum, ShippedOrderStatuses } from '../../shared/enums/order-status.enum';
 import { getPropertyOf } from '../../shared/helpers/get-property-of.function';
 import { PdfGeneratorService } from '../../pdf-generator/pdf-generator.service';
-import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 import { Customer } from '../../customer/models/customer.model';
 import { AdminProductService } from '../../product/services/admin-product.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { SearchService } from '../../shared/services/search/search.service';
-import { ElasticOrderModel } from '../models/elastic-order.model';
+import { ElasticOrder } from '../models/elastic-order.model';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { ClientSession, FilterQuery } from 'mongoose';
 import { PaymentMethodService } from '../../payment-method/payment-method.service';
-import { ClientAddOrderDto } from '../../shared/dtos/client/order.dto';
 import { TasksService } from '../../tasks/tasks.service';
-import { __, getTranslations } from '../../shared/helpers/translate/translate.function';
+import { __ } from '../../shared/helpers/translate/translate.function';
 import { NovaPoshtaService } from '../../nova-poshta/nova-poshta.service';
 import { ShipmentSenderService } from '../../nova-poshta/shipment-sender.service';
 import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instance-cron.decorator';
 import { CronExpression } from '@nestjs/schedule';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { ShipmentStatusEnum } from '../../shared/enums/shipment-status.enum';
 import { Shipment } from '../models/shipment.model';
 import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
@@ -64,6 +61,18 @@ import { MediaService } from '../../shared/services/media/media.service';
 import { CronProd } from '../../shared/decorators/prod-cron.decorator';
 import { FileLogger } from '../../logger/file-logger.service';
 import { Subject } from 'rxjs';
+import { ClientAddOrderDto } from '../../shared/dtos/client/add-order.dto';
+import { AdminAddOrUpdateOrderDto } from '../../shared/dtos/admin/add-or-update-order.dto';
+import { CustomerContactInfo } from '../models/customer-contact-info.model';
+import { AdminShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-internet-document.dto';
+import { ShipmentAddress } from '../../shared/models/shipment-address.model';
+import { NovaPoshtaShipmentDto } from '../../shared/dtos/admin/nova-poshta-shipment.dto';
+import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
+import { OrderNotes } from '../models/order-notes.model';
+import { ShipmentCounterparty } from '../../shared/models/shipment-counterparty.model';
+import { OrderPaymentInfo } from '../models/order-payment-info.model';
+import { ContactInfo } from '../../shared/models/contact-info.model';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -81,7 +90,6 @@ export class OrderService implements OnApplicationBootstrap {
     private readonly counterService: CounterService,
     private readonly paymentMethodService: PaymentMethodService,
     private readonly tasksService: TasksService,
-    // private readonly emailService: EmailService,
     private readonly pdfGeneratorService: PdfGeneratorService,
     private readonly inventoryService: InventoryService,
     private readonly orderItemService: OrderItemService,
@@ -96,7 +104,89 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap() {
-    this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
+    this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
+    // this.reindexAllSearchData();
+
+    // (async () => {this.logger.log('Start find');
+    // const orders = await this.orderModel.find().sort({_id: -1}).lean().exec();
+    // this.logger.log('End find');
+    //
+    // for (const order of orders) {
+    //   // const json = order.toJSON();
+    //   const json = JSON.parse(JSON.stringify(order));
+    //   const oldRecipientAddr = json.shipment.recipient;
+    //   order.customerContactInfo = new CustomerContactInfo();
+    //   order.customerContactInfo.firstName = json.customerFirstName;
+    //   delete order['customerFirstName'];
+    //   order.customerContactInfo.lastName = json.customerLastName;
+    //   delete order['customerLastName'];
+    //   order.customerContactInfo.email = json.customerEmail;
+    //   delete order['customerEmail'];
+    //   order.customerContactInfo.phoneNumber = json.customerPhoneNumber;
+    //   delete order['customerPhoneNumber'];
+    //   order.customerContactInfo.middleName = oldRecipientAddr.middleName || '';
+    //
+    //   order.paymentInfo = new OrderPaymentInfo();
+    //   order.paymentInfo.methodId = json.paymentMethodId;
+    //   delete order['paymentMethodId'];
+    //   order.paymentInfo.type = json.paymentType;
+    //   delete order['paymentType'];
+    //   order.paymentInfo.methodClientName = json.paymentMethodClientName;
+    //   delete order['paymentMethodClientName'];
+    //   order.paymentInfo.methodAdminName = json.paymentMethodAdminName;
+    //   delete order['paymentMethodAdminName'];
+    //
+    //   order.notes = new OrderNotes();
+    //   order.notes.fromCustomer = json.clientNote || '';
+    //   delete order['clientNote'];
+    //   order.notes.fromAdmin = json.adminNote || '';
+    //   delete order['adminNote'];
+    //   order.notes.aboutCustomer = json.customerNote || '';
+    //   delete order['customerNote'];
+    //
+    //   order.shipment.recipient = new ShipmentCounterparty();
+    //   order.shipment.recipient.contactInfo = new ContactInfo();
+    //   order.shipment.recipient.contactInfo.firstName = oldRecipientAddr.firstName;
+    //   order.shipment.recipient.contactInfo.lastName = oldRecipientAddr.lastName;
+    //   order.shipment.recipient.contactInfo.middleName = oldRecipientAddr.middleName || '';
+    //   order.shipment.recipient.contactInfo.phoneNumber = oldRecipientAddr.phone || json.customerPhoneNumber;
+    //   order.shipment.recipient.address = new ShipmentAddress();
+    //   order.shipment.recipient.address.addressName = oldRecipientAddr.address || oldRecipientAddr.addressFull;
+    //   order.shipment.recipient.address.addressNameFull = oldRecipientAddr.addressFull;
+    //   order.shipment.recipient.address.settlementName = oldRecipientAddr.settlement || oldRecipientAddr.settlementFull;
+    //   order.shipment.recipient.address.settlementNameFull = oldRecipientAddr.settlementFull;
+    //   order.shipment.recipient.address.type = oldRecipientAddr.addressType;
+    //   order.shipment.recipient.address.buildingNumber = oldRecipientAddr.buildingNumber;
+    //   order.shipment.recipient.address.flat = oldRecipientAddr.flat;
+    //   order.shipment.recipient.address._id = oldRecipientAddr._id;
+    //
+    //   const oldSenderAddr = json.shipment.sender;
+    //   order.shipment.sender = new ShipmentCounterparty();
+    //   order.shipment.sender.contactInfo = new ContactInfo();
+    //   order.shipment.sender.contactInfo.firstName = oldSenderAddr.firstName;
+    //   order.shipment.sender.contactInfo.lastName = oldSenderAddr.lastName;
+    //   order.shipment.sender.contactInfo.middleName = oldSenderAddr.middleName;
+    //   order.shipment.sender.contactInfo.phoneNumber = oldSenderAddr.phone;
+    //   order.shipment.sender.address = new ShipmentAddress();
+    //   order.shipment.sender.address.addressName = oldSenderAddr.address || oldSenderAddr.addressFull;
+    //   order.shipment.sender.address.addressNameFull = oldSenderAddr.addressFull;
+    //   order.shipment.sender.address.settlementName = oldSenderAddr.settlement || oldSenderAddr.settlementFull;
+    //   order.shipment.sender.address.settlementNameFull = oldSenderAddr.settlementFull;
+    //   order.shipment.sender.address.type = oldSenderAddr.addressType;
+    //   order.shipment.sender.address.buildingNumber = oldSenderAddr.buildingNumber;
+    //   order.shipment.sender.address.flat = oldSenderAddr.flat;
+    //   order.shipment.sender.address._id = oldSenderAddr._id;
+    //
+    //   // console.dir(order.toJSON(), {depth: 10});
+    //   // await order.save();
+    //   // console.log('saved order', order.id);
+    //   await this.orderModel.updateOne({_id:order._id}, order).exec();
+    //   console.log('saved order', order._id);
+    // }
+    // console.log('saved order all');
+    //   this.reindexAllSearchData()
+    // })()
+    //
     // this.reindexAllSearchData();
   }
 
@@ -122,7 +212,7 @@ export class OrderService implements OnApplicationBootstrap {
       from.setHours(0, 0, 0);
     }
 
-    const conditions: FilterQuery<Order> = { };
+    const conditions: FilterQuery<Order> = {};
     conditions.createdAt = {
       $gte: from
     };
@@ -171,54 +261,41 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async createOrderAdmin(orderDto: AdminAddOrUpdateOrderDto, lang: Language, user: DocumentType<User>): Promise<Order> {
+  async createOrderAdmin(addOrUpdateOrderDto: AdminAddOrUpdateOrderDto, lang: Language, user: DocumentType<User>): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
       let customer: Customer;
 
-      let address = orderDto.shipment.recipient;
-      if (orderDto.customerId) {
-        if (orderDto.shouldSaveAddress) {
-          customer = await this.customerService.addAddressByCustomerId(orderDto.customerId, address, lang, session);
-        } else {
-          customer = await this.customerService.getCustomerById(orderDto.customerId, lang);
-        }
+      let address = addOrUpdateOrderDto.address;
+      if (addOrUpdateOrderDto.customerId) {
+        customer = await this.customerService.addAddressByCustomerId(addOrUpdateOrderDto.customerId, address, lang, session);
 
       } else {
-        customer = await this.customerService.getCustomerByEmailOrPhoneNumber(orderDto.customerEmail);
+        customer = await this.customerService.getCustomerByEmailOrPhoneNumber(addOrUpdateOrderDto.customerContactInfo.email);
 
         if (!customer) {
-          if (!orderDto.customerFirstName) { orderDto.customerFirstName = address.firstName; }
-          if (!orderDto.customerLastName) { orderDto.customerLastName = address.lastName; }
-          if (!orderDto.customerPhoneNumber) { orderDto.customerPhoneNumber = address.phone; }
-
           const customerDto = new AdminAddOrUpdateCustomerDto();
-          customerDto.firstName = orderDto.customerFirstName;
-          customerDto.lastName = orderDto.customerLastName;
-          customerDto.email = orderDto.customerEmail;
-          customerDto.phoneNumber = orderDto.customerPhoneNumber;
+          customerDto.contactInfo = addOrUpdateOrderDto.customerContactInfo;
           customerDto.addresses = [{ ...address, isDefault: true }];
-
           customer = await this.customerService.adminCreateCustomer(customerDto, lang, session);
         }
 
-        orderDto.customerId = customer.id;
+        addOrUpdateOrderDto.customerId = customer.id;
       }
 
-      const newOrder = await this.createOrder(orderDto, lang, customer, session, 'manager', user);
-      OrderService.addLog(newOrder, `Created order, source=${newOrder.source}, userLogin=${user?.login}`);
+      const newOrder = await this.createOrder(addOrUpdateOrderDto, lang, customer, session, 'manager', user);
+      newOrder.notes.fromAdmin = addOrUpdateOrderDto.note;
       newOrder.status = OrderStatusEnum.PROCESSING;
+      OrderService.addLog(newOrder, `Created order, source=${newOrder.source}, userLogin=${user?.login}`);
 
       await newOrder.save({ session });
-
       await session.commitTransaction();
 
       this.logger.log(`Created order by manager, orderId=${newOrder.id}, userLogin=${user?.login}`);
 
       this.addSearchData(newOrder).then();
       this.updateCachedOrderCount();
-      // this.emailService.sendOrderConfirmationEmail(newOrder, lang, isProdEnv(), false).then();
       this.orderCreated$.next({ order: newOrder, lang });
 
       return newOrder;
@@ -231,40 +308,34 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  async createOrderClient(orderDto: ClientAddOrderDto, lang: Language, customer: DocumentType<Customer>): Promise<Order> {
+  async createOrderClient(addOrderDto: ClientAddOrderDto, lang: Language, customer: DocumentType<Customer>): Promise<Order> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
 
       if (!customer) {
-        customer = await this.customerService.getCustomerByEmailOrPhoneNumber(orderDto.email);
+        customer = await this.customerService.getCustomerByEmailOrPhoneNumber(addOrderDto.customerContactInfo.email);
       }
 
       if (customer) {
         await this.customerService.emptyCart(customer, session);
 
-        const hasSameAddress = customer.addresses.find(address => areAddressesSame(address, orderDto.address));
+        const hasSameAddress = customer.addresses.find(address => areAddressesSame(address, addOrderDto.address));
         if (!hasSameAddress) {
-          await this.customerService.addCustomerAddress(customer, orderDto.address, session);
+          await this.customerService.addCustomerAddress(customer, addOrderDto.address, session);
         }
 
       } else {
         const customerDto = new AdminAddOrUpdateCustomerDto();
-        customerDto.firstName = orderDto.address.firstName;
-        customerDto.lastName = orderDto.address.lastName;
-        customerDto.email = orderDto.email;
-        customerDto.phoneNumber = orderDto.address.phone;
-        customerDto.addresses = [{ ...orderDto.address, isDefault: true }];
-
-        customer = await this.customerService.adminCreateCustomer(customerDto, lang, session) as any;
+        customerDto.contactInfo = addOrderDto.customerContactInfo;
+        customerDto.addresses = [{ ...addOrderDto.address, isDefault: true }];
+        customer = await this.customerService.adminCreateCustomer(customerDto, lang, session);
       }
 
-      const shipment = new ShipmentDto();
-      shipment.recipient = orderDto.address;
+      const prices = await this.orderItemService.calcOrderPrices(addOrderDto.items, customer, lang);
 
-      const prices = await this.orderItemService.calcOrderPrices(orderDto.items, customer, lang);
-
-      const newOrder = await this.createOrder({ ...orderDto, shipment, prices }, lang, customer, session, 'client');
+      const newOrder = await this.createOrder({ ...addOrderDto, prices }, lang, customer, session, 'client');
+      newOrder.notes.fromCustomer = addOrderDto.note;
 
       OrderService.checkForCheckoutRules(newOrder, lang);
 
@@ -276,10 +347,9 @@ export class OrderService implements OnApplicationBootstrap {
 
       this.logger.log(`Created order, source=${newOrder.source}, orderId=${newOrder.id}, customerId=${customer.id}`);
 
-      await this.addSearchData(newOrder);
+      this.addSearchData(newOrder).then();
       this.updateCachedOrderCount();
 
-      // this.emailService.sendOrderConfirmationEmail(newOrder, lang, isProdEnv()).then();
       this.orderCreated$.next({ order: newOrder, lang });
       this.tasksService.sendLeaveReviewEmail(newOrder, lang)
         .catch(err => this.logger.error(`Could not create task to send "Leave a review" email: ${err.message}`));
@@ -306,13 +376,10 @@ export class OrderService implements OnApplicationBootstrap {
     const newOrder = new this.orderModel(orderDto);
 
     newOrder.id = await this.counterService.getCounter(Order.collectionName, session);
-    newOrder.idForCustomer = addLeadingZeros(newOrder.id);
     newOrder.customerId = customer.id;
-    newOrder.customerEmail = customer.email;
-    newOrder.customerFirstName = customer.firstName;
-    newOrder.customerLastName = customer.lastName;
-    newOrder.customerPhoneNumber = customer.phoneNumber;
-    newOrder.customerNote = customer.note;
+    newOrder.notes.aboutCustomer = customer.note;
+    newOrder.shipment.recipient.contactInfo = orderDto.recipientContactInfo || orderDto.customerContactInfo;
+    newOrder.shipment.recipient.address = orderDto.address;
     newOrder.createdAt = new Date();
     newOrder.status = OrderStatusEnum.NEW;
 
@@ -327,15 +394,18 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       const additionalServiceIds = additionalServices.map(service => service.id);
-      newOrder.items[i] = await this.orderItemService.createOrderItem({ sku, qty, additionalServiceIds, omitReserved: false }, lang, false, product, variant);
+      newOrder.items[i] = await this.orderItemService.createOrderItem({
+        sku,
+        qty,
+        additionalServiceIds,
+        omitReserved: false
+      }, lang, false, product, variant);
 
       await this.inventoryService.addToOrdered(sku, qty, newOrder.id, session);
       await this.productService.updateSearchDataById(productId, lang, session);
     }
 
     await this.customerService.addOrderToCustomer(customer.id, newOrder.id, session);
-
-    newOrder.shippingMethodName = getTranslations(newOrder.shipment.recipient.addressType);
 
     await this.setPaymentInfoByMethodId(newOrder, orderDto.paymentMethodId);
     newOrder.source = source;
@@ -350,7 +420,6 @@ export class OrderService implements OnApplicationBootstrap {
         throw new ForbiddenException(__('Cannot edit order with status "$1"', lang, order.status));
       }
 
-      const isPaymentMethodChanged = order.paymentMethodId !== orderDto.paymentMethodId;
       const isManagerChanged = order.manager?.userId && (order.manager?.userId !== orderDto.manager?.userId);
       if (isManagerChanged && !hasPermissions(user, Role.SeniorManager)) {
         throw new ForbiddenException(__('You do not have enough permissions to change assigned manager', lang));
@@ -366,10 +435,10 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
+      order.shipment.recipient.contactInfo = orderDto.recipientContactInfo;
+      order.shipment.recipient.address = orderDto.address;
 
-      if (isPaymentMethodChanged) {
-        await this.setPaymentInfoByMethodId(order, order.paymentMethodId);
-      }
+      await this.setPaymentInfoByMethodId(order, orderDto.paymentMethodId);
 
       OrderService.addLog(order, `Edited order, userLogin=${user?.login}`);
 
@@ -455,7 +524,8 @@ export class OrderService implements OnApplicationBootstrap {
   private updateCachedOrderCount() {
     this.orderModel.estimatedDocumentCount().exec()
       .then(count => this.cachedOrderCount = count)
-      .catch(_ => {});
+      .catch(_ => {
+      });
   }
 
   private async cancelOrderPreActions(order: Order, lang: Language, session: ClientSession): Promise<void> {
@@ -534,7 +604,7 @@ export class OrderService implements OnApplicationBootstrap {
       spf.limit,
       spf.getSortAsObj(),
       undefined,
-      new ElasticOrderModel()
+      new ElasticOrder()
     );
   }
 
@@ -557,11 +627,13 @@ export class OrderService implements OnApplicationBootstrap {
       }).exec();
 
       const trackingNumbers: string[] = orders.map(order => order.shipment.trackingNumber);
-      const shipments: ShipmentDto[] = await this.novaPoshtaService.fetchShipments(trackingNumbers);
+      const shipments: NovaPoshtaShipmentDto[] = await this.novaPoshtaService.fetchShipments(trackingNumbers);
 
       for (const order of orders) {
-        const shipment: ShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
-        if (!shipment) { continue; }
+        const shipment: NovaPoshtaShipmentDto = shipments.find(ship => ship.trackingNumber === order.shipment.trackingNumber);
+        if (!shipment) {
+          continue;
+        }
 
         const oldShipmentStatus = order.shipment.status;
         order.shipment.status = shipment.status;
@@ -588,29 +660,25 @@ export class OrderService implements OnApplicationBootstrap {
     }
   }
 
-  public async updateOrderShipment(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
+  public async updateRecipientAddress(orderId: number, addressDto: ShipmentAddressDto, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(orderId, lang, async (order, session) => {
-      const isTrackingNumberChanged = shipmentDto.trackingNumber && shipmentDto.trackingNumber !== order.shipment.trackingNumber;
+      order.shipment.recipient.address = addressDto;
+
+      OrderService.addLog(order, `Edited order shipment recipient address, userLogin=${user?.login}`);
+      return order;
+    });
+  }
+
+  public async updateTrackingNumber(orderId: number, newTrackingNumber: string, user: User, lang: Language): Promise<Order> {
+    return await this.updateOrderById(orderId, lang, async (order, session) => {
+      if (newTrackingNumber === order.shipment.trackingNumber) {
+        return order;
+      }
       const oldTrackingNumber = order.shipment.trackingNumber;
-      const isAddressTypeChanged = shipmentDto.recipient && shipmentDto.recipient.addressType !== order.shipment.recipient.addressType;
+      order.shipment.trackingNumber = newTrackingNumber;
 
-      OrderService.patchShipmentData(order.shipment, shipmentDto);
-
-      if (isTrackingNumberChanged) {
-        await this.fetchShipmentStatus(order, session);
-      }
-      if (isAddressTypeChanged) {
-        order.shippingMethodName = getTranslations(order.shipment.recipient.addressType);
-      }
-
-      let logMessage = `Edited order shipment`;
-      if (isTrackingNumberChanged) {
-        logMessage += `, oldTrackingNumber=${oldTrackingNumber}, newTrackingNumber=${shipmentDto.trackingNumber}`;
-      }
-      logMessage += `, userLogin=${user?.login}`;
-
-      OrderService.addLog(order, logMessage);
-
+      await this.fetchShipmentStatus(order, session);
+      OrderService.addLog(order, `Edited order shipment tracking number, oldTrackingNumber=${oldTrackingNumber}, newTrackingNumber=${newTrackingNumber} userLogin=${user?.login}`);
       return order;
     });
   }
@@ -621,10 +689,10 @@ export class OrderService implements OnApplicationBootstrap {
     let estimatedDeliveryDate: string = '';
 
     if (order.shipment.trackingNumber) {
-      const shipmentDto: ShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
+      const shipmentDto: NovaPoshtaShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
       status = shipmentDto?.status || '';
       statusDescription = shipmentDto?.statusDescription || '';
-      estimatedDeliveryDate = shipmentDto?.estimatedDeliveryDate || '';
+      estimatedDeliveryDate = shipmentDto?.scheduledDeliveryDate || '';
     }
 
     order.shipment.status = status;
@@ -634,10 +702,12 @@ export class OrderService implements OnApplicationBootstrap {
     await this.updateOrderStatusByShipment(order, session);
   }
 
-  private static patchShipmentData(shipment: Shipment, shipmentDto: ShipmentDto) {
+  private static patchShipmentData(shipment: Shipment, shipmentDto: AdminShipmentDto) {
     const copyValues = (fromObject: any, toObject: any) => {
       for (const key of Object.keys(fromObject)) {
-        if (fromObject[key] === undefined) { continue; }
+        if (fromObject[key] === undefined) {
+          continue;
+        }
 
         if (isObject(fromObject[key])) {
           copyValues(fromObject[key], toObject[key]);
@@ -645,14 +715,14 @@ export class OrderService implements OnApplicationBootstrap {
           toObject[key] = fromObject[key];
         }
       }
-    }
+    };
 
     copyValues(shipmentDto, shipment);
   }
 
   private async updateOrderStatusByShipment(order: Order, session: ClientSession): Promise<void> {
     const oldStatus = order.status;
-    const isCashOnDelivery = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
+    const isCashOnDelivery = order.paymentInfo.type === PaymentTypeEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
     const isCashPickedUp = order.shipment.status === ShipmentStatusEnum.CASH_ON_DELIVERY_PICKED_UP;
     const isShipped = order.shipment.status === ShipmentStatusEnum.HEADING_TO_CITY
@@ -695,7 +765,7 @@ export class OrderService implements OnApplicationBootstrap {
 
     const secretKey = process.env.MERCHANT_SECRET_KEY;
     const merchantSignature = createHmac('md5', secretKey)
-      .update([ merchantAccount, merchantDomainName, orderReference, orderDate, amount, currency, ...itemNames, ...itemCounts, ...itemPrices ].join(';'))
+      .update([merchantAccount, merchantDomainName, orderReference, orderDate, amount, currency, ...itemNames, ...itemCounts, ...itemPrices].join(';'))
       .digest('hex');
 
     return {
@@ -711,25 +781,38 @@ export class OrderService implements OnApplicationBootstrap {
       productName: itemNames,
       productPrice: itemPrices,
       productCount: itemCounts,
-      clientFirstName: order.customerFirstName,
-      clientLastName: order.customerLastName,
-      clientEmail: order.customerEmail,
-      clientPhone: order.customerPhoneNumber || order.shipment.recipient.phone,
+      clientFirstName: order.customerContactInfo.firstName,
+      clientLastName: order.customerContactInfo.lastName,
+      clientEmail: order.customerContactInfo.email,
+      clientPhone: order.customerContactInfo.phoneNumber,
       language: Language.RU.toUpperCase()
-    }
+    };
   }
 
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   private async reindexAllSearchData() {
     this.logger.log(`Start reindex all search data`);
-    const orders = await this.orderModel.find().sort({ _id: -1 }).exec();
+    const orders = await this.orderModel.find().exec();
+    this.logger.log(`Start map to dtos`);
     const dtos = orders.map(order => plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true }));
 
+    this.logger.log(`Start delete collection`);
     await this.searchService.deleteCollection(Order.collectionName);
-    await this.searchService.ensureCollection(Order.collectionName, new ElasticOrderModel());
-    await this.searchService.addDocuments(Order.collectionName, dtos);
+    this.logger.log(`Start ensure collection`);
+    await this.searchService.ensureCollection(Order.collectionName, new ElasticOrder());
 
-    this.logger.log(`Reindexed`);
+    const threshold = 5000;
+    let currentStartIdx = 0;
+    while (currentStartIdx < dtos.length) {
+      const filteredDtos = dtos.slice(currentStartIdx, currentStartIdx + threshold);
+      this.logger.log(`Start adding ${filteredDtos.length} documents (${currentStartIdx}-${currentStartIdx + filteredDtos.length})`);
+      await this.searchService.addDocuments(Order.collectionName, filteredDtos);
+      this.logger.log(`Reindexed ${filteredDtos.length} items (${currentStartIdx}-${currentStartIdx + filteredDtos.length})`);
+
+      currentStartIdx += threshold;
+    }
+
+    this.logger.log(`Reindexed finished`);
   }
 
   async updateShipmentStatus(orderId: number, lang: Language): Promise<Order> {
@@ -746,7 +829,7 @@ export class OrderService implements OnApplicationBootstrap {
         if (order.status !== statusToAssert) {
           throw new BadRequestException(__('Cannot change status to "$1": order must be with status "$2"', lang, status, statusToAssert));
         }
-      }
+      };
 
       switch (status) {
         case OrderStatusEnum.PROCESSING:
@@ -811,41 +894,44 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async createInternetDocument(orderId: number, shipmentDto: ShipmentDto, user: User, lang: Language): Promise<Order> {
+  async createInternetDocument(orderId: number, createIntDocDto: CreateInternetDocumentDto, user: User, lang: Language): Promise<Order> {
     return this.updateOrderById(orderId, lang, async (order, session) => {
-      const isItemNotPacked = order.items.some(item => item.isPacked !== true);
+      const isItemsNotPacked = order.items.some(item => item.isPacked !== true);
       const hasNoMedias = order.medias.length === 0;
-      if (isItemNotPacked && hasNoMedias) {
+      if (isItemsNotPacked && hasNoMedias) {
         throw new BadRequestException(__('Cannot create internet document: attach a photo or pack all items', lang));
       }
 
       order.status = OrderStatusEnum.PACKED;
-      if (order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
+      if (order.paymentInfo.type === PaymentTypeEnum.CASH_ON_DELIVERY || order.isOrderPaid) {
         order.status = OrderStatusEnum.READY_TO_SHIP;
       }
 
       let logMessage: string = '';
 
-      if (shipmentDto.trackingNumber) {
-        order.shipment.trackingNumber = shipmentDto.trackingNumber;
+      if (createIntDocDto.trackingNumber) {
+        order.shipment.trackingNumber = createIntDocDto.trackingNumber;
         await this.fetchShipmentStatus(order, session);
 
         logMessage = `Set tracking number manually`;
 
       } else {
-        OrderService.patchShipmentData(order.shipment, shipmentDto);
+        order.shipment.recipient.address = plainToClass(ShipmentAddress, createIntDocDto, { excludeExtraneousValues: true });
 
-        const shipmentSender = await this.shipmentSenderService.getById(shipmentDto.senderId, lang);
-        order.shipment.sender.firstName = shipmentSender.firstName;
-        order.shipment.sender.lastName = shipmentSender.lastName;
-        order.shipment.sender.phone = shipmentSender.phone;
-        order.shipment.sender.address = shipmentSender.address;
-        order.shipment.sender.settlement = shipmentSender.city;
-        order.shipment.sender.addressType = shipmentSender.addressType;
+        const shipmentSender = await this.shipmentSenderService.getById(createIntDocDto.senderId, lang);
+        order.shipment.sender.contactInfo.firstName = shipmentSender.firstName;
+        order.shipment.sender.contactInfo.lastName = shipmentSender.lastName;
+        order.shipment.sender.contactInfo.phoneNumber = shipmentSender.phone;
+        order.shipment.sender.address.addressId = shipmentSender.address;
+        order.shipment.sender.address.settlementId = shipmentSender.city;
+        order.shipment.sender.address.type = shipmentSender.addressType;
 
-        this.fileLogger.log(`Creating internet document for orderId=${order.id}, cost=${shipmentDto.cost}, payerType=${shipmentDto.payerType}, backwardMoneyDelivery=${shipmentDto.backwardMoneyDelivery}...`);
+        this.fileLogger.log(`Creating internet document for orderId=${order.id}, cost=${createIntDocDto.cost}, payerType=${createIntDocDto.payerType}, backwardMoneyDelivery=${createIntDocDto.backwardMoneyDelivery}...`);
 
-        const { trackingNumber, estimatedDeliveryDate } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentType);
+        const {
+          trackingNumber,
+          estimatedDeliveryDate
+        } = await this.novaPoshtaService.createInternetDocument(order.shipment, shipmentSender, order.paymentInfo.type);
         order.shipment.trackingNumber = trackingNumber;
         order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
         order.shipment.status = ShipmentStatusEnum.AWAITING_TO_BE_RECEIVED_FROM_SENDER;
@@ -920,8 +1006,8 @@ export class OrderService implements OnApplicationBootstrap {
 
   async updateOrderAdminNote(id: number, adminNote: string, user: User, lang: Language): Promise<Order> {
     return await this.updateOrderById(id, lang, async order => {
-      const oldNote = order.adminNote;
-      order.adminNote = adminNote;
+      const oldNote = order.notes.fromAdmin;
+      order.notes.fromAdmin = adminNote;
       OrderService.addLog(order, `Changed admin note, oldNote=${oldNote}, newNote=${adminNote}, userLogin=${user?.login}`);
       return order;
     });
@@ -939,20 +1025,18 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  async changeCustomerEmail(oldEmail: string, newEmail: string, session: ClientSession): Promise<void> {
-    await this.orderModel.updateMany(
-      { customerEmail: oldEmail },
-      { customerEmail: newEmail }
-    ).session(session).exec();
-  }
+  private async setPaymentInfoByMethodId(order: Order, paymentMethodId: string): Promise<Order> {
+    if (order.paymentInfo.methodId === paymentMethodId) {
+      return order;
+    }
 
-  private async setPaymentInfoByMethodId(order: Order, paymentMethodId: string) {
     const paymentMethod = await this.paymentMethodService.getPaymentMethodById(paymentMethodId);
-    order.paymentType = paymentMethod.paymentType;
-    order.paymentMethodAdminName = paymentMethod.adminName;
-    order.paymentMethodClientName = paymentMethod.clientName;
+    order.paymentInfo.type = paymentMethod.paymentType;
+    order.paymentInfo.methodId = paymentMethodId;
+    order.paymentInfo.methodAdminName = paymentMethod.adminName;
+    order.paymentInfo.methodClientName = paymentMethod.clientName;
 
-    return;
+    return order;
   }
 
   async findShippedOrdersByDate([dateFromStr, dateToStr]: string[]): Promise<Pick<Order, 'items'>[]> {
@@ -971,8 +1055,8 @@ export class OrderService implements OnApplicationBootstrap {
     const filterQuery: FilterQuery<Order> = {
       status: { $in: ShippedOrderStatuses },
       shippedAt: {
-        ...(dateFrom ? { $gte: dateFrom  } : { }),
-        ...(dateTo ? { $lte: dateTo } : { })
+        ...(dateFrom ? { $gte: dateFrom } : {}),
+        ...(dateTo ? { $lte: dateTo } : {})
       }
     };
 
@@ -981,18 +1065,20 @@ export class OrderService implements OnApplicationBootstrap {
     const qtyProp: keyof OrderItem = 'qty';
     const projection = {
       [`${itemsProp}.${productIdProp}`]: 1,
-      [`${itemsProp}.${qtyProp}`]: 1,
-    }
+      [`${itemsProp}.${qtyProp}`]: 1
+    };
 
     return this.orderModel.find(filterQuery, projection).exec();
   }
 
   private static checkForCheckoutRules(order: Order, lang: Language) {
     const errors: string[] = [];
-    const isCashOnDeliveryMethod = order.paymentType === PaymentTypeEnum.CASH_ON_DELIVERY;
-    if (!isCashOnDeliveryMethod) { return; }
+    const isCashOnDeliveryMethod = order.paymentInfo.type === PaymentTypeEnum.CASH_ON_DELIVERY;
+    if (!isCashOnDeliveryMethod) {
+      return;
+    }
 
-    if (order.shipment.recipient.addressType === AddressTypeEnum.DOORS) {
+    if (order.shipment.recipient.address.type === AddressTypeEnum.DOORS) {
       errors.push(__('Cash on delivery is not available with address delivery', lang));
     }
 

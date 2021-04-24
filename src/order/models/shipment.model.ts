@@ -1,57 +1,54 @@
 import { prop } from '@typegoose/typegoose';
 import { ShipmentStatusEnum } from '../../shared/enums/shipment-status.enum';
-import { ShipmentPaymentMethodEnum } from '../../shared/enums/shipment-payment-method.enum';
 import { ShipmentPayerEnum } from '../../shared/enums/shipment-payer.enum';
-import { ShipmentAddress } from '../../shared/models/shipment-address.model';
+import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { getTranslations } from '../../shared/helpers/translate/translate.function';
+import { ShipmentCounterparty } from '../../shared/models/shipment-counterparty.model';
 
 export class Shipment {
 
   @prop()
-  trackingNumber?: string;
+  trackingNumber: string;
 
   @prop()
-  estimatedDeliveryDate?: string;
+  estimatedDeliveryDate: string;
 
   @prop()
-  status?: ShipmentStatusEnum;
+  status: ShipmentStatusEnum;
 
   @prop()
-  statusDescription?: string;
+  statusDescription: string;
 
-  @prop({ default: new ShipmentAddress() })
-  sender?: ShipmentAddress;
+  @prop({ default: new ShipmentCounterparty(), _id: false })
+  sender: ShipmentCounterparty;
 
-  @prop({ default: new ShipmentAddress() })
-  recipient?: ShipmentAddress;
+  @prop({ default: new ShipmentCounterparty(), _id: false })
+  recipient: ShipmentCounterparty;
 
-  @prop()
-  payerType?: ShipmentPayerEnum;
-
-  @prop()
-  paymentMethod?: ShipmentPaymentMethodEnum;
+  get shippingMethodDescription(): MultilingualText { return getTranslations(this.recipient.address.type); }
 
   @prop()
-  date?: string;
+  payerType: ShipmentPayerEnum;
 
   @prop()
-  weight?: string;
+  weight: string;
 
   @prop()
-  length?: string;
+  length: string;
 
   @prop()
-  width?: string;
+  width: string;
 
   @prop()
-  height?: string;
+  height: string;
 
   @prop()
-  backwardMoneyDelivery?: string;
+  backwardMoneyDelivery: string;
 
   @prop()
-  cost?: string;
+  cost: string;
 
   @prop()
-  description?: string;
+  description: string;
 
 }

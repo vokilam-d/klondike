@@ -20,7 +20,7 @@ import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instanc
 import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-expression-early-morning.function';
 import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticBlogPost } from '../models/elastic-blog-post.model';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
 
 @Injectable()

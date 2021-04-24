@@ -6,6 +6,7 @@ import { ITelegramInlineKeyboardMarkup } from '../interfaces/inline-keyboard-mar
 import { AdminStoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
 import { beautifyPhoneNumber } from '../../shared/helpers/beautify-phone-number.function';
 import { BotConfigurationService } from './bot-configuration.service';
+import { adminDefaultLanguage } from '../../shared/constants';
 
 @Injectable()
 export class BotService implements OnApplicationBootstrap {
@@ -22,24 +23,24 @@ export class BotService implements OnApplicationBootstrap {
 
   async onNewOrder(order: Order): Promise<void> {
     if (!this.botConfig.adminOrderChat) { return; }
-    const phone = beautifyPhoneNumber(order.customerPhoneNumber || order.shipment.recipient.phone);
+    const phone = beautifyPhoneNumber(order.customerContactInfo.phoneNumber || order.shipment.recipient.contactInfo.phoneNumber);
     const _ = this.escapeString;
 
     let text = `Заказ №${order.id}\n`
-      + `${_(order.customerFirstName)} ${_(order.customerLastName)}, ${_(phone)}\\.`;
+      + `${_(order.customerContactInfo.firstName)} ${_(order.customerContactInfo.lastName)}, ${_(phone)}\\.`;
 
-    if (order.customerNote) {
-      text += ` \\(_${_(order.customerNote)}_\\)\\.`
+    if (order.notes.aboutCustomer) {
+      text += ` \\(_${_(order.notes.aboutCustomer)}_\\)\\.`
     }
 
     text += `\n`
-      + `${_(order.shipment.recipient.settlement)}, ${_(order.shipment.recipient.address)}\\.\n`
-      + `${_(order.paymentMethodAdminName.ru)}\\.\n`
+      + `${_(order.shipment.recipient.address.settlementName)}, ${_(order.shipment.recipient.address.addressName)}\\.\n`
+      + `${_(order.paymentInfo.methodAdminName[adminDefaultLanguage])}\\.\n`
       + `${order.isCallbackNeeded ? 'Перезвонить' : 'Не звонить'}\\.\n`
       + `Менеджер: ${order.manager.name}\\.\n`;
 
-    if (order.clientNote) {
-      text += `Коммент клиента: _${_(order.clientNote)}_\\.\n`
+    if (order.notes.fromCustomer) {
+      text += `Коммент клиента: _${_(order.notes.fromCustomer)}_\\.\n`
     }
 
     const itemsPluralText = order.items.length === 1 ? 'товар' : order.items.length > 4 ? 'товаров' : 'товара';
@@ -105,6 +106,8 @@ export class BotService implements OnApplicationBootstrap {
   }
 
   private escapeString(str: string): string {
+    if (!str) { str = ''; }
+
     const toEscape = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!' ];
     let escapedStr: string = '';
     for (const strElement of str) {

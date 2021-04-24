@@ -8,7 +8,7 @@ import { CronExpression } from '@nestjs/schedule';
 import { CronProdPrimaryInstance } from '../shared/decorators/primary-instance-cron.decorator';
 import { Subject } from 'rxjs';
 import { __ } from '../shared/helpers/translate/translate.function';
-import { ShipmentDto } from '../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../shared/enums/language.enum';
 
 interface ExchangeRate {

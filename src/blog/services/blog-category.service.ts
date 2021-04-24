@@ -17,7 +17,7 @@ import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
 import { ClientBlogCategoryListItemDto } from '../../shared/dtos/client/blog-category-list-item.dto';
 import { Language } from '../../shared/enums/language.enum';
-import { ShipmentDto } from '../../shared/dtos/admin/shipment.dto';
+import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 
 @Injectable()
 export class BlogCategoryService {
