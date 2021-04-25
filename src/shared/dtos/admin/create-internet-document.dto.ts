@@ -11,7 +11,7 @@ export class CreateInternetDocumentDto implements Pick<Shipment, 'trackingNumber
   @IsOptional()
   trackingNumber: string;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
   backwardMoneyDelivery: number;
 
