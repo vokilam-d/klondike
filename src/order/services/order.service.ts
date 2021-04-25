@@ -558,7 +558,7 @@ export class OrderService implements OnApplicationBootstrap {
     const order = await this.getOrderById(orderId, lang);
     return {
       fileName: `Заказ №${order.idForCustomer}.pdf`,
-      pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON(), lang)
+      pdf: await this.pdfGeneratorService.generateOrderPdf(order.toJSON({ virtuals: true }), lang)
     };
   }
 
@@ -566,7 +566,7 @@ export class OrderService implements OnApplicationBootstrap {
     const order = await this.getOrderById(orderId, lang);
     return {
       fileName: `${editDto.title} №${order.id}.pdf`,
-      pdf: await this.pdfGeneratorService.generateInvoicePdf(order.toJSON(), editDto)
+      pdf: await this.pdfGeneratorService.generateInvoicePdf(order.toJSON({ virtuals: true }), editDto)
     };
   }
 

@@ -82,7 +82,8 @@ export class Order {
 export const OrderModel = getModelForClass(Order, {
   schemaOptions: {
     toJSON: {
-      virtuals: true
+      virtuals: true,
+      getters: true
     },
     timestamps: true
   }
