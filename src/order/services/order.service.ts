@@ -916,7 +916,7 @@ export class OrderService implements OnApplicationBootstrap {
         logMessage = `Set tracking number manually`;
 
       } else {
-        order.shipment.recipient.address = plainToClass(ShipmentAddress, createIntDocDto, { excludeExtraneousValues: true });
+        Object.keys(createIntDocDto).forEach(key => order.shipment[key] = createIntDocDto[key]);
 
         const shipmentSender = await this.shipmentSenderService.getById(createIntDocDto.senderId, lang);
         order.shipment.sender.contactInfo.firstName = shipmentSender.firstName;
