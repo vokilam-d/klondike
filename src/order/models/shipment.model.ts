@@ -43,10 +43,10 @@ export class Shipment {
   height: string;
 
   @prop()
-  backwardMoneyDelivery: string;
+  backwardMoneyDelivery: number;
 
   @prop()
-  cost: string;
+  cost: number;
 
   @prop()
   description: string;

@@ -1,4 +1,4 @@
-import { Expose, Type } from 'class-transformer';
+import { Expose, plainToClass, Type } from 'class-transformer';
 import { Customer } from '../../../customer/models/customer.model';
 import { ShipmentAddressDto } from '../shared-dtos/shipment-address.dto';
 import { ClientOrderItemDto } from './order-item.dto';
@@ -47,7 +47,7 @@ export class ClientCustomerDto implements
 
   static transformToDto(customer: Customer, lang: Language): ClientCustomerDto {
     return {
-      addresses: customer.addresses,
+      addresses: plainToClass(ShipmentAddressDto, customer.addresses, { excludeExtraneousValues: true }),
       cart: customer.cart.map(item => ClientOrderItemDto.transformToDto(item, lang)),
       discountPercent: customer.discountPercent,
       contactInfo: customer.contactInfo,

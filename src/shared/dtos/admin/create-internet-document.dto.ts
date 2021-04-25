@@ -1,9 +1,9 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Shipment } from '../../../order/models/shipment.model';
 import { ShipmentPayerEnum } from '../../enums/shipment-payer.enum';
 
 export class CreateInternetDocumentDto implements Pick<Shipment, 'trackingNumber' | 'payerType' | 'weight' | 'length' | 'width' | 'height' | 'backwardMoneyDelivery' | 'cost' | 'description'> {
-  @IsString()
+  @IsNumber()
   @IsOptional()
   senderId: number;
 
@@ -13,11 +13,11 @@ export class CreateInternetDocumentDto implements Pick<Shipment, 'trackingNumber
 
   @IsString()
   @IsOptional()
-  backwardMoneyDelivery: string;
+  backwardMoneyDelivery: number;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  cost: string;
+  cost: number;
 
   @IsString()
   @IsOptional()

@@ -61,11 +61,11 @@ export abstract class BaseShipmentDto implements Shipment {
 
   @Expose()
   @IsOptional()
-  backwardMoneyDelivery: string;
+  backwardMoneyDelivery: number;
 
   @Expose()
   @IsOptional()
-  cost: string;
+  cost: number;
 
   @Expose()
   @IsOptional()
