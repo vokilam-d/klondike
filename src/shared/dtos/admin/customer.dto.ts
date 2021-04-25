@@ -28,13 +28,10 @@ export class AdminAddOrUpdateCustomerDto implements Pick<Customer, 'contactInfo'
   discountPercent: number;
 }
 
-export class AdminCustomerDto extends AdminAddOrUpdateCustomerDto implements Omit<Customer, 'deprecatedPasswordHash' | '_id'> {
+export class AdminCustomerDto extends AdminAddOrUpdateCustomerDto implements Omit<Customer, 'deprecatedPasswordHash' | '_id' | 'password'> {
   @Expose()
   @Transform(((value, obj) => obj._id || value))
   id: number;
-
-  @Expose()
-  password: any;
 
   @Expose()
   @Type(() => Date)
