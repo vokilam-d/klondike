@@ -435,7 +435,7 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
-      order.shipment.recipient.contactInfo = orderDto.recipientContactInfo;
+      order.shipment.recipient.contactInfo = orderDto.recipientContactInfo || orderDto.customerContactInfo;
       order.shipment.recipient.address = orderDto.address;
 
       await this.setPaymentInfoByMethodId(order, orderDto.paymentMethodId);
