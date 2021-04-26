@@ -20,10 +20,10 @@ import { DocumentType } from '@typegoose/typegoose';
 import { AdminAddOrUpdateOrderDto } from '../../shared/dtos/admin/add-or-update-order.dto';
 import { UpdateOrderAdminNote } from '../../shared/dtos/admin/update-order-admin-note.dto';
 import { UpdateOrderManager } from '../../shared/dtos/admin/update-order-manager.dto';
-import { AdminShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-internet-document.dto';
 import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
 import { UpdateTrackingNumberDto } from '../../shared/dtos/admin/update-tracking-number.dto';
+import { ContactInfoDto } from '../../shared/dtos/shared-dtos/contact-info.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -218,6 +218,21 @@ export class AdminOrderController {
   ): Promise<ResponseDto<AdminOrderDto>> {
 
     const updated = await this.orderService.updateRecipientAddress(orderId, addressDto, user, lang);
+
+    return {
+      data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Put(':id/recipient-contact-info')
+  async updateRecipientContactInfo(
+    @Param('id') orderId: number,
+    @Body() contactInfoDto: ContactInfoDto,
+    @ValidatedUser() user: DocumentType<User>,
+    @AdminLang() lang: Language
+  ): Promise<ResponseDto<AdminOrderDto>> {
+
+    const updated = await this.orderService.updateRecipientContactInfo(orderId, contactInfoDto, user, lang);
 
     return {
       data: plainToClass(AdminOrderDto, updated, { excludeExtraneousValues: true })

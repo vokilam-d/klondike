@@ -73,6 +73,7 @@ import { OrderNotes } from '../models/order-notes.model';
 import { ShipmentCounterparty } from '../../shared/models/shipment-counterparty.model';
 import { OrderPaymentInfo } from '../models/order-payment-info.model';
 import { ContactInfo } from '../../shared/models/contact-info.model';
+import { ContactInfoDto } from '../../shared/dtos/shared-dtos/contact-info.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -665,6 +666,15 @@ export class OrderService implements OnApplicationBootstrap {
       order.shipment.recipient.address = addressDto;
 
       OrderService.addLog(order, `Edited order shipment recipient address, userLogin=${user?.login}`);
+      return order;
+    });
+  }
+
+  public async updateRecipientContactInfo(orderId: number, contactInfoDto: ContactInfoDto, user: User, lang: Language): Promise<Order> {
+    return await this.updateOrderById(orderId, lang, async (order, session) => {
+      order.shipment.recipient.contactInfo = contactInfoDto;
+
+      OrderService.addLog(order, `Edited order shipment recipient contact info, userLogin=${user?.login}`);
       return order;
     });
   }
