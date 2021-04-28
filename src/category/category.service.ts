@@ -545,6 +545,7 @@ export class CategoryService implements OnApplicationBootstrap {
   private async updateCachedCategories() {
     this.cachedTreesMap.clear();
     this.cachedLinkedCategories.clear();
+    this.cachedClientCategory.clear();
 
     try {
       let categories = await this.categoryModel.find().exec();
