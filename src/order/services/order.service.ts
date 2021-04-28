@@ -609,7 +609,7 @@ export class OrderService implements OnApplicationBootstrap {
     );
   }
 
-  @CronProdPrimaryInstance(CronExpression.EVERY_HOUR)
+  @CronProdPrimaryInstance(CronExpression.EVERY_30_MINUTES)
   public async findWithNotFinalStatusesAndUpdate(lang: Language = adminDefaultLanguage): Promise<Order[]> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
@@ -710,24 +710,6 @@ export class OrderService implements OnApplicationBootstrap {
     order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
 
     await this.updateOrderStatusByShipment(order, session);
-  }
-
-  private static patchShipmentData(shipment: Shipment, shipmentDto: AdminShipmentDto) {
-    const copyValues = (fromObject: any, toObject: any) => {
-      for (const key of Object.keys(fromObject)) {
-        if (fromObject[key] === undefined) {
-          continue;
-        }
-
-        if (isObject(fromObject[key])) {
-          copyValues(fromObject[key], toObject[key]);
-        } else {
-          toObject[key] = fromObject[key];
-        }
-      }
-    };
-
-    copyValues(shipmentDto, shipment);
   }
 
   private async updateOrderStatusByShipment(order: Order, session: ClientSession): Promise<void> {
@@ -929,11 +911,17 @@ export class OrderService implements OnApplicationBootstrap {
         Object.keys(createIntDocDto).forEach(key => order.shipment[key] = createIntDocDto[key]);
 
         const shipmentSender = await this.shipmentSenderService.getById(createIntDocDto.senderId, lang);
+        if (!shipmentSender) {
+          throw new BadRequestException(__('Shipment sender with id "$1" does not exist', lang, createIntDocDto.senderId));
+        }
+        order.shipment.sender.id = shipmentSender.senderId;
         order.shipment.sender.contactInfo.firstName = shipmentSender.firstName;
         order.shipment.sender.contactInfo.lastName = shipmentSender.lastName;
         order.shipment.sender.contactInfo.phoneNumber = shipmentSender.phone;
-        order.shipment.sender.address.addressId = shipmentSender.address;
-        order.shipment.sender.address.settlementId = shipmentSender.city;
+        order.shipment.sender.address.addressId = shipmentSender.addressId;
+        order.shipment.sender.address.addressName = shipmentSender.address;
+        order.shipment.sender.address.settlementId = shipmentSender.cityId;
+        order.shipment.sender.address.settlementName = shipmentSender.city;
         order.shipment.sender.address.type = shipmentSender.addressType;
 
         this.fileLogger.log(`Creating internet document for orderId=${order.id}, cost=${createIntDocDto.cost}, payerType=${createIntDocDto.payerType}, backwardMoneyDelivery=${createIntDocDto.backwardMoneyDelivery}...`);

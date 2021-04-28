@@ -368,6 +368,11 @@ export const TRANSLATIONS = {
     ru: 'Товар с кодом "$1" не найден в заказе "№$2"',
     uk: 'Товар з кодом "$1" не знайдено в замовленні "№$2"'
   },
+  'Shipment sender with id "$1" does not exist': {
+    en: 'Shipment sender with id "$1" does not exist',
+    ru: 'Отправитель с id "$1" не существует',
+    uk: 'Відправник з id "$1" не існує'
+  },
   'Wrong quantity of order item "$1" is packed. Packed: "$2". Should be: "$3"': {
     en: 'Wrong quantity of order item "$1" is packed. Packed: "$2". Should be: "$3"',
     ru: 'Упаковано неправильное кол-во товара "$1". Упаковано: "$2". Должно быть: "$3"',
