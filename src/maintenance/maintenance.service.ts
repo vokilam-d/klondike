@@ -30,7 +30,8 @@ export class MaintenanceService implements OnApplicationBootstrap {
   private handleUpdate() {
     this.eventsService.on(this.updateEventName, (maintenanceInfo: MaintenanceInfoDto) => {
       this.isInProgress = maintenanceInfo.isMaintenanceInProgress;
-      this.endTime = new Date(maintenanceInfo.maintenanceEndTime);
+      const endTime = maintenanceInfo.maintenanceEndTime;
+      this.endTime = typeof endTime === 'string' ? new Date(endTime) : endTime;
     });
   }
 }

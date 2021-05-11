@@ -5,5 +5,5 @@ export class MaintenanceInfoDto {
   isMaintenanceInProgress: boolean;
 
   @Expose()
-  maintenanceEndTime: string;
+  maintenanceEndTime: string | null;
 }
