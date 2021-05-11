@@ -13,6 +13,7 @@ type Callback = (data: any) => void;
 @Injectable()
 export class EventsService {
 
+  private isPm2Mode: boolean = true;
   private logger = new Logger(EventsService.name);
   private workerIds: number[] = [];
   private callbacksMap: Map<string, Callback[]> = new Map();
@@ -30,14 +31,18 @@ export class EventsService {
       type: 'type'
     };
 
-    for (const workerId of this.workerIds) {
-      pm2.sendDataToProcessId(workerId, message, (err, _) => {
-        if (err) {
-          this.logger.error(`Could not send data to process id "${workerId}":`);
-          this.logger.error(err);
-          return;
-        }
-      });
+    if (this.isPm2Mode) {
+      for (const workerId of this.workerIds) {
+        pm2.sendDataToProcessId(workerId, message, (err, _) => {
+          if (err) {
+            this.logger.error(`Could not send data to process id "${workerId}":`);
+            this.logger.error(err);
+            return;
+          }
+        });
+      }
+    } else {
+      process.emit('message', message, null);
     }
   }
 
@@ -53,6 +58,11 @@ export class EventsService {
       if (err) {
         this.logger.error(`Could not list processes:`);
         this.logger.error(err);
+        return;
+      }
+
+      if (processDescriptionList.length === 0) {
+        this.isPm2Mode = false;
         return;
       }
 

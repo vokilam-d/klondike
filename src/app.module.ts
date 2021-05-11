@@ -33,6 +33,7 @@ import { ChartModule } from './chart/chart.module';
 import { BannerModule } from './banner/banner.module';
 import { BotModule } from './bot/bot.module';
 import { NotificationModule } from './notification/notification.module';
+import { MaintenanceModule } from './maintenance/maintenance.module';
 
 @Module({
   imports: [
@@ -80,7 +81,8 @@ import { NotificationModule } from './notification/notification.module';
     ChartModule,
     BannerModule,
     BotModule,
-    NotificationModule
+    NotificationModule,
+    MaintenanceModule
   ],
   providers: [
     GlobalExceptionFilter,
