@@ -12,7 +12,7 @@ export class MaintenanceController {
   @Get()
   async getMaintenanceInfo(): Promise<ResponseDto<MaintenanceInfoDto>> {
     return {
-      data: await this.maintenanceService.getMaintenanceInfo()
+      data: this.maintenanceService.getMaintenanceInfo()
     };
   }
 

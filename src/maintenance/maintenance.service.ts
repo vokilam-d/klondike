@@ -16,7 +16,7 @@ export class MaintenanceService implements OnApplicationBootstrap {
     this.handleUpdate();
   }
 
-  async getMaintenanceInfo(): Promise<MaintenanceInfoDto> {
+  getMaintenanceInfo(): MaintenanceInfoDto {
     return {
       isMaintenanceInProgress: this.isInProgress,
       maintenanceEndTime: this.endTime?.toISOString()

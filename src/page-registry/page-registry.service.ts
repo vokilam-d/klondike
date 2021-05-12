@@ -8,6 +8,7 @@ import { CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../shared/services/events/events.service';
 import { Language } from '../shared/enums/language.enum';
 import { CronProd } from '../shared/decorators/prod-cron.decorator';
+import { MaintenanceService } from '../maintenance/maintenance.service';
 
 @Injectable()
 export class PageRegistryService implements OnApplicationBootstrap {
@@ -18,6 +19,7 @@ export class PageRegistryService implements OnApplicationBootstrap {
 
   constructor(
     @InjectModel(PageRegistry.name) private readonly registryModel: ReturnModelType<typeof PageRegistry>,
+    private readonly maintenanceService: MaintenanceService,
     private readonly eventsService: EventsService
   ) { }
 
@@ -96,6 +98,10 @@ export class PageRegistryService implements OnApplicationBootstrap {
 
   @CronProd(CronExpression.EVERY_30_SECONDS)
   private async updateCachedPages() {
+    if (this.maintenanceService.getMaintenanceInfo().isMaintenanceInProgress) {
+      return;
+    }
+
     try {
       const pages = await this.registryModel.find().exec();
       this.cachedPages = pages.map(page => page.toJSON());
