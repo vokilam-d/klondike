@@ -263,7 +263,7 @@ export class AdminProductService implements OnApplicationBootstrap {
       }
 
       const newProductModel = new this.productModel(productDto);
-      newProductModel.id = await this.counterService.getCounter(Product.collectionName);
+      newProductModel.id = await this.counterService.getCounter(Product.collectionName, session);
       await this.populateProductCategoriesAndBreadcrumbs(newProductModel);
 
       for (const dtoVariant of productDto.variants) {

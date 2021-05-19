@@ -11,7 +11,7 @@ export class CounterService {
   constructor(@InjectModel(Counter.name) private readonly counterModel: ReturnModelType<typeof Counter>) {
   }
 
-  async getCounter(collectionName: string, session?: ClientSession): Promise<number> {
+  async getCounter(collectionName: string, session: ClientSession): Promise<number> {
     const counter = await this.counterModel
       .findOneAndUpdate(
         { _id: collectionName },
