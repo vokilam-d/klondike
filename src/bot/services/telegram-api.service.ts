@@ -36,7 +36,7 @@ export class TelegramApiService {
     payload.append('chat_id', chatId);
     payload.append('file', file);
 
-    return this.execMethod('sendMessage', payload);
+    return this.execMethod('sendPhoto', payload);
   }
 
   setMyCommands(commands: IBotCommand[]): Promise<any> {
