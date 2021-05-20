@@ -4,7 +4,6 @@ import { ITelegramReplyKeyboardMarkup } from '../interfaces/reply-keyboard-marku
 import { ITelegramReplyKeyboardRemove } from '../interfaces/reply-keyboard-remove.interface';
 import { IBotCommand } from '../interfaces/bot-command.interface';
 import { ISetBotCommands } from '../interfaces/set-bot-commands.interface';
-import * as FormData from 'form-data';
 
 export type ReplyMarkup = ITelegramInlineKeyboardMarkup | ITelegramReplyKeyboardMarkup | ITelegramReplyKeyboardRemove;
 
@@ -29,14 +28,6 @@ export class TelegramApiService {
     };
 
     return this.execMethod('sendMessage', payload);
-  }
-
-  sendPhoto(chatId: string | number, file: any): Promise<any> {
-    const payload = new FormData();
-    payload.append('chat_id', chatId);
-    payload.append('file', file);
-
-    return this.execMethod('sendPhoto', payload);
   }
 
   setMyCommands(commands: IBotCommand[]): Promise<any> {
