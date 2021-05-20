@@ -172,11 +172,15 @@ export class BotService implements OnApplicationBootstrap {
             await this.telegramApiService.sendPhoto(this.botConfig.adminPaymentChat, file);
             resolve();
           } catch (e) {
+            console.log('telegramApiService.sendPhoto error');
+            console.error(e);
             reject(e);
           }
         },
         error => {
-          reject(error)
+          console.log('request.multipart error');
+          console.error(error);
+          reject(error);
         }
       );
     });
