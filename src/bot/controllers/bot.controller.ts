@@ -1,14 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { BotConfigurationService } from '../services/bot-configuration.service';
 import { ITelegramUpdate } from '../interfaces/update.interface';
-import { BotService } from '../services/bot.service';
 
 @Controller('bot')
 export class BotController {
 
   constructor(
-    private readonly botConfig: BotConfigurationService,
-    private readonly botService: BotService
+    private readonly botConfig: BotConfigurationService
   ) { }
 
   @Post('tg-webhook')
