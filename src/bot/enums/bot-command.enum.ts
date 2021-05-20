@@ -1,5 +1,6 @@
 export enum BotCommand {
   SetAsAdminOrderChat = '/orders',
   SetAsAdminReviewChat = '/reviews',
-  SetAsAdminHealthChat = '/health'
+  SetAsAdminHealthChat = '/health',
+  SetAsAdminPaymentChat = '/payments'
 }

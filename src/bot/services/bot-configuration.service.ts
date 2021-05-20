@@ -20,12 +20,14 @@ export class BotConfigurationService implements OnApplicationBootstrap {
   private _adminOrderChat: string | number | null = null;
   private _adminReviewsChat: string | number | null = null;
   private _adminHealthChat: string | number | null = null;
+  private _adminPaymentChat: string | number | null = null;
   private ownerIds: number[] = [];
   private bot: ITelegramUser | null = null;
 
   get adminOrderChat() { return this._adminOrderChat; }
   get adminReviewsChat() { return this._adminReviewsChat; }
   get adminHealthChat() { return this._adminHealthChat; }
+  get adminPaymentChat() { return this._adminPaymentChat; }
 
   constructor(
     @InjectModel(BotData.name) private readonly botDataModel: ReturnModelType<typeof BotDataModel>,
@@ -58,6 +60,9 @@ export class BotConfigurationService implements OnApplicationBootstrap {
       case BotCommand.SetAsAdminOrderChat:
         this.setAdminChat(chat, BotDataType.AdminOrderChat, user);
         break;
+      case BotCommand.SetAsAdminPaymentChat:
+        this.setAdminChat(chat, BotDataType.AdminPaymentChat, user);
+        break;
     }
   }
 
@@ -80,6 +85,10 @@ export class BotConfigurationService implements OnApplicationBootstrap {
       case BotDataType.AdminReviewsChat:
         this._adminReviewsChat = chat.id;
         message = `Теперь оповещения об отзывах будут приходить в этот чат`;
+        break;
+      case BotDataType.AdminPaymentChat:
+        this._adminReviewsChat = chat.id;
+        message = `Теперь оповещения об оплатах будут приходить в этот чат`;
         break;
       default:
         return;
@@ -113,6 +122,9 @@ export class BotConfigurationService implements OnApplicationBootstrap {
           break;
         case BotDataType.AdminReviewsChat:
           this._adminReviewsChat = datum.data;
+          break;
+        case BotDataType.AdminPaymentChat:
+          this._adminPaymentChat = datum.data;
           break;
         default:
           continue;
@@ -150,6 +162,7 @@ export class BotConfigurationService implements OnApplicationBootstrap {
       [BotCommand.SetAsAdminOrderChat]: 'Уведомлять о заказах',
       [BotCommand.SetAsAdminHealthChat]: 'Уведомлять об ошибках',
       [BotCommand.SetAsAdminReviewChat]: 'Уведомлять об отзывах',
+      [BotCommand.SetAsAdminPaymentChat]: 'Уведомлять об оплатах',
     };
 
     const commandsList = Object.values(BotCommand);
@@ -171,5 +184,6 @@ export class BotConfigurationService implements OnApplicationBootstrap {
     this.eventsService.on(BotDataType.AdminHealthChat, (data: any) => this._adminHealthChat = data);
     this.eventsService.on(BotDataType.AdminOrderChat, (data: any) => this._adminOrderChat = data);
     this.eventsService.on(BotDataType.AdminReviewsChat, (data: any) => this._adminReviewsChat = data);
+    this.eventsService.on(BotDataType.AdminPaymentChat, (data: any) => this._adminPaymentChat = data);
   }
 }

@@ -7,6 +7,7 @@ import { AdminStoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
 import { beautifyPhoneNumber } from '../../shared/helpers/beautify-phone-number.function';
 import { BotConfigurationService } from './bot-configuration.service';
 import { adminDefaultLanguage } from '../../shared/constants';
+import { FastifyRequest } from 'fastify';
 
 @Injectable()
 export class BotService implements OnApplicationBootstrap {
@@ -161,5 +162,23 @@ export class BotService implements OnApplicationBootstrap {
       + '\n```';
 
     this.telegramApiService.sendMessage(this.botConfig.adminHealthChat, message);
+  }
+
+  async onNewPayment(request: FastifyRequest): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      request.multipart(
+        async (field, file, filename, encoding, mimetype) => {
+          try {
+            await this.telegramApiService.sendPhoto(this.botConfig.adminPaymentChat, file);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        },
+        error => {
+          reject(error)
+        }
+      );
+    });
   }
 }
