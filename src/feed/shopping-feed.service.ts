@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AdminProductService } from '../product/services/admin-product.service';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
-import { create } from 'xmlbuilder2/lib';
 import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
@@ -12,6 +11,7 @@ import { ProductSelectedAttribute } from '../product/models/product-selected-att
 import { priceThresholdForFreeShipping } from '../shared/constants';
 import { MultilingualText } from '../shared/models/multilingual-text.model';
 import { Language } from '../shared/enums/language.enum';
+import { XmlBuilder } from '../shared/services/xml-builder/xml-builder.service';
 
 type cdata = { $: string };
 
@@ -79,13 +79,16 @@ export class ShoppingFeedService {
   facebookShoppingFeedFileName = 'facebook_shopping_feed.xml';
   reviewsFeedFileName = 'google_shopping_review.xml';
 
-  constructor(private readonly productService: AdminProductService,
-              private readonly attributeService: AttributeService,
-              private readonly reviewService: ProductReviewService) {
-  }
+  constructor(
+    private readonly productService: AdminProductService,
+    private readonly attributeService: AttributeService,
+    private readonly reviewService: ProductReviewService,
+    private readonly xmlBuilder: XmlBuilder
+  ) { }
 
-  async generateShoppingAdsFeed(customizeFeedItemFunction?: (item: IShoppingFeedItem,
-    variant: ProductVariantWithQty) => IShoppingFeedItem): Promise<string> {
+  async generateShoppingAdsFeed(
+    customizeFeedItemFunction?: (item: IShoppingFeedItem, variant: ProductVariantWithQty) => IShoppingFeedItem
+  ): Promise<string> {
 
     const lang : Language = Language.RU;
     const items: IShoppingFeedItem[] = [];
@@ -145,21 +148,11 @@ export class ShoppingFeedService {
       }
     }
 
-    return ShoppingFeedService.getXMLFeedString(items);
+    return this.getShoppingFeed(items);
   }
 
-  private static getFeedItemDescriptions(variant: ProductVariantWithQty, lang: Language) {
-    const description = variant.fullDescription || variant.shortDescription || new MultilingualText();
-    return { $: stripHtmlTags(description[lang]).replace(/\r?\n|\n/g, ' ') };
-  }
-
-  private static getFeedItemTitle(variant: ProductVariantWithQty, lang: Language) {
-    const title = variant.googleAdsProductTitle[lang] || variant.name[lang];
-    return { $: title && title.length > 150 ? title.substring(0, 150) : title };
-  }
-
-  private static getXMLFeedString(items: IShoppingFeedItem[]) {
-    const doc = create({ version: '1.0' }).ele({
+  private getShoppingFeed(items: IShoppingFeedItem[]): string {
+    const data = {
       rss: {
         '@': {
           version: '2.0',
@@ -172,10 +165,9 @@ export class ShoppingFeedService {
           item: items
         }
       }
-    });
+    };
 
-    const feed = doc.end({ prettyPrint: true, allowEmptyTags: true });
-    return feed.toString();
+    return this.xmlBuilder.build(data);
   }
 
   private async getBrand(attributes: ProductSelectedAttribute[], lang: Language): Promise<string> {
@@ -263,7 +255,7 @@ export class ShoppingFeedService {
       }
     }
 
-    return ShoppingFeedService.getXMLFeedString(items);
+    return this.getShoppingFeed(items);
   }
 
   async generateGoogleProductReviewsFeed(): Promise<string> {
@@ -322,7 +314,7 @@ export class ShoppingFeedService {
       });
     });
 
-    const doc = create({ version: '1.0' }).ele({
+    const data = {
       feed: {
         '@': {
           'xmlns:vc': 'http://www.w3.org/2007/XMLSchema-versioning',
@@ -338,11 +330,9 @@ export class ShoppingFeedService {
           review: reviews
         }
       }
-    });
+    };
 
-    const feed = doc.end({ prettyPrint: true, allowEmptyTags: true });
-
-    return feed.toString();
+    return this.xmlBuilder.build(data);
   }
 
   private async getAllProducts(): Promise<ProductWithQty[]> {
@@ -364,5 +354,15 @@ export class ShoppingFeedService {
 
   private buildProductType(breadcrumbs: Breadcrumb[]): string {
     return breadcrumbs.map(breadcrumb => breadcrumb.name[Language.RU]).join(' > ');
+  }
+
+  private static getFeedItemDescriptions(variant: ProductVariantWithQty, lang: Language) {
+    const description = variant.fullDescription || variant.shortDescription || new MultilingualText();
+    return { $: stripHtmlTags(description[lang]).replace(/\r?\n|\n/g, ' ') };
+  }
+
+  private static getFeedItemTitle(variant: ProductVariantWithQty, lang: Language) {
+    const title = variant.googleAdsProductTitle[lang] || variant.name[lang];
+    return { $: title && title.length > 150 ? title.substring(0, 150) : title };
   }
 }
