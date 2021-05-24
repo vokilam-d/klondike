@@ -17,7 +17,11 @@ export class EncryptorService {
     return hashedStr2 === hashedStr1;
   }
 
-  hash(str: string): Promise<string> {
-    return hash(str, this.saltRounds);
+  async hash(str: string, algorith?: 'md5' | 'sha1'): Promise<string> {
+    if (algorith) {
+      return createHash(algorith).update(str).digest('hex');
+    } else {
+      return hash(str, this.saltRounds);
+    }
   }
 }

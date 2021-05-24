@@ -167,7 +167,7 @@ export class ShoppingFeedService {
       }
     };
 
-    return this.xmlBuilder.build(data);
+    return this.xmlBuilder.buildDocument(data);
   }
 
   private async getBrand(attributes: ProductSelectedAttribute[], lang: Language): Promise<string> {
@@ -332,7 +332,7 @@ export class ShoppingFeedService {
       }
     };
 
-    return this.xmlBuilder.build(data);
+    return this.xmlBuilder.buildDocument(data);
   }
 
   private async getAllProducts(): Promise<ProductWithQty[]> {

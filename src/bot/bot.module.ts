@@ -6,6 +6,7 @@ import { BotData, BotDataModel } from './models/bot-data.model';
 import { TelegramApiService } from './services/telegram-api.service';
 import { BotConfigurationService } from './services/bot-configuration.service';
 import { MonobankConnector } from './services/monobank.connector';
+import { PrivatbankConnector } from './services/privatbank.connector';
 
 const botDataModel = {
   name: BotDataModel.modelName,
@@ -19,7 +20,7 @@ const botDataModel = {
     HttpModule
   ],
   controllers: [BotController],
-  providers: [BotService, BotConfigurationService, TelegramApiService, MonobankConnector],
+  providers: [BotService, BotConfigurationService, TelegramApiService, MonobankConnector, PrivatbankConnector],
   exports: [BotService]
 })
 export class BotModule {}

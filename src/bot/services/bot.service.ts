@@ -133,7 +133,7 @@ export class BotService implements OnApplicationBootstrap {
     }
 
     message += `Баланс: ${this.escapeString(payment.balance)} грн\n`
-      + `Откуда: ${payment.source}`;
+      + `${payment.source}`;
 
     this.telegramApiService.sendMessage(this.botConfig.adminPaymentChat, message);
   }
