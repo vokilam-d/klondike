@@ -15,4 +15,10 @@ export class BotController {
       this.botConfig.onCommand(update.message.chat, update.message.text, update.message.from);
     }
   }
+
+  @Post('test-webhook')
+  webhookTest(@Body() update: any) {
+    console.log('test webhook');
+    console.dir(update, { depth: 10 });
+  }
 }
