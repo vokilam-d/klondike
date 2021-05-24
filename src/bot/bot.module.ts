@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BotData, BotDataModel } from './models/bot-data.model';
 import { TelegramApiService } from './services/telegram-api.service';
 import { BotConfigurationService } from './services/bot-configuration.service';
+import { MonobankConnector } from './services/monobank.connector';
 
 const botDataModel = {
   name: BotDataModel.modelName,
@@ -18,7 +19,7 @@ const botDataModel = {
     HttpModule
   ],
   controllers: [BotController],
-  providers: [BotService, BotConfigurationService, TelegramApiService],
+  providers: [BotService, BotConfigurationService, TelegramApiService, MonobankConnector],
   exports: [BotService]
 })
 export class BotModule {}

@@ -162,4 +162,8 @@ export class BotService implements OnApplicationBootstrap {
 
     this.telegramApiService.sendMessage(this.botConfig.adminHealthChat, message);
   }
+
+  async onNewPayment(payment: any): Promise<void> {
+
+  }
 }
