@@ -105,6 +105,39 @@ export class BotService implements OnApplicationBootstrap {
     this.telegramApiService.sendMessage(this.botConfig.adminReviewsChat, text, reply);
   }
 
+  async onInternalServerError(error: any) {
+    const str = JSON.stringify(error, null, 2);
+    const toEscape = ['`', '\\'];
+    let escapedStr: string = '';
+    for (const strElement of str) {
+      if (toEscape.includes(strElement)) {
+        escapedStr += String.fromCharCode(92);
+      }
+
+      escapedStr += strElement;
+    }
+
+    const message = '```json\n'
+      + escapedStr
+      + '\n```';
+
+    this.telegramApiService.sendMessage(this.botConfig.adminHealthChat, message);
+  }
+
+  async onNewPayment(payment: { amount: string, description: string, comment?: string, balance: string, source: string }): Promise<void> {
+    let message = `*${this.escapeString(payment.amount)} грн*\n`
+      + `${this.escapeString(payment.description)}\n`;
+
+    if (payment.comment) {
+      message += `_${this.escapeString(payment.comment)}_\n`
+    }
+
+    message += `Баланс: ${this.escapeString(payment.balance)} грн\n`
+      + `Откуда: ${payment.source}`;
+
+    this.telegramApiService.sendMessage(this.botConfig.adminPaymentChat, message);
+  }
+
   private escapeString(str: string): string {
     if (!str) { str = ''; }
 
@@ -142,28 +175,5 @@ export class BotService implements OnApplicationBootstrap {
     }
 
     return url + postfix;
-  }
-
-  async onInternalServerError(error: any) {
-    const str = JSON.stringify(error, null, 2);
-    const toEscape = ['`', '\\'];
-    let escapedStr: string = '';
-    for (const strElement of str) {
-      if (toEscape.includes(strElement)) {
-        escapedStr += String.fromCharCode(92);
-      }
-
-      escapedStr += strElement;
-    }
-
-    const message = '```json\n'
-      + escapedStr
-      + '\n```';
-
-    this.telegramApiService.sendMessage(this.botConfig.adminHealthChat, message);
-  }
-
-  async onNewPayment(payment: any): Promise<void> {
-
   }
 }

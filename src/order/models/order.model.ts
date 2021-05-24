@@ -20,7 +20,7 @@ export class Order {
   set id(id: number) { this._id = id; }
   get id(): number { return this._id; }
 
-  get idForCustomer(): string { return addLeadingZeros(this.id); }
+  get idForCustomer(): string { return addLeadingZeros(this.id, 8); }
 
   @prop({ index: true })
   customerId: number;

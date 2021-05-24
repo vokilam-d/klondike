@@ -15,6 +15,7 @@ export interface IMonobankUpdate {
       cashbackAmount: number;
       balance: number;
       hold: boolean;
+      comment?: string;
     }
   }
 }

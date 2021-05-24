@@ -19,19 +19,19 @@ export class BotController {
     }
   }
 
-  @Get('mono-webhook')
+  @Get('monobank-webhook')
   monobankWebhookGet(@Body() update: IMonobankUpdate, @Query() query: any): void {
     console.log('mono-webhook get body');
     console.dir(update, { depth: 10 });
     console.log('mono-webhook get query');
     console.dir(query, { depth: 10 });
-    // this.monobankConnector.onUpdate(update);
   }
 
-  @Post('mono-webhook')
+  @Post('monobank-webhook')
   monobankWebhookPost(@Body() update: IMonobankUpdate): void {
+    console.log('instance ID', process.env.INSTANCE_ID);
     console.log('mono-webhook post body');
     console.dir(update, { depth: 10 });
-    // this.monobankConnector.onUpdate(update);
+    this.monobankConnector.onUpdate(update);
   }
 }
