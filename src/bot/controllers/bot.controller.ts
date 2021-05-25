@@ -1,21 +1,21 @@
 import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
-import { BotConfigurationService } from '../services/bot-configuration.service';
 import { ITelegramUpdate } from '../interfaces/telegram-update.interface';
 import { IMonobankUpdate } from '../interfaces/monobank-update.interface';
 import { MonobankConnector } from '../services/monobank.connector';
+import { BotService } from '../services/bot.service';
 
 @Controller('bot')
 export class BotController {
 
   constructor(
-    private readonly botConfig: BotConfigurationService,
+    private readonly botService: BotService,
     private readonly monobankConnector: MonobankConnector
   ) { }
 
   @Post('tg-webhook')
   telegramWebhook(@Body() update: ITelegramUpdate) {
     if (update.message?.text?.startsWith('/')) {
-      this.botConfig.onCommand(update.message.chat, update.message.text, update.message.from);
+      this.botService.onCommand(update.message.chat, update.message.text, update.message.from);
     }
   }
 
