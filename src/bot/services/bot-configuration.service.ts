@@ -159,6 +159,7 @@ export class BotConfigurationService implements OnApplicationBootstrap {
       [BotCommand.SetAsAdminHealthChat]: 'Уведомлять об ошибках',
       [BotCommand.SetAsAdminReviewChat]: 'Уведомлять об отзывах',
       [BotCommand.SetAsAdminPaymentChat]: 'Уведомлять об оплатах',
+      [BotCommand.GetBalance]: 'Получить баланс',
     };
 
     const commandsList = Object.values(BotCommand);
