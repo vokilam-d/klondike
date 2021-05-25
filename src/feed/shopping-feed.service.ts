@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { AdminProductService } from '../product/services/admin-product.service';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
@@ -12,6 +12,7 @@ import { priceThresholdForFreeShipping } from '../shared/constants';
 import { MultilingualText } from '../shared/models/multilingual-text.model';
 import { Language } from '../shared/enums/language.enum';
 import { XmlBuilder } from '../shared/services/xml-builder/xml-builder.service';
+import { MaintenanceService } from '../maintenance/maintenance.service';
 
 type cdata = { $: string };
 
@@ -83,13 +84,15 @@ export class ShoppingFeedService {
     private readonly productService: AdminProductService,
     private readonly attributeService: AttributeService,
     private readonly reviewService: ProductReviewService,
-    private readonly xmlBuilder: XmlBuilder
+    private readonly xmlBuilder: XmlBuilder,
+    private readonly maintenanceService: MaintenanceService
   ) { }
 
   async generateShoppingAdsFeed(
     customizeFeedItemFunction?: (item: IShoppingFeedItem, variant: ProductVariantWithQty) => IShoppingFeedItem
   ): Promise<string> {
 
+    this.checkForMaintenance();
     const lang : Language = Language.RU;
     const items: IShoppingFeedItem[] = [];
     const products = await this.getAllProducts();
@@ -229,6 +232,8 @@ export class ShoppingFeedService {
   }
 
   async generateFacebookShoppingLocalizationFeed(lang : Language): Promise<string> {
+    this.checkForMaintenance();
+
     const items: IShoppingFeedItem[] = [];
     for (const product of await this.getAllProducts()) {
       if (!product.isEnabled) { continue; }
@@ -259,6 +264,8 @@ export class ShoppingFeedService {
   }
 
   async generateGoogleProductReviewsFeed(): Promise<string> {
+    this.checkForMaintenance();
+
     const products = await this.getAllProducts();
     const reviewDtos = await this.getAllReviews();
 
@@ -364,5 +371,14 @@ export class ShoppingFeedService {
   private static getFeedItemTitle(variant: ProductVariantWithQty, lang: Language) {
     const title = variant.googleAdsProductTitle[lang] || variant.name[lang];
     return { $: title && title.length > 150 ? title.substring(0, 150) : title };
+  }
+
+  private checkForMaintenance() {
+    const maintenanceInfo = this.maintenanceService.getMaintenanceInfo()
+    if (maintenanceInfo.isMaintenanceInProgress) {
+      const message = `Service is under maintenance. Please, try again`
+        + maintenanceInfo.maintenanceEndTime ? `in ${maintenanceInfo.maintenanceEndTime}` : `later`;
+      throw new ServiceUnavailableException(message);
+    }
   }
 }
