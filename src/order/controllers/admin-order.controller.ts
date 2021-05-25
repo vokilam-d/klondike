@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrderService } from '../services/order.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { plainToClass } from 'class-transformer';
 import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
 import { OrderActionDto } from '../../shared/dtos/admin/order-action.dto';
 import { OrderActionEnum } from '../../shared/enums/order-action.enum';
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { OrderFilterDto } from '../../shared/dtos/admin/order-filter.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
@@ -116,6 +116,22 @@ export class AdminOrderController {
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
     const order = await this.orderService.createInternetDocument(parseInt(orderId), createIntDocDto, user, lang);
+
+    return {
+      data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
+    };
+  }
+
+  @Post(':id/media')
+  async uploadMedia(
+    @Param('id') orderId: string,
+    @Request() request: FastifyRequest,
+    @AdminLang() lang: Language,
+    @ValidatedUser() user: DocumentType<User>,
+  ): Promise<ResponseDto<AdminOrderDto>> {
+    const login: string = user?.login;
+
+    const order = await this.orderService.uploadMedia(request, parseInt(orderId), login, lang);
 
     return {
       data: plainToClass(AdminOrderDto, order, { excludeExtraneousValues: true })
