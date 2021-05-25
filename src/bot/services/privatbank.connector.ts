@@ -37,7 +37,7 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
       return;
     }
 
-    const statements = paymentResponse.response.data.info.statements.statement;
+    const statements = paymentResponse.response.data.info?.statements?.statement || [];
 
     const indexOfLastPaymentId = statements.findIndex(statement => statement['@appcode'] === this.lastPaymentId);
     for (let i = statements.length - 1; i >= 0; i--) {
