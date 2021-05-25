@@ -1,4 +1,4 @@
-import { HttpService, Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { BotService } from './bot.service';
 import { IPrivatbankStatementsResponse } from '../interfaces/privatbank-statements-response.interface';
 import { XmlBuilder } from '../../shared/services/xml-builder/xml-builder.service';
@@ -11,6 +11,7 @@ const CRON_EVERY_2_MINUTES = '*/2 * * * *';
 @Injectable()
 export class PrivatbankConnector implements OnApplicationBootstrap {
 
+  private logger = new Logger(PrivatbankConnector.name);
   private lastPaymentId: string = null;
   private apiHost = 'https://api.privatbank.ua/p24api';
 
@@ -27,7 +28,15 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
 
   @CronProdPrimaryInstance(CRON_EVERY_2_MINUTES)
   async handleNewPayments(): Promise<void> {
-    const paymentResponse = await this.getPaymentsForToday();
+    let paymentResponse: IPrivatbankStatementsResponse;
+    try {
+      paymentResponse = await this.getPaymentsForToday();
+    } catch (e) {
+      this.logger.error(`Could not handle new payments:`);
+      this.logger.error(e);
+      return;
+    }
+
     const statements = paymentResponse.response.data.info.statements.statement;
 
     const indexOfLastPaymentId = statements.findIndex(statement => statement['@appcode'] === this.lastPaymentId);
@@ -57,7 +66,15 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
   }
 
   private async setLastPaymentId(): Promise<void> {
-    const paymentResponse = await this.getPaymentsForToday();
+    let paymentResponse: IPrivatbankStatementsResponse;
+    try {
+      paymentResponse = await this.getPaymentsForToday();
+    } catch (e) {
+      this.logger.error(`Could not set last payment id:`);
+      this.logger.error(e);
+      return;
+    }
+
     const statement = paymentResponse.response.data.info.statements.statement[0];
     if (!statement) {
       return;
