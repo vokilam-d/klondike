@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { BotConfigurationService } from '../services/bot-configuration.service';
 import { ITelegramUpdate } from '../interfaces/telegram-update.interface';
 import { IMonobankUpdate } from '../interfaces/monobank-update.interface';
@@ -28,6 +28,7 @@ export class BotController {
   }
 
   @Post('monobank-webhook')
+  @HttpCode(200)
   monobankWebhookPost(@Body() update: IMonobankUpdate): void {
     console.log('instance ID', process.env.INSTANCE_ID);
     console.log('mono-webhook post body');
