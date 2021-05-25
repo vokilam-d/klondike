@@ -167,7 +167,6 @@ export class BotService implements OnApplicationBootstrap {
 
       message = `Монобанк: *${this.escapeString(monobankBalance)} грн*\n`
         + `Приватбанк: *${this.escapeString(privatbankBalance)} грн*`;
-      console.log(message);
     } catch (e) {
       message = e;
     }
