@@ -21,6 +21,6 @@ const botDataModel = {
   ],
   controllers: [BotController],
   providers: [BotService, BotConfigurationService, TelegramApiService, MonobankConnector, PrivatbankConnector],
-  exports: [BotService]
+  exports: [BotService, MonobankConnector, PrivatbankConnector]
 })
 export class BotModule {}

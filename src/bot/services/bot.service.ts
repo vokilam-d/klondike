@@ -7,6 +7,10 @@ import { AdminStoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
 import { beautifyPhoneNumber } from '../../shared/helpers/beautify-phone-number.function';
 import { BotConfigurationService } from './bot-configuration.service';
 import { adminDefaultLanguage } from '../../shared/constants';
+import { IPayment } from '../interfaces/payment.interface';
+import { ITelegramChat } from '../interfaces/chat.interface';
+import { ITelegramUser } from '../interfaces/user.interface';
+import { BotCommand } from '../enums/bot-command.enum';
 
 @Injectable()
 export class BotService implements OnApplicationBootstrap {
@@ -124,7 +128,7 @@ export class BotService implements OnApplicationBootstrap {
     this.telegramApiService.sendMessage(this.botConfig.adminHealthChat, message);
   }
 
-  async onNewPayment(payment: { amount: string, description: string, comment?: string, balance: string, source: string }): Promise<void> {
+  async onNewPayment(payment: IPayment): Promise<void> {
     let message = `*${this.escapeString(payment.amount)} грн*\n`
       + `${this.escapeString(payment.description)}\n`;
 
@@ -136,6 +140,22 @@ export class BotService implements OnApplicationBootstrap {
       + `${payment.source}`;
 
     this.telegramApiService.sendMessage(this.botConfig.adminPaymentChat, message);
+  }
+
+  async onCommand(chat: ITelegramChat, commandText: string, user: ITelegramUser): Promise<void> {
+    commandText = this.normalizeCommand(commandText);
+
+    switch (commandText) {
+      case BotCommand.GetBalance:
+        this.sendBalance(chat, user);
+        break;
+      default:
+        this.botConfig.onCommand(chat, commandText, user);
+        break;
+    }
+  }
+
+  private async sendBalance(chat: ITelegramChat, user: ITelegramUser): Promise<void> {
   }
 
   private escapeString(str: string): string {
@@ -175,5 +195,14 @@ export class BotService implements OnApplicationBootstrap {
     }
 
     return url + postfix;
+  }
+
+  private normalizeCommand(commandText: string): string {
+    const indexOfBotMention = commandText.indexOf(`@${this.botConfig.botUsername}`);
+    if (indexOfBotMention > -1) {
+      commandText = commandText.slice(0, indexOfBotMention);
+    }
+
+    return commandText;
   }
 }

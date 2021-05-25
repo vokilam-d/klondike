@@ -15,12 +15,18 @@ import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
 import { BotService } from '../../bot/services/bot.service';
 import { GlobalExceptionFilter } from '../../shared/filters/global-exception.filter';
 import { ModuleRef } from '@nestjs/core';
+import { MonobankConnector } from '../../bot/services/monobank.connector';
+import { PrivatbankConnector } from '../../bot/services/privatbank.connector';
+import { merge } from 'rxjs';
+import { IPayment } from '../../bot/interfaces/payment.interface';
 
 @Injectable()
 export class NotificationService implements OnApplicationBootstrap {
   constructor(
     private readonly emailService: EmailService,
     private readonly botService: BotService,
+    private readonly monobankConnector: MonobankConnector,
+    private readonly privatbankConnector: PrivatbankConnector,
     private readonly orderService: OrderService,
     private readonly productReviewService: ProductReviewService,
     private readonly storeReviewService: StoreReviewService,
@@ -39,6 +45,10 @@ export class NotificationService implements OnApplicationBootstrap {
     this.customerService.customerRegistered$.subscribe(event => this.onCustomerRegistration(event.customer, event.token));
     this.customerService.emailConfirmationRequested$.subscribe(event => this.onEmailConfirmationRequest(event.customer, event.token));
     this.tasksService.leaveReviewRequested$.subscribe(event => this.onLeaveReviewRequested(event.order, event.lang));
+    merge(
+      this.monobankConnector.newPayment$,
+      this.privatbankConnector.newPayment$
+    ).subscribe(event => this.onNewPayment(event))
 
     const filter = this.moduleRef.get<GlobalExceptionFilter>(GlobalExceptionFilter, { strict: false });
     filter.internalServerError$.subscribe(event => this.onInternalServerError(event));
@@ -81,5 +91,9 @@ export class NotificationService implements OnApplicationBootstrap {
 
   private async onInternalServerError(error: any): Promise<void> {
     this.botService.onInternalServerError(error).then();
+  }
+
+  private onNewPayment(event: IPayment) {
+    this.botService.onNewPayment(event);
   }
 }

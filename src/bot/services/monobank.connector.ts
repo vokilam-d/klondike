@@ -3,6 +3,8 @@ import { BotService } from './bot.service';
 import { IMonobankUpdate } from '../interfaces/monobank-update.interface';
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 import { EventsService } from '../../shared/services/events/events.service';
+import { Subject } from 'rxjs';
+import { IPayment } from '../interfaces/payment.interface';
 
 @Injectable()
 export class MonobankConnector implements OnApplicationBootstrap {
@@ -11,8 +13,9 @@ export class MonobankConnector implements OnApplicationBootstrap {
   private sentPaymentIds: Set<string> = new Set();
   private account: string = process.env.MONOBANK_ACCOUNT;
 
+  newPayment$ = new Subject<IPayment>();
+
   constructor(
-    private readonly botService: BotService,
     private readonly eventsService: EventsService
   ) { }
 
@@ -39,7 +42,7 @@ export class MonobankConnector implements OnApplicationBootstrap {
     }
     this.onNewPayment(paymentId);
 
-    this.botService.onNewPayment({
+    this.newPayment$.next({
       amount: this.getReadableAmount(amount),
       description: update.data.statementItem.description,
       comment: update.data.statementItem.comment,

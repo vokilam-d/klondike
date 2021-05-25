@@ -5,6 +5,8 @@ import { XmlBuilder } from '../../shared/services/xml-builder/xml-builder.servic
 import { EncryptorService } from '../../shared/services/encryptor/encryptor.service';
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instance-cron.decorator';
+import { Subject } from 'rxjs';
+import { IPayment } from '../interfaces/payment.interface';
 
 const CRON_EVERY_2_MINUTES = '*/2 * * * *';
 
@@ -15,8 +17,9 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
   private lastPaymentId: string = null;
   private apiHost = 'https://api.privatbank.ua/p24api';
 
+  newPayment$ = new Subject<IPayment>();
+
   constructor(
-    private readonly botService: BotService,
     private readonly http: HttpService,
     private readonly xmlBuilder: XmlBuilder,
     private readonly encryptor: EncryptorService
@@ -56,7 +59,7 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
         continue;
       }
 
-      this.botService.onNewPayment({
+      this.newPayment$.next({
         amount: this.getReadableAmount(statement['@cardamount']),
         description: statement['@description'],
         balance: this.getReadableAmount(statement['@rest']),

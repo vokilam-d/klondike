@@ -24,6 +24,7 @@ export class BotConfigurationService implements OnApplicationBootstrap {
   private ownerIds: number[] = [];
   private bot: ITelegramUser | null = null;
 
+  get botUsername(): string { return this.bot?.username; }
   get adminOrderChat() { return this._adminOrderChat; }
   get adminReviewsChat() { return this._adminReviewsChat; }
   get adminHealthChat() { return this._adminHealthChat; }
