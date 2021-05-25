@@ -11,6 +11,8 @@ import { IPayment } from '../interfaces/payment.interface';
 import { ITelegramChat } from '../interfaces/chat.interface';
 import { ITelegramUser } from '../interfaces/user.interface';
 import { BotCommand } from '../enums/bot-command.enum';
+import { MonobankConnector } from './monobank.connector';
+import { PrivatbankConnector } from './privatbank.connector';
 
 @Injectable()
 export class BotService implements OnApplicationBootstrap {
@@ -20,6 +22,8 @@ export class BotService implements OnApplicationBootstrap {
   constructor(
     private readonly telegramApiService: TelegramApiService,
     private readonly botConfig: BotConfigurationService,
+    private readonly monobankConnector: MonobankConnector,
+    private readonly privatbankConnector: PrivatbankConnector
   ) { }
 
   async onApplicationBootstrap() {
@@ -156,6 +160,19 @@ export class BotService implements OnApplicationBootstrap {
   }
 
   private async sendBalance(chat: ITelegramChat, user: ITelegramUser): Promise<void> {
+    let message: string;
+    try {
+      const monobankBalance = await this.monobankConnector.getBalance();
+      const privatbankBalance = await this.privatbankConnector.getBalance();
+
+      message = `Монобанк: *${this.escapeString(monobankBalance)} грн*\n`
+        + `Приватбанк: *${this.escapeString(privatbankBalance)} грн*`;
+      console.log(message);
+    } catch (e) {
+      message = e;
+    }
+
+    this.telegramApiService.sendMessage(chat.id, message);
   }
 
   private escapeString(str: string): string {

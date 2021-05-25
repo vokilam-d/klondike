@@ -46,11 +46,6 @@ export class BotConfigurationService implements OnApplicationBootstrap {
   }
 
   async onCommand(chat: ITelegramChat, commandText: string, user: ITelegramUser): Promise<void> {
-    const indexOfBotMention = commandText.indexOf(`@${this.bot?.username}`);
-    if (indexOfBotMention > -1) {
-      commandText = commandText.slice(0, indexOfBotMention);
-    }
-
     switch (commandText) {
       case BotCommand.SetAsAdminHealthChat:
         this.setAdminChat(chat, BotDataType.AdminHealthChat, user);

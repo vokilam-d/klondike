@@ -1,12 +1,13 @@
 import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { BotService } from './bot.service';
-import { IPrivatbankStatementsResponse } from '../interfaces/privatbank-statements-response.interface';
+import { IPrivatbankBalanceData } from '../interfaces/privatbank-statements-data.interface';
 import { XmlBuilder } from '../../shared/services/xml-builder/xml-builder.service';
 import { EncryptorService } from '../../shared/services/encryptor/encryptor.service';
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 import { CronProdPrimaryInstance } from '../../shared/decorators/primary-instance-cron.decorator';
 import { Subject } from 'rxjs';
 import { IPayment } from '../interfaces/payment.interface';
+import { IPrivatbankResponse } from '../interfaces/privatbank-response.interface';
+import { IPrivatbankStatementsData } from '../interfaces/privatbank-balance-data.interface';
 
 const CRON_EVERY_2_MINUTES = '*/2 * * * *';
 
@@ -31,16 +32,16 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
 
   @CronProdPrimaryInstance(CRON_EVERY_2_MINUTES)
   async handleNewPayments(): Promise<void> {
-    let paymentResponse: IPrivatbankStatementsResponse;
+    let statementsData: IPrivatbankStatementsData;
     try {
-      paymentResponse = await this.getPaymentsForToday();
+      statementsData = await this.getPaymentsForToday();
     } catch (e) {
       this.logger.error(`Could not handle new payments:`);
       this.logger.error(e);
       return;
     }
 
-    const statements = paymentResponse.response.data.info?.statements?.statement || [];
+    const statements = statementsData.info?.statements?.statement || [];
 
     const indexOfLastPaymentId = statements.findIndex(statement => statement['@appcode'] === this.lastPaymentId);
     for (let i = statements.length - 1; i >= 0; i--) {
@@ -69,16 +70,16 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
   }
 
   private async setLastPaymentId(): Promise<void> {
-    let paymentResponse: IPrivatbankStatementsResponse;
+    let statementsData: IPrivatbankStatementsData;
     try {
-      paymentResponse = await this.getPaymentsForToday();
+      statementsData = await this.getPaymentsForToday();
     } catch (e) {
       this.logger.error(`Could not set last payment id:`);
       this.logger.error(e);
       return;
     }
 
-    const statement = paymentResponse.response.data.info.statements.statement[0];
+    const statement = statementsData.info?.statements?.statement[0];
     if (!statement) {
       return;
     }
@@ -86,7 +87,7 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
     this.lastPaymentId = statement['@appcode'];
   }
 
-  private async getPaymentsForToday(): Promise<IPrivatbankStatementsResponse> {
+  private async getPaymentsForToday(): Promise<IPrivatbankStatementsData> {
     const today = new Date();
     const yesterDay = new Date();
     yesterDay.setDate(yesterDay.getDate() - 1);
@@ -114,31 +115,31 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
       }
     };
 
-    const requestContentXml = this.xmlBuilder.buildElement(requestContentObj);
-    const signature = await this.buildSignature(requestContentXml);
+    return this.sendRequest<IPrivatbankStatementsData>(`/rest_fiz`, requestContentObj);
+  }
 
-    const requestObj = {
-      request: {
-        '@version': '1.0',
-        merchant: {
-          id: process.env.PRIVATBANK_MERCHANT,
-          signature
-        },
-        data: requestContentObj
+  async getBalance(): Promise<string> {
+    const requestContentObj = {
+      oper: 'cmt',
+      wait: '0',
+      test: '0',
+      payment: {
+        '@id': '',
+        prop: [
+          {
+            '@name': 'cardnum',
+            '@value': process.env.PRIVATBANK_CARD_NUMBER
+          },
+          {
+            '@name': 'country',
+            '@value': 'UA'
+          }
+        ]
       }
     };
-    const requestXml = this.xmlBuilder.buildDocument(requestObj, { prettyPrint: false });
 
-    const apiUrl = `${this.apiHost}/rest_fiz`;
-    const headers = { 'Content-Type': 'text/xml' };
-    const axiosResponse = await this.http.post<string>(apiUrl, requestXml, { headers }).toPromise();
-
-    const response = this.xmlBuilder.convertToObject(axiosResponse.data) as IPrivatbankStatementsResponse;
-    if (response.response.data.error) {
-      throw new Error(response.response.data.error['@message']);
-    } else {
-      return response;
-    }
+    const balanceData = await this.sendRequest<IPrivatbankBalanceData>(`/balance`, requestContentObj);
+    return balanceData.info.cardbalance.balance;
   }
 
   private async buildSignature(xmlData: string): Promise<string> {
@@ -159,5 +160,33 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
 
   private getReadableAmount(amount: string): string {
     return amount.split(' ')[0];
+  }
+
+  private async sendRequest<T>(apiSlug: string, requestContentObj: { [key: string]: any }): Promise<T> {
+    const requestContentXml = this.xmlBuilder.buildElement(requestContentObj);
+    const signature = await this.buildSignature(requestContentXml);
+
+    const requestObj = {
+      request: {
+        '@version': '1.0',
+        merchant: {
+          id: process.env.PRIVATBANK_MERCHANT,
+          signature
+        },
+        data: requestContentObj
+      }
+    };
+    const requestXml = this.xmlBuilder.buildDocument(requestObj, { prettyPrint: false });
+
+    const apiUrl = `${this.apiHost}${apiSlug}`;
+    const headers = { 'Content-Type': 'text/xml' };
+    const axiosResponse = await this.http.post<string>(apiUrl, requestXml, { headers }).toPromise();
+
+    const response = this.xmlBuilder.convertToObject(axiosResponse.data) as IPrivatbankResponse<T>;
+    if (response.response.data.error) {
+      throw new Error(response.response.data.error['@message']);
+    } else {
+      return response.response.data as T;
+    }
   }
 }

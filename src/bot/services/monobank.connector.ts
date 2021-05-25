@@ -1,10 +1,10 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { BotService } from './bot.service';
+import { HttpService, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { IMonobankUpdate } from '../interfaces/monobank-update.interface';
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 import { EventsService } from '../../shared/services/events/events.service';
 import { Subject } from 'rxjs';
 import { IPayment } from '../interfaces/payment.interface';
+import { IMonobankStatement } from '../interfaces/monobank-statement.interface';
 
 @Injectable()
 export class MonobankConnector implements OnApplicationBootstrap {
@@ -12,11 +12,13 @@ export class MonobankConnector implements OnApplicationBootstrap {
   private paymentEventName = 'new-payment';
   private sentPaymentIds: Set<string> = new Set();
   private account: string = process.env.MONOBANK_ACCOUNT;
+  private apiHost = 'https://api.monobank.ua';
 
   newPayment$ = new Subject<IPayment>();
 
   constructor(
-    private readonly eventsService: EventsService
+    private readonly eventsService: EventsService,
+    private readonly http: HttpService
   ) { }
 
   onApplicationBootstrap(): any {
@@ -49,6 +51,20 @@ export class MonobankConnector implements OnApplicationBootstrap {
       balance: this.getReadableAmount(update.data.statementItem.balance),
       source: 'monobank'
     });
+  }
+
+  async getBalance(): Promise<string> {
+    const account = process.env.MONOBANK_ACCOUNT;
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const token = process.env.MONOBANK_API_TOKEN;
+
+    const url = `${this.apiHost}/personal/statement/${account}/${weekAgo.getTime()}`;
+    const response = await this.http.get<IMonobankStatement[]>(url, { headers: { 'X-Token': token } }).toPromise();
+
+    const balance = response.data[0]?.balance;
+
+    return this.getReadableAmount(balance);
   }
 
   private getReadableAmount(amount: number): string {
