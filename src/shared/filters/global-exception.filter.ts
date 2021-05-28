@@ -19,6 +19,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const res = ctx.getResponse<FastifyReply<any>>();
     const path = req.raw.url;
     const method = req.raw.method;
+    const referer = req.headers.referer;
     const timestamp = new Date().toISOString();
     let statusCode;
     let httpError;
@@ -46,7 +47,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         timestamp,
         method,
         ...(userInfo ? { userInfo } : {}),
-        path
+        path,
+        referer
       });
 
     } else {
@@ -59,7 +61,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         timestamp,
         method,
         ...(userInfo ? { userInfo } : {}),
-        path
+        path,
+        referer
       };
       this.logger.error(errorObj);
       this.internalServerError$.next(errorObj);
@@ -70,7 +73,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode,
       timestamp,
       method,
-      path
+      path,
+      referer
     });
   }
 
