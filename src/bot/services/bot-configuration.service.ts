@@ -12,6 +12,7 @@ import { BotCommand } from '../enums/bot-command.enum';
 import { IBotCommand } from '../interfaces/bot-command.interface';
 import { isProdPrimaryInstance } from '../../shared/helpers/is-prod-primary-instance.function';
 import { EventsService } from '../../shared/services/events/events.service';
+import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
 
 @Injectable()
 export class BotConfigurationService implements OnApplicationBootstrap {
@@ -37,6 +38,10 @@ export class BotConfigurationService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap() {
+    if (!isProdEnv()) {
+      return;
+    }
+
     this.getChats().then();
     this.getOwnerIds().then();
     this.getBotInfo().then();

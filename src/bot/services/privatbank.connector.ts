@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 import { IPayment } from '../interfaces/payment.interface';
 import { IPrivatbankResponse } from '../interfaces/privatbank-response.interface';
 import { IPrivatbankStatementsData } from '../interfaces/privatbank-balance-data.interface';
+import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
 
 const CRON_EVERY_2_MINUTES = '*/2 * * * *';
 
@@ -27,6 +28,10 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
   ) { }
 
   onApplicationBootstrap(): any {
+    if (!isProdEnv()) {
+      return;
+    }
+
     this.setLastPaymentId();
   }
 

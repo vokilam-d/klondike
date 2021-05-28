@@ -5,6 +5,7 @@ import { EventsService } from '../../shared/services/events/events.service';
 import { Subject } from 'rxjs';
 import { IPayment } from '../interfaces/payment.interface';
 import { IMonobankStatement } from '../interfaces/monobank-statement.interface';
+import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
 
 @Injectable()
 export class MonobankConnector implements OnApplicationBootstrap {
@@ -22,6 +23,10 @@ export class MonobankConnector implements OnApplicationBootstrap {
   ) { }
 
   onApplicationBootstrap(): any {
+    if (!isProdEnv()) {
+      return;
+    }
+
     this.handlePaymentUpdates();
   }
 

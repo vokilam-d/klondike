@@ -13,6 +13,7 @@ import { ITelegramUser } from '../interfaces/user.interface';
 import { BotCommand } from '../enums/bot-command.enum';
 import { MonobankConnector } from './monobank.connector';
 import { PrivatbankConnector } from './privatbank.connector';
+import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
 
 @Injectable()
 export class BotService implements OnApplicationBootstrap {
@@ -114,6 +115,10 @@ export class BotService implements OnApplicationBootstrap {
   }
 
   async onInternalServerError(error: any) {
+    if (!isProdEnv()) {
+      return;
+    }
+
     const str = JSON.stringify(error, null, 2);
     const toEscape = ['`', '\\'];
     let escapedStr: string = '';
