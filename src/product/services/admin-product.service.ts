@@ -121,6 +121,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     const reservedProp: keyof Inventory = 'reserved';
 
     return this.productModel.aggregate()
+      .allowDiskUse(true)
       .unwind(variantsProp)
       .lookup({
         'from': Inventory.collectionName,
@@ -146,6 +147,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     const reservedProp: keyof Inventory = 'reserved';
 
     return this.productModel.aggregate()
+      .allowDiskUse(true)
       .match({ _id: { $in: productIds } })
       .unwind(variantsProp)
       .lookup({
@@ -172,6 +174,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     const reservedProp: keyof Inventory = 'reserved';
 
     const [ found ] = await this.productModel.aggregate()
+      .allowDiskUse(true)
       .match({ _id: id })
       .unwind(variantsProp)
       .lookup({
@@ -202,6 +205,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     const reservedProp: keyof Inventory = 'reserved';
 
     const [ found ] = await this.productModel.aggregate()
+      .allowDiskUse(true)
       .match({ [variantsProp + '.' + skuProp]: sku })
       .unwind(variantsProp)
       .lookup({
@@ -231,6 +235,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     const reservedProp: keyof Inventory = 'reserved';
 
     const found = await this.productModel.aggregate()
+      .allowDiskUse(true)
       .match({ [variantsProp + '.' + skuProp]: { $in: skus } })
       .unwind(variantsProp)
       .lookup({
