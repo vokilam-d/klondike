@@ -58,6 +58,14 @@ export class CategoryService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     this.searchService.ensureCollection(Category.collectionName, new ElasticCategory());
     this.handleCachedCategories();
+
+    // const cats = await this.categoryModel.find().exec();
+    // for (const cat of cats) {
+    //   cat.breadcrumbs = await this.buildBreadcrumbs(cat, cats);
+    //   await cat.save();
+    //   console.log('saved', cat.id);
+    // }
+    // console.log('saved all');
   }
 
   async getAllCategories(
