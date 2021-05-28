@@ -84,8 +84,9 @@ export class AdminCategoryController {
     @Body() reorderDto: ReorderDto,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminCategoryTreeItemDto[]>> {
-    await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position, lang);
-    const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, adminTree: true });
+    const allCategories = await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position, lang);
+    const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, adminTree: true, force: true, allCategories });
+
     return {
       data: plainToClass(AdminCategoryTreeItemDto, tree, { excludeExtraneousValues: true })
     };

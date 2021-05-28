@@ -540,40 +540,42 @@ export class AdminProductService implements OnApplicationBootstrap {
     this.onProductUpdate();
   }
 
-  private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto, categoryTreeItems?): Promise<void> {
+  async rebuildBreadcrumbsForCategory(categoryId: string, categories: Category[], session: ClientSession): Promise<void> {
+    const breadcrumbsProp = getPropertyOf<Product>('breadcrumbs');
+    const breadcrumbIdProp = getPropertyOf<Breadcrumb>('id');
+
+    const products = await this.productModel.find({ [`${breadcrumbsProp}.${breadcrumbIdProp}`]: categoryId }).session(session).exec();
+    for (const product of products) {
+      await this.populateProductCategoriesAndBreadcrumbs(product, categories);
+      await product.save({ session });
+      await this.updateSearchDataById(product.id, adminDefaultLanguage, session);
+    }
+    this.onProductUpdate();
+  }
+
+  private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto, categories?: Category[]): Promise<void> {
     const breadcrumbsVariants: Breadcrumb[][] = [];
 
-    const populate = (treeItems: AdminCategoryTreeItemDto[], breadcrumbs: Breadcrumb[] = []) => {
-
-      for (const treeItem of treeItems) {
-        const newBreadcrumbs: Breadcrumb[] = JSON.parse(JSON.stringify(breadcrumbs));
-
-        const foundIdx = product.categories.findIndex(category => category.id === treeItem.id);
-        if (foundIdx !== -1) {
-          product.categories[foundIdx].name = treeItem.name;
-          product.categories[foundIdx].slug = treeItem.slug;
-          product.categories[foundIdx].isEnabled = treeItem.isEnabled;
-
-          newBreadcrumbs.push({ // todo remove this after converting breadcrumbs to ids only
-            id: treeItem.id,
-            name: treeItem.name,
-            slug: treeItem.slug,
-            isEnabled: treeItem.isEnabled
-          });
-        }
-
-        if (treeItem.children.length) {
-          populate(treeItem.children, newBreadcrumbs);
-        } else {
-          breadcrumbsVariants.push(newBreadcrumbs);
-        }
-      }
-    };
-
-    if (!categoryTreeItems) {
-      categoryTreeItems = await this.categoryService.getCategoriesTree({ onlyEnabled: true });
+    if (!categories) {
+      categories = await this.categoryService.getAllCategories({ onlyEnabled: true });
     }
-    populate(categoryTreeItems);
+
+    const buildBreadcrumb = (category: Category): Breadcrumb => ({ id: category.id, name: category.name, isEnabled: category.isEnabled, slug: category.slug });
+
+    for (const productCategory of product.categories) {
+      let category = categories.find(cat => cat.id === productCategory.id);
+      productCategory.name = category.name;
+      productCategory.slug = category.slug;
+      productCategory.isEnabled = category.isEnabled;
+
+      const breadcrumbs: Breadcrumb[] = [];
+      breadcrumbs.push(buildBreadcrumb(category));
+      while (category.parentId) {
+        category = categories.find(cat => cat.id === category.parentId);
+        breadcrumbs.unshift(buildBreadcrumb(category));
+      }
+      breadcrumbsVariants.push(breadcrumbs);
+    }
 
     breadcrumbsVariants.sort((a, b) => b.length - a.length);
     product.breadcrumbs = breadcrumbsVariants[0] || [];

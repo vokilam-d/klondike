@@ -8,7 +8,7 @@ import { AdminAddOrUpdateCategoryDto, AdminCategoryDto } from '../shared/dtos/ad
 import { CounterService } from '../shared/services/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
-import { ClientSession } from 'mongoose';
+import { ClientSession, FilterQuery } from 'mongoose';
 import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ReorderPositionEnum } from '../shared/enums/reorder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
@@ -60,35 +60,45 @@ export class CategoryService implements OnApplicationBootstrap {
     this.handleCachedCategories();
   }
 
-  async getAllCategories(): Promise<Category[]> {
-    if (this.cachedCategories.length) {
+  async getAllCategories(
+    options: { session?: ClientSession, force?: boolean, onlyEnabled?: boolean } = { }
+  ): Promise<DocumentType<Category>[] | Category[]> {
+    if (this.cachedCategories.length && !options.force) {
       return this.cachedCategories;
     }
 
-    let categories = await this.categoryModel.find().exec();
-    categories = categories
-      .sort((a, b) => a.reversedSortOrder - b.reversedSortOrder)
-      .map(category => category.toJSON());
+    const filterQuery: FilterQuery<Category> = {};
+    if (options.onlyEnabled) {
+      filterQuery.isEnabled = true;
+    }
+
+    let categories = await this.categoryModel.find(filterQuery).session(options.session).exec();
+    categories.sort((a, b) => a.reversedSortOrder - b.reversedSortOrder)
 
     return categories;
   }
 
-  async getCategoriesTree(options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean } = { }): Promise<AdminCategoryTreeItemDto[]> {
+  async getCategoriesTree(
+    options: { onlyEnabled?: boolean, noClones?: boolean, adminTree?: boolean, force?: boolean, allCategories?: Category[] } = { }
+  ): Promise<AdminCategoryTreeItemDto[]> {
     const cachedTree = this.cachedTreesMap.get(options);
-    if (cachedTree) {
+    if (cachedTree && !options.force) {
       return cachedTree;
     }
 
     const treeItems: AdminCategoryTreeItemDto[] = [];
     const childrenMap: { [parentId: number]: AdminCategoryTreeItemDto[] } = {};
 
-    const allCategories = await this.getAllCategories();
-    for (let category of allCategories) {
+    if (!options.allCategories) {
+      options.allCategories = await this.getAllCategories();
+    }
+
+    for (let category of options.allCategories) {
 
       if (options.onlyEnabled && category.isEnabled === false) { continue; }
       if (options.noClones && CategoryService.isClone(category)) { continue; }
 
-      category = this.handleCloneCategory(category, allCategories, options.adminTree);
+      category = this.handleCloneCategory(category, options.allCategories, options.adminTree);
 
       const item: AdminCategoryTreeItemDto = plainToClass(AdminCategoryTreeItemDto, category, { excludeExtraneousValues: true });
       item.children = [];
@@ -360,11 +370,11 @@ export class CategoryService implements OnApplicationBootstrap {
     return this.pageRegistryService.deletePageRegistry(slug, session);
   }
 
-  private async buildBreadcrumbs(category: Category, allCategories?: Category[]): Promise<Breadcrumb[]> {
+  private async buildBreadcrumbs(category: Category, allCategories?: Category[], session?: ClientSession): Promise<Breadcrumb[]> {
     if (!category.parentId) { return []; }
 
     if (!allCategories) {
-      allCategories = await this.getAllCategories();
+      allCategories = await this.getAllCategories({ session });
     }
     const breadcrumbs: Breadcrumb[] = [];
     let parentId = category.parentId;
@@ -386,7 +396,7 @@ export class CategoryService implements OnApplicationBootstrap {
     return breadcrumbs;
   }
 
-  async reoderCategory(categoryId: number, targetCategoryId: number, position: ReorderPositionEnum, lang: Language) {
+  async reoderCategory(categoryId: number, targetCategoryId: number, position: ReorderPositionEnum, lang: Language): Promise<Category[]> {
     const category = await this.categoryModel.findById(categoryId).exec();
     if (!category) { throw new BadRequestException(__('Category with id "$1" not found', lang, categoryId)); }
 
@@ -400,7 +410,10 @@ export class CategoryService implements OnApplicationBootstrap {
 
       if (position === ReorderPositionEnum.Inside) {
 
-        if (category.parentId !== targetCategoryId) {
+        if (category.parentId === targetCategoryId) {
+          await session.commitTransaction();
+          return;
+        } else {
           category.parentId = targetCategoryId;
           const lastSiblingOrder = await this.getLastSiblingOrder(category.parentId);
           category.reversedSortOrder = lastSiblingOrder ? lastSiblingOrder + 1 : 0;
@@ -429,9 +442,20 @@ export class CategoryService implements OnApplicationBootstrap {
         await category.save({ session });
       }
 
+      const allCategories = await this.getAllCategories({ session, force: true }) as DocumentType<Category>[];
+      await this.rebuildBreadcrumbsForCategory(category, allCategories, session);
+
+      const serializabledAllCategories = allCategories.map(allCat => allCat.toJSON());
+      const serializabledEnabledAllCategories = serializabledAllCategories.filter(allCat => allCat.isEnabled)
+      await this.productService.rebuildBreadcrumbsForCategory(category.id, serializabledEnabledAllCategories, session);
+
+      this.onCategoriesUpdate();
+
       this.reindexAllSearchData();
 
       await session.commitTransaction();
+
+      return serializabledAllCategories;
     } catch (ex) {
       await session.abortTransaction();
       throw ex;
@@ -520,7 +544,7 @@ export class CategoryService implements OnApplicationBootstrap {
     );
   }
 
-  private handleCloneCategory(category: Category, allCategories: Category[], adminView: boolean): Category {
+  private handleCloneCategory(category: Category, allCategories: (Category | DocumentType<Category>)[], adminView: boolean): Category {
     if (!CategoryService.isClone(category)) {
       return category;
     }
@@ -530,7 +554,10 @@ export class CategoryService implements OnApplicationBootstrap {
       return category;
     }
 
-    source = plainToClass(Category, source);
+    if ((source as DocumentType<Category>).toJSON) {
+      source = (source as DocumentType<Category>).toJSON();
+    }
+
     source.name = category.name;
     source.parentId = category.parentId;
     if (adminView) {
@@ -574,5 +601,14 @@ export class CategoryService implements OnApplicationBootstrap {
 
   private static isClone(category: Category): boolean {
     return Boolean(category.canonicalCategoryId);
+  }
+
+  private async rebuildBreadcrumbsForCategory(categoryArg: DocumentType<Category>, allCategories: DocumentType<Category>[], session: ClientSession): Promise<void> {
+    const relatedCategories = allCategories.filter(category => category.breadcrumbs.some(breadcrumb => breadcrumb.id === categoryArg.id));
+
+    for (const category of [...relatedCategories, categoryArg]) {
+      category.breadcrumbs = await this.buildBreadcrumbs(category, allCategories);
+      await category.save({ session });
+    }
   }
 }
