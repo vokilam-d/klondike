@@ -131,6 +131,7 @@ export class CategoryService implements OnApplicationBootstrap {
 
     populateChildrenArray(treeItems);
 
+    delete options.allCategories;
     this.cachedTreesMap.set(options, treeItems);
     return treeItems;
   }
@@ -565,6 +566,7 @@ export class CategoryService implements OnApplicationBootstrap {
     if ((source as DocumentType<Category>).toJSON) {
       source = (source as DocumentType<Category>).toJSON();
     }
+    source = plainToClass(Category, source);
 
     source.name = category.name;
     source.parentId = category.parentId;
