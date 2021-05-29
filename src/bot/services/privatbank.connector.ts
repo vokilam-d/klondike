@@ -89,6 +89,7 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
     }
 
     const statement = statementsData.info?.statements?.statement[0];
+    console.log({setLastPaymentId_statement:statementsData.info?.statements?.statement});
     if (!statement) {
       return;
     }
