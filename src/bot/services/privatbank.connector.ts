@@ -88,13 +88,15 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
       return;
     }
 
-    const statement = statementsData.info?.statements?.statement[0];
-    console.log({setLastPaymentId_statement:statementsData.info?.statements?.statement});
-    if (!statement) {
+    let statements = statementsData.info?.statements?.statement;
+    if (statements && !Array.isArray(statements)) {
+      statements = [statements];
+    }
+    if (!statements[0]) {
       return;
     }
 
-    this.lastPaymentId = statement['@appcode'];
+    this.lastPaymentId = statements[0]['@appcode'];
   }
 
   private async getPaymentsForToday(): Promise<IPrivatbankStatementsData> {
