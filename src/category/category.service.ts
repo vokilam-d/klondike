@@ -455,8 +455,7 @@ export class CategoryService implements OnApplicationBootstrap {
       await this.rebuildBreadcrumbsForCategory(category, allCategories, session);
 
       const serializabledAllCategories = allCategories.map(allCat => allCat.toJSON());
-      const serializabledEnabledAllCategories = serializabledAllCategories.filter(allCat => allCat.isEnabled)
-      await this.productService.rebuildBreadcrumbsForCategory(category.id, serializabledEnabledAllCategories, session);
+      await this.productService.rebuildBreadcrumbsForCategory(category.id, serializabledAllCategories, session);
 
       this.onCategoriesUpdate();
 

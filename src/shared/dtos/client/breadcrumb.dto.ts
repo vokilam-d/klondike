@@ -10,7 +10,7 @@ export class ClientBreadcrumbDto extends BaseBreadcrumbDto {
   static transformTodo(breadcrumb: Breadcrumb, lang: Language): ClientBreadcrumbDto {
     return {
       id: breadcrumb.id,
-      isEnabled: false,
+      isEnabled: true,
       name: breadcrumb.name[lang],
       slug: breadcrumb.slug
     };

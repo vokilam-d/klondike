@@ -45,7 +45,6 @@ import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function
 import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
 import { Category } from '../../category/models/category.model';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
-import { AdminCategoryTreeItemDto } from '../../shared/dtos/admin/category-tree-item.dto';
 import { Language } from '../../shared/enums/language.enum';
 import { EventsService } from '../../shared/services/events/events.service';
 import { adminDefaultLanguage } from '../../shared/constants';
@@ -562,13 +561,16 @@ export class AdminProductService implements OnApplicationBootstrap {
     const breadcrumbsVariants: Breadcrumb[][] = [];
 
     if (!categories) {
-      categories = await this.categoryService.getAllCategories({ onlyEnabled: true });
+      categories = await this.categoryService.getAllCategories();
     }
 
     const buildBreadcrumb = (category: Category): Breadcrumb => ({ id: category.id, name: category.name, isEnabled: category.isEnabled, slug: category.slug });
 
     for (const productCategory of product.categories) {
       let category = categories.find(cat => cat.id === productCategory.id);
+      if (!category || !category.isEnabled) {
+        continue;
+      }
       productCategory.name = category.name;
       productCategory.slug = category.slug;
       productCategory.isEnabled = category.isEnabled;
@@ -576,8 +578,15 @@ export class AdminProductService implements OnApplicationBootstrap {
       const breadcrumbs: Breadcrumb[] = [];
       breadcrumbs.push(buildBreadcrumb(category));
       while (category.parentId) {
-        category = categories.find(cat => cat.id === category.parentId);
-        breadcrumbs.unshift(buildBreadcrumb(category));
+        const foundParent = categories.find(cat => cat.id === category.parentId);
+        if (!foundParent) {
+          break;
+        }
+        category = foundParent;
+
+        if (foundParent.isEnabled) {
+          breadcrumbs.unshift(buildBreadcrumb(category));
+        }
       }
       breadcrumbsVariants.push(breadcrumbs);
     }
