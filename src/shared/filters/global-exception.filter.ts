@@ -62,7 +62,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         method,
         ...(userInfo ? { userInfo } : {}),
         path,
-        referer
+        referer,
+        body: req.body
       };
       this.logger.error(errorObj);
       this.internalServerError$.next(errorObj);
