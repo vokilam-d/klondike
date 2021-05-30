@@ -8,6 +8,7 @@ import { EProductsSort } from '../../enums/product-sort.enum';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { ClientMetaTagsDto } from '../client/meta-tags.dto';
 import { AdminBreadcrumbDto } from './breadcrumb.dto';
+import { clientDefaultLanguage } from '../../constants';
 
 export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, any>, 'id' | '_id' | 'imageUrl'> {
   @Expose()
@@ -24,7 +25,7 @@ export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, 
 
   @Expose()
   @IsString()
-  @Transform((slug, category: AdminAddOrUpdateCategoryDto) => transliterate(slug || category.name))
+  @Transform((slug, category: AdminAddOrUpdateCategoryDto) => transliterate(slug || category.name[clientDefaultLanguage]))
   @TrimString()
   slug: string;
 
@@ -68,4 +69,3 @@ export class AdminCategoryDto extends AdminAddOrUpdateCategoryDto {
   @Expose()
   id?: number;
 }
-
