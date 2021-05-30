@@ -100,7 +100,7 @@ export class MediaService {
               .jpeg({ progressive: true, quality: isOriginal ? 100: 80 })
               .metadata(isOriginal ? metadataCallback : () => {})
 
-            const fileName = isOriginal ? fullFileNameOfOriginal : `${fileNameOfOriginal}_${resizeOption.variant}${ext}`;
+            const fileName = isOriginal ? fullFileNameOfOriginal : `${fileNameOfOriginal}_${resizeOption.variant}.jpeg`;
             const pathToFile = join(saveDirName, fileName);
             const writeStream = fs.createWriteStream(pathToFile);
 
