@@ -10,6 +10,7 @@ import { Media } from '../../models/media.model';
 import { readableBytes } from '../../helpers/readable-bytes.function';
 import { MediaVariantEnum } from '../../enums/media-variant.enum';
 import { AdminMediaDto } from '../../dtos/admin/media.dto';
+import * as FileType from 'file-type';
 
 const pipelinePromise = promisify(pipeline);
 
@@ -50,7 +51,7 @@ export class MediaService {
       maxDimension: 300
     }
   ];
-  private allowedExt = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.tiff', '.gif'];
+  private allowedExt = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'tiff', 'gif'];
   private logger = new Logger(MediaService.name);
 
   async upload(request: FastifyRequest, entityDirName: string, saveToTmp: boolean = true, resize: boolean = false): Promise<Media> {
@@ -59,9 +60,12 @@ export class MediaService {
       let isRejected: boolean = false;
 
       request.multipart(
-        async (field, file, fileName, _encoding, _mimetype) => {
+        async (field, fileStreamArg, fileName, _encoding, _mimetype) => {
 
-          let { name, ext } = parse(fileName);
+          const fileStream = await FileType.stream(fileStreamArg);
+          const ext = fileStream.fileType.ext;
+
+          let { name } = parse(fileName);
           if (!this.allowedExt.includes(ext)) {
             reject(new BadRequestException(`Type of the file '${fileName}' is not allowed`));
             return;
@@ -100,7 +104,7 @@ export class MediaService {
             const pathToFile = join(saveDirName, fileName);
             const writeStream = fs.createWriteStream(pathToFile);
 
-            pipeline(file, resizeStream, writeStream, (err) => {
+            pipeline(fileStream, resizeStream, writeStream, (err) => {
               if (err) {
                 isRejected = true;
                 reject(err);
