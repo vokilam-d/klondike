@@ -53,6 +53,7 @@ export class MediaService {
   ];
   private allowedExt = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'tiff', 'gif'];
   private logger = new Logger(MediaService.name);
+  private newFileExtWithDot = '.jpg';
 
   async upload(request: FastifyRequest, entityDirName: string, saveToTmp: boolean = true, resize: boolean = false): Promise<Media> {
 
@@ -63,13 +64,12 @@ export class MediaService {
         async (field, fileStreamArg, fileName, _encoding, _mimetype) => {
 
           const fileStream = await FileType.stream(fileStreamArg);
-          const ext = fileStream.fileType.ext;
 
-          let { name } = parse(fileName);
-          if (!this.allowedExt.includes(ext)) {
+          if (!this.allowedExt.includes(fileStream.fileType.ext)) {
             reject(new BadRequestException(`Type of the file '${fileName}' is not allowed`));
             return;
           }
+          let { name } = parse(fileName);
           name = transliterate(name).substring(0, 100);
 
           const saveDirName = saveToTmp
@@ -87,7 +87,7 @@ export class MediaService {
             media.dimensions = `${metadata.width}x${metadata.height} px`;
           };
 
-          const fullFileNameOfOriginal = await this.getUniqueFileName(saveDirName, `${name}.jpeg`);
+          const fullFileNameOfOriginal = await this.getUniqueFileName(saveDirName, `${name}${this.newFileExtWithDot}`);
           const { name: fileNameOfOriginal } = parse(fullFileNameOfOriginal);
           const resizeOptions = resize ? this.resizeOptions : this.resizeOptions.filter(option => option.variant === MediaVariantEnum.Original);
 
@@ -100,7 +100,7 @@ export class MediaService {
               .jpeg({ progressive: true, quality: isOriginal ? 100: 80 })
               .metadata(isOriginal ? metadataCallback : () => {})
 
-            const fileName = isOriginal ? fullFileNameOfOriginal : `${fileNameOfOriginal}_${resizeOption.variant}.jpeg`;
+            const fileName = isOriginal ? fullFileNameOfOriginal : `${fileNameOfOriginal}_${resizeOption.variant}${this.newFileExtWithDot}`;
             const pathToFile = join(saveDirName, fileName);
             const writeStream = fs.createWriteStream(pathToFile);
 
