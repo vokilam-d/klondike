@@ -290,7 +290,10 @@ export class CategoryService implements OnApplicationBootstrap {
       }
       if (oldSlug !== categoryDto.slug || !areMultilingualTextsEqual(oldName, categoryDto.name) || oldIsEnabled !== categoryDto.isEnabled) {
         await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session);
-        await this.updateBreadcrumbs(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session)
+        await this.updateBreadcrumbs(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session);
+      }
+      if (oldIsEnabled !== categoryDto.isEnabled) {
+        await this.handleIsEnabledChangeForClones(categoryId, categoryDto, session);
       }
 
       const saved = await category.save({ session });
@@ -618,6 +621,19 @@ export class CategoryService implements OnApplicationBootstrap {
     for (const category of [...relatedCategories, categoryArg]) {
       category.breadcrumbs = await this.buildBreadcrumbs(category, allCategories);
       await category.save({ session });
+    }
+  }
+
+  private async handleIsEnabledChangeForClones(categoryId: number, categoryDto: AdminAddOrUpdateCategoryDto, session: ClientSession): Promise<void> {
+    const canonicalProp: keyof Category = 'canonicalCategoryId';
+    const clones = await this.categoryModel.find({ [canonicalProp]: categoryId }).session(session).exec();
+    for (const cloneCategory of clones) {
+      if (cloneCategory.isEnabled === categoryDto.isEnabled) {
+        continue;
+      }
+
+      cloneCategory.isEnabled = categoryDto.isEnabled;
+      await cloneCategory.save({ session });
     }
   }
 }
