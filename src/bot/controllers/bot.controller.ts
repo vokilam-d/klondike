@@ -21,18 +21,12 @@ export class BotController {
 
   @Get('monobank-webhook')
   monobankWebhookGet(@Body() update: IMonobankUpdate, @Query() query: any): void {
-    console.log('mono-webhook get body');
-    console.dir(update, { depth: 10 });
-    console.log('mono-webhook get query');
-    console.dir(query, { depth: 10 });
+    console.log('mono-webhook get');
   }
 
   @Post('monobank-webhook')
   @HttpCode(200)
   monobankWebhookPost(@Body() update: IMonobankUpdate): void {
-    console.log('instance ID', process.env.INSTANCE_ID);
-    console.log('mono-webhook post body');
-    console.dir(update, { depth: 10 });
     this.monobankConnector.onUpdate(update);
   }
 }
