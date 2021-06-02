@@ -47,6 +47,7 @@ import { EventsService } from '../../shared/services/events/events.service';
 import { adminDefaultLanguage } from '../../shared/constants';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
 import { BreadcrumbsVariant } from '../../shared/models/breadcrumbs-variant.model';
+import { AdminProductListItemCategoryDto } from '../../shared/dtos/admin/product-list-item-category.dto';
 
 @Injectable()
 export class AdminProductService implements OnApplicationBootstrap {
@@ -660,7 +661,7 @@ export class AdminProductService implements OnApplicationBootstrap {
         });
       }
 
-      const categories: AdminProductCategoryDto[] = product.categories.map(productCategory => {
+      const categories: AdminProductListItemCategoryDto[] = product.categories.map(productCategory => {
         const category = allCategories.find(category => category.id === productCategory.id);
         return {
           name: category.name,
