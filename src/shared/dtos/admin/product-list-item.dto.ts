@@ -1,11 +1,11 @@
 import { AdminProductVariantListItemDto } from './product-variant-list-item.dto';
 import { AdminProductSelectedAttributeDto } from './product-selected-attribute.dto';
-import { AdminProductCategoryDto } from './product-category.dto';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
+import { AdminProductListItemCategoryDto } from './product-list-item-category.dto';
 
 export class AdminProductListItemDto {
   id: number;
-  categories: AdminProductCategoryDto[];
+  categories: AdminProductListItemCategoryDto[];
   isEnabled: boolean;
   attributes: AdminProductSelectedAttributeDto[];
   mediaUrl: string;
