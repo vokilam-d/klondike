@@ -31,6 +31,7 @@ import { EventsService } from '../shared/services/events/events.service';
 import { Dictionary } from '../shared/helpers/dictionary';
 import { clientDefaultLanguage } from '../shared/constants';
 import { CronProd } from '../shared/decorators/prod-cron.decorator';
+import { User } from '../user/models/user.model';
 
 @Injectable()
 export class CategoryService implements OnApplicationBootstrap {
@@ -303,7 +304,7 @@ export class CategoryService implements OnApplicationBootstrap {
     }
   }
 
-  async deleteCategory(categoryId: number, lang: Language): Promise<DocumentType<Category>> {
+  async deleteCategory(categoryId: number, lang: Language, user: DocumentType<User>): Promise<DocumentType<Category>> {
     const session = await this.categoryModel.db.startSession();
     session.startTransaction();
 
@@ -318,7 +319,7 @@ export class CategoryService implements OnApplicationBootstrap {
         .session(session)
         .exec();
 
-      await this.productService.handleCategoryDeletion(categoryId, session);
+      await this.productService.handleCategoryDeletion(categoryId, session, user);
       await this.deleteCategoryPageRegistry(deleted.slug, session);
       await session.commitTransaction();
 
@@ -391,7 +392,13 @@ export class CategoryService implements OnApplicationBootstrap {
     return categoryIds;
   }
 
-  async reoderCategory(categoryId: number, targetCategoryId: number, position: ReorderPositionEnum, lang: Language): Promise<Category[]> {
+  async reoderCategory(
+    categoryId: number,
+    targetCategoryId: number,
+    position: ReorderPositionEnum,
+    lang: Language,
+    user: DocumentType<User>
+  ): Promise<Category[]> {
     const category = await this.categoryModel.findById(categoryId).exec();
     if (!category) { throw new BadRequestException(__('Category with id "$1" not found', lang, categoryId)); }
 
@@ -441,7 +448,7 @@ export class CategoryService implements OnApplicationBootstrap {
       await this.rebuildBreadcrumbsRelatedToCategory(category, allCategories, session);
 
       const serializabledAllCategories = allCategories.map(allCat => allCat.toJSON());
-      await this.productService.rebuildBreadcrumbsRelatedToCategory(category.id, serializabledAllCategories, session);
+      await this.productService.rebuildBreadcrumbsRelatedToCategory(category.id, serializabledAllCategories, session, user);
 
       this.onCategoriesUpdate();
       this.reindexAllSearchData().then();

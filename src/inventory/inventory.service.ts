@@ -6,9 +6,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { getPropertyOf } from '../shared/helpers/get-property-of.function';
 import { ReservedInventory } from './models/reserved-inventory.model';
 import { __ } from '../shared/helpers/translate/translate.function';
-import { FileLogger } from '../logger/file-logger.service';
-import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../shared/enums/language.enum';
+import { User } from '../user/models/user.model';
 
 @Injectable()
 export class InventoryService {
@@ -22,8 +21,17 @@ export class InventoryService {
     // this.logger.setContext(InventoryService.name);
   }
 
-  async createInventory(sku: string, productId: number, qtyInStock: number = 0, session: ClientSession): Promise<DocumentType<Inventory>> {
-    const model: Inventory = { sku, productId, qtyInStock, reserved: [] };
+  async createInventory(
+    sku: string,
+    productId: number,
+    qtyInStock: number = 0,
+    session: ClientSession,
+    user: DocumentType<User>
+  ): Promise<DocumentType<Inventory>> {
+
+    const model: Inventory = { sku, productId, qtyInStock, reserved: [], logs: [] };
+    InventoryService.addLog(model, `Created inventory, qtyInStock=${qtyInStock}, userLogin=${user?.login}`);
+
     const newInventory = new this.inventoryModel(model);
     await newInventory.save({ session });
 
@@ -39,17 +47,23 @@ export class InventoryService {
     return found;
   }
 
-  async updateInventory(oldSku: string, newSku: string = oldSku, qty: number, lang: Language, session: ClientSession) {
+  async getInventories(skus: string[], lang: Language, session?: ClientSession): Promise<DocumentType<Inventory>[]> {
+    return this.inventoryModel.find({ sku: { $in: skus } }).session(session).exec();
+  }
 
-    const found = await this.getInventory(oldSku, lang, session);
+  async updateInventory(sku: string, qty: number, lang: Language, session: ClientSession, user: DocumentType<User>) {
+
+    const found = await this.getInventory(sku, lang, session);
 
     const qtyInOrders = found.reserved.reduce((sum, ordered) => sum + ordered.qty, 0);
     if (qtyInOrders > qty) {
       throw new ForbiddenException(__('Cannot set quantity: more than "$1" items are ordered', lang, qty));
     }
 
+    const prevQtyInStock = found.qtyInStock;
     found.qtyInStock = qty;
-    found.sku = newSku;
+
+    InventoryService.addLog(found, `Updated inventory, prevQtyInStock=${prevQtyInStock}, newQtyInStock=${found.qtyInStock}, userLogin=${user?.login}`);
 
     await found.save({ session });
 
@@ -58,89 +72,84 @@ export class InventoryService {
     return found;
   }
 
-  async addToStock(sku: string, qty: number, session: ClientSession): Promise<DocumentType<Inventory>> {
-    const inventory = await this.inventoryModel
-      .findOneAndUpdate(
-        { sku },
-        { $inc: { qtyInStock: qty } },
-        { new: true }
-      )
-      .session(session)
-      .exec();
+  async addToStock(sku: string, qty: number, lang: Language, session: ClientSession, user): Promise<DocumentType<Inventory>> {
+    const inventory = await this.getInventory(sku, lang, session);
+    const prevQtyInStock = inventory.qtyInStock;
+    inventory.qtyInStock += qty;
+
+    InventoryService.addLog(inventory, `Added to stock, prevQtyInStock=${prevQtyInStock}, qtyAdded=${qty}, newQtyInStock=${inventory.qtyInStock}, userLogin=${user?.login}`);
+
+    await inventory.save({ session });
 
     this.logger.log(`Added to stock: sku=${inventory.sku}, qty added=${qty}, new qtyInStock=${inventory.qtyInStock}`);
 
     return inventory;
   }
 
-  async addToOrdered(sku: string, qty: number, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
+  async addToOrdered(sku: string, qty: number, orderId: number, lang: Language, session: ClientSession, user: User): Promise<DocumentType<Inventory>> {
+    const inventory = await this.getInventory(sku, lang, session);
+    if (inventory.qtyInStock < qty) {
+      throw new ForbiddenException(__('Not enough quantity in stock. You are trying to add: $1. In stock: $2', lang, qty, inventory.qtyInStock));
+    }
+
     const orderedInventory = new ReservedInventory();
     orderedInventory.qty = qty;
     orderedInventory.orderId = orderId;
     orderedInventory.timestamp = new Date();
 
-    const inventory = await this.inventoryModel
-      .findOneAndUpdate(
-        {
-          sku,
-          qtyInStock: { $gte: qty }
-        },
-        { $push: { reserved: orderedInventory } },
-        { new: true }
-      )
-      .session(session)
-      .exec();
+    inventory.reserved.push(orderedInventory);
+
+    InventoryService.addLog(inventory, `Added to ordered, orderId=${orderId}, qtyInStock=${inventory.qtyInStock}, orderedQty=${qty}, userLogin=${user?.login}`);
+
+    await inventory.save({ session });
 
     this.logger.log(`Added to ordered: sku=${inventory.sku}, qtyInStock=${inventory.qtyInStock}, orderId=${orderId}, orderedQty=${qty}`);
 
     return inventory;
   }
 
-  async removeFromOrdered(sku: string, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
-    const reservedProp = getPropertyOf<Inventory>('reserved');
-    const orderIdProp = getPropertyOf<ReservedInventory>('orderId');
+  async removeFromOrdered(sku: string, orderId: number, lang: Language, session: ClientSession, user: User): Promise<DocumentType<Inventory>> {
+    const inventory = await this.getInventory(sku, lang, session);
 
-    const inventory = await this.inventoryModel
-      .findOneAndUpdate(
-        {
-          sku,
-          [reservedProp + '.' + orderIdProp]: orderId
-        },
-        {
-          $pull: { reserved: { orderId } }
-        },
-        {
-          new: true
-        }
-      )
-      .session(session)
-      .exec();
+    const reservedIndex = inventory.reserved.findIndex(reserved => reserved.orderId === orderId);
+    if (reservedIndex === -1) {
+      return inventory;
+    }
+    const removedReserved = inventory.reserved.splice(reservedIndex, 1);
+
+    InventoryService.addLog(inventory, `Removed to ordered, orderId=${orderId}, qtyInStock=${inventory.qtyInStock}, removedOrderedQty=${removedReserved[0].qty}, userLogin=${user?.login}`);
+
+    await inventory.save({ session });
 
     this.logger.log(`Removed from ordered: sku=${inventory.sku}, qtyInStock=${inventory.qtyInStock}, orderId=${orderId}`);
 
     return inventory;
   }
 
-  async removeFromOrderedAndStock(sku: string, qty: number, orderId: number, session: ClientSession): Promise<DocumentType<Inventory>> {
-    const reservedProp = getPropertyOf<Inventory>('reserved');
-    const orderIdProp = getPropertyOf<ReservedInventory>('orderId');
+  async removeFromOrderedAndStock(
+    sku: string,
+    qty: number,
+    orderId: number,
+    lang: Language,
+    session: ClientSession,
+    user?: User
+  ): Promise<DocumentType<Inventory>> {
+    const inventory = await this.getInventory(sku, lang, session);
+    const reservedIndex = inventory.reserved.findIndex(reserved => reserved.orderId === orderId);
+    if (reservedIndex !== -1) {
+      inventory.reserved.splice(reservedIndex, 1);
+    }
+    inventory.qtyInStock -= qty;
 
-    const inventory = await this.inventoryModel
-      .findOneAndUpdate(
-        {
-          sku,
-          [reservedProp + '.' + orderIdProp]: orderId
-        },
-        {
-          $inc: { qtyInStock: -qty },
-          $pull: { reserved: { orderId } }
-        },
-        {
-          new: true
-        }
-      )
-      .session(session)
-      .exec();
+    let logMessage = `Removed to ordered and stock, orderId=${orderId}, removedQty=${qty}, newQtyInStock=${inventory.qtyInStock}`;
+    if (user) {
+      logMessage += `, userLogin=${user.login}`;
+    } else {
+      logMessage += `, source=system`;
+    }
+    InventoryService.addLog(inventory, logMessage);
+
+    await inventory.save({ session });
 
     this.logger.log(`Removed from ordered and stock: sku=${inventory.sku}, qty removed=${qty}, new qtyInStock=${inventory.qtyInStock}, orderId=${orderId}`);
 
@@ -151,7 +160,7 @@ export class InventoryService {
     return this.inventoryModel.findOneAndDelete({ sku }).session(session).exec();
   }
 
-  deleteAllInventory() {
-    return this.inventoryModel.deleteMany({}).exec();
+  private static addLog(inventory: Inventory, message: string): void {
+    inventory.logs.push({ time: new Date(), text: message });
   }
 }

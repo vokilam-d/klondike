@@ -33,6 +33,9 @@ import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-orde
 import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
+import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
+import { DocumentType } from '@typegoose/typegoose';
+import { User } from '../../user/models/user.model';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -59,7 +62,7 @@ export class AdminProductController {
     @Param('id') id: string,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminProductDto>> {
-    const product = await this.productsService.getProductWithQtyById(parseInt(id), lang);
+    const product = await this.productsService.getAdminProduct(parseInt(id), lang);
 
     return {
       data: plainToClass(AdminProductDto, product, { excludeExtraneousValues: true })
@@ -82,9 +85,10 @@ export class AdminProductController {
   @Post()
   async addProduct(
     @Body() productDto: AdminAddOrUpdateProductDto,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminProductDto>> {
-    const created = await this.productsService.createProduct(productDto, lang);
+    const created = await this.productsService.createProduct(productDto, lang, user);
 
     return {
       data: plainToClass(AdminProductDto, created, { excludeExtraneousValues: true })
@@ -105,10 +109,11 @@ export class AdminProductController {
   async fixProductSortOrder(
     @Body() reorderDto: ProductReorderDto,
     @Query() spf: AdminSPFDto,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    await this.productsService.lockProductSortOrder(reorderDto, lang);
+    await this.productsService.lockProductSortOrder(reorderDto, lang, user);
     return this.productsService.getAdminProductsList(spf, false);
   }
 
@@ -116,10 +121,11 @@ export class AdminProductController {
   async unFixProductSortOrder(
     @Body() unfixDto: UnfixProductOrderDto,
     @Query() spf: AdminSPFDto,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminProductListItemDto[]>> {
 
-    await this.productsService.unlockProductSortOrder(unfixDto, lang);
+    await this.productsService.unlockProductSortOrder(unfixDto, lang, user);
     return this.productsService.getAdminProductsList(spf, false);
   }
 
@@ -127,9 +133,10 @@ export class AdminProductController {
   async updateProduct(
     @Param('id') productId: number,
     @Body() productDto: AdminAddOrUpdateProductDto,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminProductDto>> {
-    const updated = await this.productsService.updateProduct(productId, productDto, lang);
+    const updated = await this.productsService.updateProduct(productId, productDto, lang, user);
     return {
       data: plainToClass(AdminProductDto, updated, { excludeExtraneousValues: true })
     };

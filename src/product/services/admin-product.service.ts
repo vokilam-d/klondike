@@ -48,6 +48,8 @@ import { adminDefaultLanguage } from '../../shared/constants';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
 import { BreadcrumbsVariant } from '../../shared/models/breadcrumbs-variant.model';
 import { AdminProductListItemCategoryDto } from '../../shared/dtos/admin/product-list-item-category.dto';
+import { User } from '../../user/models/user.model';
+import { getProductChangesMessage } from '../../shared/helpers/get-product-changes-message.function';
 
 @Injectable()
 export class AdminProductService implements OnApplicationBootstrap {
@@ -165,6 +167,17 @@ export class AdminProductService implements OnApplicationBootstrap {
       .exec();
   }
 
+  async getAdminProduct(id: number, lang: Language, session?: ClientSession): Promise<ProductWithQty> {
+    const productWithQty = await this.getProductWithQtyById(id, lang, session);
+    const skus = productWithQty.variants.map(variant => variant.sku);
+    const inventories = await this.inventoryService.getInventories(skus, lang, session);
+    const logs = inventories.flatMap(inventory => inventory.logs);
+    productWithQty.logs.push(...logs);
+    productWithQty.logs.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
+    return productWithQty;
+  }
+
   async getProductWithQtyById(id: number, lang: Language, session?: ClientSession): Promise<ProductWithQty> {
     const variantsProp = getPropertyOf<Product>('variants');
     const skuProp = getPropertyOf<Inventory>('sku');
@@ -250,7 +263,7 @@ export class AdminProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  async createProduct(productDto: AdminAddOrUpdateProductDto, lang: Language): Promise<Product> {
+  async createProduct(productDto: AdminAddOrUpdateProductDto, lang: Language, user: DocumentType<User>): Promise<Product> {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
@@ -274,7 +287,7 @@ export class AdminProductService implements OnApplicationBootstrap {
         tmpMediasToDelete.push(...tmpMedias);
         savedVariant.medias = await this.mediaService.duplicateSavedMedias(savedMedias, Product.collectionName);
 
-        const inventory = await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qtyInStock, session);
+        const inventory = await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qtyInStock, session, user);
         inventories.push(inventory.toJSON());
         await this.createProductPageRegistry(dtoVariant.slug, session);
       }
@@ -282,6 +295,8 @@ export class AdminProductService implements OnApplicationBootstrap {
       if (newProductModel.variants.every(variant => variant.isEnabled === false)) {
         newProductModel.isEnabled = false;
       }
+
+      AdminProductService.addLog(newProductModel, `Product created, userLogin=${user?.login}`);
 
       await this.setProductPrices(newProductModel, lang);
       await newProductModel.save({ session });
@@ -302,7 +317,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     }
   }
 
-  async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto, lang: Language): Promise<Product> {
+  async updateProduct(productId: number, productDto: AdminAddOrUpdateProductDto, lang: Language, user: DocumentType<User>): Promise<Product> {
     const found = await this.productModel.findById(productId).exec();
     if (!found) {
       throw new NotFoundException(__('Product with id "$1" not found', lang, productId));
@@ -336,7 +351,7 @@ export class AdminProductService implements OnApplicationBootstrap {
         tmpMediasToDelete.push(...tmpMedias);
 
         await this.createProductPageRegistry(variantDto.slug, session);
-        const inventory = await this.inventoryService.createInventory(variantDto.sku, found.id, variantDto.qtyInStock, session);
+        const inventory = await this.inventoryService.createInventory(variantDto.sku, found.id, variantDto.qtyInStock, session, user);
         inventories.push(inventory.toJSON());
       }
 
@@ -363,11 +378,15 @@ export class AdminProductService implements OnApplicationBootstrap {
         if (variant.slug !== variantInDto.slug) {
           await this.updateProductPageRegistry(variant.slug, variantInDto.slug, variantInDto.createRedirect, session);
         }
-        const inventory = await this.inventoryService.updateInventory(variant.sku, variantInDto.sku, variantInDto.qtyInStock, lang, session);
+        const inventory = await this.inventoryService.updateInventory(variant.sku, variantInDto.qtyInStock, lang, session, user);
         inventories.push(inventory.toJSON());
       }
 
+      const logUpdateMessage = getProductChangesMessage(found, productDto);
+
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
+
+      AdminProductService.addLog(found, `Product updated, ${logUpdateMessage}, userLogin=${user?.login}`);
 
       if (found.variants.every(variant => variant.isEnabled === false)) {
         found.isEnabled = false;
@@ -375,6 +394,7 @@ export class AdminProductService implements OnApplicationBootstrap {
 
       if (!areProductCategoriesEqual) {
         found.breadcrumbsVariants = await this.buildBreadcrumbsVariants(productDto.categories);
+        AdminProductService.addLog(found, `Rebuilt breadcrumbs after product categories update, userLogin=${user?.login}`);
       }
 
       await this.setProductPrices(found, lang);
@@ -470,25 +490,38 @@ export class AdminProductService implements OnApplicationBootstrap {
     product.textReviewsCount = textReviewsCount;
     product.allReviewsCount = allReviewsCount;
 
+    AdminProductService.addLog(product, `Updated review info, reviewsAvgRating=${reviewsAvgRating}, textReviewsCount=${textReviewsCount}, allReviewsCount=${allReviewsCount}`);
+
     await product.save({ session });
     await this.updateSearchDataById(productId, lang, session);
     this.onProductUpdate();
   }
 
-  async incrementSalesCount(productId: number, variantId: string, count: number, session: ClientSession): Promise<any> {
+  async incrementSalesCount(productId: number, variantId: string, count: number, session: ClientSession, user?: User): Promise<any> {
+    const logsProp = getPropertyOf<Product>('logs');
     const variantsProp = getPropertyOf<Product>('variants');
     const countProp = getPropertyOf<ProductVariant>('salesCount');
+
+    let logMessage = `Incremented sales count by "${count}"`;
+    if (user) {
+      logMessage += `, userLogin=${user.login}`;
+    } else {
+      logMessage += `, source=system`;
+    }
 
     return this.productModel
       .updateOne(
         { _id: productId as any, [`${variantsProp}._id`]: variantId as any },
-        { $inc: { [`${variantsProp}.$.${countProp}`]: count } }
+        {
+          $inc: { [`${variantsProp}.$.${countProp}`]: count },
+          $push: { [logsProp]: { time: new Date(), text: logMessage } }
+        }
       )
       .session(session)
       .exec();
   }
 
-  async handleCategoryDeletion(categoryId: number, session: ClientSession): Promise<void> {
+  async handleCategoryDeletion(categoryId: number, session: ClientSession, user: DocumentType<User>): Promise<void> {
     const categoriesProp: keyof Product = 'categories';
     const categoryIdProp: keyof ProductCategory = 'id';
     const products = await this.productModel.find({ [`${categoriesProp}.${categoryIdProp}`]: categoryId }).session(session).exec();
@@ -503,6 +536,8 @@ export class AdminProductService implements OnApplicationBootstrap {
       product.categories.splice(productCategoryIdx, 1);
       product.breadcrumbsVariants = await this.buildBreadcrumbsVariants(product.categories, allCategories);
 
+      AdminProductService.addLog(product, `Deleted category with id "${categoryId}" and rebuilt breadcrumbs, userLogin=${user?.login}`);
+
       await product.save({ session });
       await this.updateSearchDataById(product.id, adminDefaultLanguage, session);
     }
@@ -510,13 +545,21 @@ export class AdminProductService implements OnApplicationBootstrap {
     this.onProductUpdate();
   }
 
-  async rebuildBreadcrumbsRelatedToCategory(categoryId: string, categories: Category[], session: ClientSession): Promise<void> {
+  async rebuildBreadcrumbsRelatedToCategory(
+    categoryId: string,
+    categories: Category[],
+    session: ClientSession,
+    user: DocumentType<User>
+  ): Promise<void> {
     const categoriesProp: keyof Product = 'categories';
     const categoryIdProp: keyof ProductCategory = 'id';
 
     const products = await this.productModel.find({ [`${categoriesProp}.${categoryIdProp}`]: categoryId }).session(session).exec();
     for (const product of products) {
       product.breadcrumbsVariants = await this.buildBreadcrumbsVariants(product.categories, categories);
+
+      AdminProductService.addLog(product, `Rebuilt breadcrumbs after category "${categoryId}" reorder, userLogin=${user?.login}`);
+
       await product.save({ session });
     }
     this.onProductUpdate();
@@ -723,39 +766,38 @@ export class AdminProductService implements OnApplicationBootstrap {
 
     this.currencyService.echangeRatesUpdated$.subscribe(async currencies => {
       for (const currency of currencies) {
+        const query = { [`${variantsProp}.${currencyProp}`]: currency._id };
+        const products = await this.productModel.find(query).exec();
+        for (const product of products) {
+          let logMessage = `Updated prices after "${currency._id}" exchange rate update, newExchangeRate=${currency.exchangeRate}`;
+
+          for (const variant of product.variants) {
+            if (variant.currency !== currency._id) {
+              continue;
+            }
+
+            const prevPriceInDefaultCurrency = variant.priceInDefaultCurrency;
+            variant.priceInDefaultCurrency = Math.ceil(variant.price * currency.exchangeRate);
+            if (prevPriceInDefaultCurrency !== variant.priceInDefaultCurrency) {
+              logMessage += `, ${variant.sku}_prevPriceInDefaultCurrency=${prevPriceInDefaultCurrency}, ${variant.sku}_newPriceInDefaultCurrency=${variant.priceInDefaultCurrency}`;
+            }
+
+            if (variant.oldPrice) {
+              const prevOldPriceInDefaultCurrency = variant.oldPriceInDefaultCurrency;
+              variant.oldPriceInDefaultCurrency = Math.ceil(variant.oldPrice * currency.exchangeRate);
+
+              if (prevOldPriceInDefaultCurrency !== variant.oldPriceInDefaultCurrency) {
+                logMessage += `, ${variant.sku}_prevOldPriceInDefaultCurrency=${prevOldPriceInDefaultCurrency}, ${variant.sku}_newOldPriceInDefaultCurrency=${variant.oldPriceInDefaultCurrency}`;
+              }
+            }
+          }
+
+          AdminProductService.addLog(product, `${logMessage}, source=system`);
+
+          await product.save();
+        }
+
         try {
-          const query = { [`${variantsProp}.${currencyProp}`]: currency._id };
-
-          await this.productModel.updateMany(
-            query,
-            [
-              {
-                $addFields: {
-                  [variantsProp]: {
-                    $map: {
-                      input: `$${variantsProp}`,
-                      in: {
-                        $mergeObjects: [
-                          '$$this',
-                          {
-                            [defaultPriceProp]: {
-                              $ceil: { $multiply: [`$$this.${priceProp}`, currency.exchangeRate] }
-                            }
-                          },
-                          {
-                            [defaultOldPriceProp]: {
-                              $ceil: { $multiply: [`$$this.${oldPriceProp}`, currency.exchangeRate] }
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  }
-                }
-              },
-            ]
-          ).exec();
-
           const elasticQuery = {
             nested: {
               path: variantsProp,
@@ -784,7 +826,8 @@ export class AdminProductService implements OnApplicationBootstrap {
   @CronProdPrimaryInstance(getCronExpressionEarlyMorning())
   async updateProductsOrder(
     { categoryId, fixedProductId }: { categoryId: number, fixedProductId: number } = { categoryId: null, fixedProductId: null },
-    lang: Language = adminDefaultLanguage
+    lang: Language = adminDefaultLanguage,
+    user?: DocumentType<User>
   ) {
     let categories: Category[];
     if (categoryId) {
@@ -848,8 +891,20 @@ export class AdminProductService implements OnApplicationBootstrap {
         checkForAvailability();
 
         if (!product.categories[productCategoryIdx].isSortOrderFixed) {
-          product.categories[productCategoryIdx].reversedSortOrder = reversedSortOrder;
-          changedProducts.add(product);
+          const oldReversedSortOrder = product.categories[productCategoryIdx].reversedSortOrder;
+          if (oldReversedSortOrder !== reversedSortOrder) {
+            product.categories[productCategoryIdx].reversedSortOrder = reversedSortOrder;
+
+            let logMessage = `Updated sort order, oldReversedSortOrder=${oldReversedSortOrder}, newReversedSortOrder=${reversedSortOrder}`;
+            if (user) {
+              logMessage += `, userLogin=${user.login}`;
+            } else {
+              logMessage += `, source=system`;
+            }
+            AdminProductService.addLog(product, logMessage);
+
+            changedProducts.add(product);
+          }
         }
 
         reversedSortOrder += 1;
@@ -895,7 +950,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     this.logger.log(`Finished reindex`);
   }
 
-  async lockProductSortOrder(reorderDto: ProductReorderDto, lang: Language) {
+  async lockProductSortOrder(reorderDto: ProductReorderDto, lang: Language, user: DocumentType<User>) {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
@@ -932,11 +987,13 @@ export class AdminProductService implements OnApplicationBootstrap {
       product.categories[productCategoryIdx].reversedSortOrder = newOrder;
       product.categories[productCategoryIdx].isSortOrderFixed = true;
 
+      AdminProductService.addLog(product, `Locked sort order, categoryId=${reorderDto.categoryId}, reversedSortOrderBeforeFix=${product.categories[productCategoryIdx].reversedSortOrderBeforeFix}, reversedSortOrder=${product.categories[productCategoryIdx].reversedSortOrder} userLogin=${user?.login}`);
+
       await product.save({ session });
       await this.updateSearchDataById(reorderDto.id, lang, session);
       await session.commitTransaction();
 
-      await this.updateProductsOrder({ categoryId: reorderDto.categoryId, fixedProductId: reorderDto.id }, lang);
+      await this.updateProductsOrder({ categoryId: reorderDto.categoryId, fixedProductId: reorderDto.id }, lang, user);
 
     } catch (ex) {
       if (session.inTransaction()) {
@@ -948,7 +1005,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     }
   }
 
-  async unlockProductSortOrder(unfixDto: UnfixProductOrderDto, lang: Language) {
+  async unlockProductSortOrder(unfixDto: UnfixProductOrderDto, lang: Language, user: DocumentType<User>) {
     const session = await this.productModel.db.startSession();
     session.startTransaction();
 
@@ -970,6 +1027,9 @@ export class AdminProductService implements OnApplicationBootstrap {
       product.categories[productCategoryIdx].reversedSortOrder = product.categories[productCategoryIdx].reversedSortOrderBeforeFix;
       product.categories[productCategoryIdx].reversedSortOrderBeforeFix = 0;
       product.categories[productCategoryIdx].isSortOrderFixed = false;
+
+      AdminProductService.addLog(product, `Unlocked sort order, categoryId=${unfixDto.categoryId}, reversedSortOrder=${product.categories[productCategoryIdx].reversedSortOrder} userLogin=${user?.login}`);
+
       await product.save({ session });
       await this.updateSearchDataById(unfixDto.id, lang, session);
       await session.commitTransaction();
@@ -1074,6 +1134,7 @@ export class AdminProductService implements OnApplicationBootstrap {
 
     return filteredItems;
   }
+
   onProductUpdate() {
     this.eventsService.emit(AdminProductService.productUpdatedEventName, {});
   }
@@ -1088,5 +1149,9 @@ export class AdminProductService implements OnApplicationBootstrap {
 
   private static areProductCategoriesEqual(categories1: ProductCategory[], categories2: AdminProductCategoryDto[]): boolean {
     return areArraysEqual(categories1.map(c => c.id), categories2.map(c => c.id));
+  }
+
+  private static addLog(product: Product, message: string): void {
+    product.logs.push({ time: new Date(), text: message });
   }
 }

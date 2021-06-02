@@ -4,6 +4,7 @@ import { ProductSelectedAttribute } from './product-selected-attribute.model';
 import { ProductCategory } from './product-category.model';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { BreadcrumbsVariant } from '../../shared/models/breadcrumbs-variant.model';
+import { Log } from '../../shared/models/log.model';
 
 export class Product {
   @prop()
@@ -53,6 +54,9 @@ export class Product {
 
   @prop({ default: '' })
   note: string;
+
+  @arrayProp({ items: Log, default: [] })
+  logs: Log[];
 
   createdAt: Date;
   updatedAt: Date;

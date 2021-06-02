@@ -402,7 +402,7 @@ export class OrderService implements OnApplicationBootstrap {
         omitReserved: false
       }, lang, false, product, variant);
 
-      await this.inventoryService.addToOrdered(sku, qty, newOrder.id, session);
+      await this.inventoryService.addToOrdered(sku, qty, newOrder.id, lang, session, user);
       await this.productService.updateSearchDataById(productId, lang, session);
     }
 
@@ -427,11 +427,11 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       for (const item of order.items) {
-        await this.inventoryService.removeFromOrdered(item.sku, orderId, session);
+        await this.inventoryService.removeFromOrdered(item.sku, orderId, lang, session, user);
         await this.productService.updateSearchDataById(item.productId, lang, session);
       }
       for (const item of orderDto.items) {
-        await this.inventoryService.addToOrdered(item.sku, item.qty, orderId, session);
+        await this.inventoryService.addToOrdered(item.sku, item.qty, orderId, lang, session, user);
         await this.productService.updateSearchDataById(item.productId, lang, session);
       }
 
@@ -492,7 +492,7 @@ export class OrderService implements OnApplicationBootstrap {
       }
 
       if (order.status !== OrderStatusEnum.CANCELED) {
-        await this.cancelOrderPreActions(order, lang, session);
+        await this.cancelOrderPreActions(order, lang, session, user);
       }
       await this.customerService.removeOrderFromCustomer(order.id, session);
 
@@ -529,16 +529,16 @@ export class OrderService implements OnApplicationBootstrap {
       });
   }
 
-  private async cancelOrderPreActions(order: Order, lang: Language, session: ClientSession): Promise<void> {
+  private async cancelOrderPreActions(order: Order, lang: Language, session: ClientSession, user: User): Promise<void> {
     for (const item of order.items) {
-      await this.inventoryService.removeFromOrdered(item.sku, order.id, session);
+      await this.inventoryService.removeFromOrdered(item.sku, order.id, lang, session, user);
       await this.productService.updateSearchDataById(item.productId, lang, session);
     }
   }
 
-  private async shippedOrderPostActions(order: Order, session: ClientSession): Promise<Order> {
+  private async shippedOrderPostActions(order: Order, session: ClientSession, lang: Language, user?: User): Promise<Order> {
     for (const item of order.items) {
-      await this.inventoryService.removeFromOrderedAndStock(item.sku, item.qty, order.id, session);
+      await this.inventoryService.removeFromOrderedAndStock(item.sku, item.qty, order.id, lang, session, user);
       await this.productService.incrementSalesCount(item.productId, item.variantId, item.qty, session);
       await this.productService.updateSearchDataById(item.productId, adminDefaultLanguage, session);
     }
@@ -645,7 +645,7 @@ export class OrderService implements OnApplicationBootstrap {
           OrderService.addLog(order, `Updated shipment status to "${order.shipment.status} - ${order.shipment.statusDescription}", source=system`);
         }
 
-        await this.updateOrderStatusByShipment(order, session);
+        await this.updateOrderStatusByShipment(order, session, lang);
         await order.save({ session });
         await this.updateSearchData(order);
       }
@@ -687,13 +687,13 @@ export class OrderService implements OnApplicationBootstrap {
       const oldTrackingNumber = order.shipment.trackingNumber;
       order.shipment.trackingNumber = newTrackingNumber;
 
-      await this.fetchShipmentStatus(order, session);
+      await this.fetchShipmentStatus(order, session, lang, user);
       OrderService.addLog(order, `Edited order shipment tracking number, oldTrackingNumber=${oldTrackingNumber}, newTrackingNumber=${newTrackingNumber} userLogin=${user?.login}`);
       return order;
     });
   }
 
-  private async fetchShipmentStatus(order, session: ClientSession): Promise<void> {
+  private async fetchShipmentStatus(order, session: ClientSession, lang: Language, user: User): Promise<void> {
     let status: string = '';
     let statusDescription: string = '';
     let estimatedDeliveryDate: string = '';
@@ -709,10 +709,10 @@ export class OrderService implements OnApplicationBootstrap {
     order.shipment.statusDescription = statusDescription;
     order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
 
-    await this.updateOrderStatusByShipment(order, session);
+    await this.updateOrderStatusByShipment(order, session, lang, user);
   }
 
-  private async updateOrderStatusByShipment(order: Order, session: ClientSession): Promise<void> {
+  private async updateOrderStatusByShipment(order: Order, session: ClientSession, lang: Language, user?: User): Promise<void> {
     const oldStatus = order.status;
     const isCashOnDelivery = order.paymentInfo.type === PaymentTypeEnum.CASH_ON_DELIVERY;
     const isReceived = order.shipment.status === ShipmentStatusEnum.RECEIVED;
@@ -727,7 +727,7 @@ export class OrderService implements OnApplicationBootstrap {
       order.status = OrderStatusEnum.RECIPIENT_DENIED;
     } else if (isShipped && order.status !== OrderStatusEnum.SHIPPED) {
       order.status = OrderStatusEnum.SHIPPED;
-      await this.shippedOrderPostActions(order, session);
+      await this.shippedOrderPostActions(order, session, lang, user);
     }
 
     if (oldStatus !== order.status) {
@@ -807,9 +807,9 @@ export class OrderService implements OnApplicationBootstrap {
     this.logger.log(`Reindexed finished`);
   }
 
-  async updateShipmentStatus(orderId: number, lang: Language): Promise<Order> {
+  async updateShipmentStatus(orderId: number, lang: Language, user: User): Promise<Order> {
     return this.updateOrderById(orderId, lang, async (order, session) => {
-      await this.fetchShipmentStatus(order, session);
+      await this.fetchShipmentStatus(order, session, lang, user);
       return order;
     });
   }
@@ -849,7 +849,7 @@ export class OrderService implements OnApplicationBootstrap {
           break;
         case OrderStatusEnum.RETURNED:
           for (const item of order.items) {
-            await this.inventoryService.addToStock(item.sku, item.qty, session);
+            await this.inventoryService.addToStock(item.sku, item.qty, lang, session, user);
             await this.productService.updateSearchDataById(item.productId, lang, session);
           }
           break;
@@ -858,7 +858,7 @@ export class OrderService implements OnApplicationBootstrap {
           if (ShippedOrderStatuses.includes(status)) {
             throw new BadRequestException(__('Cannot cancel order with status "$1"', lang, status));
           }
-          await this.cancelOrderPreActions(order, lang, session);
+          await this.cancelOrderPreActions(order, lang, session, user);
           break;
 
         case OrderStatusEnum.FINISHED:
@@ -867,7 +867,7 @@ export class OrderService implements OnApplicationBootstrap {
           }
 
           if (!ShippedOrderStatuses.includes(order.status)) {
-            await this.shippedOrderPostActions(order, session);
+            await this.shippedOrderPostActions(order, session, lang, user);
           }
           await this.finishedOrderPostActions(order, session);
           break;
@@ -903,7 +903,7 @@ export class OrderService implements OnApplicationBootstrap {
 
       if (createIntDocDto.trackingNumber) {
         order.shipment.trackingNumber = createIntDocDto.trackingNumber;
-        await this.fetchShipmentStatus(order, session);
+        await this.fetchShipmentStatus(order, session, lang, user);
 
         logMessage = `Set tracking number manually`;
 

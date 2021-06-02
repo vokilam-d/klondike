@@ -1,5 +1,6 @@
 import { ReservedInventory } from './reserved-inventory.model';
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
+import { Log } from '../../shared/models/log.model';
 
 export class Inventory {
   @prop({ index: true, unique: true })
@@ -13,6 +14,9 @@ export class Inventory {
 
   @arrayProp({ items: ReservedInventory, default: [], _id: false })
   reserved: ReservedInventory[];
+
+  @arrayProp({ items: Log, default: [] })
+  logs: Log[];
 
   static collectionName: string = 'inventory';
 }

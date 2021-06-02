@@ -24,9 +24,11 @@ import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerResponse } from 'http';
 import { AdminCategoryTreeItemDto } from '../shared/dtos/admin/category-tree-item.dto';
-import { BaseShipmentDto } from '../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
+import { ValidatedUser } from '../shared/decorators/validated-user.decorator';
+import { DocumentType } from '@typegoose/typegoose';
+import { User } from '../user/models/user.model';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -82,9 +84,10 @@ export class AdminCategoryController {
   @Post('action/reorder')
   async reorderCategories(
     @Body() reorderDto: ReorderDto,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminCategoryTreeItemDto[]>> {
-    const allCategories = await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position, lang);
+    const allCategories = await this.categoryService.reoderCategory(reorderDto.id, reorderDto.targetId, reorderDto.position, lang, user);
     const tree = await this.categoryService.getCategoriesTree({ onlyEnabled: false, adminTree: true, force: true, allCategories });
 
     return {
@@ -107,9 +110,10 @@ export class AdminCategoryController {
   @Delete(':id')
   async deleteCategory(
     @Param('id') id: string,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminCategoryDto>> {
-    const deleted = await this.categoryService.deleteCategory(parseInt(id), lang);
+    const deleted = await this.categoryService.deleteCategory(parseInt(id), lang, user);
     return {
       data: plainToClass(AdminCategoryDto, deleted, { excludeExtraneousValues: true })
     };

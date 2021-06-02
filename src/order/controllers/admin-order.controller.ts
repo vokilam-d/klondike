@@ -93,13 +93,14 @@ export class AdminOrderController {
   @Post(':id/actions/:actionName')
   async performAction(
     @Param() params: OrderActionDto,
+    @ValidatedUser() user: DocumentType<User>,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminOrderDto>> {
     let order: AdminOrderDto;
 
     switch (params.actionName) {
       case OrderActionEnum.UPDATE_SHIPMENT_STATUS:
-        order = await this.orderService.updateShipmentStatus(params.id, lang);
+        order = await this.orderService.updateShipmentStatus(params.id, lang, user);
         break;
     }
 
