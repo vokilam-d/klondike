@@ -38,6 +38,8 @@ import { ProductLabelTypeEnum } from '../../shared/enums/product-label-type.enum
 import { CronProd } from '../../shared/decorators/prod-cron.decorator';
 import { AdminProductService } from './admin-product.service';
 import { stripHtmlTags } from '../../shared/helpers/strip-html-tags.function';
+import { Category } from '../../category/models/category.model';
+import { CategoryService } from '../../category/category.service';
 
 interface AttributeProductCountMap {
   [attributeId: string]: {
@@ -59,6 +61,7 @@ export class ClientProductService implements OnApplicationBootstrap {
 
   constructor(
     @InjectModel(Product.name) private readonly productModel: ReturnModelType<typeof Product>,
+    private readonly categoryService: CategoryService,
     private readonly attributeService: AttributeService,
     private readonly searchService: SearchService,
     private readonly eventsService: EventsService
@@ -492,7 +495,9 @@ export class ClientProductService implements OnApplicationBootstrap {
     const selectedVariantIdx = productWithQty.variants.findIndex(v => v.slug === slug);
     const selectedVariant = productWithQty.variants[selectedVariantIdx];
 
+    const allCategories: Category[] = await this.categoryService.getAllCategories();
     const categories: ClientProductCategoryDto[] = productWithQty.categories
+      .map(productCategory => allCategories.find(category => category.id === productCategory.id))
       .filter(category => category.isEnabled)
       .map(category => ClientProductCategoryDto.transformToDto(category, lang));
 
@@ -579,6 +584,9 @@ export class ClientProductService implements OnApplicationBootstrap {
       selectedVariant.metaTags.description.uk = noTagsUk.substr(0, 200);
     }
 
+     const activeBreadcrumbsVariant = productWithQty.breadcrumbsVariants.find(breadcrumbsVariant => breadcrumbsVariant.isActive)
+       || productWithQty.breadcrumbsVariants[0];
+
     return {
       id: createClientProductId(productWithQty._id, selectedVariant._id.toString()),
       productId: productWithQty._id,
@@ -587,7 +595,7 @@ export class ClientProductService implements OnApplicationBootstrap {
       categories,
       variantGroups,
       characteristics,
-      breadcrumbs: productWithQty.breadcrumbs.map(breadcrumb => ClientBreadcrumbDto.transformTodo(breadcrumb, lang)),
+      breadcrumbs: ClientBreadcrumbDto.transformToDtosArray(activeBreadcrumbsVariant.categoryIds, allCategories, lang),
       fullDescription: selectedVariant.fullDescription[lang],
       shortDescription: selectedVariant.shortDescription[lang],
       medias: ClientMediaDto.transformToDtosArray(selectedVariant.medias, lang),
@@ -611,7 +619,7 @@ export class ClientProductService implements OnApplicationBootstrap {
         .sort(((a, b) => b.sortOrder - a.sortOrder))
         .map(p => ({ productId: p.productId, variantId: p.variantId.toString() })),
       additionalServiceIds: productWithQty.additionalServiceIds
-    }
+    };
   }
 
   private buildClientFilters(
@@ -717,11 +725,14 @@ export class ClientProductService implements OnApplicationBootstrap {
   private handleProductCache() {
     this.updateCachedProductCount();
 
-    this.eventsService.on(AdminProductService.productUpdatedEventName, () => {
+    const purgeCache = () => {
       this.updateCachedProductCount();
       this.clientProductListCache.clear();
       this.cachedClientProduct.clear();
-    });
+    };
+
+    this.eventsService.on(AdminProductService.productUpdatedEventName, () => purgeCache());
+    this.eventsService.on(CategoryService.categoriesUpdatedEventName, () => purgeCache());
   }
 
   @CronProd(CronExpression.EVERY_HOUR)

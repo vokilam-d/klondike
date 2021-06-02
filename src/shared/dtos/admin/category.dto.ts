@@ -7,7 +7,6 @@ import { Category } from '../../../category/models/category.model';
 import { EProductsSort } from '../../enums/product-sort.enum';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { ClientMetaTagsDto } from '../client/meta-tags.dto';
-import { AdminBreadcrumbDto } from './breadcrumb.dto';
 import { clientDefaultLanguage } from '../../constants';
 
 export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, any>, 'id' | '_id' | 'imageUrl'> {
@@ -38,7 +37,7 @@ export class AdminAddOrUpdateCategoryDto implements Omit<Record<keyof Category, 
   parentId: number;
 
   @Expose()
-  breadcrumbs: AdminBreadcrumbDto[];
+  breadcrumbCategoryIds: number[];
 
   @Expose()
   @IsOptional()

@@ -2,7 +2,7 @@ import { AdminCategoryDto } from '../../shared/dtos/admin/category.dto';
 import { elasticBooleanType, elasticIntegerType, elasticTextType } from '../../shared/constants';
 import { ElasticMultilingualText } from '../../shared/models/elastic-multilingual-text.model';
 
-export class ElasticCategory implements Omit<Record<keyof AdminCategoryDto, any>, 'breadcrumbs' | 'medias' | 'metaTags'> {
+export class ElasticCategory implements Omit<Record<keyof AdminCategoryDto, any>, 'breadcrumbCategoryIds' | 'medias' | 'metaTags'> {
   createRedirect = elasticBooleanType;
   description = {
     type: 'nested',

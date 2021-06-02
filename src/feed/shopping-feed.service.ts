@@ -2,17 +2,18 @@ import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { AdminProductService } from '../product/services/admin-product.service';
 import { AdminSPFDto } from '../shared/dtos/admin/spf.dto';
 import { stripHtmlTags } from '../shared/helpers/strip-html-tags.function';
-import { Breadcrumb } from '../shared/models/breadcrumb.model';
 import { ProductReviewService } from '../reviews/product-review/product-review.service';
 import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductVariantWithQty, ProductWithQty } from '../product/models/product-with-qty.model';
 import { AttributeService } from '../attribute/attribute.service';
 import { ProductSelectedAttribute } from '../product/models/product-selected-attribute.model';
-import { priceThresholdForFreeShipping } from '../shared/constants';
+import { clientDefaultLanguage, priceThresholdForFreeShipping } from '../shared/constants';
 import { MultilingualText } from '../shared/models/multilingual-text.model';
 import { Language } from '../shared/enums/language.enum';
 import { XmlBuilder } from '../shared/services/xml-builder/xml-builder.service';
 import { MaintenanceService } from '../maintenance/maintenance.service';
+import { CategoryService } from '../category/category.service';
+import { BreadcrumbsVariant } from '../shared/models/breadcrumbs-variant.model';
 
 type cdata = { $: string };
 
@@ -82,6 +83,7 @@ export class ShoppingFeedService {
 
   constructor(
     private readonly productService: AdminProductService,
+    private readonly categoryService: CategoryService,
     private readonly attributeService: AttributeService,
     private readonly reviewService: ProductReviewService,
     private readonly xmlBuilder: XmlBuilder,
@@ -93,7 +95,7 @@ export class ShoppingFeedService {
   ): Promise<string> {
 
     this.checkForMaintenance();
-    const lang : Language = Language.RU;
+    const lang: Language = clientDefaultLanguage;
     const items: IShoppingFeedItem[] = [];
     const products = await this.getAllProducts();
 
@@ -137,7 +139,7 @@ export class ShoppingFeedService {
           'g:mpn': { $: variant.vendorCode || '' },
           'g:gtin': { $: variant.gtin || '' },
           'g:identifier_exists': brand || variant.vendorCode || variant.gtin ? 'true' : 'false',
-          'g:product_type': { $: this.buildProductType(product.breadcrumbs) },
+          'g:product_type': { $: await this.buildProductType(product.breadcrumbsVariants, lang) },
           'g:availability': variant.qtyInStock > variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)
             ? 'in stock' : 'out of stock',
           ...(isFreeShippingAvailable ? freeShipping : {})
@@ -359,8 +361,17 @@ export class ShoppingFeedService {
     return responseDto.data;
   }
 
-  private buildProductType(breadcrumbs: Breadcrumb[]): string {
-    return breadcrumbs.map(breadcrumb => breadcrumb.name[Language.RU]).join(' > ');
+  private async buildProductType(breadcrumbsVariants: BreadcrumbsVariant[], lang: Language): Promise<string> {
+    const allCategories = await this.categoryService.getAllCategories();
+    const activeBreadcrumbVariant = breadcrumbsVariants.find(breadcrumbsVariant => breadcrumbsVariant.isActive) || breadcrumbsVariants[0];
+
+    return activeBreadcrumbVariant.categoryIds
+      .map(categoryId => {
+        const category = allCategories.find(category => category.id === categoryId && category.isEnabled);
+        return category?.name[lang];
+      })
+      .filter(name => name)
+      .join(' > ');
   }
 
   private static getFeedItemDescriptions(variant: ProductVariantWithQty, lang: Language) {

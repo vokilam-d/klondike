@@ -1,20 +1,17 @@
 import { Expose } from 'class-transformer';
 import { IsNumber, IsString } from 'class-validator';
 import { TrimString } from '../../decorators/trim-string.decorator';
-import { Breadcrumb } from '../../models/breadcrumb.model';
+import { MultilingualTextDto } from './multilingual-text.dto';
 
-export abstract class BaseBreadcrumbDto implements Breadcrumb {
+export abstract class BaseBreadcrumbDto {
   @Expose()
   @IsNumber()
   id: number;
 
-  abstract name: any;
+  abstract name: MultilingualTextDto | string;
 
   @Expose()
   @IsString()
   @TrimString()
   slug: string;
-
-  @Expose()
-  isEnabled: boolean;
 }

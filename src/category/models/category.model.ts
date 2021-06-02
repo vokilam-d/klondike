@@ -1,7 +1,6 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { MetaTags } from '../../shared/models/meta-tags.model';
 import { Expose } from 'class-transformer';
-import { Breadcrumb } from '../../shared/models/breadcrumb.model';
 import { Media } from '../../shared/models/media.model';
 import { EProductsSort } from '../../shared/enums/product-sort.enum';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
@@ -26,8 +25,8 @@ export class Category {
   @prop({ default: 0 })
   parentId: number;
 
-  @arrayProp({ items: Breadcrumb, _id: false })
-  breadcrumbs: Breadcrumb[];
+  @arrayProp({ items: Number, _id: false })
+  breadcrumbCategoryIds: number[];
 
   @prop({ _id: false })
   metaTags: MetaTags;

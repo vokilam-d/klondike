@@ -7,8 +7,8 @@ import { ClientLinkedProductDto } from './linked-product.dto';
 import { ClientMetaTagsDto } from './meta-tags.dto';
 import { ClientBreadcrumbDto } from './breadcrumb.dto';
 import { Language } from '../../enums/language.enum';
-import { ProductCategory } from '../../../product/models/product-category.model';
 import { ProductLabelTypeEnum } from '../../enums/product-label-type.enum';
+import { Category } from '../../../category/models/category.model';
 
 export class ClientProductCharacteristic {
   label: string;
@@ -26,17 +26,16 @@ export class ClientProductCategoryDto {
   @Expose()
   slug: string;
 
-  static transformToDto(productCategory: ProductCategory, lang: Language): ClientProductCategoryDto {
+  static transformToDto(category: Category, lang: Language): ClientProductCategoryDto {
     return {
-      id: productCategory.id,
-      name: productCategory.name[lang],
-      slug: productCategory.slug
+      id: category.id,
+      name: category.name[lang],
+      slug: category.slug
     };
   }
 }
 
-type PickedProduct = Pick<Product, 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating' | 'additionalServiceIds'>
-  & Record<keyof Pick<Product, 'breadcrumbs'>, ClientBreadcrumbDto[]>;
+type PickedProduct = Pick<Product, 'allReviewsCount' | 'textReviewsCount' | 'reviewsAvgRating' | 'additionalServiceIds'>;
 type PickedVariant = Pick<ProductVariant, 'sku' | 'vendorCode' | 'slug' | 'price' | 'oldPrice' | 'isDiscountApplicable'>
   & Record<keyof Pick<ProductVariant, 'fullDescription' | 'shortDescription' | 'name'>, string>
   & Record<keyof Pick<ProductVariant, 'label'>, any>;

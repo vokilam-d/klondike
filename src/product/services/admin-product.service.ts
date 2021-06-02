@@ -18,13 +18,11 @@ import { ProductReviewService } from '../../reviews/product-review/product-revie
 import { ProductVariant } from '../models/product-variant.model';
 import { MediaService } from '../../shared/services/media/media.service';
 import { CategoryService } from '../../category/category.service';
-import { Breadcrumb } from '../../shared/models/breadcrumb.model';
 import { SearchService } from '../../shared/services/search/search.service';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { AdminProductListItemDto } from '../../shared/dtos/admin/product-list-item.dto';
 import { ProductWithQty } from '../models/product-with-qty.model';
 import { AdminProductVariantListItemDto } from '../../shared/dtos/admin/product-variant-list-item.dto';
-import { DEFAULT_CURRENCY } from '../../shared/enums/currency.enum';
 import { ElasticProduct } from '../models/elastic-product.model';
 import { IFilter, SortingPaginatingFilterDto } from '../../shared/dtos/shared-dtos/spf.dto';
 import { AttributeService } from '../../attribute/attribute.service';
@@ -44,11 +42,11 @@ import { ReservedInventory } from '../../inventory/models/reserved-inventory.mod
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
 import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
 import { Category } from '../../category/models/category.model';
-import { MultilingualText } from '../../shared/models/multilingual-text.model';
 import { Language } from '../../shared/enums/language.enum';
 import { EventsService } from '../../shared/services/events/events.service';
 import { adminDefaultLanguage } from '../../shared/constants';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
+import { BreadcrumbsVariant } from '../../shared/models/breadcrumbs-variant.model';
 
 @Injectable()
 export class AdminProductService implements OnApplicationBootstrap {
@@ -72,7 +70,7 @@ export class AdminProductService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap() {
-    this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
+    this.searchService.ensureCollection(Product.collectionName, new ElasticProduct()).then();
     this.handleCurrencyUpdates();
     // this.reindexAllSearchData();
 
@@ -233,7 +231,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     const qtyProp = getPropertyOf<Inventory>('qtyInStock');
     const reservedProp: keyof Inventory = 'reserved';
 
-    const found = await this.productModel.aggregate()
+    return this.productModel.aggregate()
       .allowDiskUse(true)
       .match({ [variantsProp + '.' + skuProp]: { $in: skus } })
       .unwind(variantsProp)
@@ -249,8 +247,6 @@ export class AdminProductService implements OnApplicationBootstrap {
       .group({ '_id': '$_id', [variantsProp]: { $push: { $arrayElemAt: [`$$ROOT.${variantsProp}`, 0] } }, 'document': { $mergeObjects: '$$ROOT' } })
       .replaceRoot({ $mergeObjects: ['$document', { [variantsProp]: `$${variantsProp}`}] })
       .exec();
-
-    return found;
   }
 
   async createProduct(productDto: AdminAddOrUpdateProductDto, lang: Language): Promise<Product> {
@@ -268,7 +264,7 @@ export class AdminProductService implements OnApplicationBootstrap {
 
       const newProductModel = new this.productModel(productDto);
       newProductModel.id = await this.counterService.getCounter(Product.collectionName, session);
-      await this.populateProductCategoriesAndBreadcrumbs(newProductModel);
+      newProductModel.breadcrumbsVariants = await this.buildBreadcrumbsVariants(newProductModel.categories);
 
       for (const dtoVariant of productDto.variants) {
         const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
@@ -310,6 +306,8 @@ export class AdminProductService implements OnApplicationBootstrap {
     if (!found) {
       throw new NotFoundException(__('Product with id "$1" not found', lang, productId));
     }
+
+    const areProductCategoriesEqual = AdminProductService.areProductCategoriesEqual(found.categories, productDto.categories);
 
     const session = await this.productModel.db.startSession();
     session.startTransaction();
@@ -368,13 +366,14 @@ export class AdminProductService implements OnApplicationBootstrap {
         inventories.push(inventory.toJSON());
       }
 
-      if (!AdminProductService.areProductCategoriesEqual(found.categories, productDto.categories)) {
-        await this.populateProductCategoriesAndBreadcrumbs(productDto);
-      }
-
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
+
       if (found.variants.every(variant => variant.isEnabled === false)) {
         found.isEnabled = false;
+      }
+
+      if (!areProductCategoriesEqual) {
+        found.breadcrumbsVariants = await this.buildBreadcrumbsVariants(productDto.categories);
       }
 
       await this.setProductPrices(found, lang);
@@ -384,9 +383,9 @@ export class AdminProductService implements OnApplicationBootstrap {
       await this.updateSearchData(productWithQty);
       await session.commitTransaction();
 
+      this.onProductUpdate();
       await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
       await this.mediaService.deleteTmpMedias(tmpMediasToDelete, Product.collectionName);
-      this.onProductUpdate();
 
       return productWithQty;
 
@@ -488,120 +487,85 @@ export class AdminProductService implements OnApplicationBootstrap {
       .exec();
   }
 
-  async removeCategoryId(categoryId: number, session: ClientSession): Promise<any> {
-    categoryId = parseInt(categoryId as any);
-
-    const categoryToRemove: Partial<ProductCategory> = { id: categoryId };
-    const breadcrumbToRemove: Partial<Breadcrumb> = { id: categoryId };
-
+  async handleCategoryDeletion(categoryId: number, session: ClientSession): Promise<void> {
     const categoriesProp: keyof Product = 'categories';
     const categoryIdProp: keyof ProductCategory = 'id';
-    const breadcrumbsProp: keyof Product = 'breadcrumbs';
+    const products = await this.productModel.find({ [`${categoriesProp}.${categoryIdProp}`]: categoryId }).session(session).exec();
 
-    await this.productModel
-      .updateMany(
-        { [`${categoriesProp}.${categoryIdProp}`]: categoryId },
-        { $pull: { [categoriesProp]: categoryToRemove, [breadcrumbsProp]: breadcrumbToRemove } }
-      )
-      .session(session)
-      .exec();
+    if (!products.length) {
+      return;
+    }
 
-    this.onProductUpdate();
-  }
-
-  async updateProductCategory(categoryId: number, categoryName: MultilingualText, categorySlug: string, categoryIsEnabled: boolean, session: ClientSession): Promise<any> {
-    const categoriesProp: keyof Product = 'categories';
-    const categoryIdProp: keyof ProductCategory = 'id';
-    const categoryNameProp: keyof ProductCategory = 'name';
-    const categorySlugProp: keyof ProductCategory = 'slug';
-    const categoryIsEnabledProp: keyof ProductCategory = 'isEnabled';
-
-    await this.productModel
-      .updateMany(
-        { [`${categoriesProp}.${categoryIdProp}`]: categoryId },
-        {
-          [`${categoriesProp}.$.${categoryNameProp}`]: categoryName,
-          [`${categoriesProp}.$.${categorySlugProp}`]: categorySlug,
-          [`${categoriesProp}.$.${categoryIsEnabledProp}`]: categoryIsEnabled
-        }
-      )
-      .session(session)
-      .exec();
-
-    // todo remove this lines under after converting breadcrumbs to ids only
-    const breadcrumbsProp = getPropertyOf<Product>('breadcrumbs');
-    const idProp = getPropertyOf<Breadcrumb>('id');
-    const breadcrumb: Breadcrumb = { id: categoryId, name: categoryName, slug: categorySlug, isEnabled: categoryIsEnabled };
-
-    await this.productModel
-      .updateMany(
-        { [`${breadcrumbsProp}.${idProp}`]: breadcrumb.id },
-        { [`${breadcrumbsProp}.$`]: breadcrumb }
-      )
-      .session(session)
-      .exec();
-
-    this.onProductUpdate();
-  }
-
-  async rebuildBreadcrumbsForCategory(categoryId: string, categories: Category[], session: ClientSession): Promise<void> {
-    const breadcrumbsProp = getPropertyOf<Product>('breadcrumbs');
-    const breadcrumbIdProp = getPropertyOf<Breadcrumb>('id');
-
-    const products = await this.productModel.find({ [`${breadcrumbsProp}.${breadcrumbIdProp}`]: categoryId }).session(session).exec();
+    const allCategories = await this.categoryService.getAllCategories({ session });
     for (const product of products) {
-      await this.populateProductCategoriesAndBreadcrumbs(product, categories);
+      const productCategoryIdx = product.categories.findIndex(productCategory => productCategory.id === categoryId);
+      product.categories.splice(productCategoryIdx, 1);
+      product.breadcrumbsVariants = await this.buildBreadcrumbsVariants(product.categories, allCategories);
+
       await product.save({ session });
       await this.updateSearchDataById(product.id, adminDefaultLanguage, session);
     }
+
     this.onProductUpdate();
   }
 
-  private async populateProductCategoriesAndBreadcrumbs(product: Product | AdminAddOrUpdateProductDto, categories?: Category[]): Promise<void> {
-    const breadcrumbsVariants: Breadcrumb[][] = [];
+  async rebuildBreadcrumbsRelatedToCategory(categoryId: string, categories: Category[], session: ClientSession): Promise<void> {
+    const categoriesProp: keyof Product = 'categories';
+    const categoryIdProp: keyof ProductCategory = 'id';
 
-    if (!categories) {
-      categories = await this.categoryService.getAllCategories();
+    const products = await this.productModel.find({ [`${categoriesProp}.${categoryIdProp}`]: categoryId }).session(session).exec();
+    for (const product of products) {
+      product.breadcrumbsVariants = await this.buildBreadcrumbsVariants(product.categories, categories);
+      await product.save({ session });
+    }
+    this.onProductUpdate();
+  }
+
+  private async buildBreadcrumbsVariants(productCategories: ProductCategory[], allCategories?: Category[]): Promise<BreadcrumbsVariant[]> {
+    const breadcrumbsVariants: BreadcrumbsVariant[] = [];
+
+    if (!allCategories) {
+      allCategories = await this.categoryService.getAllCategories();
     }
 
-    const buildBreadcrumb = (category: Category): Breadcrumb => ({ id: category.id, name: category.name, isEnabled: category.isEnabled, slug: category.slug });
-
-    for (const productCategory of product.categories) {
-      let category = categories.find(cat => cat.id === productCategory.id);
-      if (!category || !category.isEnabled) {
+    for (const productCategory of productCategories) {
+      let category = allCategories.find(cat => cat.id === productCategory.id);
+      if (!category) {
         continue;
       }
-      productCategory.name = category.name;
-      productCategory.slug = category.slug;
-      productCategory.isEnabled = category.isEnabled;
 
-      const breadcrumbs: Breadcrumb[] = [];
-      breadcrumbs.push(buildBreadcrumb(category));
+      const categoryIds: number[] = [];
+      categoryIds.push(category.id);
       while (category.parentId) {
-        const foundParent = categories.find(cat => cat.id === category.parentId);
+        const foundParent = allCategories.find(cat => cat.id === category.parentId);
         if (!foundParent) {
           break;
         }
+        categoryIds.unshift(foundParent.id);
         category = foundParent;
-
-        if (foundParent.isEnabled) {
-          breadcrumbs.unshift(buildBreadcrumb(category));
-        }
       }
-      breadcrumbsVariants.push(breadcrumbs);
+
+      breadcrumbsVariants.push({
+        isActive: false,
+        categoryIds
+      });
     }
 
-    breadcrumbsVariants.sort((a, b) => b.length - a.length);
-    product.breadcrumbs = breadcrumbsVariants[0] || [];
+    breadcrumbsVariants.sort((a, b) => b.categoryIds.length - a.categoryIds.length);
+    if (breadcrumbsVariants[0]) {
+      breadcrumbsVariants[0].isActive = true;
+    }
+
+    return breadcrumbsVariants;
   }
 
   private async addSearchData(productWithQty: ProductWithQty) {
-    const [ adminListItem ] = this.transformToAdminListDto([productWithQty]);
+    const [ adminListItem ] = await this.transformToAdminListDto([productWithQty]);
     await this.searchService.addDocument(Product.collectionName, productWithQty.id, adminListItem);
   }
 
   private async updateSearchData(productWithQty: ProductWithQty): Promise<any> {
-    const [ adminListItem ] = this.transformToAdminListDto([productWithQty]);
+    const [ adminListItem ] = await this.transformToAdminListDto([productWithQty]);
     await this.searchService.updateDocument(Product.collectionName, adminListItem.id, adminListItem);
   }
 
@@ -642,23 +606,17 @@ export class AdminProductService implements OnApplicationBootstrap {
     }
   }
 
-  private transformToAdminListDto(products: ProductWithQty[]): AdminProductListItemDto[] {
-    return products.map(product => {
-      const skus: string[] = [];
-      const vendorCodes: string[] = [];
-      const prices: string[] = [];
-      const quantitiesInStock: number[] = [];
-      const sellableQuantities: number[] = [];
+  private async transformToAdminListDto(products: ProductWithQty[]): Promise<AdminProductListItemDto[]> {
+    const productListItemDtos: AdminProductListItemDto[] = [];
+
+    const allCategories: Category[] = await this.categoryService.getAllCategories();
+
+    for (const product of products) {
       const variants: AdminProductVariantListItemDto[] = [];
       let salesCount: number = 0;
       let productMediaUrl: string = null;
 
       for (const variant of product.variants) {
-        skus.push(variant.sku);
-        if (variant.vendorCode) { vendorCodes.push(variant.vendorCode); }
-        prices.push(`${variant.priceInDefaultCurrency} ${DEFAULT_CURRENCY}`);
-        quantitiesInStock.push(variant.qtyInStock);
-        sellableQuantities.push(variant.qtyInStock - variant.reserved?.reduce((sum, ordered) => sum + ordered.qty, 0));
         salesCount += variant.salesCount;
 
         let primaryMediaUrl;
@@ -702,9 +660,21 @@ export class AdminProductService implements OnApplicationBootstrap {
         });
       }
 
-      return {
+      const categories: AdminProductCategoryDto[] = product.categories.map(productCategory => {
+        const category = allCategories.find(category => category.id === productCategory.id);
+        return {
+          name: category.name,
+          slug: category.slug,
+          id: category.id,
+          reversedSortOrder: productCategory.reversedSortOrder,
+          isSortOrderFixed: productCategory.isSortOrderFixed,
+          reversedSortOrderBeforeFix: productCategory.reversedSortOrderBeforeFix
+        };
+      })
+
+      productListItemDtos.push({
         id: product._id,
-        categories: product.categories,
+        categories,
         name: product.name,
         attributes: product.attributes,
         isEnabled: product.isEnabled,
@@ -725,8 +695,10 @@ export class AdminProductService implements OnApplicationBootstrap {
         isIncludedInShoppingFeed: product.variants[0].isIncludedInShoppingFeed,
         salesCount,
         variants
-      };
-    });
+      });
+    }
+
+    return productListItemDtos;
   }
 
   private async setProductPrices(product: DocumentType<Product>, lang: Language): Promise<DocumentType<Product>> {
@@ -902,7 +874,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     const spf = new AdminSPFDto();
     spf.limit = 10000;
     const products: ProductWithQty[] = await this.getProductsWithQtyByIds(productIds, spf);
-    const listItems = this.transformToAdminListDto(products);
+    const listItems = await this.transformToAdminListDto(products);
     return this.searchService.addDocuments(Product.collectionName, listItems);
   }
 
@@ -913,7 +885,7 @@ export class AdminProductService implements OnApplicationBootstrap {
     spf.limit = 10000;
     spf.sort = '-_id';
     const products: ProductWithQty[] = await this.getProductsWithQty(spf);
-    const listItems = this.transformToAdminListDto(products);
+    const listItems = await this.transformToAdminListDto(products);
 
     await this.searchService.deleteCollection(Product.collectionName);
     await this.searchService.ensureCollection(Product.collectionName, new ElasticProduct());
@@ -1064,12 +1036,10 @@ export class AdminProductService implements OnApplicationBootstrap {
 
     const isSelectedAttributesHaveFilter = (selectedAttrs: AdminProductSelectedAttributeDto[], filter: IFilter): boolean => {
       const foundSelectedAttr = selectedAttrs.find(selectedAttr => selectedAttr.attributeId === filter.fieldName);
-      if (!foundSelectedAttr) { return  false; }
+      if (!foundSelectedAttr) { return false; }
 
       const foundSelectedAttrValueId = foundSelectedAttr.valueIds.find(selectedAttrValueId => filter.values.includes(selectedAttrValueId));
-      if (!foundSelectedAttrValueId) { return false; }
-
-      return true;
+      return !!foundSelectedAttrValueId;
     };
 
     for (const listItem of listItems) {
@@ -1093,7 +1063,6 @@ export class AdminProductService implements OnApplicationBootstrap {
 
         if (isInVariants) {
           hasAttr = true;
-          continue;
         }
       }
 

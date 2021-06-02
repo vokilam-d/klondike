@@ -1,7 +1,6 @@
 import { ProductCategory } from '../../../product/models/product-category.model';
 import { Expose, Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { TrimString } from '../../decorators/trim-string.decorator';
+import { IsNumber } from 'class-validator';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 
 export class AdminProductCategoryDto implements ProductCategory {
@@ -14,15 +13,7 @@ export class AdminProductCategoryDto implements ProductCategory {
   name: MultilingualTextDto;
 
   @Expose()
-  @IsOptional()
-  @IsString()
-  @TrimString()
   slug: string;
-
-  @Expose()
-  @IsOptional()
-  @IsNumber()
-  sortOrder: number;
 
   @Expose()
   reversedSortOrder: number;
@@ -32,7 +23,4 @@ export class AdminProductCategoryDto implements ProductCategory {
 
   @Expose()
   reversedSortOrderBeforeFix: number;
-
-  @Expose()
-  isEnabled: boolean;
 }

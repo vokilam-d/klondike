@@ -1,9 +1,9 @@
 import { arrayProp, getModelForClass, prop } from '@typegoose/typegoose';
 import { ProductVariant } from './product-variant.model';
 import { ProductSelectedAttribute } from './product-selected-attribute.model';
-import { Breadcrumb } from '../../shared/models/breadcrumb.model';
 import { ProductCategory } from './product-category.model';
 import { MultilingualText } from '../../shared/models/multilingual-text.model';
+import { BreadcrumbsVariant } from '../../shared/models/breadcrumbs-variant.model';
 
 export class Product {
   @prop()
@@ -21,8 +21,8 @@ export class Product {
   @arrayProp({ items: ProductCategory, _id: false })
   categories: ProductCategory[];
 
-  @arrayProp({ items: Breadcrumb, _id: false })
-  breadcrumbs: Breadcrumb[];
+  @arrayProp({ items: BreadcrumbsVariant, _id: false })
+  breadcrumbsVariants: BreadcrumbsVariant[];
 
   @arrayProp({ items: ProductSelectedAttribute, _id: false })
   attributes: ProductSelectedAttribute[];

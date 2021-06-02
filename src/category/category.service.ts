@@ -8,8 +8,7 @@ import { AdminAddOrUpdateCategoryDto, AdminCategoryDto } from '../shared/dtos/ad
 import { CounterService } from '../shared/services/counter/counter.service';
 import { transliterate } from '../shared/helpers/transliterate.function';
 import { plainToClass } from 'class-transformer';
-import { ClientSession, FilterQuery } from 'mongoose';
-import { Breadcrumb } from '../shared/models/breadcrumb.model';
+import { ClientSession } from 'mongoose';
 import { ReorderPositionEnum } from '../shared/enums/reorder-position.enum';
 import { __ } from '../shared/helpers/translate/translate.function';
 import { PageTypeEnum } from '../shared/enums/page-type.enum';
@@ -27,8 +26,6 @@ import { IFilter, ISorting } from '../shared/dtos/shared-dtos/spf.dto';
 import { AdminCategoryTreeItemDto } from '../shared/dtos/admin/category-tree-item.dto';
 import { Language } from '../shared/enums/language.enum';
 import { ClientMediaDto } from '../shared/dtos/client/media.dto';
-import { MultilingualText } from '../shared/models/multilingual-text.model';
-import { areMultilingualTextsEqual } from '../shared/helpers/are-multilingual-texts-equal.function';
 import { CronExpression } from '@nestjs/schedule';
 import { EventsService } from '../shared/services/events/events.service';
 import { Dictionary } from '../shared/helpers/dictionary';
@@ -39,7 +36,8 @@ import { CronProd } from '../shared/decorators/prod-cron.decorator';
 export class CategoryService implements OnApplicationBootstrap {
 
   private logger = new Logger(CategoryService.name);
-  private categoriesUpdatedEventName: string = 'categories-updated';
+
+  static categoriesUpdatedEventName: string = 'categories-updated';
   private cachedCategories: Category[] = [];
   private cachedClientCategory: Dictionary<ClientCategoryDto> = new Dictionary();
   private cachedTreesMap: Dictionary<AdminCategoryTreeItemDto[]> = new Dictionary();
@@ -56,31 +54,27 @@ export class CategoryService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap() {
-    this.searchService.ensureCollection(Category.collectionName, new ElasticCategory());
+    this.searchService.ensureCollection(Category.collectionName, new ElasticCategory()).then();
     this.handleCachedCategories();
 
     // const cats = await this.categoryModel.find().exec();
     // for (const cat of cats) {
-    //   cat.breadcrumbs = await this.buildBreadcrumbs(cat, cats);
+    //   cat.breadcrumbCategoryIds = await this.buildBreadcrumbCategoryIds(cat, cats);
     //   await cat.save();
     //   console.log('saved', cat.id);
     // }
     // console.log('saved all');
+    // this.reindexAllSearchData();
   }
 
   async getAllCategories(
-    options: { session?: ClientSession, force?: boolean, onlyEnabled?: boolean } = { }
+    options: { session?: ClientSession, force?: boolean } = { }
   ): Promise<DocumentType<Category>[] | Category[]> {
     if (this.cachedCategories.length && !options.force) {
       return this.cachedCategories;
     }
 
-    const filterQuery: FilterQuery<Category> = {};
-    if (options.onlyEnabled) {
-      filterQuery.isEnabled = true;
-    }
-
-    let categories = await this.categoryModel.find(filterQuery).session(options.session).exec();
+    let categories = await this.categoryModel.find().session(options.session).exec();
     categories.sort((a, b) => a.reversedSortOrder - b.reversedSortOrder)
 
     return categories;
@@ -176,7 +170,7 @@ export class CategoryService implements OnApplicationBootstrap {
       }
     }
 
-    const dto = ClientCategoryDto.transformToDto(found, lang, siblingCategories, childCategories);
+    const dto = ClientCategoryDto.transformToDto(found, allCategories, lang, siblingCategories, childCategories);
     this.cachedClientCategory.set(cacheKey, dto);
     return dto;
   }
@@ -231,7 +225,7 @@ export class CategoryService implements OnApplicationBootstrap {
         newCategoryModel.reversedSortOrder = lastSiblingOrder + 1;
       }
 
-      newCategoryModel.breadcrumbs = await this.buildBreadcrumbs(newCategoryModel);
+      newCategoryModel.breadcrumbCategoryIds = await this.buildBreadcrumbCategoryIds(newCategoryModel);
 
       const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(categoryDto.medias, Category.collectionName);
       newCategoryModel.medias = savedMedias;
@@ -262,7 +256,6 @@ export class CategoryService implements OnApplicationBootstrap {
     try {
       const category = await this.getCategoryById(categoryId, lang, session);
       const oldSlug = category.slug;
-      const oldName: MultilingualText = { ...category.name };
       const oldIsEnabled = category.isEnabled;
 
       const mediasToDelete: Media[] = [];
@@ -283,14 +276,10 @@ export class CategoryService implements OnApplicationBootstrap {
       });
 
       if (category.parentId !== categoryDto.parentId) {
-        category.breadcrumbs = await this.buildBreadcrumbs(category);
+        category.breadcrumbCategoryIds = await this.buildBreadcrumbCategoryIds(category);
       }
       if (oldSlug !== categoryDto.slug) {
         await this.updateCategoryPageRegistry(oldSlug, categoryDto.slug, categoryDto.createRedirect, session);
-      }
-      if (oldSlug !== categoryDto.slug || !areMultilingualTextsEqual(oldName, categoryDto.name) || oldIsEnabled !== categoryDto.isEnabled) {
-        await this.productService.updateProductCategory(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session);
-        await this.updateBreadcrumbs(categoryId, categoryDto.name, categoryDto.slug, categoryDto.isEnabled, session);
       }
       if (oldIsEnabled !== categoryDto.isEnabled) {
         await this.handleIsEnabledChangeForClones(categoryId, categoryDto, session);
@@ -329,7 +318,7 @@ export class CategoryService implements OnApplicationBootstrap {
         .session(session)
         .exec();
 
-      await this.productService.removeCategoryId(categoryId, session);
+      await this.productService.handleCategoryDeletion(categoryId, session);
       await this.deleteCategoryPageRegistry(deleted.slug, session);
       await session.commitTransaction();
 
@@ -382,30 +371,24 @@ export class CategoryService implements OnApplicationBootstrap {
     return this.pageRegistryService.deletePageRegistry(slug, session);
   }
 
-  private async buildBreadcrumbs(category: Category, allCategories?: Category[], session?: ClientSession): Promise<Breadcrumb[]> {
+  private async buildBreadcrumbCategoryIds(category: Category, allCategories?: Category[], session?: ClientSession): Promise<number[]> {
     if (!category.parentId) { return []; }
 
     if (!allCategories) {
       allCategories = await this.getAllCategories({ session });
     }
-    const breadcrumbs: Breadcrumb[] = [];
+
+    const categoryIds: number[] = [];
     let parentId = category.parentId;
 
     while (parentId) {
-      let parent = allCategories.find(c => c.id === parentId);
-      parent = this.handleCloneCategory(parent, allCategories, false);
-
-      breadcrumbs.unshift({
-        id: parent.id,
-        name: parent.name,
-        slug: parent.slug,
-        isEnabled: parent.isEnabled
-      });
+      const parent = allCategories.find(c => c.id === parentId);
+      categoryIds.unshift(parent.id);
 
       parentId = parent.parentId;
     }
 
-    return breadcrumbs;
+    return categoryIds;
   }
 
   async reoderCategory(categoryId: number, targetCategoryId: number, position: ReorderPositionEnum, lang: Language): Promise<Category[]> {
@@ -455,14 +438,13 @@ export class CategoryService implements OnApplicationBootstrap {
       }
 
       const allCategories = await this.getAllCategories({ session, force: true }) as DocumentType<Category>[];
-      await this.rebuildBreadcrumbsForCategory(category, allCategories, session);
+      await this.rebuildBreadcrumbsRelatedToCategory(category, allCategories, session);
 
       const serializabledAllCategories = allCategories.map(allCat => allCat.toJSON());
-      await this.productService.rebuildBreadcrumbsForCategory(category.id, serializabledAllCategories, session);
+      await this.productService.rebuildBreadcrumbsRelatedToCategory(category.id, serializabledAllCategories, session);
 
       this.onCategoriesUpdate();
-
-      this.reindexAllSearchData();
+      this.reindexAllSearchData().then();
 
       await session.commitTransaction();
 
@@ -489,25 +471,6 @@ export class CategoryService implements OnApplicationBootstrap {
 
   uploadMedia(request: FastifyRequest): Promise<Media> {
     return this.mediaService.upload(request, Category.collectionName);
-  }
-
-  private async updateBreadcrumbs(categoryId: number, name: MultilingualText, slug: string, isEnabled: boolean, session: ClientSession): Promise<void> {
-    const breadcrumbsProp: keyof Category = 'breadcrumbs';
-    const breadcrumbIdProp: keyof Breadcrumb = 'id';
-    const breadcrumbNameProp: keyof Breadcrumb = 'name';
-    const breadcrumbSlugProp: keyof Breadcrumb = 'slug';
-    const breadcrumbIsEnabledProp: keyof Breadcrumb = 'isEnabled';
-
-    await this.categoryModel.updateMany(
-      { [`${breadcrumbsProp}.${breadcrumbIdProp}`]: categoryId },
-      {
-        $set: {
-          [`${breadcrumbsProp}.$.${breadcrumbNameProp}`]: name,
-          [`${breadcrumbsProp}.$.${breadcrumbSlugProp}`]: slug,
-          [`${breadcrumbsProp}.$.${breadcrumbIsEnabledProp}`]: isEnabled
-        }
-      }
-    ).session(session).exec();
   }
 
   private async addSearchData(category: Category) {
@@ -602,24 +565,24 @@ export class CategoryService implements OnApplicationBootstrap {
   private handleCachedCategories() {
     this.updateCachedCategories().then();
 
-    this.eventsService.on(this.categoriesUpdatedEventName, () => {
+    this.eventsService.on(CategoryService.categoriesUpdatedEventName, () => {
       this.updateCachedCategories().then();
     });
   }
 
   private onCategoriesUpdate() {
-    this.eventsService.emit(this.categoriesUpdatedEventName, {});
+    this.eventsService.emit(CategoryService.categoriesUpdatedEventName, {});
   }
 
   private static isClone(category: Category): boolean {
     return Boolean(category.canonicalCategoryId);
   }
 
-  private async rebuildBreadcrumbsForCategory(categoryArg: DocumentType<Category>, allCategories: DocumentType<Category>[], session: ClientSession): Promise<void> {
-    const relatedCategories = allCategories.filter(category => category.breadcrumbs.some(breadcrumb => breadcrumb.id === categoryArg.id));
+  private async rebuildBreadcrumbsRelatedToCategory(categoryArg: DocumentType<Category>, allCategories: DocumentType<Category>[], session: ClientSession): Promise<void> {
+    const relatedCategories = allCategories.filter(category => category.breadcrumbCategoryIds.includes(categoryArg.id));
 
     for (const category of [...relatedCategories, categoryArg]) {
-      category.breadcrumbs = await this.buildBreadcrumbs(category, allCategories);
+      category.breadcrumbCategoryIds = await this.buildBreadcrumbCategoryIds(category, allCategories);
       await category.save({ session });
     }
   }

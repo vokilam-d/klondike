@@ -10,7 +10,6 @@ import { Language } from '../../enums/language.enum';
 export class ClientCategoryDto implements
   Pick<Category, 'id' | 'parentId' | 'slug' | 'defaultItemsSort'>,
   Record<keyof Pick<Category, 'description' | 'name'>, string>,
-  Record<keyof Pick<Category, 'breadcrumbs'>, ClientBreadcrumbDto[]>,
   Record<keyof Pick<Category, 'metaTags'>, ClientMetaTagsDto>,
   Record<keyof Pick<Category, 'medias'>, ClientMediaDto[]>
 {
@@ -54,12 +53,13 @@ export class ClientCategoryDto implements
 
   static transformToDto(
     category: Category,
+    allCategories: Category[],
     lang: Language,
     siblingCategories: ClientLinkedCategoryDto[],
     childCategories: ClientLinkedCategoryDto[]
   ): ClientCategoryDto {
     return {
-      breadcrumbs: category.breadcrumbs.map(breadcrumb => ClientBreadcrumbDto.transformTodo(breadcrumb, lang)),
+      breadcrumbs: ClientBreadcrumbDto.transformToDtosArray(category.breadcrumbCategoryIds, allCategories, lang),
       childCategories: childCategories,
       defaultItemsSort: category.defaultItemsSort,
       description: category.description[lang],

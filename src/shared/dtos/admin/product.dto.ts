@@ -5,11 +5,11 @@ import { AdminAddOrUpdateProductVariantDto } from './product-variant.dto';
 import { NoDuplicatesInProductVariants } from '../../validators/no-duplicates-in-product-variants';
 import { AdminProductCategoryDto } from './product-category.dto';
 import { TrimString } from '../../decorators/trim-string.decorator';
-import { AdminBreadcrumbDto } from './breadcrumb.dto';
 import { Product } from '../../../product/models/product.model';
 import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
+import { BreadcrumbsVariantDto } from './breadcrumbs-variant.dto';
 
-type PickedProduct = Pick<Product, 'isEnabled' | 'name' | 'categories' | 'breadcrumbs' | 'attributes' | 'createdAt' | 'updatedAt' | 'additionalServiceIds' | 'note'>;
+type PickedProduct = Pick<Product, 'isEnabled' | 'breadcrumbsVariants' | 'name' | 'categories' | 'attributes' | 'createdAt' | 'updatedAt' | 'additionalServiceIds' | 'note'>;
 type VariantsProp = Record<keyof Pick<Product, 'variants'>, AdminAddOrUpdateProductVariantDto[]>;
 export class AdminAddOrUpdateProductDto implements PickedProduct, VariantsProp {
   @Expose()
@@ -27,8 +27,8 @@ export class AdminAddOrUpdateProductDto implements PickedProduct, VariantsProp {
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => AdminBreadcrumbDto)
-  breadcrumbs: AdminBreadcrumbDto[];
+  @Type(() => BreadcrumbsVariantDto)
+  breadcrumbsVariants: BreadcrumbsVariantDto[];
 
   @Expose()
   @ValidateNested({ each: true })

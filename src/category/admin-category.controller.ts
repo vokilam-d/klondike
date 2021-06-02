@@ -106,10 +106,10 @@ export class AdminCategoryController {
 
   @Delete(':id')
   async deleteCategory(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @AdminLang() lang: Language
   ): Promise<ResponseDto<AdminCategoryDto>> {
-    const deleted = await this.categoryService.deleteCategory(id, lang);
+    const deleted = await this.categoryService.deleteCategory(parseInt(id), lang);
     return {
       data: plainToClass(AdminCategoryDto, deleted, { excludeExtraneousValues: true })
     };
