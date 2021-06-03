@@ -894,15 +894,6 @@ export class AdminProductService implements OnApplicationBootstrap {
           const oldReversedSortOrder = product.categories[productCategoryIdx].reversedSortOrder;
           if (oldReversedSortOrder !== reversedSortOrder) {
             product.categories[productCategoryIdx].reversedSortOrder = reversedSortOrder;
-
-            let logMessage = `Updated sort order, oldReversedSortOrder=${oldReversedSortOrder}, newReversedSortOrder=${reversedSortOrder}`;
-            if (user) {
-              logMessage += `, userLogin=${user.login}`;
-            } else {
-              logMessage += `, source=system`;
-            }
-            AdminProductService.addLog(product, logMessage);
-
             changedProducts.add(product);
           }
         }
