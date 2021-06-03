@@ -74,5 +74,6 @@ export class AdminProductDto extends AdminAddOrUpdateProductDto implements Pick<
   reviewsAvgRating: number;
 
   @Expose()
+  @Type(() => AdminLogDto)
   logs: AdminLogDto[];
 }
