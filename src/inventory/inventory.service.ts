@@ -60,14 +60,16 @@ export class InventoryService {
       throw new ForbiddenException(__('Cannot set quantity: more than "$1" items are ordered', lang, qty));
     }
 
-    const prevQtyInStock = found.qtyInStock;
-    found.qtyInStock = qty;
+    if (found.qtyInStock !== qty) {
+      const prevQtyInStock = found.qtyInStock;
+      found.qtyInStock = qty;
 
-    InventoryService.addLog(found, `Updated inventory, prevQtyInStock=${prevQtyInStock}, newQtyInStock=${found.qtyInStock}, userLogin=${user?.login}`);
+      InventoryService.addLog(found, `Updated inventory, prevQtyInStock=${prevQtyInStock}, newQtyInStock=${found.qtyInStock}, userLogin=${user?.login}`);
 
-    await found.save({ session });
+      await found.save({ session });
 
-    this.logger.log(`Updated inventory: sku=${found.sku}, qtyInStock=${found.qtyInStock}`, undefined);
+      this.logger.log(`Updated inventory: sku=${found.sku}, qtyInStock=${found.qtyInStock}`, undefined);
+    }
 
     return found;
   }
