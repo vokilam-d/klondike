@@ -79,29 +79,15 @@ export class AdminProductService implements OnApplicationBootstrap {
 
     // const products = await this.productModel.find().exec();
     // for (const product of products) {
-    //   console.log('start product', product.id);
     //   for (const variant of product.variants) {
-    //     variant.medias = await this.mediaService.setSquare(variant.medias, Product.collectionName);
+    //     variant.purchasePrice = 0;
+    //     variant.purchaseCurrency = CurrencyCodeEnum.UAH;
     //   }
-    //   await product.updateOne(product);
+    //   await product.save();
     //   console.log('saved product', product.id);
     // }
     // console.log('saved all');
     // this.reindexAllSearchData();
-  }
-
-  async setSquare() {
-
-    const products = await this.productModel.find().exec();
-    for (const product of products) {
-      console.log('start product', product.id);
-      for (const variant of product.variants) {
-        variant.medias = await this.mediaService.setSquare(variant.medias, Product.collectionName);
-      }
-      await product.updateOne(product);
-      console.log('saved product', product.id);
-    }
-    console.log('saved all');
   }
 
   async getAdminProductsList(

@@ -10,19 +10,6 @@ import { readableBytes } from '../../helpers/readable-bytes.function';
 import { isMediaVariantSquare, MediaVariantEnum } from '../../enums/media-variant.enum';
 import * as FileType from 'file-type';
 
-export const waitFor = (fn: (cb: (err?) => void) => void): Promise<any> => {
-  return new Promise<any>((resolve, reject) => {
-    fn(err => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      resolve();
-    });
-  });
-}
-
 interface ResizeOption {
   variant: MediaVariantEnum;
   maxDimension: number | null;
@@ -41,10 +28,10 @@ export class MediaService {
       variant: MediaVariantEnum.Large,
       maxDimension: 1024
     },
-    // {
-    //   variant: MediaVariantEnum.LargeSquare,
-    //   maxDimension: 1024
-    // },
+    {
+      variant: MediaVariantEnum.LargeSquare,
+      maxDimension: 1024
+    },
     {
       variant: MediaVariantEnum.Medium,
       maxDimension: 600
@@ -142,41 +129,6 @@ export class MediaService {
         }
       );
     });
-  }
-
-  async setSquare(medias: Media[], mediaTypeDirName: string): Promise<Media[]> {
-    const saveDirName = join(this.uploadDirName, mediaTypeDirName);
-
-    for (const media of medias) {
-      await new Promise<Media>((resolve, reject) => {
-        const { base: fileNameBase, name: fileName} = parse(media.variantsUrls.large);
-        const pathToOldFile = join(saveDirName, fileNameBase);
-        const readStream = fs.createReadStream(pathToOldFile);
-
-        const resizeStream = sharp()
-          .resize({ width: 1024, height: 1024, fit: 'contain', background: '#fff' })
-          .jpeg({ progressive: true, quality: 100 });
-
-        const newFileName = fileName.slice(0, fileName.indexOf(`_${MediaVariantEnum.Large}`)) + `_${MediaVariantEnum.LargeSquare}${this.newFileExtWithDot}`;
-        const pathToNewFile = join(saveDirName, newFileName);
-        const writeStream = fs.createWriteStream(pathToNewFile);
-
-        pipeline(readStream, resizeStream, writeStream, (err) => {
-          if (err) {
-            console.error(`Media "${mediaTypeDirName}${media.variantsUrls.original}" err:`);
-            console.error(err);
-            reject(err);
-          } else {
-            media.variantsUrls.large_square = `/${pathToNewFile}`;
-            console.log(`Media "${mediaTypeDirName}${media.variantsUrls.large_square}" success`);
-            resolve();
-          }
-        });
-      });
-
-    }
-
-    return medias;
   }
 
   async duplicateMedias(medias: Media[], mediaTypeDirName: string): Promise<Media[]> {

@@ -31,7 +31,6 @@ import { ClientLinkedCategoryDto } from '../../shared/dtos/client/linked-categor
 import { ClientLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { ClientProductService } from '../services/client-product.service';
-import { AdminProductService } from '../services/admin-product.service';
 
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(ClassSerializerInterceptor)
@@ -43,12 +42,6 @@ export class ClientProductController {
     private readonly moduleRef: ModuleRef,
     private readonly quickReviewService: ProductQuickReviewService
   ) { }
-
-  @Get('sdflksdf')
-  async sdf() {
-    const adm = this.moduleRef.get(AdminProductService, { strict: false });
-    await adm.setSquare();
-  }
 
   @Get()
   async findProducts(@Query() spf: ClientProductSPFDto, @ClientLang() lang: Language): Promise<ClientProductListResponseDto> {
