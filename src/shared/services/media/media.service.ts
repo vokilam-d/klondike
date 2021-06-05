@@ -7,7 +7,7 @@ import { join, parse } from 'path';
 import { transliterate } from '../../helpers/transliterate.function';
 import { Media } from '../../models/media.model';
 import { readableBytes } from '../../helpers/readable-bytes.function';
-import { MediaVariantEnum } from '../../enums/media-variant.enum';
+import { isMediaVariantSquare, MediaVariantEnum } from '../../enums/media-variant.enum';
 import * as FileType from 'file-type';
 
 interface ResizeOption {
@@ -23,13 +23,20 @@ export class MediaService {
     {
       variant: MediaVariantEnum.Original,
       maxDimension: null
-    }, {
+    },
+    {
       variant: MediaVariantEnum.Large,
       maxDimension: 1024
-    }, {
+    },
+    {
+      variant: MediaVariantEnum.LargeSquare,
+      maxDimension: 1024
+    },
+    {
       variant: MediaVariantEnum.Medium,
       maxDimension: 600
-    }, {
+    },
+    {
       variant: MediaVariantEnum.Small,
       maxDimension: 300
     }
@@ -78,8 +85,19 @@ export class MediaService {
           for (const resizeOption of this.resizeOptions) {
             const isOriginal = resizeOption.variant === MediaVariantEnum.Original;
 
+            const sharpResizeOptions: sharp.ResizeOptions = {
+              width: resizeOption.maxDimension,
+              height: resizeOption.maxDimension
+            };
+            if (isMediaVariantSquare(resizeOption.variant)) {
+              sharpResizeOptions.fit = 'contain';
+              sharpResizeOptions.background = '#fff';
+            } else {
+              sharpResizeOptions.fit = 'inside';
+            }
+
             const resizeStream = sharp()
-              .resize(resizeOption.maxDimension, resizeOption.maxDimension, { fit: 'inside' })
+              .resize(sharpResizeOptions)
               .jpeg({ progressive: true, quality: isOriginal ? 100: 80 })
               .metadata(metadataCallback(isOriginal))
 

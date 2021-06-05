@@ -11,6 +11,7 @@ export class Media {
   variantsUrls: VariantsUrls = {
     [MediaVariantEnum.Original]: '',
     [MediaVariantEnum.Large]: '',
+    [MediaVariantEnum.LargeSquare]: '',
     [MediaVariantEnum.Medium]: '',
     [MediaVariantEnum.Small]: '',
   };
