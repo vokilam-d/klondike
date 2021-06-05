@@ -268,7 +268,6 @@ export class AdminProductService implements OnApplicationBootstrap {
     session.startTransaction();
 
     try {
-      const tmpMediasToDelete: AdminMediaDto[] = [];
       const inventories: Inventory[] = [];
 
       for (const dtoVariant of productDto.variants) {
@@ -281,12 +280,6 @@ export class AdminProductService implements OnApplicationBootstrap {
       newProductModel.breadcrumbsVariants = await this.buildBreadcrumbsVariants(newProductModel.categories);
 
       for (const dtoVariant of productDto.variants) {
-        const savedVariant = newProductModel.variants.find(v => v.sku === dtoVariant.sku);
-        const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(dtoVariant.medias, Product.collectionName);
-
-        tmpMediasToDelete.push(...tmpMedias);
-        savedVariant.medias = await this.mediaService.duplicateSavedMedias(savedMedias, Product.collectionName);
-
         const inventory = await this.inventoryService.createInventory(dtoVariant.sku, newProductModel.id, dtoVariant.qtyInStock, session, user);
         inventories.push(inventory.toJSON());
         await this.createProductPageRegistry(dtoVariant.slug, session);
@@ -305,7 +298,6 @@ export class AdminProductService implements OnApplicationBootstrap {
       await session.commitTransaction();
 
       this.onProductUpdate();
-      await this.mediaService.deleteTmpMedias(tmpMediasToDelete, Product.collectionName);
 
       return productWithQty;
 
@@ -346,10 +338,6 @@ export class AdminProductService implements OnApplicationBootstrap {
       }
 
       for (const variantDto of variantsToAdd) {
-        const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(variantDto.medias, Product.collectionName);
-        variantDto.medias = savedMedias;
-        tmpMediasToDelete.push(...tmpMedias);
-
         await this.createProductPageRegistry(variantDto.slug, session);
         const inventory = await this.inventoryService.createInventory(variantDto.sku, found.id, variantDto.qtyInStock, session, user);
         inventories.push(inventory.toJSON());
@@ -370,10 +358,6 @@ export class AdminProductService implements OnApplicationBootstrap {
             mediasToDelete.push(media);
           }
         }
-
-        const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(variantInDto.medias, Product.collectionName);
-        variantInDto.medias = savedMedias;
-        tmpMediasToDelete.push(...checkedTmpMedias);
 
         if (variant.slug !== variantInDto.slug) {
           await this.updateProductPageRegistry(variant.slug, variantInDto.slug, variantInDto.createRedirect, session);
@@ -405,8 +389,7 @@ export class AdminProductService implements OnApplicationBootstrap {
       await session.commitTransaction();
 
       this.onProductUpdate();
-      await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
-      await this.mediaService.deleteTmpMedias(tmpMediasToDelete, Product.collectionName);
+      await this.mediaService.deleteMedias(mediasToDelete, Product.collectionName);
 
       return productWithQty;
 
@@ -440,7 +423,7 @@ export class AdminProductService implements OnApplicationBootstrap {
       await session.commitTransaction();
 
       this.onProductUpdate();
-      await this.mediaService.deleteSavedMedias(mediasToDelete, Product.collectionName);
+      await this.mediaService.deleteMedias(mediasToDelete, Product.collectionName);
 
       return deleted;
     } catch (ex) {

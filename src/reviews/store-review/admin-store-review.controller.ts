@@ -1,15 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, Response, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AdminStoreReviewDto } from '../../shared/dtos/admin/store-review.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { StoreReviewService } from './store-review.service';
 import { plainToClass } from 'class-transformer';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { ServerResponse } from 'http';
+import { FastifyRequest } from 'fastify';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { ReviewSource } from '../../shared/enums/review-source.enum';
+import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -33,10 +33,10 @@ export class AdminStoreReviewController {
   }
 
   @Post('media')
-  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
+  async uploadMedia(@Request() request: FastifyRequest): Promise<AdminMediaDto> {
     const media = await this.storeReviewService.uploadMedia(request);
 
-    reply.status(201).send(media);
+    return plainToClass(AdminMediaDto, media, { excludeExtraneousValues: true });
   }
 
   @Post()

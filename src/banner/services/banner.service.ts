@@ -99,6 +99,6 @@ export class BannerService {
   }
 
   async uploadMedia(request: FastifyRequest): Promise<Media> {
-    return this.mediaService.upload(request, Banner.collectionName, false, true);
+    return this.mediaService.upload(request, Banner.collectionName);
   }
 }

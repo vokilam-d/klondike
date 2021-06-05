@@ -1,6 +1,5 @@
-import { Controller, Post, Request, Response, UseGuards } from '@nestjs/common';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { ServerResponse } from 'http';
+import { Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { FastifyRequest } from 'fastify';
 import { WysiwygService } from './wysiwyg.service';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 
@@ -12,9 +11,7 @@ export class WysiwygController {
   }
 
   @Post('media')
-  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
-    const url = await this.wysiwygService.uploadMedia(request);
-
-    reply.status(201).send(url);
+  async uploadMedia(@Request() request: FastifyRequest): Promise<string> {
+    return this.wysiwygService.uploadMedia(request);
   }
 }

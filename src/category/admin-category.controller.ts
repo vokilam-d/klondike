@@ -9,7 +9,6 @@ import {
   Put,
   Query,
   Request,
-  Response,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -21,14 +20,14 @@ import { plainToClass } from 'class-transformer';
 import { ResponseDto } from '../shared/dtos/shared-dtos/response.dto';
 import { UserJwtGuard } from '../auth/guards/user-jwt.guard';
 import { ReorderDto } from '../shared/dtos/admin/reorder.dto';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { ServerResponse } from 'http';
+import { FastifyRequest } from 'fastify';
 import { AdminCategoryTreeItemDto } from '../shared/dtos/admin/category-tree-item.dto';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
 import { ValidatedUser } from '../shared/decorators/validated-user.decorator';
 import { DocumentType } from '@typegoose/typegoose';
 import { User } from '../user/models/user.model';
+import { AdminMediaDto } from '../shared/dtos/admin/media.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -75,10 +74,10 @@ export class AdminCategoryController {
   }
 
   @Post('media')
-  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
+  async uploadMedia(@Request() request: FastifyRequest): Promise<AdminMediaDto> {
     const media = await this.categoryService.uploadMedia(request);
 
-    reply.status(201).send(media);
+    return plainToClass(AdminMediaDto, media, { excludeExtraneousValues: true });
   }
 
   @Post('action/reorder')

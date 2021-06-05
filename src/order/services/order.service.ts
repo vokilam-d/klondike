@@ -946,7 +946,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   async uploadMedia(request: FastifyRequest, id: number, login: string, lang: Language): Promise<Order> {
-    const media = await this.mediaService.upload(request, Order.collectionName, false, true);
+    const media = await this.mediaService.upload(request, Order.collectionName);
 
     return await this.updateOrderById(id, lang, async order => {
       order.medias = order.medias || [];

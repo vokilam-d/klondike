@@ -85,7 +85,7 @@ export class BlogPostService {
   }
 
   uploadMedia(request: FastifyRequest): Promise<Media> {
-    return this.mediaService.upload(request, this.mediaDir, false);
+    return this.mediaService.upload(request, this.mediaDir);
   }
 
   async getEnabledPostsList(spf: ClientSPFDto): Promise<BlogPost[]> {

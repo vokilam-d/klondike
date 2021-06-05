@@ -4,29 +4,13 @@ import { pipeline } from 'stream';
 import * as sharp from 'sharp';
 import { FastifyRequest } from 'fastify';
 import { join, parse } from 'path';
-import { promisify } from 'util';
 import { transliterate } from '../../helpers/transliterate.function';
 import { Media } from '../../models/media.model';
 import { readableBytes } from '../../helpers/readable-bytes.function';
 import { MediaVariantEnum } from '../../enums/media-variant.enum';
-import { AdminMediaDto } from '../../dtos/admin/media.dto';
 import * as FileType from 'file-type';
 
-const pipelinePromise = promisify(pipeline);
-
-export const waitFor = (fn, ...args): Promise<any> => {
-  return new Promise<any>((resolve, reject) => {
-    fn(...args, (err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      resolve();
-    })
-  })
-}
-interface ResizeOptions {
+interface ResizeOption {
   variant: MediaVariantEnum;
   maxDimension: number | null;
 }
@@ -35,8 +19,7 @@ interface ResizeOptions {
 export class MediaService {
 
   private uploadDirName = 'upload';
-  private tmpDirName = 'tmp';
-  private resizeOptions: ResizeOptions[] = [
+  private resizeOptions: ResizeOption[] = [
     {
       variant: MediaVariantEnum.Original,
       maxDimension: null
@@ -55,7 +38,7 @@ export class MediaService {
   private logger = new Logger(MediaService.name);
   private newFileExtWithDot = '.jpg';
 
-  async upload(request: FastifyRequest, entityDirName: string, saveToTmp: boolean = true, resize: boolean = false): Promise<Media> {
+  async upload(request: FastifyRequest, entityDirName: string): Promise<Media> {
 
     return new Promise<Media>((resolve, reject) => {
       let isRejected: boolean = false;
@@ -72,9 +55,7 @@ export class MediaService {
           let { name } = parse(fileName);
           name = transliterate(name).substring(0, 100);
 
-          const saveDirName = saveToTmp
-            ? join(this.uploadDirName, this.tmpDirName, entityDirName)
-            : join(this.uploadDirName, entityDirName);
+          const saveDirName = join(this.uploadDirName, entityDirName);
           await fs.promises.mkdir(saveDirName, { recursive: true });
 
           const media = new Media();
@@ -92,10 +73,9 @@ export class MediaService {
 
           const fullFileNameOfOriginal = await this.getUniqueFileName(saveDirName, `${name}${this.newFileExtWithDot}`);
           const { name: fileNameOfOriginal } = parse(fullFileNameOfOriginal);
-          const resizeOptions = resize ? this.resizeOptions : this.resizeOptions.filter(option => option.variant === MediaVariantEnum.Original);
 
           let resizedCount = 0;
-          for (const resizeOption of resizeOptions) {
+          for (const resizeOption of this.resizeOptions) {
             const isOriginal = resizeOption.variant === MediaVariantEnum.Original;
 
             const resizeStream = sharp()
@@ -117,7 +97,7 @@ export class MediaService {
               media.variantsUrls[resizeOption.variant] = `/${pathToFile}`;
               resizedCount++;
 
-              if (!isRejected && resizedCount === resizeOptions.length) {
+              if (!isRejected && resizedCount === this.resizeOptions.length) {
                 resolve(media);
               }
             });
@@ -133,83 +113,15 @@ export class MediaService {
     });
   }
 
-  async checkForTmpAndSaveMedias(mediaDtos: AdminMediaDto[], mediaTypeDirName: string): Promise<{ tmpMedias: Media[], savedMedias: Media[] }> {
-    const tmpMedias = [];
-    const savedMedias = [];
-
-    for (let media of mediaDtos) {
-      const isTmp = media.variantsUrls.original.includes('/tmp/');
-      if (isTmp) {
-        tmpMedias.push(media);
-        savedMedias.push(await this.resizeMediaDtoAndSave(media, mediaTypeDirName, true));
-      } else {
-        savedMedias.push(media);
-      }
-    }
-
-    return { tmpMedias, savedMedias };
-  }
-
-  private async resizeMediaDtoAndSave(mediaDto: AdminMediaDto, mediaTypeDirName: string, isInTmp: boolean): Promise<Media> {
-    const media = new Media();
-    media.altText = mediaDto.altText;
-    media.isHidden = mediaDto.isHidden;
-    media.size = mediaDto.size;
-    media.dimensions = mediaDto.dimensions;
-
-    const { base: tmpFileName } = parse(mediaDto.variantsUrls.original);
-    const pathToOldFile = isInTmp
-      ? join(this.uploadDirName, this.tmpDirName, mediaTypeDirName, tmpFileName)
-      : join(this.uploadDirName, mediaTypeDirName, tmpFileName);
-
-    const dir = join(this.uploadDirName, mediaTypeDirName);
-    const fileNameToSave = await this.getUniqueFileName(dir, tmpFileName);
-    const { name, ext } = parse(fileNameToSave);
-
-    await fs.promises.mkdir(dir, { recursive: true });
-
-    for (const option of this.resizeOptions) {
-      const fileName = option.variant === MediaVariantEnum.Original ? fileNameToSave : `${name}_${option.variant}${ext}`;
-      const pathToNewFile = join(dir, fileName);
-      const writeStream = fs.createWriteStream(pathToNewFile);
-      const resizeStream = sharp()
-        .resize(option.maxDimension, option.maxDimension, { fit: 'inside' })
-        .jpeg({ progressive: true });
-      const readStream = fs.createReadStream(pathToOldFile, { autoClose: false });
-
-      await pipelinePromise(readStream, resizeStream, writeStream);
-
-      media.variantsUrls[option.variant] = `/${pathToNewFile}`;
-    }
-
-    this.logger.log(`Saved image '${fileNameToSave}' in directory '${dir}'.`);
-
-    return media;
-  }
-
-  async duplicateSavedMedias(medias: Media[], mediaTypeDirName: string): Promise<Media[]> {
+  async duplicateMedias(medias: Media[], mediaTypeDirName: string): Promise<Media[]> {
     const duplicated: Media[] = [];
     for (const media of medias) {
-      duplicated.push(await this.resizeMediaDtoAndSave(media, mediaTypeDirName, false));
+      // duplicated.push(await this.resizeMediaDtoAndSave(media, mediaTypeDirName));
     }
     return duplicated;
   }
 
-  async deleteTmpMedias(mediaDtos: AdminMediaDto[], mediaTypeDirName: string) {
-    for (const mediaDto of mediaDtos) {
-      const { base: tmpFileName } = parse(mediaDto.variantsUrls.original);
-      const pathToTmpFile = join(this.uploadDirName, this.tmpDirName, mediaTypeDirName, tmpFileName);
-
-      try {
-        await fs.promises.unlink(pathToTmpFile);
-      } catch (e) {
-        this.logger.error(`Could not delete tmp media: ${pathToTmpFile}`);
-        this.logger.error(e);
-      }
-    }
-  }
-
-  async deleteSavedMedias(medias: Media[], mediaTypeDirName: string) {
+  async deleteMedias(medias: Media[], mediaTypeDirName: string) {
     for (const media of medias) {
       for (const url of Object.values(media.variantsUrls)) {
         const { base: fileName } = parse(url);

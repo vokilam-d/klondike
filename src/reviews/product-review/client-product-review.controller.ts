@@ -1,13 +1,11 @@
-import { Body, Controller, Get, Param, Post, Query, Redirect, Req, Request, Response, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Redirect, Req, Request, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ProductReviewService } from './product-review.service';
 import { ClientProductReviewFilterDto } from '../../shared/dtos/client/product-review-filter.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { ClientProductReviewDto } from '../../shared/dtos/client/product-review.dto';
 import { IpAddress } from '../../shared/decorators/ip-address.decorator';
-import { plainToClass } from 'class-transformer';
 import { ClientAddProductReviewCommentDto } from '../../shared/dtos/client/product-review-comment.dto';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { ServerResponse } from 'http';
+import { FastifyRequest } from 'fastify';
 import { ClientMediaDto } from '../../shared/dtos/client/media.dto';
 import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
 import { ModuleRef } from '@nestjs/core';
@@ -60,15 +58,10 @@ export class ClientProductReviewController {
   }
 
   @Post('media')
-  async uploadMedia(
-    @Request() request: FastifyRequest,
-    @Response() reply: FastifyReply<ServerResponse>,
-    @ClientLang() lang: Language
-  ) {
+  async uploadMedia(@Request() request: FastifyRequest, @ClientLang() lang: Language): Promise<ClientMediaDto> {
     const media = await this.productReviewService.uploadMedia(request);
-    const mediaDto = ClientMediaDto.transformToDto(media, lang);
 
-    reply.status(201).send(mediaDto);
+    return ClientMediaDto.transformToDto(media, lang);
   }
 
   @Post()

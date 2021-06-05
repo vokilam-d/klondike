@@ -82,15 +82,11 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       review.id = await this.counterService.getCounter(this.collectionName, session);
       review.createdAt = new Date();
 
-      const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(reviewDto.medias, this.collectionName);
-      review.medias = savedMedias;
-
       await review.save({ session });
       if (review.isEnabled && callback) { await callback(review, session); }
       await session.commitTransaction();
 
       this.addSearchData(review);
-      await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
       this.onReviewUpdate();
 
       return this.transformReviewToDto(review);
@@ -113,7 +109,6 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
 
     try {
       const mediasToDelete: Media[] = [];
-      const tmpMedias: AdminMediaDto[] = [];
 
       for (const media of review.medias) {
         const isMediaInDto = reviewDto.medias.find(dtoMedia => dtoMedia.variantsUrls.original === media.variantsUrls.original);
@@ -121,10 +116,6 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
           mediasToDelete.push(media);
         }
       }
-
-      const { tmpMedias: checkedTmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(reviewDto.medias, this.collectionName);
-      reviewDto.medias = savedMedias;
-      tmpMedias.push(...checkedTmpMedias);
 
       if (onEnable && reviewDto.isEnabled === true && review.isEnabled === false) {
         await onEnable(review, session);
@@ -137,8 +128,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       await session.commitTransaction();
 
       this.updateSearchData(review);
-      await this.mediaService.deleteTmpMedias(tmpMedias, this.collectionName);
-      await this.mediaService.deleteSavedMedias(mediasToDelete, this.collectionName);
+      await this.mediaService.deleteMedias(mediasToDelete, this.collectionName);
       this.onReviewUpdate();
 
       return this.transformReviewToDto(review);
@@ -161,7 +151,7 @@ export abstract class BaseReviewService<T extends BaseReview, U extends AdminBas
       if (deleted.isEnabled && callback) { await callback(deleted, session) };
       await session.commitTransaction();
 
-      await this.mediaService.deleteSavedMedias(deleted.medias, this.collectionName);
+      await this.mediaService.deleteMedias(deleted.medias, this.collectionName);
       this.deleteSearchData(deleted);
       this.onReviewUpdate();
 

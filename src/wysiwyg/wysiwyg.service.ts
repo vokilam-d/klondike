@@ -8,7 +8,7 @@ export class WysiwygService {
   }
 
   async uploadMedia(request: FastifyRequest): Promise<string> {
-    const uploaded = await this.mediaService.upload(request, 'wysiwyg', false);
-    return uploaded.variantsUrls.original;
+    const uploaded = await this.mediaService.upload(request, 'wysiwyg');
+    return uploaded.variantsUrls.large;
   }
 }

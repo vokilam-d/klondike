@@ -9,7 +9,6 @@ import {
   Put,
   Query,
   Request,
-  Response,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -18,8 +17,7 @@ import {
 import { AdminAddOrUpdateProductDto, AdminProductDto } from '../../shared/dtos/admin/product.dto';
 import { AdminProductService } from '../services/admin-product.service';
 import { plainToClass } from 'class-transformer';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { ServerResponse } from 'http';
+import { FastifyRequest } from 'fastify';
 import { AdminMediaDto } from '../../shared/dtos/admin/media.dto';
 import { AdminSPFDto } from '../../shared/dtos/admin/spf.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
@@ -30,7 +28,6 @@ import { ReservedInventory } from '../../inventory/models/reserved-inventory.mod
 import { OrderedProductService } from '../services/ordered-product.service';
 import { AdminProductSPFDto } from '../../shared/dtos/admin/product-spf.dto';
 import { UnfixProductOrderDto } from '../../shared/dtos/admin/unfix-product-order.dto';
-import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
@@ -95,14 +92,11 @@ export class AdminProductController {
     };
   }
 
-  /**
-   * @returns AdminMediaDto
-   */
   @Post('media')
-  async uploadMedia(@Request() request: FastifyRequest, @Response() reply: FastifyReply<ServerResponse>) {
+  async uploadMedia(@Request() request: FastifyRequest): Promise<AdminMediaDto> {
     const media = await this.productsService.uploadMedia(request);
 
-    reply.status(201).send(media);
+    return plainToClass(AdminMediaDto, media, { excludeExtraneousValues: true });
   }
 
   @Post('action/fix-sort-order')

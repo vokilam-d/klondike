@@ -215,8 +215,8 @@ export class CategoryService implements OnApplicationBootstrap {
     try {
       const newCategoryModel = new this.categoryModel(categoryDto);
       newCategoryModel.id = await this.counterService.getCounter(Category.collectionName, session);
-      const isClone = Boolean(newCategoryModel.canonicalCategoryId);
 
+      const isClone = Boolean(newCategoryModel.canonicalCategoryId);
       if (isClone) {
         newCategoryModel.slug = `clone-${newCategoryModel.id}`;
       }
@@ -228,9 +228,6 @@ export class CategoryService implements OnApplicationBootstrap {
 
       newCategoryModel.breadcrumbCategoryIds = await this.buildBreadcrumbCategoryIds(newCategoryModel);
 
-      const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(categoryDto.medias, Category.collectionName);
-      newCategoryModel.medias = savedMedias;
-
       await newCategoryModel.save({ session });
       if (!isClone) {
         await this.createCategoryPageRegistry(newCategoryModel.slug, session);
@@ -238,7 +235,6 @@ export class CategoryService implements OnApplicationBootstrap {
       await session.commitTransaction();
 
       this.addSearchData(newCategoryModel).then();
-      this.mediaService.deleteTmpMedias(tmpMedias, Category.collectionName).then();
       this.onCategoriesUpdate();
 
       return plainToClass(Category, newCategoryModel.toJSON());
@@ -267,9 +263,6 @@ export class CategoryService implements OnApplicationBootstrap {
         }
       }
 
-      const { tmpMedias, savedMedias } = await this.mediaService.checkForTmpAndSaveMedias(categoryDto.medias, Category.collectionName);
-      categoryDto.medias = savedMedias;
-
       Object.keys(categoryDto).forEach(key => {
         if (categoryDto[key] !== undefined && key !== 'id') {
           category[key] = categoryDto[key];
@@ -290,8 +283,7 @@ export class CategoryService implements OnApplicationBootstrap {
       await session.commitTransaction();
 
       this.updateSearchData(saved).then();
-      this.mediaService.deleteTmpMedias(tmpMedias, Category.collectionName).then();
-      this.mediaService.deleteSavedMedias(mediasToDelete, Category.collectionName).then();
+      this.mediaService.deleteMedias(mediasToDelete, Category.collectionName).then();
       this.onCategoriesUpdate();
 
       return saved.toJSON();
@@ -324,7 +316,7 @@ export class CategoryService implements OnApplicationBootstrap {
       await session.commitTransaction();
 
       this.deleteSearchData(deleted).then();
-      this.mediaService.deleteSavedMedias(deleted.medias, Category.collectionName).then();
+      this.mediaService.deleteMedias(deleted.medias, Category.collectionName).then();
       this.onCategoriesUpdate();
 
       return deleted.toJSON();
