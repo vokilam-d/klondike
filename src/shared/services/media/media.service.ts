@@ -78,13 +78,16 @@ export class MediaService {
           await fs.promises.mkdir(saveDirName, { recursive: true });
 
           const media = new Media();
-          const metadataCallback  = (err, metadata: sharp.Metadata) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            media.size = readableBytes(metadata.size);
-            media.dimensions = `${metadata.width}x${metadata.height} px`;
+          const metadataCallback  = (isOriginal: boolean) => {
+            if (isOriginal) { return () => {}; }
+            return (err, metadata: sharp.Metadata) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+              media.size = readableBytes(metadata.size);
+              media.dimensions = `${metadata.width}x${metadata.height} px`;
+            };
           };
 
           const fullFileNameOfOriginal = await this.getUniqueFileName(saveDirName, `${name}${this.newFileExtWithDot}`);
@@ -98,7 +101,7 @@ export class MediaService {
             const resizeStream = sharp()
               .resize(resizeOption.maxDimension, resizeOption.maxDimension, { fit: 'inside' })
               .jpeg({ progressive: true, quality: isOriginal ? 100: 80 })
-              .metadata(isOriginal ? metadataCallback : () => {})
+              .metadata(metadataCallback(isOriginal))
 
             const fileName = isOriginal ? fullFileNameOfOriginal : `${fileNameOfOriginal}_${resizeOption.variant}${this.newFileExtWithDot}`;
             const pathToFile = join(saveDirName, fileName);
