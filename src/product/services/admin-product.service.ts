@@ -91,6 +91,7 @@ export class AdminProductService implements OnApplicationBootstrap {
   }
 
   async setSquare() {
+
     const products = await this.productModel.find().exec();
     for (const product of products) {
       console.log('start product', product.id);
