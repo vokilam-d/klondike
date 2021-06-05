@@ -14,6 +14,7 @@ import { XmlBuilder } from '../shared/services/xml-builder/xml-builder.service';
 import { MaintenanceService } from '../maintenance/maintenance.service';
 import { CategoryService } from '../category/category.service';
 import { BreadcrumbsVariant } from '../shared/models/breadcrumbs-variant.model';
+import { MediaVariantEnum } from '../shared/enums/media-variant.enum';
 
 type cdata = { $: string };
 
@@ -218,7 +219,8 @@ export class ShoppingFeedService {
       let imageLink: string = '';
       let additionalImageLinks: string[] = [];
       variant.medias.forEach((media, idx) => {
-        const link = this.websiteHostname + media.variantsUrls.original;
+        const variantUrl = media.variantsUrls[MediaVariantEnum.LargeSquare] || media.variantsUrls[MediaVariantEnum.Large];
+        const link = `${this.websiteHostname}${variantUrl}`;
 
         if (idx === 0) {
           imageLink = link;
