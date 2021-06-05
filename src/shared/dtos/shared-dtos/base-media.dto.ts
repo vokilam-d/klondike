@@ -11,6 +11,7 @@ export abstract class BaseMediaDto implements Pick<Media, 'variantsUrls' | 'altT
   variantsUrls: VariantsUrls = {
     [MediaVariantEnum.Original]: '',
     [MediaVariantEnum.Large]: '',
+    [MediaVariantEnum.LargeSquare]: '',
     [MediaVariantEnum.Medium]: '',
     [MediaVariantEnum.Small]: '',
   };

@@ -81,6 +81,8 @@ export class ShoppingFeedService {
   facebookShoppingFeedFileName = 'facebook_shopping_feed.xml';
   reviewsFeedFileName = 'google_shopping_review.xml';
 
+  private websiteHostname = `https://klondike.com.ua`;
+
   constructor(
     private readonly productService: AdminProductService,
     private readonly categoryService: CategoryService,
@@ -130,7 +132,7 @@ export class ShoppingFeedService {
         let item: IShoppingFeedItem = {
           'g:id': { $: variant.sku },
           'g:title': ShoppingFeedService.getFeedItemTitle(variant, lang),
-          'g:link': { $: `http://klondike.com.ua/${variant.slug}` },
+          'g:link': { $: `${this.websiteHostname}/${variant.slug}` },
           'g:price': { $: `${price} UAH` },
           ...(salePrice ? { 'g:sale_price': { $: `${salePrice} UAH` } } : {}),
           'g:description': ShoppingFeedService.getFeedItemDescriptions(variant, lang),
@@ -165,7 +167,7 @@ export class ShoppingFeedService {
         },
         channel: {
           title: 'Data feed Klondike',
-          link: 'https://klondike.com.ua/',
+          link: this.websiteHostname,
           description: 'Data feed description.',
           item: items
         }
@@ -194,7 +196,7 @@ export class ShoppingFeedService {
       let imageLink: string = '';
       let additionalImageLinks: string[] = [];
       variant.medias.forEach((media, idx) => {
-        const link = 'http://klondike.com.ua' + media.variantsUrls.original;
+        const link = this.websiteHostname + media.variantsUrls.original;
 
         if (idx === 0) {
           imageLink = link;
@@ -216,7 +218,7 @@ export class ShoppingFeedService {
       let imageLink: string = '';
       let additionalImageLinks: string[] = [];
       variant.medias.forEach((media, idx) => {
-        const link = 'http://klondike.com.ua' + media.variantsUrls.original;
+        const link = this.websiteHostname + media.variantsUrls.original;
 
         if (idx === 0) {
           imageLink = link;
@@ -253,7 +255,7 @@ export class ShoppingFeedService {
           'g:id': { $: variant.sku },
           'g:override': { $: 'uk_UA' },
           'g:title': ShoppingFeedService.getFeedItemTitle(variant, lang),
-          'g:link': { $: `http://klondike.com.ua/ua/${variant.slug}` },
+          'g:link': { $: `${this.websiteHostname}/ua/${variant.slug}` },
           'g:description': ShoppingFeedService.getFeedItemDescriptions(variant, lang),
           'g:brand': { $: brand },
         };
@@ -277,11 +279,11 @@ export class ShoppingFeedService {
       const product = products.find(p => p._id === reviewDto.productId);
       if (!(product && product.isEnabled)) { return; }
 
-      const productUrl = `https://klondike.com.ua/${product.variants[0].slug}`;
+      const productUrl = `${this.websiteHostname}/${product.variants[0].slug}`;
       const reviewsProducts: IShoppingReviewProduct[] = [];
 
       product.variants.forEach(variant => {
-        const variantUrl = `https://klondike.com.ua/${variant.slug}`;
+        const variantUrl = `${this.websiteHostname}/${variant.slug}`;
 
         reviewsProducts.push({
           product_ids: {
@@ -333,7 +335,7 @@ export class ShoppingFeedService {
         version: '2.2',
         publisher: {
           name: 'Klondike online shop',
-          link: 'https://klondike.com.ua/favicon.ico'
+          link: `${this.websiteHostname}/favicon.ico`
         },
         reviews: {
           review: reviews
