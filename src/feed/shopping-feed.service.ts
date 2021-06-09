@@ -7,7 +7,7 @@ import { AdminProductReviewDto } from '../shared/dtos/admin/product-review.dto';
 import { ProductVariantWithQty, ProductWithQty } from '../product/models/product-with-qty.model';
 import { AttributeService } from '../attribute/attribute.service';
 import { ProductSelectedAttribute } from '../product/models/product-selected-attribute.model';
-import { clientDefaultLanguage, priceThresholdForFreeShipping } from '../shared/constants';
+import { priceThresholdForFreeShipping } from '../shared/constants';
 import { MultilingualText } from '../shared/models/multilingual-text.model';
 import { Language } from '../shared/enums/language.enum';
 import { XmlBuilder } from '../shared/services/xml-builder/xml-builder.service';
@@ -31,6 +31,7 @@ interface IShoppingFeedItem {
   'g:condition'?: string;
   'g:identifier_exists'?: string;
   'g:availability'?: string;
+  'g:custom_label_0'?: string;
   'g:brand': cdata;
   'g:mpn'?: cdata;
   'g:gtin'?: cdata;
@@ -80,6 +81,7 @@ export class ShoppingFeedService {
 
   googleShoppingFeedFileName = 'google_shopping_feed.xml';
   facebookShoppingFeedFileName = 'facebook_shopping_feed.xml';
+  facebookShoppingLocalizationFeedFileName = 'localization_facebook_shopping_feed.xml';
   reviewsFeedFileName = 'google_shopping_review.xml';
 
   private websiteHostname = `https://klondike.com.ua`;
@@ -94,11 +96,11 @@ export class ShoppingFeedService {
   ) { }
 
   async generateShoppingAdsFeed(
+    lang: Language,
     customizeFeedItemFunction?: (item: IShoppingFeedItem, variant: ProductVariantWithQty) => IShoppingFeedItem
   ): Promise<string> {
 
     this.checkForMaintenance();
-    const lang: Language = clientDefaultLanguage;
     const items: IShoppingFeedItem[] = [];
     const products = await this.getAllProducts();
 
@@ -133,7 +135,7 @@ export class ShoppingFeedService {
         let item: IShoppingFeedItem = {
           'g:id': { $: variant.sku },
           'g:title': ShoppingFeedService.getFeedItemTitle(variant, lang),
-          'g:link': { $: `${this.websiteHostname}/${variant.slug}` },
+          'g:link': this.getGLink(variant, lang),
           'g:price': { $: `${price} UAH` },
           ...(salePrice ? { 'g:sale_price': { $: `${salePrice} UAH` } } : {}),
           'g:description': ShoppingFeedService.getFeedItemDescriptions(variant, lang),
@@ -142,7 +144,7 @@ export class ShoppingFeedService {
           'g:mpn': { $: variant.vendorCode || '' },
           'g:gtin': { $: variant.gtin || '' },
           'g:identifier_exists': brand || variant.vendorCode || variant.gtin ? 'true' : 'false',
-          'g:product_type': { $: await this.buildProductType(product.breadcrumbsVariants, lang) },
+          'g:product_type': { $: await this.buildProductType(product.breadcrumbsVariants, Language.RU) },
           'g:availability': variant.qtyInStock > variant.reserved.reduce((sum, ordered) => sum + ordered.qty, 0)
             ? 'in stock' : 'out of stock',
           ...(isFreeShippingAvailable ? freeShipping : {})
@@ -157,6 +159,11 @@ export class ShoppingFeedService {
     }
 
     return this.getShoppingFeed(items);
+  }
+
+  private getGLink(variant: ProductVariantWithQty, lang: Language) {
+    return Language.UK === lang ? { $: `${this.websiteHostname}/ua/${variant.slug}` }
+      : { $: `${this.websiteHostname}/${variant.slug}` };
   }
 
   private getShoppingFeed(items: IShoppingFeedItem[]): string {
@@ -192,8 +199,8 @@ export class ShoppingFeedService {
     }, '');
   }
 
-  async generateGoogleShoppingAdsFeed(): Promise<string> {
-    return await this.generateShoppingAdsFeed((item, variant) => {
+  async generateGoogleShoppingAdsFeed(lang : Language): Promise<string> {
+    return await this.generateShoppingAdsFeed(lang, (item, variant) => {
       let imageLink: string = '';
       let additionalImageLinks: string[] = [];
       variant.medias.forEach((media, idx) => {
@@ -209,13 +216,14 @@ export class ShoppingFeedService {
       return {
         ...item,
         'g:image_link': { $: imageLink },
+        'g:custom_label_0': lang,
         ...(additionalImageLinks.length ? { 'g:additional_image_link': { $: additionalImageLinks as any } } : {}),
       };
     });
   }
 
   async generateFacebookShoppingAdsFeed(): Promise<string> {
-    return await this.generateShoppingAdsFeed((item, variant) => {
+    return await this.generateShoppingAdsFeed(Language.RU, (item, variant) => {
       let imageLink: string = '';
       let additionalImageLinks: string[] = [];
       variant.medias.forEach((media, idx) => {
@@ -257,7 +265,7 @@ export class ShoppingFeedService {
           'g:id': { $: variant.sku },
           'g:override': { $: 'uk_UA' },
           'g:title': ShoppingFeedService.getFeedItemTitle(variant, lang),
-          'g:link': { $: `${this.websiteHostname}/ua/${variant.slug}` },
+          'g:link': this.getGLink(variant, lang),
           'g:description': ShoppingFeedService.getFeedItemDescriptions(variant, lang),
           'g:brand': { $: brand },
         };

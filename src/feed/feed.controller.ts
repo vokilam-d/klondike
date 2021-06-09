@@ -11,12 +11,23 @@ export class FeedController {
   }
 
   @Get('shopping')
-  async getShoppingAdsFeed(@Res() reply: FastifyReply<ServerResponse>) {
-    const feed = await this.shoppingFeedService.generateGoogleShoppingAdsFeed();
+  async getRuGoogleShoppingAdsFeed(@Res() reply: FastifyReply<ServerResponse>) {
+    const feed = await this.shoppingFeedService.generateGoogleShoppingAdsFeed(Language.RU);
 
     reply
       .type('text/xml')
-      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(this.shoppingFeedService.googleShoppingFeedFileName)}`)
+      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(Language.RU + "_" + this.shoppingFeedService.googleShoppingFeedFileName)}`)
+      .send(feed);
+  }
+
+  @Get('shopping/google/:lang')
+  async getGoogleShoppingAdsFeed(@Param('lang') lang: Language,
+                                 @Res() reply: FastifyReply<ServerResponse>) {
+    const feed = await this.shoppingFeedService.generateGoogleShoppingAdsFeed(lang);
+
+    reply
+      .type('text/xml')
+      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(lang + "_" + this.shoppingFeedService.googleShoppingFeedFileName)}`)
       .send(feed);
   }
 
@@ -26,7 +37,7 @@ export class FeedController {
 
     reply
       .type('text/xml')
-      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(this.shoppingFeedService.facebookShoppingFeedFileName)}`)
+      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(Language.RU + "_" + this.shoppingFeedService.facebookShoppingFeedFileName)}`)
       .send(feed);
   }
 
@@ -37,7 +48,7 @@ export class FeedController {
 
     reply
       .type('text/xml')
-      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(this.shoppingFeedService.facebookShoppingFeedFileName)}`)
+      .header('Content-Disposition', `attachment;filename=${encodeURIComponent(lang + "_" + this.shoppingFeedService.facebookShoppingLocalizationFeedFileName)}`)
       .send(feed);
   }
 
