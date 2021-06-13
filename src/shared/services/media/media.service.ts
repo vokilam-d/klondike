@@ -18,6 +18,7 @@ interface ResizeOption {
 @Injectable()
 export class MediaService {
 
+  private fileNameSeparator = '_';
   private uploadDirName = 'upload';
   private resizeOptions: ResizeOption[] = [
     {
@@ -101,7 +102,7 @@ export class MediaService {
               .jpeg({ progressive: true, quality: isOriginal ? 100: 80 })
               .metadata(metadataCallback(isOriginal))
 
-            const fileName = isOriginal ? fullFileNameOfOriginal : `${fileNameOfOriginal}_${resizeOption.variant}${this.newFileExtWithDot}`;
+            const fileName = isOriginal ? fullFileNameOfOriginal : `${fileNameOfOriginal}${this.fileNameSeparator}${resizeOption.variant}${this.newFileExtWithDot}`;
             const pathToFile = join(saveDirName, fileName);
             const writeStream = fs.createWriteStream(pathToFile);
 
@@ -132,11 +133,57 @@ export class MediaService {
   }
 
   async duplicateMedias(medias: Media[], mediaTypeDirName: string): Promise<Media[]> {
-    const duplicated: Media[] = [];
+    const duplicates: Media[] = [];
+
     for (const media of medias) {
-      // duplicated.push(await this.resizeMediaDtoAndSave(media, mediaTypeDirName));
+      const duplicate = new Media();
+      duplicate.altText = media.altText;
+      duplicate.dimensions = media.dimensions;
+      duplicate.isHidden = media.isHidden;
+      duplicate.size = media.size;
+
+      for (const [variantName, variantUrl] of Object.entries(media.variantsUrls)) {
+        if (!variantUrl) {
+          continue;
+        }
+
+        let { base: oldFileNameWithExt, name: oldFileName, ext } = parse(variantUrl);
+        if (variantName !== MediaVariantEnum.Original) {
+          oldFileName = oldFileName.slice(0, oldFileName.indexOf(`${this.fileNameSeparator}${variantName}`));
+        }
+
+        const parts = oldFileName.split(this.fileNameSeparator);
+
+        let newFileNameWithExt: string = '';
+        if (parts.length === 1) {
+          newFileNameWithExt = `${oldFileName}${this.fileNameSeparator}1`;
+        } else {
+          const [lastPart] = parts.splice(-1, 1);
+          const iteration = parseInt(lastPart);
+          if (Number.isNaN(iteration)) {
+            newFileNameWithExt = `${oldFileName}${this.fileNameSeparator}1`;
+          } else {
+            parts.push(`${iteration + 1}`);
+            newFileNameWithExt = parts.join(this.fileNameSeparator);
+          }
+        }
+        if (variantName !== MediaVariantEnum.Original) {
+          newFileNameWithExt += `${this.fileNameSeparator}${variantName}`;
+        }
+        newFileNameWithExt += ext;
+
+        const pathToOldFile = join(this.uploadDirName, mediaTypeDirName, oldFileNameWithExt);
+        const pathToNewFile = join(this.uploadDirName, mediaTypeDirName, newFileNameWithExt);
+
+        await fs.promises.copyFile(pathToOldFile, pathToNewFile);
+
+        duplicate.variantsUrls[variantUrl] = `${pathToNewFile}`;
+      }
+
+      duplicates.push(duplicate);
     }
-    return duplicated;
+
+    return duplicates;
   }
 
   async deleteMedias(medias: Media[], mediaTypeDirName: string) {
@@ -162,7 +209,7 @@ export class MediaService {
 
     if (iteration > 0) {
       let { name, ext } = parse(fileName);
-      fileName = `${name}_${iteration}${ext}`;
+      fileName = `${name}${this.fileNameSeparator}${iteration}${ext}`;
     }
 
     const exists = await this.doesFileExist(join(dir, fileName));

@@ -438,6 +438,10 @@ export class AdminProductService implements OnApplicationBootstrap {
     return this.mediaService.upload(request, Product.collectionName);
   }
 
+  duplicateMedias(medias: AdminMediaDto[]): Promise<Media[]> {
+    return this.mediaService.duplicateMedias(medias, Product.collectionName);
+  }
+
   private createProductPageRegistry(slug: string, session: ClientSession) {
     return this.pageRegistryService.createPageRegistry({
       slug,

@@ -33,6 +33,7 @@ import { Language } from '../../shared/enums/language.enum';
 import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
 import { DocumentType } from '@typegoose/typegoose';
 import { User } from '../../user/models/user.model';
+import { AdminDuplicateMediasDto } from '../../shared/dtos/admin/duplicate-medias.dto';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -97,6 +98,15 @@ export class AdminProductController {
     const media = await this.productsService.uploadMedia(request);
 
     return plainToClass(AdminMediaDto, media, { excludeExtraneousValues: true });
+  }
+
+  @Post('duplicate-medias')
+  async duplicateMedias(@Body() duplicateMediasDto: AdminDuplicateMediasDto): Promise<ResponseDto<AdminMediaDto[]>> {
+    const medias = await this.productsService.duplicateMedias(duplicateMediasDto.medias);
+
+    return {
+      data: plainToClass(AdminMediaDto, medias, { excludeExtraneousValues: true })
+    }
   }
 
   @Post('action/fix-sort-order')
