@@ -13,5 +13,6 @@ export class ElasticAggregator implements Record<keyof AdminAggregatorDto, any> 
     properties: new ElasticMultilingualText('text')
   };
   isVisibleOnProductPage = elasticBooleanType;
+  isInPriority = elasticBooleanType;
   productIds = elasticIntegerType;
 }

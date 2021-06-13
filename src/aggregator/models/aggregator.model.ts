@@ -17,6 +17,9 @@ export class Aggregator {
   @prop()
   isVisibleOnProductPage: boolean;
 
+  @prop({ default: false })
+  isInPriority: boolean;
+
   @arrayProp({ items: Number })
   productIds: number[];
 

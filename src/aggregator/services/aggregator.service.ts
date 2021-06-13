@@ -164,9 +164,20 @@ export class AggregatorService {
 
       tables.push({
         name: aggregator.clientName[lang],
+        isInPriority: aggregator.isInPriority,
         products: aggregatedProducts
       });
     }
+
+    tables.sort((a, b) => {
+      if (a.isInPriority && b.isInPriority) {
+        return 0
+      } else if (a.isInPriority) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
 
     return tables;
   }

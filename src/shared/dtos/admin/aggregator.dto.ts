@@ -20,6 +20,10 @@ export class AdminAggregatorDto implements Omit<Aggregator, '_id'> {
   isVisibleOnProductPage: boolean;
 
   @Expose()
+  @IsBoolean()
+  isInPriority: boolean;
+
+  @Expose()
   @IsNumber(undefined, { each: true })
   productIds: number[];
 }
