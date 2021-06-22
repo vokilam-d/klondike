@@ -163,7 +163,7 @@ export class AggregatorService {
       }
 
       tables.push({
-        name: aggregator.clientName[lang],
+        name: aggregator.isInPriority ? null : aggregator.clientName[lang],
         isInPriority: aggregator.isInPriority,
         products: aggregatedProducts
       });
@@ -171,7 +171,7 @@ export class AggregatorService {
 
     tables.sort((a, b) => {
       if (a.isInPriority && b.isInPriority) {
-        return 0
+        return 0;
       } else if (a.isInPriority) {
         return -1;
       } else {
