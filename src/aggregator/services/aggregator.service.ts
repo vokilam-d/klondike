@@ -157,10 +157,27 @@ export class AggregatorService {
           aggregatedProducts.push({
             ...variant,
             name: variant.name[lang],
-            price: variant.priceInDefaultCurrency
+            price: variant.priceInDefaultCurrency,
+            isInStock: variant.sellableQty > 0
           });
         }
       }
+
+      aggregatedProducts.sort((a, b) => {
+        if (a.isInStock && b.isInStock) {
+          if (a.salesCount > b.salesCount) {
+            return -1;
+          } else if (b.salesCount > a.salesCount) {
+            return 1;
+          } else {
+            return 0;
+          }
+        } else if (a.isInStock) {
+          return -1;
+        } else if (b.isInStock) {
+          return 1;
+        }
+      });
 
       tables.push({
         name: aggregator.isInPriority ? null : aggregator.clientName[lang],

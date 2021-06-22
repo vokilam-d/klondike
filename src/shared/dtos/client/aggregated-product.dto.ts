@@ -1,7 +1,7 @@
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { ProductVariant } from '../../../product/models/product-variant.model';
 
-export class ClientAggregatedProductDto implements Pick<ProductVariant, 'slug' | 'sku' | 'price'>, Pick<Record<keyof ProductVariant, string>, 'name'> {
+export class ClientAggregatedProductDto implements Pick<ProductVariant, 'slug' | 'sku' | 'price' | 'salesCount'>, Pick<Record<keyof ProductVariant, string>, 'name'> {
 
   @Expose()
   mediaUrl: string;
@@ -17,4 +17,10 @@ export class ClientAggregatedProductDto implements Pick<ProductVariant, 'slug' |
 
   @Expose()
   price: number;
+
+  @Expose()
+  isInStock: boolean;
+
+  @Exclude()
+  salesCount: number;
 }
