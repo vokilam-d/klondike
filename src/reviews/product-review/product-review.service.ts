@@ -130,7 +130,7 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
       }
     ]);
 
-    return Math.round(ratingAggregation[0].rating * 10) / 10;
+    return ratingAggregation[0] ? (Math.round(ratingAggregation[0].rating * 10) / 10) : 0;
   }
 
   transformReviewToDto(

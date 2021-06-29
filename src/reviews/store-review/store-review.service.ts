@@ -94,7 +94,7 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
       }
     ]);
 
-    return Math.round(ratingAggregation[0].rating * 10) / 10;
+    return ratingAggregation[0] ? (Math.round(ratingAggregation[0].rating * 10) / 10) : 0;
   }
 
   transformReviewToDto(review: DocumentType<StoreReview>, ipAddress?: string, userId?: string, customerId?: number): AdminStoreReviewDto {
