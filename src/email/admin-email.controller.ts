@@ -16,9 +16,10 @@ export class AdminEmailController {
   private testFirstName = 'Тарас';
   private testLastName = 'Шевченко';
 
-  constructor(private readonly emailService: EmailService,
-              private readonly moduleRef: ModuleRef) {
-  }
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly moduleRef: ModuleRef
+  ) { }
 
   @Post('order-confirmation/:orderId')
   async sendTestOrderConfirmEmail(

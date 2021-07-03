@@ -7,7 +7,6 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { authConstants } from '../auth-constants';
 import { ClientCustomerDto } from '../../shared/dtos/client/customer.dto';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
-import { EmailService } from '../../email/email.service';
 import { ResetPasswordService } from './reset-password.service';
 import { ConfirmEmailService } from './confirm-email.service';
 import { EncryptorService } from '../../shared/services/encryptor/encryptor.service';
@@ -19,7 +18,6 @@ import { __ } from '../../shared/helpers/translate/translate.function';
 import { HttpAdapterHost } from '@nestjs/core';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { isProdEnv } from '../../shared/helpers/is-prod-env.function';
-import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { Language } from '../../shared/enums/language.enum';
 import { Subject } from 'rxjs';
 
@@ -48,16 +46,16 @@ export class AuthService {
 
   passwordReset$ = new Subject<{ customer: Customer, token: string }>();
 
-  constructor(@Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
-              private readonly userService: UserService,
-              private readonly http: HttpService,
-              private readonly resetPasswordService: ResetPasswordService,
-              private readonly confirmEmailService: ConfirmEmailService,
-              private readonly adapterHost: HttpAdapterHost,
-              private readonly encryptor: EncryptorService,
-              // private readonly emailService: EmailService,
-              private readonly jwtService: JwtService) {
-  }
+  constructor(
+    @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
+    private readonly userService: UserService,
+    private readonly http: HttpService,
+    private readonly resetPasswordService: ResetPasswordService,
+    private readonly confirmEmailService: ConfirmEmailService,
+    private readonly adapterHost: HttpAdapterHost,
+    private readonly encryptor: EncryptorService,
+    private readonly jwtService: JwtService
+  ) { }
 
   async getCustomerIdFromReq(req: FastifyRequest): Promise<number | undefined> {
     const id = await this.getEntityIdFromReq(req, authConstants.JWT_COOKIE_NAME);
@@ -212,7 +210,6 @@ export class AuthService {
 
   async initResetCustomerPassword(customer: Customer) {
     const resetModel = await this.resetPasswordService.create(customer);
-    // await this.emailService.sendResetPasswordEmail(customer, resetModel.token);
     this.passwordReset$.next({ customer, token: resetModel.token });
 
     return true;

@@ -9,7 +9,6 @@ import { MediaService } from '../../shared/services/media/media.service';
 import { SearchService } from '../../shared/services/search/search.service';
 import { ElasticStoreReviewModel } from './models/elastic-store-review.model';
 import { plainToClass } from 'class-transformer';
-import { EmailService } from '../../email/email.service';
 import { ClientAddStoreReviewDto } from '../../shared/dtos/client/add-store-review.dto';
 import { EventsService } from '../../shared/services/events/events.service';
 import { Language } from '../../shared/enums/language.enum';
@@ -28,7 +27,6 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
     @Inject(forwardRef(() => CustomerService)) private readonly customerService: CustomerService,
     protected readonly counterService: CounterService,
     protected readonly searchService: SearchService,
-    // protected readonly emailService: EmailService,
     protected readonly mediaService: MediaService,
     protected readonly eventsService: EventsService
   ) {
@@ -51,7 +49,6 @@ export class StoreReviewService extends BaseReviewService<StoreReview, AdminStor
         await this.customerService.addStoreReview(review.customerId || review.email, review.id, session);
       }
     );
-    // this.emailService.sendNewStoreReviewEmail(review).then();
     this.newReview$.next(review);
     return review;
   }

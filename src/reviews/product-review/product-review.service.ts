@@ -14,7 +14,6 @@ import { plainToClass } from 'class-transformer';
 import { ClientAddProductReviewCommentDto } from '../../shared/dtos/client/product-review-comment.dto';
 import { ClientAddProductReviewDto } from '../../shared/dtos/client/add-product-review.dto';
 import { __ } from '../../shared/helpers/translate/translate.function';
-import { EmailService } from '../../email/email.service';
 import { ProductQuickReviewService } from './product-quick-review.service';
 import { ProductQuickReview } from './models/product-quick-review.model';
 import { EventsService } from '../../shared/services/events/events.service';
@@ -41,7 +40,6 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
     protected readonly quickReviewService: ProductQuickReviewService,
     protected readonly searchService: SearchService,
     protected readonly counterService: CounterService,
-    // protected readonly emailService: EmailService,
     protected readonly mediaService: MediaService,
     protected readonly eventsService: EventsService
   ) {
@@ -80,7 +78,6 @@ export class ProductReviewService extends BaseReviewService<ProductReview, Admin
         await this.customerService.addProductReview(review.customerId || review.email, review.id, session);
       });
 
-    // this.emailService.sendNewProductReviewEmail(review).then();
     this.newReview$.next(review);
     return review;
   }
