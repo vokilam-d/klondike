@@ -85,4 +85,7 @@ export class AdminOrderDto implements Order {
 
   @Expose()
   shippedAt: Date;
+
+  @Expose()
+  receiptId: string;
 }

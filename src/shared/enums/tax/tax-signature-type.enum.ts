@@ -1,0 +1,7 @@
+export enum TaxSignatureType {
+  AGENT = 'AGENT',
+  UKEY = 'UKEY',
+  DEPOSITSIGN = 'DEPOSITSIGN',
+  SMARTSIGN = 'SMARTSIGN',
+  CLOUD_SIGNATURE = 'CLOUD_SIGNATURE'
+}
