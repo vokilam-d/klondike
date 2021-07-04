@@ -75,6 +75,9 @@ export class Order {
   @arrayProp({ items: Media, default: [], _id: false })
   medias: Media[];
 
+  @prop()
+  receiptId: string;
+
 
   static collectionName: string = 'order';
 }
