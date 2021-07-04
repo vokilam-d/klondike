@@ -19,9 +19,6 @@ export class User {
   @prop()
   name: string;
 
-  @arrayProp({ items: String, default: [] })
-  emails: string[];
-
   @prop({ enum: Role, default: Role.Manager })
   role: Role;
 
