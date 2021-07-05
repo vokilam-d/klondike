@@ -71,4 +71,8 @@ export abstract class BaseShipmentDto implements Shipment {
   @IsOptional()
   description: string;
 
+  @Expose()
+  @IsOptional()
+  @Type(() => Date)
+  paidStorageStartDate: Date;
 }

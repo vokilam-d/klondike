@@ -26,7 +26,8 @@ export const FinalOrderStatuses: OrderStatusEnum[] = [
   OrderStatusEnum.RECIPIENT_DENIED,
   OrderStatusEnum.RETURNING,
   OrderStatusEnum.RETURNED,
-  OrderStatusEnum.REFUSED_TO_RETURN
+  OrderStatusEnum.REFUSED_TO_RETURN,
+  OrderStatusEnum.CANCELED
 ];
 
 export const ShippedOrderStatuses: OrderStatusEnum[] = [

@@ -233,6 +233,7 @@ export class NovaPoshtaService {
       status: NovaPoshtaService.toShipmentStatus(shipment.StatusCode),
       statusDescription: shipment.Status,
       scheduledDeliveryDate: shipment.ScheduledDeliveryDate,
+      paidStorageStartDate: shipment.DateFirstDayStorage ? new Date(`${shipment.DateFirstDayStorage}T04:00:00Z`) : undefined
     }));
   }
 

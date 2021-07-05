@@ -39,7 +39,6 @@ import { Shipment } from '../models/shipment.model';
 import { PaymentTypeEnum } from '../../shared/enums/payment-type.enum';
 import { OnlinePaymentDetailsDto } from '../../shared/dtos/client/online-payment-details.dto';
 import { createHmac } from 'crypto';
-import { isObject } from 'src/shared/helpers/is-object.function';
 import { areAddressesSame } from '../../shared/helpers/are-addresses-same.function';
 import { getCronExpressionEarlyMorning } from '../../shared/helpers/get-cron-expression-early-morning.function';
 import { User } from '../../user/models/user.model';
@@ -63,16 +62,9 @@ import { FileLogger } from '../../logger/file-logger.service';
 import { Subject } from 'rxjs';
 import { ClientAddOrderDto } from '../../shared/dtos/client/add-order.dto';
 import { AdminAddOrUpdateOrderDto } from '../../shared/dtos/admin/add-or-update-order.dto';
-import { CustomerContactInfo } from '../models/customer-contact-info.model';
-import { AdminShipmentDto } from '../../shared/dtos/admin/shipment.dto';
 import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-internet-document.dto';
-import { ShipmentAddress } from '../../shared/models/shipment-address.model';
 import { NovaPoshtaShipmentDto } from '../../shared/dtos/admin/nova-poshta-shipment.dto';
 import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
-import { OrderNotes } from '../models/order-notes.model';
-import { ShipmentCounterparty } from '../../shared/models/shipment-counterparty.model';
-import { OrderPaymentInfo } from '../models/order-payment-info.model';
-import { ContactInfo } from '../../shared/models/contact-info.model';
 import { ContactInfoDto } from '../../shared/dtos/shared-dtos/contact-info.dto';
 
 @Injectable()
@@ -610,7 +602,7 @@ export class OrderService implements OnApplicationBootstrap {
   }
 
   @CronProdPrimaryInstance(CronExpression.EVERY_30_MINUTES)
-  public async findWithNotFinalStatusesAndUpdate(lang: Language = adminDefaultLanguage): Promise<Order[]> {
+  public async findUnfinishedOrdersAndUpdateShipment(lang: Language = adminDefaultLanguage): Promise<Order[]> {
     const session = await this.orderModel.db.startSession();
     session.startTransaction();
     try {
@@ -639,6 +631,7 @@ export class OrderService implements OnApplicationBootstrap {
         const oldShipmentStatus = order.shipment.status;
         order.shipment.status = shipment.status;
         order.shipment.statusDescription = shipment.statusDescription;
+        order.shipment.paidStorageStartDate = shipment.paidStorageStartDate;
         const newShipmentStatus = order.shipment.status;
 
         if (newShipmentStatus !== oldShipmentStatus) {
@@ -693,21 +686,24 @@ export class OrderService implements OnApplicationBootstrap {
     });
   }
 
-  private async fetchShipmentStatus(order, session: ClientSession, lang: Language, user: User): Promise<void> {
+  private async fetchShipmentStatus(order: Order, session: ClientSession, lang: Language, user: User): Promise<void> {
     let status: string = '';
     let statusDescription: string = '';
     let estimatedDeliveryDate: string = '';
+    let paidStorageStartDate: Date;
 
     if (order.shipment.trackingNumber) {
       const shipmentDto: NovaPoshtaShipmentDto = await this.novaPoshtaService.fetchShipment(order.shipment.trackingNumber);
       status = shipmentDto?.status || '';
       statusDescription = shipmentDto?.statusDescription || '';
       estimatedDeliveryDate = shipmentDto?.scheduledDeliveryDate || '';
+      paidStorageStartDate = shipmentDto?.paidStorageStartDate;
     }
 
-    order.shipment.status = status;
+    order.shipment.status = status as ShipmentStatusEnum;
     order.shipment.statusDescription = statusDescription;
     order.shipment.estimatedDeliveryDate = estimatedDeliveryDate;
+    order.shipment.paidStorageStartDate = paidStorageStartDate;
 
     await this.updateOrderStatusByShipment(order, session, lang, user);
   }

@@ -4,5 +4,6 @@ export class NovaPoshtaShipmentDto {
   trackingNumber: string;
   status: ShipmentStatusEnum;
   statusDescription: string;
-  scheduledDeliveryDate: string
+  scheduledDeliveryDate: string;
+  paidStorageStartDate: Date;
 }
