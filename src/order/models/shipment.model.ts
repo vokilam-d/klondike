@@ -51,4 +51,6 @@ export class Shipment {
   @prop()
   description: string;
 
+  @prop()
+  paidStorageStartDate: Date;
 }

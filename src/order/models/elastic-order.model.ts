@@ -52,10 +52,11 @@ export class ElasticOrderItemModel implements Omit<Record<keyof AdminOrderItemDt
   isPacked = elasticBooleanType;
 }
 
-class ElasticShipment implements Record<keyof Pick<BaseShipmentDto, 'trackingNumber' | 'status' | 'statusDescription' | 'recipient' | 'sender'>, any>{
+class ElasticShipment implements Record<keyof Pick<BaseShipmentDto, 'trackingNumber' | 'status' | 'statusDescription' | 'recipient' | 'sender' | 'paidStorageStartDate'>, any>{
   trackingNumber = elasticTextType;
   status = elasticTextType;
   statusDescription = elasticTextType;
+  paidStorageStartDate = elasticDateType;
   recipient = {
     type: 'nested',
     properties: new ElasticShipmentCounterparty()
