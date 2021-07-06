@@ -30,7 +30,7 @@ export const FinalOrderStatuses: OrderStatusEnum[] = [
   OrderStatusEnum.CANCELED
 ];
 
-export const ShippedOrderStatuses: OrderStatusEnum[] = [
+export const ShippedOrFinalOrderStatuses: OrderStatusEnum[] = [
   OrderStatusEnum.SHIPPED,
   ...FinalOrderStatuses
 ];

@@ -16,7 +16,7 @@ import { CounterService } from '../../shared/services/counter/counter.service';
 import { CustomerService } from '../../customer/customer.service';
 import { AdminAddOrUpdateCustomerDto } from '../../shared/dtos/admin/customer.dto';
 import { InventoryService } from '../../inventory/inventory.service';
-import { FinalOrderStatuses, OrderStatusEnum, ShippedOrderStatuses } from '../../shared/enums/order-status.enum';
+import { FinalOrderStatuses, OrderStatusEnum, ShippedOrFinalOrderStatuses } from '../../shared/enums/order-status.enum';
 import { getPropertyOf } from '../../shared/helpers/get-property-of.function';
 import { PdfGeneratorService } from '../../pdf-generator/pdf-generator.service';
 import { Customer } from '../../customer/models/customer.model';
@@ -409,7 +409,7 @@ export class OrderService implements OnApplicationBootstrap {
 
   async editOrder(orderId: number, orderDto: AdminAddOrUpdateOrderDto, user: DocumentType<User>, lang: Language): Promise<Order> {
     return await this.updateOrderById(orderId, lang, async (order, session) => {
-      if (ShippedOrderStatuses.includes(order.status)) {
+      if (ShippedOrFinalOrderStatuses.includes(order.status)) {
         throw new ForbiddenException(__('Cannot edit order with status "$1"', lang, order.status));
       }
 
@@ -851,8 +851,8 @@ export class OrderService implements OnApplicationBootstrap {
           break;
 
         case OrderStatusEnum.CANCELED:
-          if (ShippedOrderStatuses.includes(status)) {
-            throw new BadRequestException(__('Cannot cancel order with status "$1"', lang, status));
+          if (ShippedOrFinalOrderStatuses.includes(order.status)) {
+            throw new BadRequestException(__('Cannot cancel order with status "$1"', lang, order.status));
           }
           await this.cancelOrderPreActions(order, lang, session, user);
           break;
@@ -862,7 +862,7 @@ export class OrderService implements OnApplicationBootstrap {
             throw new BadRequestException(__('Cannot change status to "$1": order must not be with status "$2"', lang, status, OrderStatusEnum.FINISHED));
           }
 
-          if (!ShippedOrderStatuses.includes(order.status)) {
+          if (!ShippedOrFinalOrderStatuses.includes(order.status)) {
             await this.shippedOrderPostActions(order, session, lang, user);
           }
           await this.finishedOrderPostActions(order, session);
@@ -1047,7 +1047,7 @@ export class OrderService implements OnApplicationBootstrap {
     }
 
     const filterQuery: FilterQuery<Order> = {
-      status: { $in: ShippedOrderStatuses },
+      status: { $in: ShippedOrFinalOrderStatuses },
       shippedAt: {
         ...(dateFrom ? { $gte: dateFrom } : {}),
         ...(dateTo ? { $lte: dateTo } : {})
