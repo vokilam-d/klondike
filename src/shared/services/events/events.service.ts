@@ -10,6 +10,9 @@ interface IMessage {
 
 type Callback = (data: any) => void;
 
+/**
+ * This service is for communicating between different instances of this application
+ */
 @Injectable()
 export class EventsService {
 

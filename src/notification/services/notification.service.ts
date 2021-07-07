@@ -20,6 +20,9 @@ import { PrivatbankConnector } from '../../bot/services/privatbank.connector';
 import { merge } from 'rxjs';
 import { IPayment } from '../../bot/interfaces/payment.interface';
 
+/**
+ * This service is for communicating between different modules (parts) in the same application instance
+ */
 @Injectable()
 export class NotificationService implements OnApplicationBootstrap {
   constructor(
