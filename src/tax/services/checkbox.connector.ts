@@ -4,6 +4,8 @@ import { TaxReceiptDto } from '../../shared/dtos/admin/tax/tax-receipt.dto';
 import { TaxReceiptSellDto } from '../../shared/dtos/admin/tax/tax-receipt-sell.dto';
 import { TaxLoginDto } from '../../shared/dtos/admin/tax/tax-login.dto';
 import { TaxAccessTokenDto } from '../../shared/dtos/admin/tax/tax-access-token.dto';
+import { TaxCashRegisterDeviceDto } from '../../shared/dtos/admin/tax/tax-cash-register-device.dto';
+import { ITaxAuthorityProvider } from '../../shared/interfaces/tax-authority-provider.interface';
 
 interface ICheckboxError {
   message: string;
@@ -15,7 +17,7 @@ interface ICheckboxError {
 }
 
 @Injectable()
-export class CheckboxConnector implements OnApplicationBootstrap {
+export class CheckboxConnector implements OnApplicationBootstrap, ITaxAuthorityProvider {
 
   private readonly apiHost = `https://dev-api.checkbox.in.ua/api/v1`;
   private readonly logger = new Logger(CheckboxConnector.name);
@@ -48,6 +50,18 @@ export class CheckboxConnector implements OnApplicationBootstrap {
 
   async createReceipt(createReceiptDto: TaxReceiptSellDto): Promise<TaxReceiptDto> {
     return this.post<TaxReceiptDto>(`/receipts/sell`, createReceiptDto, `Could not create receipt`);
+  }
+
+  async getCashRegisterInfo(): Promise<TaxCashRegisterDeviceDto> {
+    return this.get<TaxCashRegisterDeviceDto>(`/cash-registers/info`, `Could not get cash register info`);
+  }
+
+  async goOnline(): Promise<{ status: string; }> {
+    return this.post<{ status: string; }>(`/cash-registers/go-online`, null, `Could not set cash register "online" mode`);
+  }
+
+  async goOffline(): Promise<{ status: string; }> {
+    return this.post<{ status: string; }>(`/cash-registers/go-offline`, null, `Could not set cash register "offline" mode`);
   }
 
   private async login(): Promise<void> {

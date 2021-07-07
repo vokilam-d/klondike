@@ -1,5 +1,3 @@
-import { TaxGoodPayloadDto } from './tax-good-payload.dto';
-import { TaxDiscountPayloadDto } from './tax-discount-payload.dto';
 import { TaxGoodDto } from './tax-good.dto';
 import { TaxDiscountDto } from './tax-discount.dto';
 

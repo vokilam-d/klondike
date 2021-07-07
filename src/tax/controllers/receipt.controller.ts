@@ -3,7 +3,10 @@ import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { TaxService } from '../services/tax.service';
 import { TaxReceiptDto } from '../../shared/dtos/admin/tax/tax-receipt.dto';
-import { TaxReceiptSellDto } from '../../shared/dtos/admin/tax/tax-receipt-sell.dto';
+import { AdminLang } from '../../shared/decorators/lang.decorator';
+import { Language } from '../../shared/enums/language.enum';
+import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
+import { User } from '../../user/models/user.model';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -24,9 +27,13 @@ export class ReceiptController {
     };
   }
 
-  @Post()
-  async createReceipt(@Body() createReceiptDto: TaxReceiptSellDto): Promise<ResponseDto<TaxReceiptDto>> {
-    const receipt = await this.taxService.createReceipt(createReceiptDto);
+  @Post('orders/:orderId')
+  async createReceipt(
+    @Param('orderId') orderId: string,
+    @AdminLang() lang: Language,
+    @ValidatedUser() user: User
+  ): Promise<ResponseDto<TaxReceiptDto>> {
+    const receipt = await this.taxService.createReceipt(orderId, lang, user);
 
     return {
       data: receipt

@@ -5,7 +5,7 @@ export class TaxDiscountPayloadDto {
   type: TaxDiscountType;
   mode: TaxDiscountMode;
   value: number;
-  tax_code: string | number;
-  tax_codes: (string | number)[];
-  name: string;
+  tax_code?: string | number;
+  tax_codes?: (string | number)[];
+  name?: string;
 }

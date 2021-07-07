@@ -19,6 +19,10 @@ import { MonobankConnector } from '../../bot/services/monobank.connector';
 import { PrivatbankConnector } from '../../bot/services/privatbank.connector';
 import { merge } from 'rxjs';
 import { IPayment } from '../../bot/interfaces/payment.interface';
+import { TaxService } from '../../tax/services/tax.service';
+import { TaxReceiptDto } from '../../shared/dtos/admin/tax/tax-receipt.dto';
+import { DocumentType } from '@typegoose/typegoose';
+import { User } from '../../user/models/user.model';
 
 /**
  * This service is for communicating between different modules (parts) in the same application instance
@@ -36,6 +40,7 @@ export class NotificationService implements OnApplicationBootstrap {
     private readonly authService: AuthService,
     private readonly customerService: CustomerService,
     private readonly tasksService: TasksService,
+    private readonly taxService: TaxService,
     private readonly moduleRef: ModuleRef
   ) { }
 
@@ -48,6 +53,8 @@ export class NotificationService implements OnApplicationBootstrap {
     this.customerService.customerRegistered$.subscribe(event => this.onCustomerRegistration(event.customer, event.token));
     this.customerService.emailConfirmationRequested$.subscribe(event => this.onEmailConfirmationRequest(event.customer, event.token));
     this.tasksService.leaveReviewRequested$.subscribe(event => this.onLeaveReviewRequested(event.order, event.lang));
+    this.taxService.newReceipt$.subscribe(event => this.onNewReceipt(event.order, event.receipt, event.user));
+
     merge(
       this.monobankConnector.newPayment$,
       this.privatbankConnector.newPayment$
@@ -98,5 +105,9 @@ export class NotificationService implements OnApplicationBootstrap {
 
   private onNewPayment(event: IPayment) {
     this.botService.onNewPayment(event);
+  }
+
+  private onNewReceipt(order: DocumentType<Order>, receipt: TaxReceiptDto, user: User) {
+    this.orderService.saveReceipt(order, receipt, user);
   }
 }

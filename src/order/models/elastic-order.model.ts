@@ -150,4 +150,5 @@ export class ElasticOrder implements Omit<Record<keyof AdminOrderDto, any>, '_id
   };
   updatedAt = elasticDateType;
   receiptId = elasticKeywordType;
+  language = elasticKeywordType;
 }

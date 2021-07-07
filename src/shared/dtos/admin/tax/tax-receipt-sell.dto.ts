@@ -1,4 +1,3 @@
-import { TaxGoodPayloadDto } from './tax-good-payload.dto';
 import { TaxGoodItemPayloadDto } from './tax-good-item-payload.dto';
 import { TaxDiscountPayloadDto } from './tax-discount-payload.dto';
 import { TaxCardPaymentPayloadDto } from './tax-card-payment-payload.dto';
@@ -15,8 +14,8 @@ export class TaxReceiptSellDto {
   discounts: TaxDiscountPayloadDto[];
   payments: (TaxCardPaymentPayloadDto | TaxCashPaymentPayloadDto)[];
   rounding?: boolean;
-  header?: string;
-  footer?: string;
+  header: string;
+  footer: string;
   barcode?: string;
   order_id?: string;
   related_receipt_id?: string;

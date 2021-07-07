@@ -11,6 +11,7 @@ import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { AdminOrderNotesDto } from './order-notes.dto';
 import { AdminOrderPaymentInfoDto } from './order-payment-info.dto';
+import { Language } from '../../enums/language.enum';
 
 export class AdminOrderDto implements Order {
   @Exclude()
@@ -88,4 +89,7 @@ export class AdminOrderDto implements Order {
 
   @Expose()
   receiptId: string;
+
+  @Expose()
+  language: Language;
 }

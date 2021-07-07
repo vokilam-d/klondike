@@ -3,10 +3,12 @@ import { TaxService } from './services/tax.service';
 import { ShiftController } from './controllers/shift.controller';
 import { CheckboxConnector } from './services/checkbox.connector';
 import { ReceiptController } from './controllers/receipt.controller';
+import { OrderModule } from '../order/order.module';
 
 @Module({
-  imports: [HttpModule],
+  imports: [HttpModule, OrderModule],
   providers: [TaxService, CheckboxConnector],
-  controllers: [ShiftController, ReceiptController]
+  controllers: [ShiftController, ReceiptController],
+  exports: [TaxService]
 })
 export class TaxModule {}

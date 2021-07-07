@@ -3,6 +3,8 @@ import { UserJwtGuard } from '../../auth/guards/user-jwt.guard';
 import { ResponseDto } from '../../shared/dtos/shared-dtos/response.dto';
 import { TaxShiftDto } from '../../shared/dtos/admin/tax/tax-shift.dto';
 import { TaxService } from '../services/tax.service';
+import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
+import { User } from '../../user/models/user.model';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -24,8 +26,8 @@ export class ShiftController {
   }
 
   @Post()
-  async openShift(): Promise<ResponseDto<TaxShiftDto>> {
-    const shift = await this.taxService.openShift();
+  async openShift(@ValidatedUser() user: User): Promise<ResponseDto<TaxShiftDto>> {
+    const shift = await this.taxService.openShift(user);
 
     return {
       data: shift
@@ -33,8 +35,8 @@ export class ShiftController {
   }
 
   @Post('close')
-  async closeShift(): Promise<ResponseDto<TaxShiftDto>> {
-    const shift = await this.taxService.closeShift();
+  async closeShift(@ValidatedUser() user: User): Promise<ResponseDto<TaxShiftDto>> {
+    const shift = await this.taxService.closeShift(user);
 
     return {
       data: shift

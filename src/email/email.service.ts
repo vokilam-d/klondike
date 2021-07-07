@@ -59,8 +59,9 @@ export class EmailService {
   private newOrderListenerEmails: string = ['masloirina15@gmail.com', 'irina@klondike.com.ua'].join(',');
   private newOrderManagerAssignedListenerEmails: string = ['yurii@klondike.com.ua', 'elena@klondike.com.ua', 'kristina@klondike.com.ua', 'kmaslo41@gmail.com'].join(',');
 
-  constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
-  }
+  constructor(
+    private readonly pdfGeneratorService: PdfGeneratorService
+  ) { }
 
   async sendOrderConfirmationEmail(order: Order, lang: Language, notifyManagers: boolean, notifyClient: boolean) {
     const emailType = EEmailType.OrderConfirmation;

@@ -12,6 +12,7 @@ import { CustomerContactInfo } from './customer-contact-info.model';
 import { OrderPaymentInfo } from './order-payment-info.model';
 import { OrderNotes } from './order-notes.model';
 import { addLeadingZeros } from '../../shared/helpers/add-leading-zeros.function';
+import { Language } from '../../shared/enums/language.enum';
 
 export class Order {
   @prop()
@@ -77,6 +78,9 @@ export class Order {
 
   @prop()
   receiptId: string;
+
+  @prop()
+  language: Language;
 
 
   static collectionName: string = 'order';

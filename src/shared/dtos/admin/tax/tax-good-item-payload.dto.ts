@@ -6,5 +6,5 @@ export class TaxGoodItemPayloadDto {
   good_id?: string;
   quantity: number;
   is_return?: boolean;
-  discounts: TaxDiscountPayloadDto[];
+  discounts?: TaxDiscountPayloadDto[];
 }
