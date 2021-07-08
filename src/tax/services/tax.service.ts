@@ -13,13 +13,15 @@ import { DocumentType } from '@typegoose/typegoose';
 import { Order } from '../../order/models/order.model';
 import { User } from '../../user/models/user.model';
 import { TaxCashRegisterDeviceDto } from '../../shared/dtos/admin/tax/tax-cash-register-device.dto';
+import { TaxReceiptStatus } from '../../shared/enums/tax/tax-receipt-status.enum';
+import { TaxTransactionStatus } from '../../shared/enums/tax/tax-transaction-status.enum';
 
 @Injectable()
 export class TaxService {
 
   newReceipt$: Subject<{ receipt: TaxReceiptDto, order: DocumentType<Order>, user: User }> = new Subject();
 
-  private delay: number = 3000;
+  private delay: number = 2000;
   private readonly logger = new Logger(TaxService.name);
 
   constructor(
@@ -33,7 +35,7 @@ export class TaxService {
 
   async openShift(user: User): Promise<TaxShiftDto> {
     const shift = await this.taxAuthorityProvider.openShift();
-    setTimeout(() => this.ensureOnlineMode(), this.delay);
+    this.ensureOnlineMode().then();
 
     this.logger.log(`Initiated shift opening, shiftId=${shift.id}, userLogin=${user?.login}`);
     return shift;
@@ -81,10 +83,36 @@ export class TaxService {
 
     const receipt: TaxReceiptDto = await this.taxAuthorityProvider.createReceipt(createReceiptDto);
 
-    setTimeout(() => this.ensureOnlineMode(), this.delay);
+    const waitForFiscalization = async (resolve, reject): Promise<void> => {
+      const fiscalizedReceipt = await this.getReceipt(receipt.id);
+      if (fiscalizedReceipt.status === TaxReceiptStatus.ERROR) {
+        this.logger.error(`Error in receipt "${receipt.id}":`);
+        this.logger.error(fiscalizedReceipt.transaction);
+        reject(fiscalizedReceipt.transaction);
+        return;
+      }
 
-    this.newReceipt$.next({ receipt, order, user });
+      if (fiscalizedReceipt.transaction.status !== TaxTransactionStatus.DONE) {
+        setTimeout(() => waitForFiscalization(resolve, reject), this.delay);
+        return;
+      }
+
+      fiscalizedReceipt.pdfUrl = this.taxAuthorityProvider.getReceiptPdfUrl(fiscalizedReceipt);
+
+      try {
+        fiscalizedReceipt.textRepresentation = await this.taxAuthorityProvider.getReceiptRepresentation(receipt.id, 'text');
+      } catch (e) { }
+
+      this.newReceipt$.next({ receipt: fiscalizedReceipt, order, user });
+
+      resolve();
+    };
+
+    await new Promise((resolve, reject) => waitForFiscalization(resolve, reject))
+
     this.logger.log(`Initiated receipt fiscalization, receiptId=${order.receiptId}, orderId=${order.id}, userLogin=${user?.login}`);
+
+    this.ensureOnlineMode().then();
     return receipt;
   }
 

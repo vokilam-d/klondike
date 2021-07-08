@@ -109,5 +109,6 @@ export class NotificationService implements OnApplicationBootstrap {
 
   private onNewReceipt(order: DocumentType<Order>, receipt: TaxReceiptDto, user: User) {
     this.orderService.saveReceipt(order, receipt, user);
+    this.emailService.sendReceiptEmail(order, receipt);
   }
 }

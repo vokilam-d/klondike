@@ -113,6 +113,11 @@ export const TRANSLATIONS = {
     ru: 'Недостаточно товара в наличии. Вы пытаетесь добавить: $1. В наличии: $2',
     uk: 'Недостатньо товару в наявності. Ви намагаєтеся додати: $1. В наявності: $2'
   },
+  'Order with id "$1" has not receipt': {
+    en: 'Order with id "$1" has not receipt',
+    ru: 'В заказ с id "$1" нет чека',
+    uk: 'В замовленнi з id "$1" немає чека'
+  },
   'Order with id "$1" not found': {
     en: 'Order with id "$1" not found',
     ru: 'Заказ с id "$1" не найден',

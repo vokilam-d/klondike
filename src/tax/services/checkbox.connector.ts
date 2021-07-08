@@ -45,11 +45,15 @@ export class CheckboxConnector implements OnApplicationBootstrap, ITaxAuthorityP
   }
 
   async getReceipt(id: string): Promise<TaxReceiptDto> {
-    return this.get<TaxReceiptDto>(`/receipts/${id}`, `Could not get receipt`);
+    return this.get<TaxReceiptDto>(`/receipts/${id}`, `Could not get receipt "${id}"`);
   }
 
   async createReceipt(createReceiptDto: TaxReceiptSellDto): Promise<TaxReceiptDto> {
     return this.post<TaxReceiptDto>(`/receipts/sell`, createReceiptDto, `Could not create receipt`);
+  }
+
+  async getReceiptRepresentation(receiptId: string, representationType: 'text' | 'html' | 'pdf' | 'qrcode'): Promise<any> {
+    return this.get<any>(`/receipts/${receiptId}/${representationType}`, `Could not get receipt "${receiptId}" representation of type "${representationType}"`);
   }
 
   async getCashRegisterInfo(): Promise<TaxCashRegisterDeviceDto> {
@@ -57,11 +61,15 @@ export class CheckboxConnector implements OnApplicationBootstrap, ITaxAuthorityP
   }
 
   async goOnline(): Promise<{ status: string; }> {
-    return this.post<{ status: string; }>(`/cash-registers/go-online`, null, `Could not set cash register "online" mode`);
+    return this.post<{ status: string; }>(`/cash-registers/go-online`, null, `Could not set cash register to "online" mode`);
   }
 
   async goOffline(): Promise<{ status: string; }> {
-    return this.post<{ status: string; }>(`/cash-registers/go-offline`, null, `Could not set cash register "offline" mode`);
+    return this.post<{ status: string; }>(`/cash-registers/go-offline`, null, `Could not set cash register to "offline" mode`);
+  }
+
+  getReceiptPdfUrl(receipt: TaxReceiptDto): string {
+    return `${this.apiHost}/receipts/${receipt.id}/pdf`;
   }
 
   private async login(): Promise<void> {
@@ -108,7 +116,9 @@ export class CheckboxConnector implements OnApplicationBootstrap, ITaxAuthorityP
   private getHeaders(): { [key: string]: string } {
     return {
       'Authorization': `Bearer ${this.accessToken}`,
-      'X-License-Key': process.env.CHECKBOX_LICENSE_KEY
+      'X-License-Key': process.env.CHECKBOX_LICENSE_KEY,
+      'X-Client-Name': 'Klondike',
+      'X-Client-Version': 'v1.0.0'
     };
   }
 

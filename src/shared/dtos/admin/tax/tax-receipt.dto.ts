@@ -37,4 +37,8 @@ export class TaxReceiptDto {
   technical_return: false;
   currency_exchange: null;
   shift: TaxShiftDto;
+
+  // custom transforms
+  textRepresentation?: string;
+  pdfUrl?: any;
 }
