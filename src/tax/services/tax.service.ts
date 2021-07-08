@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { TaxShiftDto } from '../../shared/dtos/admin/tax/tax-shift.dto';
 import { TaxReceiptDto } from '../../shared/dtos/admin/tax/tax-receipt.dto';
 import { TaxReceiptSellDto } from '../../shared/dtos/admin/tax/tax-receipt-sell.dto';
@@ -15,6 +15,7 @@ import { User } from '../../user/models/user.model';
 import { TaxCashRegisterDeviceDto } from '../../shared/dtos/admin/tax/tax-cash-register-device.dto';
 import { TaxReceiptStatus } from '../../shared/enums/tax/tax-receipt-status.enum';
 import { TaxTransactionStatus } from '../../shared/enums/tax/tax-transaction-status.enum';
+import { __ } from '../../shared/helpers/translate/translate.function';
 
 @Injectable()
 export class TaxService {
@@ -53,6 +54,10 @@ export class TaxService {
 
   async createReceipt(orderId: string, lang: Language, user: User): Promise<TaxReceiptDto> {
     const order = await this.orderService.getOrderById(parseInt(orderId), lang);
+
+    if (order.receiptId) {
+      throw new BadRequestException(__(`Order with id "$1" already has a receipt`, lang, order.id));
+    }
 
     const createReceiptDto: TaxReceiptSellDto = {
       header: `Замовлення №${order.idForCustomer}`,
