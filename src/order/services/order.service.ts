@@ -66,6 +66,7 @@ import { CreateInternetDocumentDto } from '../../shared/dtos/admin/create-intern
 import { NovaPoshtaShipmentDto } from '../../shared/dtos/admin/nova-poshta-shipment.dto';
 import { ShipmentAddressDto } from '../../shared/dtos/shared-dtos/shipment-address.dto';
 import { ContactInfoDto } from '../../shared/dtos/shared-dtos/contact-info.dto';
+import { TaxReceiptDto } from '../../shared/dtos/admin/tax/tax-receipt.dto';
 
 @Injectable()
 export class OrderService implements OnApplicationBootstrap {
@@ -375,6 +376,7 @@ export class OrderService implements OnApplicationBootstrap {
     newOrder.shipment.recipient.address = orderDto.address;
     newOrder.createdAt = new Date();
     newOrder.status = OrderStatusEnum.NEW;
+    newOrder.language = lang;
 
     const skus: string[] = (orderDto.items as (AdminOrderItemDto | ClientOrderItemDto)[]).map(item => item.sku);
     const products = await this.productService.getProductsWithQtyBySkus(skus);
@@ -1017,6 +1019,12 @@ export class OrderService implements OnApplicationBootstrap {
       await this.assignOrderManager(order, newManagerUserId, user);
       return order;
     });
+  }
+
+  async saveReceipt(order: DocumentType<Order>, receipt: TaxReceiptDto, user: User): Promise<void> {
+    order.receiptId = receipt.id;
+    OrderService.addLog(order, `Fiscalized receipt, receiptId=${order.receiptId}, userLogin=${user?.login}`);
+    await order.save();
   }
 
   private async setPaymentInfoByMethodId(order: Order, paymentMethodId: string): Promise<Order> {

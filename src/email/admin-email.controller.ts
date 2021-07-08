@@ -8,6 +8,7 @@ import { ProductReviewService } from '../reviews/product-review/product-review.s
 import { StoreReviewService } from '../reviews/store-review/store-review.service';
 import { AdminLang } from '../shared/decorators/lang.decorator';
 import { Language } from '../shared/enums/language.enum';
+import { TaxService } from '../tax/services/tax.service';
 
 @UseGuards(UserJwtGuard)
 @Controller('admin/email-test')
@@ -53,6 +54,29 @@ export class AdminEmailController {
     order.customerContactInfo.email = body.email;
 
     return this.emailService.sendLeaveReviewEmail(order, lang);
+  }
+
+  @Post('tax-receipt/:orderId')
+  async sendTaxReceiptEmail(
+    @Param('orderId') orderId: number,
+    @Body() body: any,
+    @AdminLang() lang: Language
+  ) {
+    if (!body.email) {
+      throw new BadRequestException(__('No "email" in payload', lang));
+    }
+
+    const orderService = this.moduleRef.get(OrderService, { strict: false });
+    const order = await orderService.getOrderById(parseInt(orderId as any), lang);
+
+    if (!order.receiptId) {
+      throw new BadRequestException(__(`Order with id "$1" has not receipt`, lang, order.id));
+    }
+
+    const taxService = this.moduleRef.get(TaxService, { strict: false });
+    const receipt = await taxService.getReceipt(order.receiptId);
+
+    return this.emailService.sendReceiptEmail(order, receipt, body.email);
   }
 
   @Post('email-confirmation')

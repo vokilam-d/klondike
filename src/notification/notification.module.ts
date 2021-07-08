@@ -8,9 +8,10 @@ import { CustomerModule } from '../customer/customer.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { EmailModule } from '../email/email.module';
 import { BotModule } from '../bot/bot.module';
+import { TaxModule } from '../tax/tax.module';
 
 @Module({
-  imports: [OrderModule, StoreReviewModule, ProductReviewModule, AuthModule, CustomerModule, TasksModule, EmailModule, BotModule],
+  imports: [OrderModule, StoreReviewModule, ProductReviewModule, AuthModule, CustomerModule, TasksModule, EmailModule, BotModule, TaxModule],
   providers: [NotificationService]
 })
 export class NotificationModule {

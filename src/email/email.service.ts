@@ -12,12 +12,16 @@ import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-o
 import { Language } from '../shared/enums/language.enum';
 import { clientDefaultLanguage } from '../shared/constants';
 import { isProdEnv } from '../shared/helpers/is-prod-env.function';
+import { beautifyPhoneNumber } from '../shared/helpers/beautify-phone-number.function';
+import { TaxReceiptDto } from '../shared/dtos/admin/tax/tax-receipt.dto';
+import * as Mail from 'nodemailer/lib/mailer';
 
 enum EEmailType {
   EmailConfirmation = 'email-confirmation',
   RegistrationSuccess = 'registration-success',
   NewProductReview = 'new-product-review',
   NewStoreReview = 'new-store-review',
+  TaxReceipt = 'tax-receipt',
   ResetPassword = 'password-reset',
   LeaveReview = 'leave-review',
   OrderConfirmation = 'order-confirmation',
@@ -41,7 +45,15 @@ interface EmailProduct {
 @Injectable()
 export class EmailService {
 
-  private logger = new Logger(EmailService.name);
+  private readonly emailsListSeparator = ',';
+
+  private sender = 'Клондайк <info@klondike.com.ua>';
+
+  private newReviewListenerEmails: string = NEW_REVIEW_LISTENERS.join(this.emailsListSeparator);
+  private newOrderListenerEmails: string = NEW_ORDER_LISTENER_EMAILS.join(this.emailsListSeparator);
+  private newOrderManagerAssignedListenerEmails: string = NEW_ORDER_MANAGER_ASSIGNED_LISTENER_EMAILS.join(this.emailsListSeparator);
+  private newReceiptListenerEmails: string = NEW_RECEIPT_LISTENER_EMAILS.join(this.emailsListSeparator);
+
   private transportOptions = {
     host: process.env.SMTP_HOST,
     port: 465,
@@ -54,13 +66,11 @@ export class EmailService {
       rejectUnauthorized: false
     }
   };
-  private senderName = 'Клондайк <info@klondike.com.ua>';
-  private newReviewListenerEmails: string = ['yurii@klondike.com.ua', 'elena@klondike.com.ua', 'masloirina15@gmail.com', 'irina@klondike.com.ua', 'elena.sergeevna@klondike.com.ua'].join(',');
-  private newOrderListenerEmails: string = ['masloirina15@gmail.com', 'irina@klondike.com.ua'].join(',');
-  private newOrderManagerAssignedListenerEmails: string = ['yurii@klondike.com.ua', 'elena@klondike.com.ua', 'kristina@klondike.com.ua', 'kmaslo41@gmail.com'].join(',');
+  private logger = new Logger(EmailService.name);
 
-  constructor(private readonly pdfGeneratorService: PdfGeneratorService) {
-  }
+  constructor(
+    private readonly pdfGeneratorService: PdfGeneratorService
+  ) { }
 
   async sendOrderConfirmationEmail(order: Order, lang: Language, notifyManagers: boolean, notifyClient: boolean) {
     const emailType = EEmailType.OrderConfirmation;
@@ -168,6 +178,26 @@ export class EmailService {
     return this.sendEmail({ to, subject, html, emailType });
   }
 
+  sendReceiptEmail(order: Order, receipt: TaxReceiptDto, to?: string) {
+    const emailType = EEmailType.TaxReceipt;
+    const subject = `Ваш чек від Клондайк`;
+    const html = this.getEmailHtml(emailType, this.getReceiptTemplateContext(order, receipt));
+
+    if (!to) {
+      const toArray = [];
+      // toArray.push(order.customerContactInfo.email); // uncomment this for production
+      toArray.push(this.newReceiptListenerEmails);
+      to = toArray.join(this.emailsListSeparator);
+    }
+
+    const attachment: Mail.Attachment = {
+      filename: `Чек №${order.idForCustomer}. Код "${receipt.fiscal_code}". Клондайк.pdf`,
+      path: receipt.pdfUrl
+    };
+
+    return this.sendEmail({ to, subject, html, emailType, attachment });
+  }
+
   public async sendEmail({ to, subject, html, attachment, emailType }: SendEmailOptions) {
     const transport = await nodemailer.createTransport(this.transportOptions);
     const attachments = [];
@@ -175,7 +205,7 @@ export class EmailService {
 
     const send = async (resolve, reject, tryCount: number = 0) => {
       try {
-        await transport.sendMail({ from: this.senderName, to, subject, html, attachments });
+        await transport.sendMail({ from: this.sender, to, subject, html, attachments });
         this.logger.log(`Sent "${emailType}" email to "${to}"`);
 
         resolve();
@@ -210,7 +240,7 @@ export class EmailService {
       orderDateTime: readableDate(order.createdAt),
       totalOrderCost: order.prices.totalCost,
       addressName: `${order.shipment.recipient.contactInfo.lastName} ${order.shipment.recipient.contactInfo.firstName} ${order.shipment.recipient.contactInfo.middleName}`,
-      addressPhone: order.shipment.recipient.contactInfo.phoneNumber,
+      addressPhone: beautifyPhoneNumber(order.shipment.recipient.contactInfo.phoneNumber),
       addressCity: order.shipment.recipient.address.settlementNameFull,
       address: order.shipment.recipient.address.addressNameFull,
       addressBuildingNumber: order.shipment.recipient.address.buildingNumber,
@@ -278,4 +308,21 @@ export class EmailService {
       source: storeReview.source
     };
   }
+
+  private getReceiptTemplateContext(order: Order, receipt: TaxReceiptDto): any {
+    return {
+      firstName: order.customerContactInfo.firstName,
+      orderId: order.idForCustomer,
+      taxUrl: receipt.tax_url,
+      receiptFiscalCode: receipt.fiscal_code,
+      receiptText: receipt.textRepresentation
+    };
+  }
 }
+
+const NEW_REVIEW_LISTENERS: string[] = ['yurii@klondike.com.ua', 'elena@klondike.com.ua', 'masloirina15@gmail.com',
+  'irina@klondike.com.ua', 'elena.sergeevna@klondike.com.ua'];
+const NEW_ORDER_LISTENER_EMAILS: string[] = ['masloirina15@gmail.com', 'irina@klondike.com.ua'];
+const NEW_ORDER_MANAGER_ASSIGNED_LISTENER_EMAILS: string[] = ['yurii@klondike.com.ua', 'elena@klondike.com.ua',
+  'kristina@klondike.com.ua', 'kmaslo41@gmail.com'];
+const NEW_RECEIPT_LISTENER_EMAILS: string[] = ['info@klondike.com.ua', 'ryki.admirala@gmail.com'];

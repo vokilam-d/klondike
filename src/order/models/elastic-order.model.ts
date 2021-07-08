@@ -1,5 +1,12 @@
 import { AdminOrderDto } from '../../shared/dtos/admin/order.dto';
-import { elasticBooleanType, elasticDateType, elasticFloatType, elasticIntegerType, elasticTextType } from '../../shared/constants';
+import {
+  elasticBooleanType,
+  elasticDateType,
+  elasticFloatType,
+  elasticIntegerType,
+  elasticKeywordType,
+  elasticTextType
+} from '../../shared/constants';
 import { BaseShipmentDto } from '../../shared/dtos/shared-dtos/base-shipment.dto';
 import { ElasticLog } from '../../shared/models/elastic-log.model';
 import { OrderItemAdditionalService } from './order-item-additional-service.model';
@@ -142,4 +149,6 @@ export class ElasticOrder implements Omit<Record<keyof AdminOrderDto, any>, '_id
     properties: new ElasticMultilingualText('text')
   };
   updatedAt = elasticDateType;
+  receiptId = elasticKeywordType;
+  language = elasticKeywordType;
 }
