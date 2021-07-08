@@ -6,6 +6,7 @@ import { TaxLoginDto } from '../../shared/dtos/admin/tax/tax-login.dto';
 import { TaxAccessTokenDto } from '../../shared/dtos/admin/tax/tax-access-token.dto';
 import { TaxCashRegisterDeviceDto } from '../../shared/dtos/admin/tax/tax-cash-register-device.dto';
 import { ITaxAuthorityProvider } from '../../shared/interfaces/tax-authority-provider.interface';
+import { TaxReceiptRepresentationType } from '../../shared/enums/tax/tax-receipt-representation-type.enum';
 
 interface ICheckboxError {
   message: string;
@@ -52,8 +53,12 @@ export class CheckboxConnector implements OnApplicationBootstrap, ITaxAuthorityP
     return this.post<TaxReceiptDto>(`/receipts/sell`, createReceiptDto, `Could not create receipt`);
   }
 
-  async getReceiptRepresentation(receiptId: string, representationType: 'text' | 'html' | 'pdf' | 'qrcode'): Promise<any> {
+  async getReceiptRepresentation(receiptId: string, representationType: TaxReceiptRepresentationType): Promise<any> {
     return this.get<any>(`/receipts/${receiptId}/${representationType}`, `Could not get receipt "${receiptId}" representation of type "${representationType}"`);
+  }
+
+  getReceiptRepresentationUrl(receiptId: string, representationType: TaxReceiptRepresentationType): string {
+    return `${this.apiHost}/receipts/${receiptId}/${representationType}`;
   }
 
   async getCashRegisterInfo(): Promise<TaxCashRegisterDeviceDto> {
@@ -66,10 +71,6 @@ export class CheckboxConnector implements OnApplicationBootstrap, ITaxAuthorityP
 
   async goOffline(): Promise<{ status: string; }> {
     return this.post<{ status: string; }>(`/cash-registers/go-offline`, null, `Could not set cash register to "offline" mode`);
-  }
-
-  getReceiptPdfUrl(receipt: TaxReceiptDto): string {
-    return `${this.apiHost}/receipts/${receipt.id}/pdf`;
   }
 
   private async login(): Promise<void> {

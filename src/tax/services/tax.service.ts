@@ -16,6 +16,7 @@ import { TaxCashRegisterDeviceDto } from '../../shared/dtos/admin/tax/tax-cash-r
 import { TaxReceiptStatus } from '../../shared/enums/tax/tax-receipt-status.enum';
 import { TaxTransactionStatus } from '../../shared/enums/tax/tax-transaction-status.enum';
 import { __ } from '../../shared/helpers/translate/translate.function';
+import { TaxReceiptRepresentationType } from '../../shared/enums/tax/tax-receipt-representation-type.enum';
 
 @Injectable()
 export class TaxService {
@@ -102,10 +103,10 @@ export class TaxService {
         return;
       }
 
-      fiscalizedReceipt.pdfUrl = this.taxAuthorityProvider.getReceiptPdfUrl(fiscalizedReceipt);
+      fiscalizedReceipt.pdfUrl = this.getReceiptRepresentationUrl(fiscalizedReceipt.id, TaxReceiptRepresentationType.Pdf);
 
       try {
-        fiscalizedReceipt.textRepresentation = await this.taxAuthorityProvider.getReceiptRepresentation(receipt.id, 'text');
+        fiscalizedReceipt.textRepresentation = await this.taxAuthorityProvider.getReceiptRepresentation(receipt.id, TaxReceiptRepresentationType.Text);
       } catch (e) { }
 
       this.newReceipt$.next({ receipt: fiscalizedReceipt, order, user });
@@ -119,6 +120,10 @@ export class TaxService {
 
     this.ensureOnlineMode().then();
     return receipt;
+  }
+
+  getReceiptRepresentationUrl(receiptId: string, representationType: TaxReceiptRepresentationType): string {
+    return this.taxAuthorityProvider.getReceiptRepresentationUrl(receiptId, representationType);
   }
 
   private async ensureOnlineMode(isRetry: boolean = false) {

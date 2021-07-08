@@ -7,6 +7,7 @@ import { AdminLang } from '../../shared/decorators/lang.decorator';
 import { Language } from '../../shared/enums/language.enum';
 import { ValidatedUser } from '../../shared/decorators/validated-user.decorator';
 import { User } from '../../user/models/user.model';
+import { TaxReceiptRepresentationType } from '../../shared/enums/tax/tax-receipt-representation-type.enum';
 
 @UseGuards(UserJwtGuard)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -24,6 +25,18 @@ export class ReceiptController {
 
     return {
       data: receipt
+    };
+  }
+
+  @Get(':id/representation-url/:type')
+  async getReceiptRepresentationUrl(
+    @Param('id') receiptId: string,
+    @Param('type') representationType: TaxReceiptRepresentationType
+  ): Promise<ResponseDto<string>> {
+    const url = await this.taxService.getReceiptRepresentationUrl(receiptId, representationType);
+
+    return {
+      data: url
     };
   }
 
