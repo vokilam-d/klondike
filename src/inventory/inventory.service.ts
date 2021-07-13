@@ -30,7 +30,7 @@ export class InventoryService {
   ): Promise<DocumentType<Inventory>> {
 
     const model: Inventory = { sku, productId, qtyInStock, reserved: [], logs: [] };
-    InventoryService.addLog(model, `Created inventory, qtyInStock=${qtyInStock}, userLogin=${user?.login}`);
+    InventoryService.addLog(model, `Created inventory: sku=${sku}, qtyInStock=${qtyInStock}, userLogin=${user?.login}`);
 
     const newInventory = new this.inventoryModel(model);
     await newInventory.save({ session });
@@ -64,7 +64,7 @@ export class InventoryService {
       const prevQtyInStock = found.qtyInStock;
       found.qtyInStock = qty;
 
-      InventoryService.addLog(found, `Updated inventory, prevQtyInStock=${prevQtyInStock}, newQtyInStock=${found.qtyInStock}, userLogin=${user?.login}`);
+      InventoryService.addLog(found, `Updated inventory: prevQtyInStock=${prevQtyInStock}, newQtyInStock=${found.qtyInStock}, userLogin=${user?.login}`);
 
       await found.save({ session });
 

@@ -322,7 +322,6 @@ export class AdminProductService implements OnApplicationBootstrap {
 
     try {
       const mediasToDelete: Media[] = [];
-      const tmpMediasToDelete: AdminMediaDto[] = [];
       const inventories: Inventory[] = [];
 
       const variantsToUpdate: AdminProductVariantDto[] = [];
@@ -370,7 +369,7 @@ export class AdminProductService implements OnApplicationBootstrap {
 
       Object.keys(productDto).forEach(key => { found[key] = productDto[key]; });
 
-      AdminProductService.addLog(found, `Product updated, ${logUpdateMessage}, userLogin=${user?.login}`);
+      AdminProductService.addLog(found, `Product updated: ${logUpdateMessage}, userLogin=${user?.login}`);
 
       if (found.variants.every(variant => variant.isEnabled === false)) {
         found.isEnabled = false;
