@@ -9,6 +9,7 @@ import { isInDocker } from '../shared/helpers/is-in-docker';
 import { isFreeShippingForOrder } from '../shared/helpers/is-free-shipping-for-order.function';
 import { Language } from '../shared/enums/language.enum';
 import { InvoiceEditDto } from '../shared/dtos/admin/invoice-edit.dto';
+import { beautifyPhoneNumber } from '../shared/helpers/beautify-phone-number.function';
 
 @Injectable()
 export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -76,7 +77,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       orderDateTime: readableDate(order.createdAt),
       totalOrderCost: order.prices.totalCost,
       addressName: recipient.contactInfo.middleName ? `${recipient.contactInfo.firstName} ${recipient.contactInfo.lastName}` : `${recipient.contactInfo.lastName} ${recipient.contactInfo.firstName} ${recipient.contactInfo.middleName}`,
-      addressPhone: recipient.contactInfo.phoneNumber,
+      addressPhone: beautifyPhoneNumber(recipient.contactInfo.phoneNumber),
       addressCity: recipient.address.settlementNameFull || recipient.address.settlementName,
       address: recipient.address.addressNameFull || recipient.address.addressName,
       addressBuildingNumber: recipient.address.buildingNumber,
@@ -110,7 +111,7 @@ export class PdfGeneratorService implements OnApplicationBootstrap, OnApplicatio
       orderDateTime: readableDate(order.createdAt),
       title: editDto.title || 'Видаткова накладна',
       addressName: editDto.addressName || (recipient.contactInfo.middleName ? `${recipient.contactInfo.firstName} ${recipient.contactInfo.lastName}` : `${recipient.contactInfo.lastName} ${recipient.contactInfo.firstName} ${recipient.contactInfo.middleName}`),
-      addressPhone: editDto.addressPhone || recipient.contactInfo.phoneNumber,
+      addressPhone: beautifyPhoneNumber(editDto.addressPhone || recipient.contactInfo.phoneNumber),
       addressCity: editDto.addressCity || recipient.address.settlementNameFull || recipient.address.settlementName,
       address: editDto.address || recipient.address.addressNameFull || recipient.address.addressName,
       addressBuildingNumber: editDto.addressBuildingNumber || recipient.address.buildingNumber,
