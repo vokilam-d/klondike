@@ -36,7 +36,7 @@
     justify-content: space-between;
 }
 
-.invoice-details__customer {
+.invoice-details__customer-row {
     display: flex;
     margin: 10px 0;
 }
@@ -206,5 +206,3 @@
     height: 150px;
     margin: 5px 0 0 135px;
 }
-
-
