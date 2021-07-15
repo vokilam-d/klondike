@@ -432,6 +432,7 @@ export class OrderService implements OnApplicationBootstrap {
       Object.keys(orderDto).forEach(key => order[key] = orderDto[key]);
       order.shipment.recipient.contactInfo = orderDto.recipientContactInfo || orderDto.customerContactInfo;
       order.shipment.recipient.address = orderDto.address;
+      order.notes.fromAdmin = orderDto.note;
 
       await this.setPaymentInfoByMethodId(order, orderDto.paymentMethodId);
 
@@ -471,7 +472,6 @@ export class OrderService implements OnApplicationBootstrap {
 
     OrderService.addLog(order, assignedManagerMessage);
     this.logger.log(assignedManagerMessage);
-    // this.emailService.sendAssignedOrderManagerEmail(order, assignedManagerUser).then();
     this.managerAssigned$.next(order);
   }
 
