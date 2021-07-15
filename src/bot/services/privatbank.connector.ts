@@ -28,7 +28,7 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
   ) { }
 
   onApplicationBootstrap(): any {
-    if (!isProdEnv()) {
+    if (!isProdEnv() || !this.hasRequiredInfo()) {
       return;
     }
 
@@ -37,6 +37,10 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
 
   @CronProdPrimaryInstance(CRON_EVERY_2_MINUTES)
   async handleNewPayments(): Promise<void> {
+    if (!this.hasRequiredInfo()) {
+      return;
+    }
+
     let statementsData: IPrivatbankStatementsData;
     try {
       statementsData = await this.getPaymentsForToday();
@@ -200,5 +204,9 @@ export class PrivatbankConnector implements OnApplicationBootstrap {
     } else {
       return response.response.data as T;
     }
+  }
+
+  private hasRequiredInfo(): boolean {
+    return !!(process.env.PRIVATBANK_MERCHANT && process.env.PRIVATBANK_API_PASSWORD && process.env.PRIVATBANK_CARD_NUMBER);
   }
 }
