@@ -420,6 +420,7 @@ export class OrderService implements OnApplicationBootstrap {
         throw new ForbiddenException(__('You do not have enough permissions to change assigned manager', lang));
       }
 
+
       for (const item of order.items) {
         await this.inventoryService.removeFromOrdered(item.sku, orderId, lang, session, user);
         await this.productService.updateSearchDataById(item.productId, lang, session);
