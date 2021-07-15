@@ -86,9 +86,11 @@ export class AdminEmailController {
     }
 
     const customer: any = {
-      email: body.email,
-      firstName: this.testFirstName,
-      lastName: this.testLastName
+      contactInfo: {
+        email: body.email,
+        firstName: this.testFirstName,
+        lastName: this.testLastName
+      }
     };
 
     return this.emailService.sendEmailConfirmationEmail(customer, 'token');
@@ -101,9 +103,11 @@ export class AdminEmailController {
     }
 
     const customer: any = {
-      email: body.email,
-      firstName: this.testFirstName,
-      lastName: this.testLastName
+      contactInfo: {
+        email: body.email,
+        firstName: this.testFirstName,
+        lastName: this.testLastName
+      }
     };
 
     return this.emailService.sendRegisterSuccessEmail(customer, 'token');
@@ -116,9 +120,11 @@ export class AdminEmailController {
     }
 
     const customer: any = {
-      email: body.email,
-      firstName: this.testFirstName,
-      lastName: this.testLastName
+      contactInfo: {
+        email: body.email,
+        firstName: this.testFirstName,
+        lastName: this.testLastName
+      }
     };
 
     return this.emailService.sendResetPasswordEmail(customer, 'token');
