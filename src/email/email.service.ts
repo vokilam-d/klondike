@@ -219,7 +219,7 @@ export class EmailService {
         }
 
         const delayTime = tryCount * 3.5 * 1000;
-        this.logger.warn(`Retrying in ${delayTime}s...`);
+        this.logger.warn(`Retrying in ${delayTime / 1000}s...`);
         setTimeout(() => send(resolve, reject, tryCount + 1), delayTime);
       }
     };
