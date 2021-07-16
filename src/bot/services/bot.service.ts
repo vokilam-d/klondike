@@ -114,7 +114,7 @@ export class BotService implements OnApplicationBootstrap {
     this.telegramApiService.sendMessage(this.botConfig.adminReviewsChat, text, reply);
   }
 
-  async onInternalServerError(error: any) {
+  async sendErrorMessage(error: any) {
     if (!isProdEnv()) {
       return;
     }

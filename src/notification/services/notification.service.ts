@@ -58,10 +58,13 @@ export class NotificationService implements OnApplicationBootstrap {
     merge(
       this.monobankConnector.newPayment$,
       this.privatbankConnector.newPayment$
-    ).subscribe(event => this.onNewPayment(event))
+    ).subscribe(event => this.onNewPayment(event));
 
-    const filter = this.moduleRef.get<GlobalExceptionFilter>(GlobalExceptionFilter, { strict: false });
-    filter.internalServerError$.subscribe(event => this.onInternalServerError(event));
+    const exceptionFilter = this.moduleRef.get<GlobalExceptionFilter>(GlobalExceptionFilter, { strict: false });
+    merge(
+      exceptionFilter.internalServerError$,
+      this.emailService.failedMailError$
+    ).subscribe(event => this.sendErrorMessage(event));
   }
 
   private async onNewOrder(order: Order, lang: Language): Promise<void> {
@@ -99,8 +102,8 @@ export class NotificationService implements OnApplicationBootstrap {
     this.emailService.sendLeaveReviewEmail(order, lang).then();
   }
 
-  private async onInternalServerError(error: any): Promise<void> {
-    this.botService.onInternalServerError(error).then();
+  private async sendErrorMessage(error: any): Promise<void> {
+    this.botService.sendErrorMessage(error).then();
   }
 
   private onNewPayment(event: IPayment) {

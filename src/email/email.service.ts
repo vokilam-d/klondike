@@ -15,6 +15,7 @@ import { isProdEnv } from '../shared/helpers/is-prod-env.function';
 import { beautifyPhoneNumber } from '../shared/helpers/beautify-phone-number.function';
 import { TaxReceiptDto } from '../shared/dtos/admin/tax/tax-receipt.dto';
 import * as Mail from 'nodemailer/lib/mailer';
+import { Subject } from 'rxjs';
 
 enum EEmailType {
   EmailConfirmation = 'email-confirmation',
@@ -53,6 +54,8 @@ export class EmailService {
   private newOrderListenerEmails: string = NEW_ORDER_LISTENER_EMAILS.join(this.emailsListSeparator);
   private newOrderManagerAssignedListenerEmails: string = NEW_ORDER_MANAGER_ASSIGNED_LISTENER_EMAILS.join(this.emailsListSeparator);
   private newReceiptListenerEmails: string = NEW_RECEIPT_LISTENER_EMAILS.join(this.emailsListSeparator);
+
+  failedMailError$ = new Subject<any>();
 
   private transportOptions = {
     host: process.env.SMTP_HOST,
@@ -214,6 +217,7 @@ export class EmailService {
         this.logger.error(e);
 
         if (tryCount > 4) {
+          this.failedMailError$.next(e);
           reject(e);
           return;
         }
