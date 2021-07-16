@@ -34,7 +34,7 @@
         <tr>
             <th class="products__number">№</th>
             <th class="products__name">Товари</th>
-            <th class="products__qty">Кіл-сть</th>
+            <th class="products__qty-head" colspan="2">Кіл-сть</th>
             <th class="products__price">Ціна</th>
             <th class="products__cost">Сума</th>
         </tr>
@@ -53,7 +53,10 @@
                 {{/each}}
             </td>
             <td class="products__qty">
-                {{ this.qty }} шт.
+                {{ this.qty }}
+            </td>
+            <td class="products__qty-unit">
+                шт.
             </td>
             <td class="products__price">
                 {{ this.price }} грн

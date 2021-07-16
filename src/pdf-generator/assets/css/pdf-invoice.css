@@ -77,7 +77,6 @@
     text-align: center;
     border-spacing: 0;
     border-collapse: collapse;
-    table-layout: fixed;
     border: 1px solid #808080;
 }
 
@@ -108,9 +107,21 @@
     border: 1px solid #808080;
 }
 
-.products__qty {
+.products__qty-head {
     width: 80px;
     border: 1px solid #808080;
+}
+
+.products__qty {
+    width: 60px;
+    border: 1px solid #808080;
+    text-align: right;
+}
+
+.products__qty-unit {
+    width: w0px;
+    border: 1px solid #808080;
+    text-align: left;
 }
 
 .products__price {
