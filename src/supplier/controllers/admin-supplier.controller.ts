@@ -35,9 +35,8 @@ export class AdminSupplierController {
     };
   }
 
-  @Post(':id')
+  @Post()
   async createSupplier(
-    @Param('id') id: string,
     @Body() supplierDto: AdminSupplierDto
   ): Promise<ResponseDto<AdminSupplierDto>> {
     const created = await this.supplierService.createSupplier(supplierDto);
