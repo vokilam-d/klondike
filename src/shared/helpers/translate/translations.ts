@@ -23,6 +23,11 @@ export const TRANSLATIONS = {
     ru: 'Заказанный инвентарь для артикула "$1" и заказа с id "$2" не найден',
     uk: 'Замовлений інвентар для артикулу "$1" і замовлення з id "$2" не знайдено'
   },
+  'Supplier with id "$1" not found': {
+    en: 'Supplier with id "$1" not found',
+    ru: 'Поставщик с id "$1" не найден',
+    uk: 'Постачальник з id "$1" не знайден'
+  },
   'Attribute with id "$1" not found': {
     en: 'Attribute with id "$1" not found',
     ru: 'Атрибут с id "$1" не найден',

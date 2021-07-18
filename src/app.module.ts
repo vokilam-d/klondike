@@ -35,6 +35,7 @@ import { BotModule } from './bot/bot.module';
 import { NotificationModule } from './notification/notification.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { TaxModule } from './tax/tax.module';
+import { SupplierModule } from './supplier/supplier.module';
 
 @Module({
   imports: [
@@ -84,7 +85,8 @@ import { TaxModule } from './tax/tax.module';
     BotModule,
     NotificationModule,
     MaintenanceModule,
-    TaxModule
+    TaxModule,
+    SupplierModule
   ],
   providers: [
     GlobalExceptionFilter,
