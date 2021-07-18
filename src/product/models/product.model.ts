@@ -58,6 +58,9 @@ export class Product {
   @arrayProp({ items: Log, default: [] })
   logs: Log[];
 
+  @prop()
+  supplierId: number;
+
   createdAt: Date;
   updatedAt: Date;
 

@@ -720,7 +720,8 @@ export class AdminProductService implements OnApplicationBootstrap {
         note: product.note,
         isIncludedInShoppingFeed: product.variants[0].isIncludedInShoppingFeed,
         salesCount,
-        variants
+        variants,
+        supplierId: product.supplierId
       });
     }
 

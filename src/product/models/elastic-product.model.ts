@@ -40,4 +40,5 @@ export class ElasticProduct implements Record<keyof AdminProductListItemDto, any
   updatedAt = elasticDateType;
   note = elasticTextType;
   isIncludedInShoppingFeed = elasticBooleanType;
+  supplierId = elasticIntegerType;
 }

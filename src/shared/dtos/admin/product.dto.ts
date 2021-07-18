@@ -10,7 +10,7 @@ import { MultilingualTextDto } from '../shared-dtos/multilingual-text.dto';
 import { BreadcrumbsVariantDto } from './breadcrumbs-variant.dto';
 import { AdminLogDto } from './log.dto';
 
-type PickedProduct = Pick<Product, 'isEnabled' | 'breadcrumbsVariants' | 'name' | 'categories' | 'attributes' | 'createdAt' | 'updatedAt' | 'additionalServiceIds' | 'note'>;
+type PickedProduct = Pick<Product, 'isEnabled' | 'breadcrumbsVariants' | 'name' | 'categories' | 'attributes' | 'createdAt' | 'updatedAt' | 'additionalServiceIds' | 'note' | 'supplierId'>;
 type VariantsProp = Record<keyof Pick<Product, 'variants'>, AdminAddOrUpdateProductVariantDto[]>;
 export class AdminAddOrUpdateProductDto implements PickedProduct, VariantsProp {
   @Expose()
@@ -60,6 +60,11 @@ export class AdminAddOrUpdateProductDto implements PickedProduct, VariantsProp {
   @IsString()
   @TrimString()
   note: string;
+
+  @Expose()
+  @IsNumber(undefined)
+  @IsOptional()
+  supplierId: number;
 }
 
 export class AdminProductDto extends AdminAddOrUpdateProductDto implements Pick<Product, 'id' | 'reviewsAvgRating'> {
